@@ -1,0 +1,439 @@
+<mxfile host="app.diagrams.net" modified="2026-03-26T02:33:00.000Z" agent="Claude" version="24.0.0" type="device">
+  <diagram id="system-arch" name="System Architecture">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="2400" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- TITLE -->
+        <mxCell id="title" value="CRM V3 — System Architecture Overview" style="text;html=1;align=center;verticalAlign=middle;fontSize=22;fontStyle=1;fillColor=none;strokeColor=none;fontColor=#1E293B;" vertex="1" parent="1">
+          <mxGeometry x="700" y="10" width="500" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== DEPLOYMENT LAYER ==================== -->
+        <mxCell id="deploy_bg" value="" style="rounded=1;fillColor=#F1F5F9;strokeColor=#CBD5E1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="60" width="1840" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy_label" value="VPS + Docker Compose" style="text;html=1;fontSize=14;fontStyle=1;fillColor=none;strokeColor=none;fontColor=#475569;" vertex="1" parent="1">
+          <mxGeometry x="40" y="65" width="200" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Next.js -->
+        <mxCell id="nextjs" value="&lt;b&gt;Next.js 16&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:11px;color:#475569'&gt;App Router&lt;br&gt;shadcn/ui + Tailwind 4&lt;br&gt;Port 3000&lt;/span&gt;" style="rounded=1;fillColor=#DBEAFE;strokeColor=#3B82F6;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="100" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- NestJS -->
+        <mxCell id="nestjs" value="&lt;b&gt;NestJS 11&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:11px;color:#475569'&gt;REST API + JWT&lt;br&gt;Prisma 6 ORM&lt;br&gt;Port 3001&lt;/span&gt;" style="rounded=1;fillColor=#FEF3C7;strokeColor=#F59E0B;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="340" y="100" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- PostgreSQL -->
+        <mxCell id="postgres" value="&lt;b&gt;PostgreSQL 16&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:11px;color:#475569'&gt;26 tables, 10 enums&lt;br&gt;43 indexes, JSONB&lt;br&gt;Port 5432&lt;/span&gt;" style="shape=cylinder3;fillColor=#D1FAE5;strokeColor=#10B981;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=13;size=10;" vertex="1" parent="1">
+          <mxGeometry x="620" y="90" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Redis -->
+        <mxCell id="redis" value="&lt;b&gt;Redis 7&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:11px;color:#475569'&gt;BullMQ Jobs&lt;br&gt;Port 6379&lt;/span&gt;" style="shape=cylinder3;fillColor=#FEE2E2;strokeColor=#EF4444;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=13;size=10;" vertex="1" parent="1">
+          <mxGeometry x="900" y="90" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Local FS -->
+        <mxCell id="localfs" value="&lt;b&gt;Local Filesystem&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:11px;color:#475569'&gt;uploads/&lt;br&gt;CSV + Attachments&lt;/span&gt;" style="shape=document;fillColor=#F5F5F5;strokeColor=#666666;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=13;size=0.2;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="95" width="160" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- 3rd Party -->
+        <mxCell id="thirdparty" value="&lt;b&gt;3rd Party APIs&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:11px;color:#475569'&gt;Call Center (VoIP)&lt;br&gt;Lead Sources&lt;br&gt;API Key Auth&lt;/span&gt;" style="shape=cloud;fillColor=#EDE9FE;strokeColor=#8B5CF6;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="85" width="200" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Turborepo -->
+        <mxCell id="turbo" value="&lt;b&gt;Turborepo Monorepo&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:11px;color:#475569'&gt;packages/database | packages/types | packages/utils&lt;/span&gt;" style="rounded=1;fillColor=#F0F9FF;strokeColor=#0EA5E9;strokeWidth=1;dashed=1;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1630" y="110" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ARROWS between services -->
+        <mxCell id="arr1" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#3B82F6;strokeWidth=2;endArrow=block;" edge="1" source="nextjs" target="nestjs" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arr1_label" value="REST API" style="edgeLabel;html=1;fontSize=10;fontColor=#3B82F6;" connectable="0" vertex="1" parent="arr1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arr2" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#F59E0B;strokeWidth=2;endArrow=block;" edge="1" source="nestjs" target="postgres" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arr2_label" value="Prisma" style="edgeLabel;html=1;fontSize=10;fontColor=#F59E0B;" connectable="0" vertex="1" parent="arr2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arr3" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#EF4444;strokeWidth=2;endArrow=block;" edge="1" source="nestjs" target="redis" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arr3_label" value="BullMQ" style="edgeLabel;html=1;fontSize=10;fontColor=#EF4444;" connectable="0" vertex="1" parent="arr3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arr4" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#666666;strokeWidth=2;endArrow=block;" edge="1" source="nestjs" target="localfs" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arr5" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#8B5CF6;strokeWidth=2;endArrow=block;dashed=1;" edge="1" source="thirdparty" target="nestjs" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arr5_label" value="API Key" style="edgeLabel;html=1;fontSize=10;fontColor=#8B5CF6;" connectable="0" vertex="1" parent="arr5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== USER ROLES ==================== -->
+        <mxCell id="roles_bg" value="" style="rounded=1;fillColor=#FFF7ED;strokeColor=#F97316;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="290" width="1840" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="roles_label" value="User Roles &amp; Permissions" style="text;html=1;fontSize=14;fontStyle=1;fillColor=none;strokeColor=none;fontColor=#9A3412;" vertex="1" parent="1">
+          <mxGeometry x="40" y="295" width="250" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sa" value="&lt;b&gt;SUPER ADMIN&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px'&gt;See ALL data&lt;br&gt;System settings CRUD&lt;br&gt;User management&lt;br&gt;API key management&lt;/span&gt;" style="rounded=1;fillColor=#FEE2E2;strokeColor=#EF4444;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="330" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="mgr" value="&lt;b&gt;MANAGER&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px'&gt;See managed depts data&lt;br&gt;Assign leads, verify payments&lt;br&gt;Import CSV, transfer customers&lt;br&gt;Edit phone numbers&lt;/span&gt;" style="rounded=1;fillColor=#FEF3C7;strokeColor=#F59E0B;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="310" y="330" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="leader" value="&lt;b&gt;LEADER&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px'&gt;See team members' leads (read)&lt;br&gt;See team ranking&lt;br&gt;Own leads CRUD (no phone edit)&lt;br&gt;Claim customers in dept&lt;/span&gt;" style="rounded=1;fillColor=#DBEAFE;strokeColor=#3B82F6;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="580" y="330" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="user_role" value="&lt;b&gt;USER&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px'&gt;See own assigned leads only&lt;br&gt;Edit leads (no phone)&lt;br&gt;Create orders, notes&lt;br&gt;Claim customers in dept&lt;br&gt;Search customer by phone&lt;/span&gt;" style="rounded=1;fillColor=#D1FAE5;strokeColor=#10B981;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="850" y="330" width="220" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Org structure -->
+        <mxCell id="org_struct" value="&lt;div style='text-align:left;font-size:11px'&gt;&lt;b&gt;Organization Structure:&lt;/b&gt;&lt;br&gt;Manager ─(manages)─→ Departments (M:N)&lt;br&gt;Department ─→ Teams ─→ Users&lt;br&gt;Team = 1 Leader + N Members&lt;br&gt;User = 1 Dept + 1 Team&lt;/div&gt;" style="rounded=1;fillColor=#F5F5F5;strokeColor=#94A3B8;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="330" width="280" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Customer access note -->
+        <mxCell id="cust_note" value="&lt;div style='text-align:left;font-size:11px'&gt;&lt;b&gt;Customer Access:&lt;/b&gt;&lt;br&gt;NO list view (except Super Admin)&lt;br&gt;Search by phone ONLY&lt;br&gt;Anyone can edit after search&lt;br&gt;Phone edit: Manager+ only&lt;/div&gt;" style="rounded=1;fillColor=#FFF7ED;strokeColor=#F97316;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="330" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== LEAD LIFECYCLE ==================== -->
+        <mxCell id="lifecycle_bg" value="" style="rounded=1;fillColor=#F0FDF4;strokeColor=#22C55E;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="480" width="1840" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="lifecycle_label" value="Lead Lifecycle &amp; Business Flows" style="text;html=1;fontSize=14;fontStyle=1;fillColor=none;strokeColor=none;fontColor=#166534;" vertex="1" parent="1">
+          <mxGeometry x="40" y="485" width="300" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Lead input sources -->
+        <mxCell id="input_csv" value="CSV Import" style="rounded=1;fillColor=#E0E7FF;strokeColor=#6366F1;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="520" width="100" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="input_manual" value="Manual Entry" style="rounded=1;fillColor=#E0E7FF;strokeColor=#6366F1;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="565" width="100" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="input_api" value="3rd Party API" style="rounded=1;fillColor=#E0E7FF;strokeColor=#6366F1;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="610" width="100" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- Pipeline stages -->
+        <mxCell id="stage_validate" value="&lt;b&gt;Validate&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px'&gt;Phone required&lt;br&gt;Normalize&lt;br&gt;Dedup check&lt;/span&gt;" style="rounded=1;fillColor=#F5F5F5;strokeColor=#94A3B8;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="210" y="535" width="110" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="stage_pool" value="&lt;b&gt;POOL&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px;color:#3B82F6'&gt;Unassigned&lt;br&gt;Manager sees&lt;/span&gt;" style="rounded=1;fillColor=#DBEAFE;strokeColor=#3B82F6;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="380" y="535" width="110" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="stage_assigned" value="&lt;b&gt;ASSIGNED&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px;color:#0EA5E9'&gt;Sale receives&lt;/span&gt;" style="rounded=1;fillColor=#E0F2FE;strokeColor=#0EA5E9;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="550" y="535" width="110" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="stage_progress" value="&lt;b&gt;IN PROGRESS&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px;color:#F59E0B'&gt;Sale working&lt;/span&gt;" style="rounded=1;fillColor=#FEF3C7;strokeColor=#F59E0B;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="720" y="535" width="120" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="stage_converted" value="&lt;b&gt;CONVERTED&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px;color:#10B981'&gt;Payment verified&lt;br&gt;→ Customer&lt;/span&gt;" style="rounded=1;fillColor=#D1FAE5;strokeColor=#10B981;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="520" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="stage_lost" value="&lt;b&gt;LOST&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px;color:#94A3B8'&gt;Failed&lt;/span&gt;" style="rounded=1;fillColor=#F1F5F9;strokeColor=#94A3B8;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="590" width="120" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Transfer flow -->
+        <mxCell id="transfer_box" value="&lt;b&gt;TRANSFER&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px'&gt;Sale transfers customer&lt;br&gt;to target department&lt;/span&gt;" style="rounded=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="520" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="claim_box" value="&lt;b&gt;DEPT POOL&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px'&gt;Customer unclaimed&lt;br&gt;Free claim by dept users&lt;/span&gt;" style="rounded=1;fillColor=#FCE7F3;strokeColor=#EC4899;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="520" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="support_box" value="&lt;b&gt;SUPPORT&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px'&gt;New user manages&lt;br&gt;customer care&lt;/span&gt;" style="rounded=1;fillColor=#D1FAE5;strokeColor=#10B981;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1490" y="520" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Lifecycle arrows -->
+        <mxCell id="la1" style="strokeColor=#6366F1;strokeWidth=1.5;endArrow=block;" edge="1" source="input_csv" target="stage_validate" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="la1b" style="strokeColor=#6366F1;strokeWidth=1.5;endArrow=block;" edge="1" source="input_manual" target="stage_validate" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="la1c" style="strokeColor=#6366F1;strokeWidth=1.5;endArrow=block;" edge="1" source="input_api" target="stage_validate" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="la2" style="strokeColor=#3B82F6;strokeWidth=2;endArrow=block;" edge="1" source="stage_validate" target="stage_pool" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="la3" style="strokeColor=#0EA5E9;strokeWidth=2;endArrow=block;" edge="1" source="stage_pool" target="stage_assigned" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="la3_label" value="Manager assign" style="edgeLabel;html=1;fontSize=9;fontColor=#0EA5E9;" connectable="0" vertex="1" parent="la3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="la4" style="strokeColor=#F59E0B;strokeWidth=2;endArrow=block;" edge="1" source="stage_assigned" target="stage_progress" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="la5" style="strokeColor=#10B981;strokeWidth=2;endArrow=block;" edge="1" source="stage_progress" target="stage_converted" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="la5_label" value="Payment OK" style="edgeLabel;html=1;fontSize=9;fontColor=#10B981;" connectable="0" vertex="1" parent="la5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="la6" style="strokeColor=#94A3B8;strokeWidth=2;endArrow=block;" edge="1" source="stage_progress" target="stage_lost" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="la7" style="strokeColor=#8B5CF6;strokeWidth=2;endArrow=block;" edge="1" source="stage_converted" target="transfer_box" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="la8" style="strokeColor=#EC4899;strokeWidth=2;endArrow=block;" edge="1" source="transfer_box" target="claim_box" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="la9" style="strokeColor=#10B981;strokeWidth=2;endArrow=block;" edge="1" source="claim_box" target="support_box" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="la9_label" value="User claims" style="edgeLabel;html=1;fontSize=9;fontColor=#EC4899;" connectable="0" vertex="1" parent="la9"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Payment flow note -->
+        <mxCell id="payment_flow" value="&lt;div style='text-align:left;font-size:10px'&gt;&lt;b&gt;Payment Flow:&lt;/b&gt;&lt;br&gt;Order created → Payment recorded&lt;br&gt;→ Manager verifies → status_verify=true&lt;br&gt;→ Lead auto-converts to Customer&lt;br&gt;→ Activity logged&lt;/div&gt;" style="rounded=1;fillColor=#FEF3C7;strokeColor=#F59E0B;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1680" y="510" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Call flow -->
+        <mxCell id="call_flow" value="&lt;div style='text-align:left;font-size:10px'&gt;&lt;b&gt;Call Auto-Match:&lt;/b&gt;&lt;br&gt;3rd Party → API → Normalize phone&lt;br&gt;→ Match lead/customer by phone&lt;br&gt;→ Auto-determine assigned user&lt;br&gt;→ Unmatched → Manager review queue&lt;/div&gt;" style="rounded=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1680" y="620" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== BACKEND MODULES ==================== -->
+        <mxCell id="modules_bg" value="" style="rounded=1;fillColor=#FFFBEB;strokeColor=#D97706;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="760" width="900" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="modules_label" value="NestJS Backend Modules" style="text;html=1;fontSize=14;fontStyle=1;fillColor=none;strokeColor=none;fontColor=#92400E;" vertex="1" parent="1">
+          <mxGeometry x="40" y="765" width="250" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mod_auth" value="&lt;b&gt;auth&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;JWT + Refresh&lt;br&gt;RBAC Guards&lt;br&gt;Account Lock&lt;/span&gt;" style="rounded=1;fillColor=#FEE2E2;strokeColor=#EF4444;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="800" width="120" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_users" value="&lt;b&gt;users&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;CRUD + RBAC&lt;br&gt;Departments&lt;br&gt;Teams, Levels&lt;/span&gt;" style="rounded=1;fillColor=#DBEAFE;strokeColor=#3B82F6;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="190" y="800" width="120" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_leads" value="&lt;b&gt;leads&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;CRUD + Pool&lt;br&gt;Assignment&lt;br&gt;Conversion&lt;br&gt;State Machine&lt;/span&gt;" style="rounded=1;fillColor=#FEF3C7;strokeColor=#F59E0B;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="330" y="800" width="120" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_customers" value="&lt;b&gt;customers&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Phone Search&lt;br&gt;CRUD + Claim&lt;br&gt;No List View&lt;/span&gt;" style="rounded=1;fillColor=#D1FAE5;strokeColor=#10B981;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="470" y="800" width="120" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_orders" value="&lt;b&gt;orders&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;CRUD + Status&lt;br&gt;VAT calc&lt;/span&gt;" style="rounded=1;fillColor=#E0E7FF;strokeColor=#6366F1;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="610" y="800" width="100" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_payments" value="&lt;b&gt;payments&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Create + Verify&lt;br&gt;→ Conversion&lt;br&gt;Pessimistic Lock&lt;/span&gt;" style="rounded=1;fillColor=#FCE7F3;strokeColor=#EC4899;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="730" y="800" width="120" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Row 2 modules -->
+        <mxCell id="mod_activities" value="&lt;b&gt;activities&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Timeline&lt;br&gt;Notes + System logs&lt;br&gt;Polymorphic&lt;/span&gt;" style="rounded=1;fillColor=#F5F5F5;strokeColor=#666666;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="890" width="120" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_calllogs" value="&lt;b&gt;call-logs&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;3rd Party Ingest&lt;br&gt;Auto-Match&lt;br&gt;Unmatched Queue&lt;/span&gt;" style="rounded=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="190" y="890" width="120" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_import" value="&lt;b&gt;import&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;CSV Upload&lt;br&gt;BullMQ Processor&lt;br&gt;Dedup + Validate&lt;/span&gt;" style="rounded=1;fillColor=#ECFDF5;strokeColor=#059669;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="330" y="890" width="120" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_export" value="&lt;b&gt;export&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;CSV Export&lt;br&gt;Sanitized output&lt;/span&gt;" style="rounded=1;fillColor=#F5F5F5;strokeColor=#666666;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="470" y="890" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_analytics" value="&lt;b&gt;analytics&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;KPI, Funnel&lt;br&gt;Ranking, Revenue&lt;br&gt;Source Analysis&lt;/span&gt;" style="rounded=1;fillColor=#FFF7ED;strokeColor=#EA580C;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="610" y="890" width="120" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Row 3 -->
+        <mxCell id="mod_labels" value="&lt;b&gt;labels&lt;/b&gt;" style="rounded=1;fillColor=#F5F5F5;strokeColor=#94A3B8;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="975" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_sources" value="&lt;b&gt;lead-sources&lt;/b&gt;" style="rounded=1;fillColor=#F5F5F5;strokeColor=#94A3B8;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="140" y="975" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_ptypes" value="&lt;b&gt;payment-types&lt;/b&gt;" style="rounded=1;fillColor=#F5F5F5;strokeColor=#94A3B8;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="250" y="975" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_products" value="&lt;b&gt;products&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;+categories +VAT&lt;/span&gt;" style="rounded=1;fillColor=#F5F5F5;strokeColor=#94A3B8;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="370" y="970" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_transfers" value="&lt;b&gt;transfers&lt;/b&gt;" style="rounded=1;fillColor=#F5F5F5;strokeColor=#94A3B8;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="490" y="975" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_search" value="&lt;b&gt;search&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;FTS + RBAC&lt;/span&gt;" style="rounded=1;fillColor=#F5F5F5;strokeColor=#94A3B8;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="970" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_notif" value="&lt;b&gt;notifications&lt;/b&gt;" style="rounded=1;fillColor=#F5F5F5;strokeColor=#94A3B8;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="670" y="975" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_ai" value="&lt;b&gt;ai-distribution&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Phase 2&lt;/span&gt;" style="rounded=1;fillColor=#F5F5F5;strokeColor=#94A3B8;dashed=1;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="780" y="970" width="120" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== FRONTEND PAGES ==================== -->
+        <mxCell id="frontend_bg" value="" style="rounded=1;fillColor=#EFF6FF;strokeColor=#3B82F6;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="960" y="760" width="910" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="frontend_label" value="Next.js Frontend Pages" style="text;html=1;fontSize=14;fontStyle=1;fillColor=none;strokeColor=none;fontColor=#1E40AF;" vertex="1" parent="1">
+          <mxGeometry x="970" y="765" width="250" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pg_login" value="&lt;b&gt;Login&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Email/Password&lt;br&gt;JWT Cookie&lt;/span&gt;" style="rounded=1;fillColor=#FEE2E2;strokeColor=#EF4444;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="980" y="800" width="100" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="pg_dashboard" value="&lt;b&gt;Dashboard&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;KPI Cards&lt;br&gt;Funnel Chart&lt;br&gt;Ranking Table&lt;br&gt;Revenue Chart&lt;br&gt;(Recharts dynamic)&lt;/span&gt;" style="rounded=1;fillColor=#FEF3C7;strokeColor=#F59E0B;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="800" width="130" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="pg_leads" value="&lt;b&gt;Leads&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;List (TanStack Table)&lt;br&gt;Pool View&lt;br&gt;Kanban (@dnd-kit)&lt;br&gt;Detail + Timeline&lt;br&gt;Assign Dialog&lt;/span&gt;" style="rounded=1;fillColor=#DBEAFE;strokeColor=#3B82F6;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1250" y="800" width="130" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="pg_customers" value="&lt;b&gt;Customers&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;SEARCH by phone&lt;br&gt;(NO list view)&lt;br&gt;Detail: info, orders,&lt;br&gt;notes, calls, activity,&lt;br&gt;documents&lt;br&gt;Claim button&lt;/span&gt;" style="rounded=1;fillColor=#D1FAE5;strokeColor=#10B981;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="800" width="130" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pg_orders" value="&lt;b&gt;Orders&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;List + Detail&lt;br&gt;Payment Verify&lt;br&gt;VAT display&lt;/span&gt;" style="rounded=1;fillColor=#E0E7FF;strokeColor=#6366F1;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1550" y="800" width="110" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="pg_settings" value="&lt;b&gt;Settings&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Users, Depts, Teams&lt;br&gt;Levels, Sources&lt;br&gt;Labels, Products&lt;br&gt;Payment Types&lt;br&gt;API Keys&lt;/span&gt;" style="rounded=1;fillColor=#F5F5F5;strokeColor=#666666;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1680" y="800" width="120" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Row 2 frontend -->
+        <mxCell id="pg_calllogs" value="&lt;b&gt;Call Logs&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Unmatched Queue&lt;br&gt;Manual Match&lt;/span&gt;" style="rounded=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="980" y="920" width="110" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="pg_import" value="&lt;b&gt;Import&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;CSV Upload&lt;br&gt;Progress + Results&lt;/span&gt;" style="rounded=1;fillColor=#ECFDF5;strokeColor=#059669;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="920" width="110" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="pg_search" value="&lt;b&gt;Global Search&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Ctrl+K, RBAC-scoped&lt;br&gt;Leads + Customers + Orders&lt;/span&gt;" style="rounded=1;fillColor=#F0F9FF;strokeColor=#0EA5E9;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="920" width="160" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="pg_notif" value="&lt;b&gt;Notifications&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Bell + Dropdown&lt;br&gt;Polling 30s&lt;/span&gt;" style="rounded=1;fillColor=#FFF7ED;strokeColor=#EA580C;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1420" y="920" width="120" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Design note -->
+        <mxCell id="design_note" value="&lt;div style='text-align:left;font-size:10px'&gt;&lt;b&gt;Design System:&lt;/b&gt;&lt;br&gt;Inter font | Blue-500 primary&lt;br&gt;Slate-50 bg | White surface&lt;br&gt;shadcn/ui + Tailwind 4&lt;br&gt;Lucide icons (no emoji)&lt;br&gt;Desktop-first, responsive&lt;br&gt;WCAG 2.1 AA accessible&lt;/div&gt;" style="rounded=1;fillColor=#DBEAFE;strokeColor=#3B82F6;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1580" y="920" width="170" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== SECURITY LAYER ==================== -->
+        <mxCell id="security_bg" value="" style="rounded=1;fillColor=#FEF2F2;strokeColor=#DC2626;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="1150" width="1840" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="security_label" value="Security Measures (4 audit rounds, 60+ fixes)" style="text;html=1;fontSize=14;fontStyle=1;fillColor=none;strokeColor=none;fontColor=#991B1B;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1155" width="400" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sec1" value="&lt;b&gt;IDOR Prevention&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;buildAccessFilter()&lt;br&gt;on ALL queries&lt;/span&gt;" style="rounded=1;fillColor=#FEE2E2;strokeColor=#EF4444;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="50" y="1190" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sec2" value="&lt;b&gt;Mass Assignment&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Separate DTOs&lt;br&gt;user vs admin&lt;/span&gt;" style="rounded=1;fillColor=#FEE2E2;strokeColor=#EF4444;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="200" y="1190" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sec3" value="&lt;b&gt;CSV Injection&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Sanitize = + - @&lt;br&gt;import + export&lt;/span&gt;" style="rounded=1;fillColor=#FEE2E2;strokeColor=#EF4444;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="350" y="1190" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sec4" value="&lt;b&gt;JWT + Refresh&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Family rotation&lt;br&gt;httpOnly cookies&lt;/span&gt;" style="rounded=1;fillColor=#FEF3C7;strokeColor=#F59E0B;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1190" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sec5" value="&lt;b&gt;Account Lock&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;5 fails → 15min&lt;/span&gt;" style="rounded=1;fillColor=#FEF3C7;strokeColor=#F59E0B;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="640" y="1190" width="100" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sec6" value="&lt;b&gt;Rate Limiting&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Auth: 5/min&lt;br&gt;API: 100/min&lt;br&gt;3P: 100/min/key&lt;/span&gt;" style="rounded=1;fillColor=#FEF3C7;strokeColor=#F59E0B;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="760" y="1190" width="110" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sec7" value="&lt;b&gt;API Key Auth&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;SHA-256 hash in DB&lt;br&gt;Expiration check&lt;/span&gt;" style="rounded=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="890" y="1190" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sec8" value="&lt;b&gt;Phone Permission&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Edit: Manager+ only&lt;/span&gt;" style="rounded=1;fillColor=#DBEAFE;strokeColor=#3B82F6;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="1190" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sec9" value="&lt;b&gt;SQL Injection&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Tagged templates&lt;br&gt;only for raw SQL&lt;/span&gt;" style="rounded=1;fillColor=#FEE2E2;strokeColor=#EF4444;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1170" y="1190" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sec10" value="&lt;b&gt;Log Redaction&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Pino redact&lt;br&gt;passwords, tokens&lt;/span&gt;" style="rounded=1;fillColor=#D1FAE5;strokeColor=#10B981;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="1190" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sec11" value="&lt;b&gt;Soft Delete&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;Partial indexes&lt;br&gt;deleted_at IS NULL&lt;/span&gt;" style="rounded=1;fillColor=#D1FAE5;strokeColor=#10B981;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="1190" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sec12" value="&lt;b&gt;Pessimistic Lock&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;SELECT FOR UPDATE&lt;br&gt;Verify + Claim&lt;/span&gt;" style="rounded=1;fillColor=#FEE2E2;strokeColor=#EF4444;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1590" y="1190" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sec13" value="&lt;b&gt;CORS + Cookie&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:9px'&gt;SameSite + Secure&lt;br&gt;Explicit origin&lt;/span&gt;" style="rounded=1;fillColor=#FEF3C7;strokeColor=#F59E0B;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="1190" width="120" height="55" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="lead-lifecycle" name="Lead Lifecycle Detail">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t2" value="Lead Lifecycle — Detailed Flow" style="text;html=1;align=center;fontSize=20;fontStyle=1;fillColor=none;strokeColor=none;fontColor=#1E293B;" vertex="1" parent="1">
+          <mxGeometry x="450" y="10" width="400" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="note2" value="See System Architecture tab for full overview" style="text;html=1;fontSize=11;fontColor=#94A3B8;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="480" y="45" width="300" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="customer-detail" name="Customer Detail View">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="t3" value="Customer Detail View — After Phone Search" style="text;html=1;align=center;fontSize=18;fontStyle=1;fillColor=none;strokeColor=none;fontColor=#1E293B;" vertex="1" parent="1">
+          <mxGeometry x="400" y="10" width="450" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- Search bar -->
+        <mxCell id="searchbar" value="&lt;span style='font-size:14px'&gt;Search Customer: [0901234567] [Search]&lt;/span&gt;" style="rounded=1;fillColor=#F8FAFC;strokeColor=#3B82F6;strokeWidth=2;whiteSpace=wrap;html=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="350" y="60" width="500" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Customer header -->
+        <mxCell id="cust_header" value="&lt;b style='font-size:16px'&gt;Nguyen Van A&lt;/b&gt; | 0901234567 | nguyenvana@email.com&lt;br&gt;&lt;span style='font-size:11px;color:#475569'&gt;Assigned: Sale Nguyen (Support Dept) | Labels: VIP, Enterprise&lt;/span&gt;" style="rounded=1;fillColor=#FFFFFF;strokeColor=#E2E8F0;whiteSpace=wrap;html=1;fontSize=12;align=left;spacingLeft=15;" vertex="1" parent="1">
+          <mxGeometry x="100" y="120" width="600" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="claim_btn" value="&lt;b&gt;Claim&lt;/b&gt;" style="rounded=1;fillColor=#F97316;strokeColor=#EA580C;fontColor=#FFFFFF;whiteSpace=wrap;html=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="730" y="130" width="80" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="total_value" value="&lt;b style='font-size:20px;color:#10B981'&gt;150,000,000 VND&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:11px;color:#475569'&gt;Total Purchase Value (3 orders)&lt;/span&gt;" style="rounded=1;fillColor=#D1FAE5;strokeColor=#10B981;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="850" y="120" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Tabs -->
+        <mxCell id="tab_info" value="&lt;b&gt;Thong tin&lt;/b&gt;" style="rounded=0;fillColor=#3B82F6;strokeColor=#3B82F6;fontColor=#FFFFFF;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="200" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="tab_orders" value="Don hang" style="rounded=0;fillColor=#F8FAFC;strokeColor=#E2E8F0;fontColor=#475569;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="190" y="200" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="tab_notes" value="Ghi chu" style="rounded=0;fillColor=#F8FAFC;strokeColor=#E2E8F0;fontColor=#475569;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="280" y="200" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="tab_calls" value="Cuoc goi" style="rounded=0;fillColor=#F8FAFC;strokeColor=#E2E8F0;fontColor=#475569;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="370" y="200" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="tab_activity" value="Hoat dong" style="rounded=0;fillColor=#F8FAFC;strokeColor=#E2E8F0;fontColor=#475569;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="460" y="200" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="tab_docs" value="Tai lieu" style="rounded=0;fillColor=#F8FAFC;strokeColor=#E2E8F0;fontColor=#475569;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="550" y="200" width="90" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Tab content area -->
+        <mxCell id="tab_content" value="&lt;div style='text-align:left;font-size:11px;line-height:1.8'&gt;&lt;b&gt;Basic Information&lt;/b&gt;&lt;br&gt;Name: Nguyen Van A&lt;br&gt;Phone: 0901234567 &lt;span style='color:#94A3B8'&gt;(only manager can edit)&lt;/span&gt;&lt;br&gt;Email: nguyenvana@email.com&lt;br&gt;Department: Support&lt;br&gt;Assigned: Sale Nguyen&lt;br&gt;&lt;br&gt;&lt;b&gt;Labels:&lt;/b&gt; &lt;span style='background:#DBEAFE;color:#1E40AF;padding:2px 6px;border-radius:10px'&gt;VIP&lt;/span&gt; &lt;span style='background:#D1FAE5;color:#065F46;padding:2px 6px;border-radius:10px'&gt;Enterprise&lt;/span&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Custom Fields (JSONB):&lt;/b&gt;&lt;br&gt;company: ABC Corp&lt;br&gt;industry: Technology&lt;br&gt;employee_count: 150&lt;br&gt;&lt;br&gt;&lt;b&gt;Linked Leads:&lt;/b&gt;&lt;br&gt;Lead #1247 (Converted) — Product A&lt;br&gt;Lead #1389 (In Progress) — Product B&lt;/div&gt;" style="rounded=1;fillColor=#FFFFFF;strokeColor=#E2E8F0;whiteSpace=wrap;html=1;fontSize=12;align=left;spacingLeft=15;spacingTop=10;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="100" y="230" width="540" height="350" as="geometry" />
+        </mxCell>
+
+        <!-- Right sidebar - quick actions -->
+        <mxCell id="quick_actions" value="&lt;div style='text-align:left;font-size:11px;line-height:2.2'&gt;&lt;b&gt;Quick Actions&lt;/b&gt;&lt;br&gt;[+ Add Note]&lt;br&gt;[+ Upload Document]&lt;br&gt;[Transfer to Dept]&lt;br&gt;[Add Label]&lt;br&gt;[Edit Info]&lt;/div&gt;" style="rounded=1;fillColor=#F8FAFC;strokeColor=#E2E8F0;whiteSpace=wrap;html=1;fontSize=12;align=left;spacingLeft=10;spacingTop=5;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="660" y="230" width="160" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- Data sources legend -->
+        <mxCell id="data_legend" value="&lt;div style='text-align:left;font-size:10px;line-height:1.8'&gt;&lt;b&gt;Data Sources per Tab:&lt;/b&gt;&lt;br&gt;&lt;span style='color:#3B82F6'&gt;Thong tin&lt;/span&gt;: customers table + metadata&lt;br&gt;&lt;span style='color:#3B82F6'&gt;Don hang&lt;/span&gt;: orders WHERE customer_id + SUM(total_amount)&lt;br&gt;&lt;span style='color:#3B82F6'&gt;Ghi chu&lt;/span&gt;: activities WHERE type=NOTE, entity IN (customer + all leads)&lt;br&gt;&lt;span style='color:#3B82F6'&gt;Cuoc goi&lt;/span&gt;: call_logs WHERE phone = customer.phone&lt;br&gt;&lt;span style='color:#3B82F6'&gt;Hoat dong&lt;/span&gt;: activities WHERE entity IN (customer + all leads)&lt;br&gt;&lt;span style='color:#3B82F6'&gt;Tai lieu&lt;/span&gt;: documents WHERE entity IN (customer + all leads)&lt;/div&gt;" style="rounded=1;fillColor=#EFF6FF;strokeColor=#93C5FD;whiteSpace=wrap;html=1;fontSize=11;align=left;spacingLeft=10;spacingTop=5;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="850" y="230" width="350" height="180" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

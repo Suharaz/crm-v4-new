@@ -1,0 +1,55 @@
+# Project Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+### Phase 01: Monorepo Setup & Dev Environment (2026-03-27)
+
+#### Added
+- Turborepo monorepo with pnpm workspaces
+- NestJS 11 API app (port 3001, `/api/v1` prefix, Pino logger, CORS, health endpoint)
+- Next.js 15 web app (port 3000, Tailwind CSS 4, Turbopack dev)
+- `@crm/database` package: Prisma 6 scaffold, PrismaClient singleton
+- `@crm/types` package: BigIntString, ApiResponse, ApiErrorResponse
+- `@crm/utils` package: phone normalization (VN format), CSV sanitizer
+- Docker Compose: PostgreSQL 16 + Redis 7
+- ESLint 9 flat config + Prettier
+- API client skeleton (`api-client.ts`) for frontend
+- `uploads/` directory for file storage
+
+#### Infrastructure
+- TypeScript strict mode, ES2022 target
+- `pnpm build` compiles all 5 packages
+- `pnpm lint` passes across workspace
+- `pnpm dev` starts API + Web concurrently
+
+### Planning Phase (2026-03-27)
+
+#### Added
+- Project planning: 14 phases, 172h total effort
+- Implementation plan with detailed phase files
+- Design guidelines: sky blue + white, glassmorphism, responsive
+- Documentation suite: PDR, code standards, architecture, roadmap, deployment guide
+- CLAUDE.md project instructions
+
+#### Decisions Made
+- 3 Kho lead system: Kho Mới, Kho Phòng Ban, Kho Thả Nổi
+- Lead status: POOL, ASSIGNED, IN_PROGRESS, CONVERTED, LOST, FLOATING
+- Customer status: ACTIVE, INACTIVE, FLOATING
+- Payment: hybrid verification (auto-match webhook + batch cron 2h + manual)
+- Partial payments support (CK lần 1/2/3/4/full)
+- Assignment templates: round-robin vòng lặp, chọn người cụ thể
+- Auto-recall: dept pool quá X ngày → FLOATING + auto labels
+- Tasks/todo: quick add bar, smart time parsing, reminder escalation
+- IN_PROGRESS: auto-trigger on first activity
+- LOST → FLOATING (not reopen to POOL)
+- Dedup: chỉ CSV import (SĐT+nguồn+sản phẩm)
+- Order cancel/refund: không revert CONVERTED
+- Transfer permission: user đang giữ + manager + super_admin
+- File storage: local filesystem, no MinIO/S3
+- Timezone: UTC storage, Asia/Ho_Chi_Minh display
+
+---
+
+*Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)*

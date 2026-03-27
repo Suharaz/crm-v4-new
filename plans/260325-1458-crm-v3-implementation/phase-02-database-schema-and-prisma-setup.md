@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Database Schema & Prisma Setup"
-status: pending
+status: completed
 priority: P0
 effort: 12h
 depends_on: [1]

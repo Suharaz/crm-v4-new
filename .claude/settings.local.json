@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(where claude:*)",
+      "Read(//f/taki-crm-main/taki-crm-main/$APPDATA/npm/**)",
+      "Read(//f/taki-crm-main/taki-crm-main/$LOCALAPPDATA/Programs/claude-code/**)",
+      "Read(//c/Users/$USERNAME/.npm-global/bin/**)",
+      "Bash(npm list:*)",
+      "Bash(npm bin:*)",
+      "Bash(npm prefix:*)",
+      "Bash(npm install:*)",
+      "Bash(mkdir -p uploads)",
+      "Bash(cp .env.example .env)",
+      "Bash(mkdir -p apps/api apps/web packages/database/prisma packages/database/src packages/types/src packages/utils/src)",
+      "Bash(cd:*)"
+    ],
+    "defaultMode": "bypassPermissions"
+  }
+}

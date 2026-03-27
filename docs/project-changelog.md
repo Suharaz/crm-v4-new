@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 02: Database Schema & Prisma Setup (2026-03-28)
+
+#### Added
+- Full Prisma 6 schema: 30 tables, 10 enums, 90 indexes
+- Models: User, Department, Team, EmployeeLevel, ManagerDepartment
+- Models: Customer, Lead, LeadSource, Product, ProductCategory, Order, Payment, PaymentType
+- Models: BankTransaction, Label, LeadLabel, CustomerLabel
+- Models: Activity, ActivityAttachment, Document, CallLog
+- Models: AssignmentHistory, AssignmentTemplate, AiDistributionConfig, RecallConfig
+- Models: Task, RefreshToken, ApiKey, Notification
+- BIGINT IDENTITY PKs, soft delete (deletedAt), snake_case mappings
+- 20 raw SQL indexes: partial (WHERE deleted_at IS NULL), GIN (JSONB, FTS)
+- Soft-delete Prisma extension (auto-filter on findMany/findFirst/count)
+- Seed script: 6 users, 3 depts, 2 teams, 20 leads, 5 customers, 3 orders
+- Docker ports: PG 5433, Redis 6380 (avoid conflicts)
+
 ### Phase 01: Monorepo Setup & Dev Environment (2026-03-27)
 
 #### Added

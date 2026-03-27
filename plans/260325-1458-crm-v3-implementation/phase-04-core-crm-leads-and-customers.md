@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Core CRM: Leads & Customers"
-status: pending
+status: completed
 priority: P0
 effort: 16h
 depends_on: [3]

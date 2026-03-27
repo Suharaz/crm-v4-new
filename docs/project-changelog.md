@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 04: Core CRM — Leads & Customers (2026-03-28)
+
+#### Added
+- Leads CRUD: create (auto-link customer), list, detail, update, soft delete
+- 3 Kho system: Kho Mới (POOL+dept=null), Kho Phòng Ban (POOL+dept=X), Kho Thả Nổi (FLOATING)
+- Lead status machine: POOL→ASSIGNED→IN_PROGRESS→CONVERTED|LOST→FLOATING
+- Lead assign (manager+), claim (atomic), transfer (DEPARTMENT/FLOATING/UNASSIGN)
+- Lead convert to customer (IN_PROGRESS→CONVERTED, auto-create/update customer)
+- Auto IN_PROGRESS trigger on first activity
+- Customers CRUD: create (phone dedup), list, search by phone, detail, update
+- Customer claim, transfer (DEPARTMENT/FLOATING/INACTIVE), reactivate
+- Lead Sources CRUD (lookup table, super_admin)
+- Labels CRUD + attach/detach on leads and customers
+- Phone normalization + validation on all inputs
+- Phone field-level permission (manager+ only)
+- Assignment history logging on all assignment/transfer operations
+- Activity logging on status changes
+
+#### Business Logic
+- Lead creation: normalize phone → find/create customer → POOL (Kho Mới)
+- LOST→FLOATING (not reopen to POOL)
+- Workspace packages now build to dist/ for CJS runtime compatibility
+
 ### Phase 03: Authentication & User Management (2026-03-28)
 
 #### Added

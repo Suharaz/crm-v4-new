@@ -1,0 +1,410 @@
+import { Injectable, NotFoundException, ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { PrismaClient, Prisma, LeadStatus, UserRole } from '@prisma/client';
+import { normalizePhone, isValidVNPhone } from '@crm/utils';
+import { CreateLeadDto } from './dto/create-lead.dto';
+import { LeadListQueryDto } from './dto/lead-list-query.dto';
+
+// Valid status transitions
+const ALLOWED_TRANSITIONS: Record<LeadStatus, LeadStatus[]> = {
+  POOL: ['ASSIGNED', 'FLOATING'],
+  ASSIGNED: ['IN_PROGRESS', 'POOL', 'FLOATING'],
+  IN_PROGRESS: ['CONVERTED', 'LOST', 'POOL', 'FLOATING'],
+  CONVERTED: [], // terminal
+  LOST: ['FLOATING'], // LOST → FLOATING (kho thả nổi)
+  FLOATING: ['ASSIGNED'], // claim
+};
+
+const LEAD_SELECT = {
+  id: true, phone: true, name: true, email: true, status: true,
+  customerId: true, productId: true, sourceId: true,
+  assignedUserId: true, departmentId: true,
+  metadata: true, createdAt: true, updatedAt: true,
+  customer: { select: { id: true, name: true, phone: true } },
+  product: { select: { id: true, name: true, price: true } },
+  source: { select: { id: true, name: true } },
+  assignedUser: { select: { id: true, name: true } },
+  department: { select: { id: true, name: true } },
+  labels: { include: { label: true } },
+} satisfies Prisma.LeadSelect;
+
+interface CurrentUser {
+  id: bigint;
+  role: UserRole;
+  departmentId: bigint | null;
+}
+
+@Injectable()
+export class LeadsService {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  // ── List with filters ───────────────────────────────────────────────────
+  async list(query: LeadListQueryDto) {
+    const limit = query.limit ?? 20;
+    const where: Prisma.LeadWhereInput = { deletedAt: null };
+
+    if (query.status) where.status = query.status;
+    if (query.sourceId) where.sourceId = BigInt(query.sourceId);
+    if (query.assignedUserId) where.assignedUserId = BigInt(query.assignedUserId);
+    if (query.departmentId) where.departmentId = BigInt(query.departmentId);
+    if (query.search) {
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { phone: { contains: query.search } },
+      ];
+    }
+
+    const leads = await this.prisma.lead.findMany({
+      where, select: LEAD_SELECT,
+      orderBy: { id: 'desc' },
+      take: limit + 1,
+      ...(query.cursor ? { skip: 1, cursor: { id: BigInt(query.cursor) } } : {}),
+    });
+
+    const hasMore = leads.length > limit;
+    const data = hasMore ? leads.slice(0, limit) : leads;
+    return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
+  }
+
+  // ── 3 Kho Pool Endpoints ────────────────────────────────────────────────
+  async poolNew(query: LeadListQueryDto) {
+    return this.list({ ...query, status: LeadStatus.POOL, departmentId: undefined, assignedUserId: undefined });
+  }
+
+  async poolNewFiltered(limit: number, cursor?: string) {
+    // Kho Mới: POOL + dept=null
+    const take = (limit ?? 20) + 1;
+    const leads = await this.prisma.lead.findMany({
+      where: { status: 'POOL', departmentId: null, deletedAt: null },
+      select: LEAD_SELECT, orderBy: { id: 'desc' }, take,
+      ...(cursor ? { skip: 1, cursor: { id: BigInt(cursor) } } : {}),
+    });
+    const hasMore = leads.length > (limit ?? 20);
+    const data = hasMore ? leads.slice(0, limit ?? 20) : leads;
+    return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
+  }
+
+  async poolDepartment(deptId: bigint, limit: number, cursor?: string) {
+    const take = (limit ?? 20) + 1;
+    const leads = await this.prisma.lead.findMany({
+      where: { status: 'POOL', departmentId: deptId, assignedUserId: null, deletedAt: null },
+      select: LEAD_SELECT, orderBy: { id: 'desc' }, take,
+      ...(cursor ? { skip: 1, cursor: { id: BigInt(cursor) } } : {}),
+    });
+    const hasMore = leads.length > (limit ?? 20);
+    const data = hasMore ? leads.slice(0, limit ?? 20) : leads;
+    return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
+  }
+
+  async poolFloating(limit: number, cursor?: string) {
+    const take = (limit ?? 20) + 1;
+    const leads = await this.prisma.lead.findMany({
+      where: { status: 'FLOATING', deletedAt: null },
+      select: LEAD_SELECT, orderBy: { id: 'desc' }, take,
+      ...(cursor ? { skip: 1, cursor: { id: BigInt(cursor) } } : {}),
+    });
+    const hasMore = leads.length > (limit ?? 20);
+    const data = hasMore ? leads.slice(0, limit ?? 20) : leads;
+    return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
+  }
+
+  // ── Find by ID ──────────────────────────────────────────────────────────
+  async findById(id: bigint) {
+    const lead = await this.prisma.lead.findFirst({
+      where: { id, deletedAt: null },
+      select: LEAD_SELECT,
+    });
+    if (!lead) throw new NotFoundException('Không tìm thấy lead');
+    return lead;
+  }
+
+  // ── Create ──────────────────────────────────────────────────────────────
+  async create(dto: CreateLeadDto, user: CurrentUser) {
+    const phone = normalizePhone(dto.phone);
+    if (!isValidVNPhone(phone)) throw new BadRequestException('Số điện thoại không hợp lệ');
+
+    // Find or create customer by phone
+    let customer = await this.prisma.customer.findFirst({
+      where: { phone, deletedAt: null },
+    });
+    if (!customer) {
+      customer = await this.prisma.customer.create({
+        data: { phone, name: dto.name, email: dto.email },
+      });
+    }
+
+    // Create lead: status=POOL, dept=null (Kho Mới)
+    return this.prisma.lead.create({
+      data: {
+        phone, name: dto.name, email: dto.email,
+        status: 'POOL',
+        customer: { connect: { id: customer.id } },
+        ...(dto.sourceId ? { source: { connect: { id: BigInt(dto.sourceId) } } } : {}),
+        ...(dto.productId ? { product: { connect: { id: BigInt(dto.productId) } } } : {}),
+      },
+      select: LEAD_SELECT,
+    });
+  }
+
+  // ── Update ──────────────────────────────────────────────────────────────
+  async update(id: bigint, data: Record<string, unknown>, user: CurrentUser) {
+    await this.findById(id);
+
+    // Phone field-level permission
+    if (data.phone && !([UserRole.SUPER_ADMIN, UserRole.MANAGER] as UserRole[]).includes(user.role)) {
+      throw new ForbiddenException('Chỉ quản lý mới được sửa số điện thoại');
+    }
+
+    const updateData: Prisma.LeadUpdateInput = {};
+    if (data.name) updateData.name = data.name as string;
+    if (data.email !== undefined) updateData.email = data.email as string | null;
+    if (data.phone) {
+      const phone = normalizePhone(data.phone as string);
+      if (!isValidVNPhone(phone)) throw new BadRequestException('Số điện thoại không hợp lệ');
+      updateData.phone = phone;
+    }
+
+    return this.prisma.lead.update({ where: { id }, data: updateData, select: LEAD_SELECT });
+  }
+
+  // ── Assign ──────────────────────────────────────────────────────────────
+  async assign(id: bigint, targetUserId: bigint, user: CurrentUser) {
+    const lead = await this.findById(id);
+
+    if (lead.status !== 'POOL' && lead.status !== 'FLOATING') {
+      throw new ConflictException('Chỉ gán lead ở trạng thái POOL hoặc FLOATING');
+    }
+
+    // Get target user's department
+    const targetUser = await this.prisma.user.findFirst({
+      where: { id: targetUserId, deletedAt: null, status: 'ACTIVE' },
+      select: { id: true, departmentId: true },
+    });
+    if (!targetUser) throw new NotFoundException('Không tìm thấy nhân viên');
+
+    await this.prisma.lead.update({
+      where: { id },
+      data: {
+        assignedUserId: targetUserId,
+        departmentId: targetUser.departmentId,
+        status: 'ASSIGNED',
+      },
+    });
+
+    // Log assignment history
+    await this.prisma.assignmentHistory.create({
+      data: {
+        entityType: 'LEAD', entityId: id,
+        fromUserId: lead.assignedUserId,
+        toUserId: targetUserId,
+        fromDepartmentId: lead.departmentId,
+        toDepartmentId: targetUser.departmentId,
+        assignedBy: user.id,
+      },
+    });
+
+    // Log activity
+    await this.prisma.activity.create({
+      data: {
+        entityType: 'LEAD', entityId: id, userId: user.id,
+        type: 'ASSIGNMENT',
+        content: `Gán cho nhân viên`,
+        metadata: { toUserId: targetUserId.toString() },
+      },
+    });
+
+    return this.findById(id);
+  }
+
+  // ── Claim ───────────────────────────────────────────────────────────────
+  async claim(id: bigint, user: CurrentUser) {
+    const lead = await this.findById(id);
+
+    // Dept pool: only same dept users can claim
+    if (lead.status === 'POOL' && lead.departmentId) {
+      if (user.departmentId !== lead.departmentId) {
+        throw new ForbiddenException('Chỉ nhân viên cùng phòng ban mới claim được');
+      }
+    }
+
+    // Floating: any user can claim
+    if (lead.status !== 'POOL' && lead.status !== 'FLOATING') {
+      throw new ConflictException('Chỉ claim lead ở trạng thái POOL hoặc FLOATING');
+    }
+
+    // Atomic claim
+    const result = await this.prisma.lead.updateMany({
+      where: { id, assignedUserId: null, deletedAt: null, status: { in: ['POOL', 'FLOATING'] } },
+      data: {
+        assignedUserId: user.id,
+        departmentId: user.departmentId,
+        status: 'ASSIGNED',
+      },
+    });
+    if (result.count === 0) throw new ConflictException('Lead đã được claim bởi người khác');
+
+    await this.prisma.assignmentHistory.create({
+      data: {
+        entityType: 'LEAD', entityId: id,
+        toUserId: user.id, toDepartmentId: user.departmentId,
+        assignedBy: user.id, reason: 'Tự claim',
+      },
+    });
+
+    return this.findById(id);
+  }
+
+  // ── Transfer ────────────────────────────────────────────────────────────
+  async transfer(id: bigint, targetType: string, targetDeptId: string | null, user: CurrentUser) {
+    const lead = await this.findById(id);
+    this.checkTransferPermission(lead, user);
+
+    let status: LeadStatus;
+    let deptId: bigint | null = null;
+
+    switch (targetType) {
+      case 'DEPARTMENT':
+        if (!targetDeptId) throw new BadRequestException('targetDeptId bắt buộc');
+        status = 'POOL';
+        deptId = BigInt(targetDeptId);
+        break;
+      case 'FLOATING':
+        status = 'FLOATING';
+        break;
+      case 'UNASSIGN':
+        status = 'POOL';
+        deptId = lead.departmentId; // giữ dept cũ
+        break;
+      default:
+        throw new BadRequestException('targetType không hợp lệ');
+    }
+
+    await this.prisma.lead.update({
+      where: { id },
+      data: { assignedUserId: null, departmentId: deptId, status },
+    });
+
+    await this.prisma.assignmentHistory.create({
+      data: {
+        entityType: 'LEAD', entityId: id,
+        fromUserId: lead.assignedUserId, fromDepartmentId: lead.departmentId,
+        toDepartmentId: deptId, assignedBy: user.id,
+        reason: `Chuyển: ${targetType}`,
+      },
+    });
+
+    return this.findById(id);
+  }
+
+  // ── Status Change ───────────────────────────────────────────────────────
+  async changeStatus(id: bigint, newStatus: LeadStatus, user: CurrentUser) {
+    const lead = await this.findById(id);
+    const currentStatus = lead.status as LeadStatus;
+
+    if (!ALLOWED_TRANSITIONS[currentStatus]?.includes(newStatus)) {
+      throw new ConflictException(`Không thể chuyển từ ${currentStatus} sang ${newStatus}`);
+    }
+
+    const updateData: Prisma.LeadUpdateInput = { status: newStatus };
+
+    // LOST → FLOATING: clear user + dept
+    if (newStatus === 'FLOATING') {
+      updateData.assignedUser = { disconnect: true };
+      updateData.department = { disconnect: true };
+    }
+
+    await this.prisma.lead.update({ where: { id }, data: updateData });
+
+    await this.prisma.activity.create({
+      data: {
+        entityType: 'LEAD', entityId: id, userId: user.id,
+        type: 'STATUS_CHANGE',
+        content: `${currentStatus} → ${newStatus}`,
+        metadata: { fromStatus: currentStatus, toStatus: newStatus },
+      },
+    });
+
+    return this.findById(id);
+  }
+
+  // ── Convert to Customer ─────────────────────────────────────────────────
+  async convert(id: bigint, user: CurrentUser) {
+    const lead = await this.findById(id);
+
+    if (lead.status !== 'IN_PROGRESS') {
+      throw new ConflictException('Chỉ convert lead ở trạng thái IN_PROGRESS');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      // Update or create customer
+      if (lead.customerId) {
+        await tx.customer.update({
+          where: { id: lead.customerId },
+          data: {
+            assignedUserId: lead.assignedUserId,
+            assignedDepartmentId: lead.departmentId,
+            status: 'ACTIVE',
+          },
+        });
+      } else {
+        const customer = await tx.customer.create({
+          data: {
+            phone: lead.phone, name: lead.name, email: lead.email,
+            assignedUserId: lead.assignedUserId,
+            assignedDepartmentId: lead.departmentId,
+          },
+        });
+        await tx.lead.update({ where: { id }, data: { customerId: customer.id } });
+      }
+
+      // Set lead to CONVERTED
+      await tx.lead.update({ where: { id }, data: { status: 'CONVERTED' } });
+
+      // Log activity
+      await tx.activity.create({
+        data: {
+          entityType: 'LEAD', entityId: id, userId: user.id,
+          type: 'STATUS_CHANGE',
+          content: 'Chuyển đổi thành khách hàng',
+          metadata: { fromStatus: 'IN_PROGRESS', toStatus: 'CONVERTED' },
+        },
+      });
+    });
+
+    return this.findById(id);
+  }
+
+  // ── Auto IN_PROGRESS trigger ────────────────────────────────────────────
+  async triggerInProgress(leadId: bigint, userId: bigint) {
+    const lead = await this.prisma.lead.findFirst({
+      where: { id: leadId, status: 'ASSIGNED', deletedAt: null },
+    });
+    if (!lead) return; // not ASSIGNED, skip
+
+    await this.prisma.lead.update({
+      where: { id: leadId },
+      data: { status: 'IN_PROGRESS' },
+    });
+
+    await this.prisma.activity.create({
+      data: {
+        entityType: 'LEAD', entityId: leadId, userId,
+        type: 'STATUS_CHANGE',
+        content: 'ASSIGNED → IN_PROGRESS (tự động)',
+        metadata: { fromStatus: 'ASSIGNED', toStatus: 'IN_PROGRESS', auto: true },
+      },
+    });
+  }
+
+  // ── Soft Delete ─────────────────────────────────────────────────────────
+  async softDelete(id: bigint) {
+    await this.findById(id);
+    return this.prisma.lead.update({ where: { id }, data: { deletedAt: new Date() } });
+  }
+
+  private checkTransferPermission(lead: Record<string, unknown>, user: CurrentUser) {
+    if (user.role === UserRole.SUPER_ADMIN) return;
+    if (lead.assignedUserId === user.id) return;
+    if (user.role === UserRole.MANAGER) return;
+    throw new ForbiddenException('Không có quyền chuyển lead này');
+  }
+}

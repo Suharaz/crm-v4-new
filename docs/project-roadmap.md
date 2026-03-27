@@ -41,7 +41,7 @@ Phase 14 (Testing/Deploy) ← runs LAST ─────────┘
 | 01 | Monorepo Setup & Dev Environment | 8h | Complete | 100% |
 | 02 | Database Schema & Prisma Setup | 12h | Complete | 100% |
 | 03 | Authentication & User Management | 14h | Complete | 100% |
-| 04 | Core CRM: Leads & Customers | 16h | Pending | 0% |
+| 04 | Core CRM: Leads & Customers | 16h | Complete | 100% |
 | 05 | Products, Orders & Payments + Bank Webhook | 16h | Pending | 0% |
 | 06 | Activity Timeline & Call Integration | 12h | Pending | 0% |
 | 07 | Data Import & Third-Party API | 10h | Pending | 0% |

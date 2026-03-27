@@ -11,6 +11,10 @@ import { UsersModule } from './modules/users/users.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { EmployeeLevelsModule } from './modules/employee-levels/employee-levels.module';
 import { TeamsModule } from './modules/teams/teams.module';
+import { LeadSourcesModule } from './modules/lead-sources/lead-sources.module';
+import { LabelsModule } from './modules/labels/labels.module';
+import { CustomersModule } from './modules/customers/customers.module';
+import { LeadsModule } from './modules/leads/leads.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles-authorization.guard';
 import { BigIntTransformInterceptor } from './common/interceptors/bigint-transform.interceptor';
@@ -38,6 +42,10 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     DepartmentsModule,
     EmployeeLevelsModule,
     TeamsModule,
+    LeadSourcesModule,
+    LabelsModule,
+    CustomersModule,
+    LeadsModule,
   ],
   controllers: [AppController],
   providers: [

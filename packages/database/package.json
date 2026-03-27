@@ -13,9 +13,11 @@
     "db:studio": "dotenv -e ../../.env -- prisma studio"
   },
   "dependencies": {
-    "@prisma/client": "^6.0.0"
+    "@prisma/client": "^6.0.0",
+    "bcrypt": "^6.0.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^22.0.0",
     "dotenv-cli": "^11.0.0",
     "prisma": "^6.0.0",

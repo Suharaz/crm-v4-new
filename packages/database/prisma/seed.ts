@@ -1,11 +1,10 @@
 import { PrismaClient, UserRole, LeadStatus, CustomerStatus, OrderStatus, PaymentStatus } from '@prisma/client';
-import { createHash } from 'crypto';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-// Simple password hash for seed data (bcrypt will be used in auth module)
-function hashPassword(password: string): string {
-  return createHash('sha256').update(password).digest('hex');
+async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 12);
 }
 
 async function main() {
@@ -31,7 +30,7 @@ async function main() {
   const admin = await prisma.user.create({
     data: {
       email: 'admin@crm.local',
-      passwordHash: hashPassword('changeme'),
+      passwordHash: await hashPassword('changeme'),
       name: 'Super Admin',
       phone: '0901234567',
       role: UserRole.SUPER_ADMIN,
@@ -43,7 +42,7 @@ async function main() {
   const managerSales = await prisma.user.create({
     data: {
       email: 'manager.sales@crm.local',
-      passwordHash: hashPassword('changeme'),
+      passwordHash: await hashPassword('changeme'),
       name: 'Nguyễn Văn Quản Lý',
       phone: '0901234568',
       role: UserRole.MANAGER,
@@ -55,7 +54,7 @@ async function main() {
   const managerSupport = await prisma.user.create({
     data: {
       email: 'manager.support@crm.local',
-      passwordHash: hashPassword('changeme'),
+      passwordHash: await hashPassword('changeme'),
       name: 'Trần Thị Quản Lý',
       phone: '0901234569',
       role: UserRole.MANAGER,
@@ -67,7 +66,7 @@ async function main() {
   const user1 = await prisma.user.create({
     data: {
       email: 'sale1@crm.local',
-      passwordHash: hashPassword('changeme'),
+      passwordHash: await hashPassword('changeme'),
       name: 'Lê Văn Sale',
       phone: '0911111111',
       role: UserRole.USER,
@@ -79,7 +78,7 @@ async function main() {
   const user2 = await prisma.user.create({
     data: {
       email: 'sale2@crm.local',
-      passwordHash: hashPassword('changeme'),
+      passwordHash: await hashPassword('changeme'),
       name: 'Phạm Thị Sale',
       phone: '0922222222',
       role: UserRole.USER,
@@ -91,7 +90,7 @@ async function main() {
   const user3 = await prisma.user.create({
     data: {
       email: 'support1@crm.local',
-      passwordHash: hashPassword('changeme'),
+      passwordHash: await hashPassword('changeme'),
       name: 'Hoàng Văn Support',
       phone: '0933333333',
       role: UserRole.USER,

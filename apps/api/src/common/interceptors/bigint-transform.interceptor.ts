@@ -1,0 +1,29 @@
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+/**
+ * Serializes BigInt values to strings in all API responses.
+ * Required because JSON.stringify cannot handle BigInt natively.
+ */
+@Injectable()
+export class BigIntTransformInterceptor implements NestInterceptor {
+  intercept(_context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    return next.handle().pipe(map((data) => this.transformBigInts(data)));
+  }
+
+  private transformBigInts(data: unknown): unknown {
+    if (data === null || data === undefined) return data;
+    if (typeof data === 'bigint') return data.toString();
+    if (data instanceof Date) return data;
+    if (Array.isArray(data)) return data.map((item) => this.transformBigInts(item));
+    if (typeof data === 'object') {
+      const result: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+        result[key] = this.transformBigInts(value);
+      }
+      return result;
+    }
+    return data;
+  }
+}

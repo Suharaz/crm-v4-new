@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 03: Authentication & User Management (2026-03-28)
+
+#### Added
+- JWT auth: login, refresh token rotation, logout
+- Account lockout: 5 failed attempts → 15min lock
+- RBAC: @Roles decorator + global guard (SUPER_ADMIN, MANAGER, USER)
+- Global JWT guard with @Public() bypass
+- Users CRUD: list (cursor pagination), create, update profile, admin update, deactivate
+- User deactivation cascade: unassign leads/customers to dept pool + log history
+- Departments CRUD: list with user count, create, update, soft delete
+- Employee Levels CRUD: list ordered by rank, full CRUD
+- Teams CRUD: create with leader validation, update, soft delete
+- Common infrastructure: BigInt transform interceptor, HTTP exception filter, ParseBigInt pipe
+- Validation: class-validator DTOs with whitelist, separate profile vs admin update DTOs
+- Rate limiting: @nestjs/throttler (100 req/min general, 5 req/min auth)
+- Token revocation on: password change, deactivation, role change
+
+#### Security
+- bcrypt cost 12 for passwords
+- SHA-256 hashed refresh tokens in DB
+- No user enumeration (generic auth errors)
+- Mass assignment prevention (separate DTOs)
+- Pino log redaction for auth headers, passwords, tokens
+
 ### Phase 02: Database Schema & Prisma Setup (2026-03-28)
 
 #### Added

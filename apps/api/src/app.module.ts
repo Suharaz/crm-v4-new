@@ -1,11 +1,29 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
+import { ValidationPipe } from '@nestjs/common';
 import { AppController } from './app.controller';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { DepartmentsModule } from './modules/departments/departments.module';
+import { EmployeeLevelsModule } from './modules/employee-levels/employee-levels.module';
+import { TeamsModule } from './modules/teams/teams.module';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { RolesGuard } from './modules/auth/guards/roles-authorization.guard';
+import { BigIntTransformInterceptor } from './common/interceptors/bigint-transform.interceptor';
+import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filter';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([
+      { name: 'short', ttl: 60000, limit: 100 },   // 100 req/min general
+      { name: 'auth', ttl: 60000, limit: 5 },        // 5 req/min for auth
+    ]),
+    ScheduleModule.forRoot(),
     LoggerModule.forRoot({
       pinoHttp: {
         transport:
@@ -15,7 +33,34 @@ import { AppController } from './app.controller';
         redact: ['req.headers.authorization', 'req.body.password', 'req.body.refreshToken'],
       },
     }),
+    AuthModule,
+    UsersModule,
+    DepartmentsModule,
+    EmployeeLevelsModule,
+    TeamsModule,
   ],
   controllers: [AppController],
+  providers: [
+    // Global JWT auth guard (skip @Public() routes)
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    // Global roles guard
+    { provide: APP_GUARD, useClass: RolesGuard },
+    // Global rate limiting
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // BigInt → string serialization
+    { provide: APP_INTERCEPTOR, useClass: BigIntTransformInterceptor },
+    // Standard error responses
+    { provide: APP_FILTER, useClass: GlobalHttpExceptionFilter },
+    // DTO validation
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    },
+  ],
 })
 export class AppModule {}

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, UserCheck, ShoppingCart, Package,
-  Phone, Settings, Upload, Waves, ChevronLeft, ChevronRight,
+  Phone, Settings, Upload, Waves, ChevronLeft, ChevronRight, UserCog,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
@@ -26,6 +26,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Sản phẩm', href: '/products', icon: Package },
   { label: 'Cuộc gọi', href: '/call-logs', icon: Phone },
   { label: 'Nhập dữ liệu', href: '/import', icon: Upload, roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { label: 'Quản lý NV', href: '/users', icon: UserCog, roles: ['SUPER_ADMIN'] },
   { label: 'Cài đặt', href: '/settings', icon: Settings, roles: ['SUPER_ADMIN', 'MANAGER'] },
 ];
 

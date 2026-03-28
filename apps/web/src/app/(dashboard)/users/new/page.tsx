@@ -1,0 +1,22 @@
+import { serverFetch } from '@/lib/auth';
+import { UserForm } from '@/components/users/user-form';
+
+/** Create new user page. */
+export default async function CreateUserPage() {
+  let departments: any[] = [];
+  let levels: any[] = [];
+
+  try {
+    [departments, levels] = await Promise.all([
+      serverFetch<{ data: any[] }>('/departments').then(r => r.data),
+      serverFetch<{ data: any[] }>('/employee-levels').then(r => r.data),
+    ]);
+  } catch { /* empty */ }
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Tạo nhân viên mới</h1>
+      <UserForm departments={departments} levels={levels} />
+    </div>
+  );
+}

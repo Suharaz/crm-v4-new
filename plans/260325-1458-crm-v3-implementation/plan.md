@@ -26,7 +26,7 @@ created: 2026-03-25
 | 02 | Database Schema & Prisma Setup | 12h | completed | [phase-02](phase-02-database-schema-and-prisma-setup.md) |
 | 03 | Authentication & User Management | 14h | completed | [phase-03](phase-03-authentication-and-user-management.md) |
 | 04 | Core CRM: Leads & Customers | 16h | completed | [phase-04](phase-04-core-crm-leads-and-customers.md) |
-| 05 | Products, Orders & Payments + Bank Webhook | 16h | pending | [phase-05](phase-05-products-orders-and-payments.md) |
+| 05 | Products, Orders & Payments + Bank Webhook | 16h | completed | [phase-05](phase-05-products-orders-and-payments.md) |
 | 06 | Activity Timeline & Call Integration | 12h | pending | [phase-06](phase-06-activity-timeline-and-call-integration.md) |
 | 07 | Data Import & Third-Party API | 10h | pending | [phase-07](phase-07-data-import-and-third-party-api.md) |
 | 08 | Frontend Layout & Auth UI | 10h | pending | [phase-08](phase-08-frontend-layout-and-auth-ui.md) |

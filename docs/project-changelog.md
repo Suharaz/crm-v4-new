@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 05: Products, Orders & Payments (2026-03-28)
+
+#### Added
+- ProductCategories CRUD (manager+)
+- Products CRUD with Decimal prices, VAT rate, category FK
+- PaymentTypes CRUD (lookup: CK lần 1-4, CK full, COD, Tiền mặt)
+- Orders CRUD: create (auto-calc VAT), status transitions (PENDING→CONFIRMED→COMPLETED/CANCELLED/REFUNDED)
+- Payments: create (PENDING), verify manual (manager+), reject
+- Payment auto-match with bank transactions (exact amount + content substring)
+- BankTransactions: webhook ingest (dedup by external_id), list, manual match
+- PaymentMatching service: auto-match on create, conversion trigger
+- Conversion trigger: total verified payments >= order.totalAmount → lead CONVERTED
+- Auto IN_PROGRESS trigger when order created for ASSIGNED lead
+
 ### Phase 04: Core CRM — Leads & Customers (2026-03-28)
 
 #### Added

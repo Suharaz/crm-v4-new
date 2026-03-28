@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Products, Orders & Payments"
-status: pending
+status: completed
 priority: P0
 effort: 16h
 depends_on: [3]

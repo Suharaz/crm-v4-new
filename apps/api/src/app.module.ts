@@ -15,6 +15,12 @@ import { LeadSourcesModule } from './modules/lead-sources/lead-sources.module';
 import { LabelsModule } from './modules/labels/labels.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { LeadsModule } from './modules/leads/leads.module';
+import { ProductCategoriesModule } from './modules/product-categories/product-categories.module';
+import { ProductsModule } from './modules/products/products.module';
+import { PaymentTypesModule } from './modules/payment-types/payment-types.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { BankTransactionsModule } from './modules/bank-transactions/bank-transactions.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles-authorization.guard';
 import { BigIntTransformInterceptor } from './common/interceptors/bigint-transform.interceptor';
@@ -46,6 +52,12 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     LabelsModule,
     CustomersModule,
     LeadsModule,
+    ProductCategoriesModule,
+    ProductsModule,
+    PaymentTypesModule,
+    OrdersModule,
+    PaymentsModule,
+    BankTransactionsModule,
   ],
   controllers: [AppController],
   providers: [

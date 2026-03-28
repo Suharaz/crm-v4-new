@@ -1,5 +1,6 @@
 import { serverFetch } from '@/lib/auth';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { PaginationControls } from '@/components/shared/pagination-controls';
 import { formatDate, formatVND } from '@/lib/utils';
 import Link from 'next/link';
 import { CsvExportButton } from '@/components/shared/csv-export-button';
@@ -10,9 +11,11 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const query = new URLSearchParams(params).toString();
 
   let data: any[] = [];
+  let nextCursor: string | undefined;
   try {
-    const result = await serverFetch<{ data: any[] }>(`/orders?${query}`);
+    const result = await serverFetch<{ data: any[]; nextCursor?: string }>(`/orders?${query}`);
     data = result.data;
+    nextCursor = result.nextCursor;
   } catch { /* empty */ }
 
   return (
@@ -57,6 +60,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           </table>
         )}
       </div>
+      <PaginationControls nextCursor={nextCursor} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { serverFetch } from '@/lib/auth';
 import { LeadTable } from '@/components/leads/lead-table';
+import { PaginationControls } from '@/components/shared/pagination-controls';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -11,9 +12,11 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   const query = new URLSearchParams(params).toString();
 
   let data: any[] = [];
+  let nextCursor: string | undefined;
   try {
-    const result = await serverFetch<{ data: any[] }>(`/leads?${query}`);
+    const result = await serverFetch<{ data: any[]; nextCursor?: string }>(`/leads?${query}`);
     data = result.data;
+    nextCursor = result.nextCursor;
   } catch { /* empty list on error */ }
 
   return (
@@ -39,6 +42,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
       <div className="mt-4">
         <LeadTable leads={data} />
       </div>
+      <PaginationControls nextCursor={nextCursor} />
     </div>
   );
 }

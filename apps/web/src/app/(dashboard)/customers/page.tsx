@@ -1,5 +1,6 @@
 import { serverFetch } from '@/lib/auth';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { PaginationControls } from '@/components/shared/pagination-controls';
 import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -12,9 +13,11 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const query = new URLSearchParams(params).toString();
 
   let data: any[] = [];
+  let nextCursor: string | undefined;
   try {
-    const result = await serverFetch<{ data: any[] }>(`/customers?${query}`);
+    const result = await serverFetch<{ data: any[]; nextCursor?: string }>(`/customers?${query}`);
     data = result.data;
+    nextCursor = result.nextCursor;
   } catch { /* empty */ }
 
   return (
@@ -64,6 +67,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           </table>
         )}
       </div>
+      <PaginationControls nextCursor={nextCursor} />
     </div>
   );
 }

@@ -1,15 +1,21 @@
 import { serverFetch } from '@/lib/auth';
 import { UserTable } from '@/components/users/user-table';
+import { PaginationControls } from '@/components/shared/pagination-controls';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
 /** Users management page — SUPER_ADMIN only. */
-export default async function UsersPage() {
+export default async function UsersPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
+  const params = await searchParams;
+  const query = new URLSearchParams(params).toString();
+
   let users: any[] = [];
+  let nextCursor: string | undefined;
   try {
-    const result = await serverFetch<{ data: any[] }>('/users');
+    const result = await serverFetch<{ data: any[]; nextCursor?: string }>(`/users?${query}`);
     users = result.data;
+    nextCursor = result.nextCursor;
   } catch { /* empty */ }
 
   return (
@@ -29,6 +35,7 @@ export default async function UsersPage() {
       <div className="mt-4">
         <UserTable users={users} />
       </div>
+      <PaginationControls nextCursor={nextCursor} />
     </div>
   );
 }

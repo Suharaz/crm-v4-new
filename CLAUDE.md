@@ -57,8 +57,8 @@ Internal CRM system for sales team efficiency, customer data management, lead pi
 ```
 crm-v4/
 ├── apps/
-│   ├── api/                    # NestJS 11 (port 3001, prefix /api/v1)
-│   └── web/                    # Next.js 16 (port 3000)
+│   ├── api/                    # NestJS 11 (port 3010, prefix /api/v1)
+│   └── web/                    # Next.js 16 (port 3011)
 ├── packages/
 │   ├── database/               # Prisma schema + migrations + seed
 │   ├── types/                  # Shared DTOs, interfaces, enums
@@ -205,12 +205,12 @@ pnpm test:e2e               # Run integration tests
 ## Environment Variables
 
 ```env
-DATABASE_URL=postgresql://crm:crm@localhost:5432/crm_v4
+DATABASE_URL=postgresql://crm:crm@localhost:5433/crm_v4
 JWT_SECRET=<random-32-chars>
 JWT_REFRESH_SECRET=<random-32-chars>
 UPLOAD_DIR=./uploads
-API_PORT=3001
-NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
-FRONTEND_URL=http://localhost:3000
-REDIS_URL=redis://localhost:6379
+API_PORT=3010
+NEXT_PUBLIC_API_URL=http://localhost:3010/api/v1
+FRONTEND_URL=http://localhost:3011
+REDIS_URL=redis://localhost:6380
 ```

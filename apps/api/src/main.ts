@@ -8,11 +8,11 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.setGlobalPrefix('api/v1');
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL || 'http://localhost:3011',
     credentials: true,
   });
 
-  const port = process.env.API_PORT || 3001;
+  const port = process.env.API_PORT || 3010;
   await app.listen(port);
 }
 

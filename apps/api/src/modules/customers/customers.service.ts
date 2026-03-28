@@ -160,8 +160,8 @@ export class CustomersService {
   async transfer(id: bigint, targetType: string, targetDeptId: string | null, user: CurrentUser) {
     const customer = await this.findById(id);
 
-    // Permission check: assigned user, manager, or super_admin
-    this.checkTransferPermission(customer, user);
+    // Permission check: assigned user, manager of dept, or super_admin
+    await this.checkTransferPermission(customer, user);
 
     const updateData: Prisma.CustomerUpdateInput = {};
     let reason = '';
@@ -227,10 +227,19 @@ export class CustomersService {
     });
   }
 
-  private checkTransferPermission(customer: Record<string, unknown>, user: CurrentUser) {
+  private async checkTransferPermission(customer: Record<string, unknown>, user: CurrentUser) {
     if (user.role === UserRole.SUPER_ADMIN) return;
     if (customer.assignedUserId === user.id) return;
-    if (user.role === UserRole.MANAGER) return; // TODO: check managed depts
+    if (user.role === UserRole.MANAGER) {
+      // Check if manager manages the customer's department
+      const deptId = customer.assignedDepartmentId as bigint | null;
+      if (deptId) {
+        const managed = await this.prisma.managerDepartment.findUnique({
+          where: { managerId_departmentId: { managerId: user.id, departmentId: deptId } },
+        });
+        if (managed) return;
+      }
+    }
     throw new ForbiddenException('Không có quyền chuyển khách hàng này');
   }
 }

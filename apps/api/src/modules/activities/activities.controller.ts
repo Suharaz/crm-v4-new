@@ -1,12 +1,16 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Inject, forwardRef } from '@nestjs/common';
 import { EntityType } from '@prisma/client';
 import { ActivitiesService } from './activities.service';
+import { LeadsService } from '../leads/leads.service';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
 
 @Controller()
 export class ActivitiesController {
-  constructor(private readonly service: ActivitiesService) {}
+  constructor(
+    private readonly service: ActivitiesService,
+    @Inject(forwardRef(() => LeadsService)) private readonly leadsService: LeadsService,
+  ) {}
 
   // Lead activities
   @Get('leads/:id/activities')
@@ -27,7 +31,7 @@ export class ActivitiesController {
     const data = await this.service.createNote('LEAD' as EntityType, id, user.id, body.content);
 
     // Auto-trigger IN_PROGRESS on first note for ASSIGNED lead
-    await this.triggerInProgress(id, user.id);
+    await this.leadsService.triggerInProgress(id, user.id);
 
     return { data };
   }
@@ -50,29 +54,5 @@ export class ActivitiesController {
   ) {
     const data = await this.service.createNote('CUSTOMER' as EntityType, id, user.id, body.content);
     return { data };
-  }
-
-  /** Auto IN_PROGRESS trigger when sale creates first note on ASSIGNED lead. */
-  private async triggerInProgress(leadId: bigint, userId: bigint) {
-    const { PrismaClient } = require('@prisma/client');
-    const prisma = new PrismaClient();
-    try {
-      const lead = await prisma.lead.findFirst({
-        where: { id: leadId, status: 'ASSIGNED', deletedAt: null },
-      });
-      if (!lead) return;
-
-      await prisma.lead.update({ where: { id: leadId }, data: { status: 'IN_PROGRESS' } });
-      await prisma.activity.create({
-        data: {
-          entityType: 'LEAD', entityId: leadId, userId,
-          type: 'STATUS_CHANGE',
-          content: 'ASSIGNED → IN_PROGRESS (tự động khi tạo note)',
-          metadata: { fromStatus: 'ASSIGNED', toStatus: 'IN_PROGRESS', auto: true },
-        },
-      });
-    } finally {
-      await prisma.$disconnect();
-    }
   }
 }

@@ -256,7 +256,7 @@ export class LeadsService {
   // ── Transfer ────────────────────────────────────────────────────────────
   async transfer(id: bigint, targetType: string, targetDeptId: string | null, user: CurrentUser) {
     const lead = await this.findById(id);
-    this.checkTransferPermission(lead, user);
+    await this.checkTransferPermission(lead, user);
 
     let status: LeadStatus;
     let deptId: bigint | null = null;
@@ -401,10 +401,19 @@ export class LeadsService {
     return this.prisma.lead.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
-  private checkTransferPermission(lead: Record<string, unknown>, user: CurrentUser) {
+  private async checkTransferPermission(lead: Record<string, unknown>, user: CurrentUser) {
     if (user.role === UserRole.SUPER_ADMIN) return;
     if (lead.assignedUserId === user.id) return;
-    if (user.role === UserRole.MANAGER) return;
+    if (user.role === UserRole.MANAGER) {
+      // Check if manager manages the lead's department
+      const deptId = lead.departmentId as bigint | null;
+      if (deptId) {
+        const managed = await this.prisma.managerDepartment.findUnique({
+          where: { managerId_departmentId: { managerId: user.id, departmentId: deptId } },
+        });
+        if (managed) return;
+      }
+    }
     throw new ForbiddenException('Không có quyền chuyển lead này');
   }
 }

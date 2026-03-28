@@ -4,7 +4,7 @@
  * All frontend API calls go through this client.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/api/v1';
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;

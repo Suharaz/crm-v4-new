@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 23: RBAC E2E Tests + Lead Flow (2026-03-28)
+- **RBAC E2E** (19 tests): Kiểm tra sidebar, page access, action buttons cho 3 roles qua trình duyệt
+- **Lead Lifecycle Flow** (7 tests): Manager tạo lead → assign → sale claim → note → convert → order → dashboard
+- Fix API proxy route cho cross-origin cookie auth (401 bug)
+- Fix port-in-use detection khi khởi động API
+
 ### Phase 22: Lead Pool Inline Actions (2026-03-28)
 - **Kho Mới:** Nút "Phân" inline trên bảng — manager chọn nhân viên qua dialog
 - **Kho Thả Nổi:** Nút "Nhận" + "Phân" inline — user claim nhanh, manager assign

@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 18: Tasks/Todo Full Enhancement (2026-03-28)
+
+#### Backend
+- `PATCH /tasks/:id` — update title, description, dueDate, remindAt, priority, assignedTo
+- `DELETE /tasks/:id` — soft delete
+- Escalation cron: overdue >1h → notify assigned user, >24h → notify department manager
+- Reminder reset: changing remindAt clears remindedAt flag
+
+#### Frontend
+- **Quick add bar**: inline task creation with Enter key + quick time presets (Hôm nay/Ngày mai/Tuần sau)
+- **Enhanced create/edit dialog**: priority selector (Thấp/TB/Cao), remindAt datetime, assign-to-user dropdown
+- **Edit task**: click title or pencil icon → pre-filled dialog → PATCH
+- **Delete task**: trash icon with confirm dialog → soft DELETE
+- **Priority badges**: color-coded (red HIGH, yellow MEDIUM, gray LOW)
+- **Entity links**: LEAD/CUSTOMER tasks link to detail pages
+- **Overdue indicator**: red "Quá hạn" badge when PENDING + past due
+- **From-note task creation**: checkbox in lead note dialog → auto-creates linked task
+
 ### Phase 17: Frontend Polish — Dashboard, Pagination, Distribution UI (2026-03-28)
 
 #### Added

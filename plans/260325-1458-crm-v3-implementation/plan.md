@@ -35,7 +35,7 @@ created: 2026-03-25
 | 11 | Frontend Analytics Dashboard | 10h | completed | [phase-11](phase-11-frontend-analytics-dashboard.md) |
 | 12 | AI Lead Distribution | 8h | completed | [phase-12](phase-12-ai-lead-distribution.md) |
 | 13 | Tasks, Transfer & Advanced Features | 16h | completed | [phase-13](phase-13-department-transfer-and-advanced-features.md) |
-| 14 | Testing & Deployment | 12h | pending | [phase-14](phase-14-testing-and-deployment.md) |
+| 14 | Testing & Deployment | 12h | completed | [phase-14](phase-14-testing-and-deployment.md) |
 
 ## Key Dependencies
 

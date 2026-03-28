@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Inject, Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
@@ -19,7 +19,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 export class FileUploadService {
   private readonly uploadDir: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
     this.uploadDir = this.configService.get('UPLOAD_DIR', './uploads');
   }
 

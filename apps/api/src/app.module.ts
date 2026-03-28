@@ -21,6 +21,9 @@ import { PaymentTypesModule } from './modules/payment-types/payment-types.module
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { BankTransactionsModule } from './modules/bank-transactions/bank-transactions.module';
+import { ActivitiesModule } from './modules/activities/activities.module';
+import { CallLogsModule } from './modules/call-logs/call-logs.module';
+import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles-authorization.guard';
 import { BigIntTransformInterceptor } from './common/interceptors/bigint-transform.interceptor';
@@ -58,6 +61,9 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     OrdersModule,
     PaymentsModule,
     BankTransactionsModule,
+    ActivitiesModule,
+    CallLogsModule,
+    FileUploadModule,
   ],
   controllers: [AppController],
   providers: [

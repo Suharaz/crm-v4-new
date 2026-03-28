@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "Activity Timeline & Call Integration"
-status: pending
+status: completed
 priority: P1
 effort: 12h
 depends_on: [3]

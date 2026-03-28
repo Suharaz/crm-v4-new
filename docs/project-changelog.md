@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 06: Activity Timeline & Call Integration (2026-03-28)
+
+#### Added
+- Activities module: create notes, get timeline (cursor paginated) for leads/customers
+- System auto-log on status changes, assignments, label changes, payments
+- CallLogs module: ingest from 3rd party, auto-match by phone to lead/customer
+- Auto IN_PROGRESS trigger on first note or matched call for ASSIGNED leads
+- Unmatched call queue with manual match (manager+)
+- FileUpload service: local filesystem, UUID filenames, MIME validation, 10MB max
+
 ### Phase 05: Products, Orders & Payments (2026-03-28)
 
 #### Added

@@ -1,10 +1,10 @@
 /**
  * API client for NestJS backend.
- * Handles base URL, auth token injection, and token refresh.
- * All frontend API calls go through this client.
+ * Client-side calls go through Next.js proxy (/api/proxy/*) to solve cross-origin cookie auth.
+ * The proxy reads httpOnly access_token cookie and forwards as Bearer token to NestJS.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/api/v1';
+const API_BASE_URL = typeof window !== 'undefined' ? '/api/proxy' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/api/v1');
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;

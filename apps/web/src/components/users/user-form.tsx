@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FormField } from '@/components/shared/form-field';
 import { useFormAction } from '@/hooks/use-form-action';
 import { api } from '@/lib/api-client';
+import { userCreateSchema, userEditSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
 
 interface UserFormProps {
   user?: any;
@@ -36,6 +37,7 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
     status: user?.status || 'ACTIVE',
   });
 
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [teams, setTeams] = useState<any[]>([]);
 
   useEffect(() => {
@@ -51,10 +53,18 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
 
   function update(key: string, value: string) {
     setForm(prev => ({ ...prev, [key]: value }));
+    if (fieldErrors[key]) setFieldErrors(prev => ({ ...prev, [key]: '' }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const schema = isEdit ? userEditSchema : userCreateSchema;
+    const parsed = schema.safeParse(form);
+    if (!parsed.success) {
+      setFieldErrors(parseZodErrors(parsed.error));
+      return;
+    }
+    setFieldErrors({});
     const body: Record<string, any> = {};
 
     if (isEdit) {
@@ -87,7 +97,7 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
       <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
         <h3 className="font-semibold text-gray-900">Thông tin cơ bản</h3>
 
-        <FormField label="Email" required={!isEdit}>
+        <FormField label="Email" required={!isEdit} error={fieldErrors.email}>
           <Input
             type="email"
             value={form.email}
@@ -97,7 +107,7 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
           />
         </FormField>
 
-        <FormField label={isEdit ? 'Mật khẩu mới (để trống nếu không đổi)' : 'Mật khẩu'} required={!isEdit}>
+        <FormField label={isEdit ? 'Mật khẩu mới (để trống nếu không đổi)' : 'Mật khẩu'} required={!isEdit} error={fieldErrors.password}>
           <Input
             type="password"
             value={form.password}
@@ -106,7 +116,7 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
           />
         </FormField>
 
-        <FormField label="Họ tên" required>
+        <FormField label="Họ tên" required error={fieldErrors.name}>
           <Input
             value={form.name}
             onChange={e => update('name', e.target.value)}
@@ -114,7 +124,7 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
           />
         </FormField>
 
-        <FormField label="Số điện thoại">
+        <FormField label="Số điện thoại" error={fieldErrors.phone}>
           <Input
             value={form.phone}
             onChange={e => update('phone', e.target.value)}

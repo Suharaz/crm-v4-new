@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FormField } from '@/components/shared/form-field';
 import { useFormAction } from '@/hooks/use-form-action';
+import { leadSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
 
 interface LeadFormProps {
   lead?: any;
@@ -30,13 +31,21 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
     sourceId: lead?.sourceId || '',
     productId: lead?.productId || '',
   });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   function update(key: string, value: string) {
     setForm(prev => ({ ...prev, [key]: value }));
+    if (fieldErrors[key]) setFieldErrors(prev => ({ ...prev, [key]: '' }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const parsed = leadSchema.safeParse(form);
+    if (!parsed.success) {
+      setFieldErrors(parseZodErrors(parsed.error));
+      return;
+    }
+    setFieldErrors({});
     const body: Record<string, any> = {
       phone: form.phone,
       name: form.name,
@@ -59,15 +68,15 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
       <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
         <h3 className="font-semibold text-gray-900">Thông tin lead</h3>
 
-        <FormField label="Số điện thoại" required>
+        <FormField label="Số điện thoại" required error={fieldErrors.phone}>
           <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" />
         </FormField>
 
-        <FormField label="Họ tên" required>
+        <FormField label="Họ tên" required error={fieldErrors.name}>
           <Input value={form.name} onChange={e => update('name', e.target.value)} placeholder="Nguyễn Văn A" />
         </FormField>
 
-        <FormField label="Email">
+        <FormField label="Email" error={fieldErrors.email}>
           <Input type="email" value={form.email} onChange={e => update('email', e.target.value)} placeholder="email@example.com" />
         </FormField>
 

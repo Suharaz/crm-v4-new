@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/providers/auth-provider';
+import { taskSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
 import { Plus, CheckCircle2, XCircle, Circle, Clock, Pencil, Trash2, Link2 } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
 
@@ -107,6 +108,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
   const [editTask, setEditTask] = useState<Task | null>(null);
   const [form, setForm] = useState<TaskForm>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Users list for assignedTo
   const [usersList, setUsersList] = useState<{ id: string; name: string }[]>([]);
@@ -123,6 +125,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
   function openCreate() {
     setEditTask(null);
     setForm({ ...EMPTY_FORM, assignedTo: user ? String(user.id) : '' });
+    setFieldErrors({});
     setDialogOpen(true);
   }
 
@@ -136,6 +139,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
       remindAt: task.remindAt ? task.remindAt.slice(0, 16) : '',
       assignedTo: task.assignedTo ?? '',
     });
+    setFieldErrors({});
     setDialogOpen(true);
   }
 
@@ -162,10 +166,12 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
   }
 
   async function handleSave() {
-    if (!form.title.trim()) {
-      toast.error('Vui lòng nhập tiêu đề công việc');
+    const parsed = taskSchema.safeParse(form);
+    if (!parsed.success) {
+      setFieldErrors(parseZodErrors(parsed.error));
       return;
     }
+    setFieldErrors({});
     setSubmitting(true);
     try {
       const body: Record<string, string> = { title: form.title.trim() };
@@ -309,8 +315,12 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
                 className="mt-1"
                 placeholder="Nhập tiêu đề công việc..."
                 value={form.title}
-                onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                onChange={e => {
+                  setForm(f => ({ ...f, title: e.target.value }));
+                  if (fieldErrors.title) setFieldErrors(prev => ({ ...prev, title: '' }));
+                }}
               />
+              {fieldErrors.title && <p className="text-xs text-red-500 mt-1">{fieldErrors.title}</p>}
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700">Mô tả</label>
@@ -327,8 +337,12 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
                 type="datetime-local"
                 className="mt-1"
                 value={form.dueDate}
-                onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))}
+                onChange={e => {
+                  setForm(f => ({ ...f, dueDate: e.target.value }));
+                  if (fieldErrors.dueDate) setFieldErrors(prev => ({ ...prev, dueDate: '' }));
+                }}
               />
+              {fieldErrors.dueDate && <p className="text-xs text-red-500 mt-1">{fieldErrors.dueDate}</p>}
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700">Độ ưu tiên</label>

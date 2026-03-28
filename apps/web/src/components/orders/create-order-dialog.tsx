@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { FormField } from '@/components/shared/form-field';
 import { useFormAction } from '@/hooks/use-form-action';
+import { orderSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
 import { Plus } from 'lucide-react';
 
 interface CreateOrderDialogProps {
@@ -20,10 +21,12 @@ interface CreateOrderDialogProps {
 export function CreateOrderDialog({ customerId, leadId, products }: CreateOrderDialogProps) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ productId: '', amount: '', notes: '' });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const { execute, isLoading } = useFormAction({ successMessage: 'Đã tạo đơn hàng' });
 
   function update(key: string, value: string) {
     setForm(prev => ({ ...prev, [key]: value }));
+    if (fieldErrors[key]) setFieldErrors(prev => ({ ...prev, [key]: '' }));
   }
 
   function onProductChange(productId: string) {
@@ -33,6 +36,12 @@ export function CreateOrderDialog({ customerId, leadId, products }: CreateOrderD
   }
 
   async function handleSubmit() {
+    const parsed = orderSchema.safeParse({ customerId, amount: form.amount, productId: form.productId, notes: form.notes });
+    if (!parsed.success) {
+      setFieldErrors(parseZodErrors(parsed.error));
+      return;
+    }
+    setFieldErrors({});
     const body: Record<string, any> = {
       customerId,
       amount: Number(form.amount),
@@ -65,7 +74,7 @@ export function CreateOrderDialog({ customerId, leadId, products }: CreateOrderD
                 </SelectContent>
               </Select>
             </FormField>
-            <FormField label="Số tiền (VNĐ)" required>
+            <FormField label="Số tiền (VNĐ)" required error={fieldErrors.amount}>
               <Input type="number" value={form.amount} onChange={e => update('amount', e.target.value)} placeholder="1000000" />
             </FormField>
             <FormField label="Ghi chú">

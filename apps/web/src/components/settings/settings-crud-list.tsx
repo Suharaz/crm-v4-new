@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useFormAction } from '@/hooks/use-form-action';
+import { settingsNameSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 
 interface FieldConfig {
@@ -30,6 +31,7 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const { execute, isLoading } = useFormAction({ successMessage: `${entityName} đã được lưu` });
   const deleteAction = useFormAction({ successMessage: `Đã xóa ${entityName.toLowerCase()}` });
 
@@ -38,6 +40,7 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
     const defaults: Record<string, any> = {};
     fields.forEach(f => { defaults[f.key] = f.type === 'number' ? '' : (f.type === 'color' ? '#6b7280' : ''); });
     setFormData(defaults);
+    setFieldErrors({});
     setDialogOpen(true);
   }
 
@@ -46,10 +49,21 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
     const values: Record<string, any> = {};
     fields.forEach(f => { values[f.key] = item[f.key] ?? ''; });
     setFormData(values);
+    setFieldErrors({});
     setDialogOpen(true);
   }
 
   async function handleSubmit() {
+    // Validate required name field if present
+    const nameField = fields.find(f => f.key === 'name' && f.required);
+    if (nameField) {
+      const parsed = settingsNameSchema.safeParse({ name: formData['name'] });
+      if (!parsed.success) {
+        setFieldErrors(parseZodErrors(parsed.error));
+        return;
+      }
+    }
+    setFieldErrors({});
     const body: Record<string, any> = {};
     fields.forEach(f => {
       const val = formData[f.key];
@@ -132,9 +146,13 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
                   type={f.type === 'color' ? 'color' : f.type === 'number' ? 'number' : 'text'}
                   placeholder={f.placeholder}
                   value={formData[f.key] ?? ''}
-                  onChange={e => setFormData(prev => ({ ...prev, [f.key]: e.target.value }))}
+                  onChange={e => {
+                    setFormData(prev => ({ ...prev, [f.key]: e.target.value }));
+                    if (fieldErrors[f.key]) setFieldErrors(prev => ({ ...prev, [f.key]: '' }));
+                  }}
                   className={f.type === 'color' ? 'h-10 w-20 p-1' : undefined}
                 />
+                {fieldErrors[f.key] && <p className="text-xs text-red-500">{fieldErrors[f.key]}</p>}
               </div>
             ))}
           </div>

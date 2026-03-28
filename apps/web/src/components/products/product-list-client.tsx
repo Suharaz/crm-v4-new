@@ -11,6 +11,7 @@ import { FormField } from '@/components/shared/form-field';
 import { useFormAction } from '@/hooks/use-form-action';
 import { useAuth } from '@/providers/auth-provider';
 import { formatVND } from '@/lib/utils';
+import { productSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 
 interface ProductListClientProps {
@@ -27,17 +28,20 @@ export function ProductListClient({ products, categories }: ProductListClientPro
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [form, setForm] = useState({ name: '', price: '', description: '', categoryId: '', vatRate: '0' });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const { execute, isLoading } = useFormAction({ successMessage: 'Đã lưu sản phẩm' });
   const deleteAction = useFormAction({ successMessage: 'Đã xóa sản phẩm' });
 
   function update(key: string, value: string) {
     setForm(prev => ({ ...prev, [key]: value }));
+    if (fieldErrors[key]) setFieldErrors(prev => ({ ...prev, [key]: '' }));
   }
 
   function openCreate() {
     setEditingProduct(null);
     setForm({ name: '', price: '', description: '', categoryId: '', vatRate: '0' });
+    setFieldErrors({});
     setDialogOpen(true);
   }
 
@@ -50,10 +54,17 @@ export function ProductListClient({ products, categories }: ProductListClientPro
       categoryId: p.categoryId || '',
       vatRate: String(p.vatRate) || '0',
     });
+    setFieldErrors({});
     setDialogOpen(true);
   }
 
   async function handleSubmit() {
+    const parsed = productSchema.safeParse(form);
+    if (!parsed.success) {
+      setFieldErrors(parseZodErrors(parsed.error));
+      return;
+    }
+    setFieldErrors({});
     const body: Record<string, any> = { name: form.name, price: Number(form.price) };
     if (form.description) body.description = form.description;
     if (form.categoryId) body.categoryId = form.categoryId;
@@ -128,10 +139,10 @@ export function ProductListClient({ products, categories }: ProductListClientPro
             <DialogTitle>{editingProduct ? 'Sửa sản phẩm' : 'Thêm sản phẩm'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <FormField label="Tên sản phẩm" required>
+            <FormField label="Tên sản phẩm" required error={fieldErrors.name}>
               <Input value={form.name} onChange={e => update('name', e.target.value)} placeholder="VD: Khóa học ABC" />
             </FormField>
-            <FormField label="Giá (VNĐ)" required>
+            <FormField label="Giá (VNĐ)" required error={fieldErrors.price}>
               <Input type="number" value={form.price} onChange={e => update('price', e.target.value)} placeholder="1000000" />
             </FormField>
             <FormField label="Thuế VAT (%)">

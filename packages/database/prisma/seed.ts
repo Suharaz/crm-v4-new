@@ -10,6 +10,41 @@ async function hashPassword(password: string): Promise<string> {
 async function main() {
   console.log('Seeding database...');
 
+  // ── Cleanup existing data (order matters for FK constraints) ──────────
+  console.log('  Cleaning up existing data...');
+  await prisma.notification.deleteMany();
+  await prisma.assignmentHistory.deleteMany();
+  await prisma.assignmentTemplateMember.deleteMany();
+  await prisma.assignmentTemplate.deleteMany();
+  await prisma.recallConfig.deleteMany();
+  await prisma.aiDistributionConfig.deleteMany();
+  await prisma.task.deleteMany();
+  await prisma.activityAttachment.deleteMany();
+  await prisma.activity.deleteMany();
+  await prisma.callLog.deleteMany();
+  await prisma.document.deleteMany();
+  await prisma.bankTransaction.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.leadLabel.deleteMany();
+  await prisma.customerLabel.deleteMany();
+  await prisma.lead.deleteMany();
+  await prisma.customer.deleteMany();
+  await prisma.label.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.productCategory.deleteMany();
+  await prisma.paymentType.deleteMany();
+  await prisma.leadSource.deleteMany();
+  await prisma.refreshToken.deleteMany();
+  await prisma.apiKey.deleteMany();
+  await prisma.importJob.deleteMany();
+  await prisma.managerDepartment.deleteMany();
+  await prisma.team.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.department.deleteMany();
+  await prisma.employeeLevel.deleteMany();
+  console.log('  ✓ Cleanup done');
+
   // ── Employee Levels ─────────────────────────────────────────────────────
   const [junior, mid, senior] = await Promise.all([
     prisma.employeeLevel.create({ data: { name: 'Junior', rank: 1 } }),

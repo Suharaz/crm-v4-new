@@ -49,10 +49,14 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     ]),
     ScheduleModule.forRoot(),
     BullModule.forRoot({
-      connection: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6380'),
-      },
+      connection: (() => {
+        const url = process.env.REDIS_URL;
+        if (url) {
+          const parsed = new URL(url);
+          return { host: parsed.hostname, port: parseInt(parsed.port || '6379') };
+        }
+        return { host: process.env.REDIS_HOST || 'localhost', port: parseInt(process.env.REDIS_PORT || '6380') };
+      })(),
     }),
     LoggerModule.forRoot({
       pinoHttp: {

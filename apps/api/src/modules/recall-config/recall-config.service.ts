@@ -62,24 +62,29 @@ export class RecallConfigService {
 
   @Cron('0 */2 * * *')
   async runAutoRecall() {
-    this.logger.log('Bắt đầu chạy auto-recall...');
-    const configs = await this.prisma.recallConfig.findMany({ where: { isActive: true } });
+    try {
+      this.logger.log('Bắt đầu chạy auto-recall...');
+      const configs = await this.prisma.recallConfig.findMany({ where: { isActive: true } });
 
-    let totalRecalled = 0;
+      let totalRecalled = 0;
 
-    for (const config of configs) {
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - config.maxDaysInPool);
+      for (const config of configs) {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - config.maxDaysInPool);
 
-      if (config.entityType === 'LEAD') {
-        totalRecalled += await this._recallLeads(config, cutoffDate);
-      } else if (config.entityType === 'CUSTOMER') {
-        totalRecalled += await this._recallCustomers(config, cutoffDate);
+        if (config.entityType === 'LEAD') {
+          totalRecalled += await this._recallLeads(config, cutoffDate);
+        } else if (config.entityType === 'CUSTOMER') {
+          totalRecalled += await this._recallCustomers(config, cutoffDate);
+        }
       }
-    }
 
-    this.logger.log(`Auto-recall hoàn thành. Tổng số entities đã thu hồi: ${totalRecalled}`);
-    return { recalled: totalRecalled };
+      this.logger.log(`Auto-recall hoàn thành. Tổng số entities đã thu hồi: ${totalRecalled}`);
+      return { recalled: totalRecalled };
+    } catch (error) {
+      this.logger.error('Lỗi khi chạy auto-recall', error instanceof Error ? error.stack : error);
+      return { recalled: 0, error: true };
+    }
   }
 
   private async _recallLeads(

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaClient, Prisma, TaskStatus } from '@prisma/client';
 import { Cron } from '@nestjs/schedule';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
@@ -16,6 +16,8 @@ const TASK_SELECT = {
 
 @Injectable()
 export class TasksService {
+  private readonly logger = new Logger(TasksService.name);
+
   constructor(private readonly prisma: PrismaClient) {}
 
   async list(userId: bigint, query: PaginationQueryDto & { status?: TaskStatus }) {
@@ -110,6 +112,7 @@ export class TasksService {
   /** Cron: check reminders every 5 minutes. */
   @Cron('*/5 * * * *')
   async processReminders() {
+    try {
     const now = new Date();
 
     // Find tasks due for reminder (remindAt <= now AND remindedAt IS NULL AND PENDING)
@@ -208,6 +211,9 @@ export class TasksService {
         where: { id: task.id },
         data: { escalation2At: now },
       });
+    }
+    } catch (error) {
+      this.logger.error('Lỗi khi xử lý reminders/escalations', error instanceof Error ? error.stack : error);
     }
   }
 }

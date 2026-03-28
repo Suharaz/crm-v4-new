@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { PaymentMatchingService } from '../payments/payment-matching.service';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
@@ -44,6 +44,10 @@ export class BankTransactionsService {
     bankAccount?: string; senderName?: string; senderAccount?: string;
     transactionTime: string; rawData?: Record<string, unknown>;
   }) {
+    if (!data.amount || data.amount <= 0) {
+      throw new BadRequestException('Số tiền giao dịch phải lớn hơn 0');
+    }
+
     // Dedup check
     const existing = await this.prisma.bankTransaction.findUnique({
       where: { externalId: data.externalId },

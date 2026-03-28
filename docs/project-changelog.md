@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 20: Comprehensive Test Suites (2026-03-28)
+
+#### E2E Tests (Playwright) — 14 spec files, ~87 tests
+- Auth: login/logout/session guard, 3 roles
+- Leads: CRUD, status flow, 3 Kho pools, assign/claim/transfer
+- Customers: CRUD, claim, transfer, role visibility
+- Orders: create, status change, payment verify/reject
+- Products: dialog CRUD, VND price format
+- Settings: 5 tabs CRUD (departments, levels, sources, labels, payment types)
+- Users: CRUD, roles, deactivate (SUPER_ADMIN only)
+- Tasks: quick add, complete, cancel, edit, delete
+- Dashboard: KPI stats per role
+- Search: global search dropdown, navigation
+- Notifications: bell, unread count, mark read
+- Import/Export: CSV upload/download
+- AI Distribution: config, weights, batch assign
+- Screenshot capture on all key steps
+
+#### API Integration Tests (Vitest) — 16 test files, ~90+ tests
+- All REST endpoints with HTTP status assertions
+- RBAC verification: 3 roles per protected endpoint
+- Business logic: status transitions, payment matching, bank webhook dedup
+- Cursor pagination, phone normalization, auto IN_PROGRESS trigger
+
+#### Unit Tests (Vitest) — 10 test files, ~192 tests
+- Phone normalization + validation (VN format)
+- CSV formula injection sanitizer
+- Zod form schemas (Vietnamese error messages)
+- Lead status transition rules (valid/invalid paths)
+- Payment matching + conversion trigger logic
+- AI distribution weighted scoring
+- Round-robin assignment template distribution
+- Auto-recall pool expiry criteria
+- Roles guard authorization logic
+
 ### Phase 19: Full Project Audit & Quality Fixes (2026-03-28)
 
 #### Backend

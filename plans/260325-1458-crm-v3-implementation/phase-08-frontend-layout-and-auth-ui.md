@@ -1,7 +1,7 @@
 ---
 phase: 8
 title: "Frontend Layout & Auth UI"
-status: pending
+status: completed
 priority: P1
 effort: 10h
 depends_on: [1, 3]

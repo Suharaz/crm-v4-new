@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 08: Frontend Layout & Auth UI (2026-03-28)
+
+#### Added
+- Login page: email/password form, error handling, redirect after login
+- Auth API proxy route: login/refresh/logout with httpOnly cookie management
+- Auth middleware: redirect unauthenticated to /login, redirect logged-in from /login
+- Auth provider: server-side user fetch, client-side context
+- App shell: collapsible sidebar + header with user menu
+- Sidebar navigation: Vietnamese labels, role-based visibility, active state
+- shadcn/ui components: Button, Input, Card, Label (no barrel imports)
+- Utility functions: cn(), formatVND(), formatDate(), formatNumber()
+- Dashboard placeholder with KPI cards
+
+#### Config
+- Default ports changed: API 3010, Web 3011 (avoid NocoDB conflict)
+
 ### Phase 07: Data Import & Third-Party API (2026-03-28)
 
 #### Added

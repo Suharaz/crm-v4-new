@@ -11,17 +11,24 @@
   "dependencies": {
     "@crm/types": "workspace:*",
     "@crm/utils": "workspace:*",
+    "@hookform/resolvers": "^5.2.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.7.0",
     "next": "^15.3.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.72.0",
+    "tailwind-merge": "^3.5.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "typescript": "^5.7.0",
-    "@tailwindcss/postcss": "^4.0.0",
+    "postcss": "^8.5.0",
     "tailwindcss": "^4.0.0",
-    "postcss": "^8.5.0"
+    "typescript": "^5.7.0"
   }
 }

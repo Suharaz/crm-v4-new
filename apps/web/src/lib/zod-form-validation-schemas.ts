@@ -83,7 +83,7 @@ export type ProductFormValues = z.infer<typeof productSchema>;
 
 // Order form
 export const orderSchema = z.object({
-  customerId: z.string().min(1, 'Vui lòng chọn khách hàng'),
+  customerId: z.string({ error: 'Vui lòng chọn khách hàng' }).min(1, 'Vui lòng chọn khách hàng'),
   amount: z
     .string()
     .min(1, 'Vui lòng nhập số tiền')

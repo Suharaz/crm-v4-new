@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 22: Lead Pool Inline Actions (2026-03-28)
+- **Kho Mới:** Nút "Phân" inline trên bảng — manager chọn nhân viên qua dialog
+- **Kho Thả Nổi:** Nút "Nhận" + "Phân" inline — user claim nhanh, manager assign
+- New component: `lead-pool-action-buttons.tsx`
+- `LeadTable` nhận `poolMode` prop để hiện cột Thao tác
+
 ### Phase 21: Test Execution & Bug Fixes (2026-03-28)
 
 #### Test Results — 531/531 PASSED (18 skipped)

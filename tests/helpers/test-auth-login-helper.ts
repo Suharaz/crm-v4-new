@@ -4,9 +4,9 @@ import { type Page } from '@playwright/test';
  * Test accounts từ seed data.
  */
 export const TEST_ACCOUNTS = {
-  SUPER_ADMIN: { email: 'admin@crm.vn', password: 'Admin@123', role: 'SUPER_ADMIN' },
-  MANAGER: { email: 'manager.sales@crm.vn', password: 'Manager@123', role: 'MANAGER' },
-  USER: { email: 'sale1@crm.vn', password: 'Sale@123', role: 'USER' },
+  SUPER_ADMIN: { email: 'admin@crm.local', password: 'changeme', role: 'SUPER_ADMIN' },
+  MANAGER: { email: 'manager.sales@crm.local', password: 'changeme', role: 'MANAGER' },
+  USER: { email: 'sale1@crm.local', password: 'changeme', role: 'USER' },
 } as const;
 
 export type TestRole = keyof typeof TEST_ACCOUNTS;

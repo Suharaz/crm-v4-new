@@ -7,8 +7,8 @@ test.describe('Xác thực — Login / Logout / Session guard', () => {
     await page.goto('/login');
     await screenshotStep(page, 'trang-login', 'admin-login');
 
-    await page.getByLabel('Email').fill('admin@crm.vn');
-    await page.getByLabel('Mật khẩu').fill('Admin@123');
+    await page.getByLabel('Email').fill('admin@crm.local');
+    await page.getByLabel('Mật khẩu').fill('changeme');
     await screenshotStep(page, 'da-dien-form', 'admin-login');
 
     await page.getByRole('button', { name: 'Đăng nhập' }).click();
@@ -36,15 +36,15 @@ test.describe('Xác thực — Login / Logout / Session guard', () => {
   test('Sai mật khẩu → hiện thông báo lỗi', async ({ page }) => {
     await page.goto('/login');
 
-    await page.getByLabel('Email').fill('admin@crm.vn');
+    await page.getByLabel('Email').fill('admin@crm.local');
     await page.getByLabel('Mật khẩu').fill('SaiMatKhau123!');
     await page.getByRole('button', { name: 'Đăng nhập' }).click();
 
     // Chờ thông báo lỗi hiện ra
     await expect(
-      page.locator('text=Sai email hoặc mật khẩu').or(
-        page.locator('text=Thông tin đăng nhập không đúng').or(
-          page.locator('text=Lỗi').first(),
+      page.locator('text=Email hoặc mật khẩu không đúng').or(
+        page.locator('text=Sai email hoặc mật khẩu').or(
+          page.locator('text=Thông tin đăng nhập không đúng'),
         ),
       ),
     ).toBeVisible({ timeout: 10_000 });

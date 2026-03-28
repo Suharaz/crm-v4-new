@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 09-11: Frontend Pages (2026-03-28)
+
+#### Phase 09: Leads & Customers
+- Lead list page with table (name, phone, status, source, user, date)
+- Lead detail page: info panel + labels + activity timeline
+- Kho Mới page (POOL, dept=null, manager+)
+- Kho Thả Nổi page (FLOATING, all users)
+- Customer list page with table
+- Customer detail: info + labels + leads + orders + timeline
+
+#### Phase 10: Orders, Products, Settings
+- Orders list with table (customer, product, total, status, date)
+- Order detail: info + payments list
+- Products grid with price cards
+- Call logs table with match status
+- Settings page: departments, levels, sources, labels, payment types
+- Import page placeholder (CSV upload zones)
+
+#### Phase 11: Dashboard
+- Dashboard home with KPI placeholder cards
+- Shared components: StatusBadge, DataTableSkeleton
+
 ### Phase 08: Frontend Layout & Auth UI (2026-03-28)
 
 #### Added

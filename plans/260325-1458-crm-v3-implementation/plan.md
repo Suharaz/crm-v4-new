@@ -30,9 +30,9 @@ created: 2026-03-25
 | 06 | Activity Timeline & Call Integration | 12h | completed | [phase-06](phase-06-activity-timeline-and-call-integration.md) |
 | 07 | Data Import & Third-Party API | 10h | completed | [phase-07](phase-07-data-import-and-third-party-api.md) |
 | 08 | Frontend Layout & Auth UI | 10h | completed | [phase-08](phase-08-frontend-layout-and-auth-ui.md) |
-| 09 | Frontend Leads & Customers Pages | 14h | pending | [phase-09](phase-09-frontend-leads-customers-pages.md) |
-| 10 | Frontend Orders, Payments & Settings | 10h | pending | [phase-10](phase-10-frontend-orders-payments-settings.md) |
-| 11 | Frontend Analytics Dashboard | 10h | pending | [phase-11](phase-11-frontend-analytics-dashboard.md) |
+| 09 | Frontend Leads & Customers Pages | 14h | completed | [phase-09](phase-09-frontend-leads-customers-pages.md) |
+| 10 | Frontend Orders, Payments & Settings | 10h | completed | [phase-10](phase-10-frontend-orders-payments-settings.md) |
+| 11 | Frontend Analytics Dashboard | 10h | completed | [phase-11](phase-11-frontend-analytics-dashboard.md) |
 | 12 | AI Lead Distribution | 8h | pending | [phase-12](phase-12-ai-lead-distribution.md) |
 | 13 | Tasks, Transfer & Advanced Features | 16h | pending | [phase-13](phase-13-department-transfer-and-advanced-features.md) |
 | 14 | Testing & Deployment | 12h | pending | [phase-14](phase-14-testing-and-deployment.md) |

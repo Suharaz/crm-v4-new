@@ -1,6 +1,7 @@
 import { serverFetch } from '@/lib/auth';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { CustomerActions } from '@/components/customers/customer-actions';
+import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
 import { formatDate, formatVND } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -22,12 +23,14 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
   let activities: any[] = [];
   let departments: any[] = [];
   let labels: any[] = [];
+  let products: any[] = [];
 
   try {
-    [activities, departments, labels] = await Promise.all([
+    [activities, departments, labels, products] = await Promise.all([
       serverFetch<{ data: any[] }>(`/customers/${id}/activities`).then(r => r.data).catch(() => []),
       serverFetch<{ data: any[] }>('/departments').then(r => r.data).catch(() => []),
       serverFetch<{ data: any[] }>('/labels').then(r => r.data).catch(() => []),
+      serverFetch<{ data: any[] }>('/products').then(r => r.data).catch(() => []),
     ]);
   } catch { /* partial ok */ }
 
@@ -48,7 +51,10 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
       </div>
 
       {/* Actions */}
-      <CustomerActions customer={customer} departments={departments} labels={labels} />
+      <div className="flex flex-wrap items-center gap-2">
+        <CustomerActions customer={customer} departments={departments} labels={labels} />
+        <CreateOrderDialog customerId={customer.id} products={products} />
+      </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Info */}

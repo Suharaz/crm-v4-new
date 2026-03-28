@@ -1,16 +1,21 @@
 import { serverFetch } from '@/lib/auth';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { OrderActions } from '@/components/orders/order-actions';
+import { PaymentActions } from '@/components/payments/payment-actions';
 import { formatDate, formatVND } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 
-/** Order detail: info + payments. */
+/** Order detail: info + actions + payments with CRUD. */
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   let order: any;
+  let paymentTypes: any[] = [];
 
   try {
-    const result = await serverFetch<{ data: any }>(`/orders/${id}`);
-    order = result.data;
+    [order, paymentTypes] = await Promise.all([
+      serverFetch<{ data: any }>(`/orders/${id}`).then(r => r.data),
+      serverFetch<{ data: any[] }>('/payment-types').then(r => r.data).catch(() => []),
+    ]);
   } catch {
     notFound();
   }
@@ -25,7 +30,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <StatusBadge status={order.status} />
       </div>
 
+      {/* Actions */}
+      <OrderActions order={order} />
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Order Details */}
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <h3 className="mb-3 font-semibold text-gray-900">Chi tiết</h3>
           <dl className="space-y-2 text-sm">
@@ -35,29 +44,22 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <div className="flex justify-between border-t border-gray-100 pt-2"><dt className="font-medium text-gray-700">Tổng</dt><dd className="font-bold text-gray-900">{formatVND(Number(order.totalAmount))}</dd></div>
             <div className="flex justify-between"><dt className="text-gray-500">Người tạo</dt><dd className="text-gray-700">{order.creator?.name}</dd></div>
             <div className="flex justify-between"><dt className="text-gray-500">Ngày tạo</dt><dd className="text-gray-700">{formatDate(order.createdAt)}</dd></div>
+            {order.notes && (
+              <div className="border-t border-gray-100 pt-2">
+                <dt className="text-gray-500 mb-1">Ghi chú</dt>
+                <dd className="text-gray-700">{order.notes}</dd>
+              </div>
+            )}
           </dl>
         </div>
 
+        {/* Payments with CRUD */}
         <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <h3 className="mb-3 font-semibold text-gray-900">Thanh toán ({order.payments?.length || 0})</h3>
-          {!order.payments?.length ? (
-            <p className="text-sm text-gray-400">Chưa có thanh toán</p>
-          ) : (
-            <div className="space-y-3">
-              {order.payments.map((p: any) => (
-                <div key={p.id} className="flex items-center justify-between rounded-lg border border-gray-100 p-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <StatusBadge status={p.status} />
-                      <span className="text-sm font-medium">{formatVND(Number(p.amount))}</span>
-                    </div>
-                    <span className="text-xs text-gray-400">{p.paymentType?.name || '—'}</span>
-                  </div>
-                  <span className="text-xs text-gray-400">{formatDate(p.createdAt)}</span>
-                </div>
-              ))}
-            </div>
-          )}
+          <PaymentActions
+            orderId={order.id}
+            payments={order.payments || []}
+            paymentTypes={paymentTypes}
+          />
         </div>
       </div>
     </div>

@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 21: Test Execution & Bug Fixes (2026-03-28)
+
+#### Test Results — 531/531 PASSED (18 skipped)
+- **Unit:** 9 files, 195/195 tests passed (~1.2s)
+- **API Integration:** 16 files, 288/288 tests passed (~88s)
+- **E2E Playwright:** 13 files, 48/48 tests passed, 18 skipped (~19min)
+
+#### Bug Fixes (discovered via test execution)
+- **Zod 4 API change:** `orderSchema.customerId` — use `error` instead of `required_error`
+- **Self-deactivation guard:** `UsersService.deactivate()` now blocks admin self-deactivation (400)
+- **Task creation crash:** `BigInt(undefined)` for missing `assignedTo` — made optional
+- **Payment verify stale read:** Moved `findById()` outside `$transaction()` scope
+- **Activities validation:** Empty content → 400, non-existent entity → 404
+- **12 action endpoints:** Added `@HttpCode(200)` on assign, claim, transfer, verify, reject, etc.
+- **Query filter DTOs:** Added typed DTOs for tasks, orders, products, bank-transactions filter params
+- **Leads DTO:** Added `notes` field to `CreateLeadDto`
+- **EmployeeLevels access:** All authenticated users can view (removed class-level `@Roles`)
+- **Configurable throttle:** `THROTTLE_LIMIT` / `THROTTLE_AUTH_LIMIT` env vars for testing
+
 ### Phase 20: Comprehensive Test Suites (2026-03-28)
 
 #### E2E Tests (Playwright) — 14 spec files, ~87 tests

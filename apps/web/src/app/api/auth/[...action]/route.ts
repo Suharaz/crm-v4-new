@@ -1,13 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/api/v1';
 
-/** Auth API proxy: manages httpOnly cookies for JWT tokens. */
+/** Build Set-Cookie header string. */
+function buildCookie(name: string, value: string, options: {
+  httpOnly?: boolean; secure?: boolean; sameSite?: string;
+  path?: string; maxAge?: number;
+}): string {
+  const parts = [`${name}=${value}`];
+  if (options.httpOnly) parts.push('HttpOnly');
+  if (options.secure) parts.push('Secure');
+  if (options.sameSite) parts.push(`SameSite=${options.sameSite}`);
+  if (options.path) parts.push(`Path=${options.path}`);
+  if (options.maxAge) parts.push(`Max-Age=${options.maxAge}`);
+  return parts.join('; ');
+}
+
 export async function POST(request: NextRequest, { params }: { params: Promise<{ action: string[] }> }) {
   const { action } = await params;
   const actionName = action[0];
-  const cookieStore = await cookies();
+  const isProd = process.env.NODE_ENV === 'production';
 
   if (actionName === 'login') {
     const body = await request.json();
@@ -20,28 +32,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const data = await res.json();
     if (!res.ok) return NextResponse.json(data, { status: res.status });
 
-    // Set httpOnly cookies
-    const isProd = process.env.NODE_ENV === 'production';
-    cookieStore.set('access_token', data.data.accessToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 15 * 60, // 15 minutes
-    });
-    cookieStore.set('refresh_token', data.data.refreshToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: 'strict',
-      path: '/api/auth',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-    });
+    const response = NextResponse.json({ data: { message: 'Đăng nhập thành công' } });
 
-    return NextResponse.json({ data: { message: 'Đăng nhập thành công' } });
+    response.headers.append('Set-Cookie', buildCookie('access_token', data.data.accessToken, {
+      httpOnly: true, secure: isProd, sameSite: 'Lax', path: '/', maxAge: 15 * 60,
+    }));
+    response.headers.append('Set-Cookie', buildCookie('refresh_token', data.data.refreshToken, {
+      httpOnly: true, secure: isProd, sameSite: 'Lax', path: '/', maxAge: 7 * 24 * 60 * 60,
+    }));
+
+    return response;
   }
 
   if (actionName === 'refresh') {
-    const refreshToken = cookieStore.get('refresh_token')?.value;
+    const refreshToken = request.cookies.get('refresh_token')?.value;
     if (!refreshToken) {
       return NextResponse.json({ message: 'Không có refresh token' }, { status: 401 });
     }
@@ -54,25 +58,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const data = await res.json();
     if (!res.ok) {
-      // Clear cookies on refresh failure
-      cookieStore.delete('access_token');
-      cookieStore.delete('refresh_token');
-      return NextResponse.json(data, { status: res.status });
+      const response = NextResponse.json(data, { status: res.status });
+      response.headers.append('Set-Cookie', buildCookie('access_token', '', { path: '/', maxAge: 0 }));
+      response.headers.append('Set-Cookie', buildCookie('refresh_token', '', { path: '/', maxAge: 0 }));
+      return response;
     }
 
-    const isProd = process.env.NODE_ENV === 'production';
-    cookieStore.set('access_token', data.data.accessToken, {
-      httpOnly: true, secure: isProd, sameSite: 'lax', path: '/', maxAge: 15 * 60,
-    });
-    cookieStore.set('refresh_token', data.data.refreshToken, {
-      httpOnly: true, secure: isProd, sameSite: 'strict', path: '/api/auth', maxAge: 7 * 24 * 60 * 60,
-    });
-
-    return NextResponse.json({ data: { message: 'Token refreshed' } });
+    const response = NextResponse.json({ data: { message: 'Token refreshed' } });
+    response.headers.append('Set-Cookie', buildCookie('access_token', data.data.accessToken, {
+      httpOnly: true, secure: isProd, sameSite: 'Lax', path: '/', maxAge: 15 * 60,
+    }));
+    response.headers.append('Set-Cookie', buildCookie('refresh_token', data.data.refreshToken, {
+      httpOnly: true, secure: isProd, sameSite: 'Lax', path: '/', maxAge: 7 * 24 * 60 * 60,
+    }));
+    return response;
   }
 
   if (actionName === 'logout') {
-    const refreshToken = cookieStore.get('refresh_token')?.value;
+    const refreshToken = request.cookies.get('refresh_token')?.value;
     if (refreshToken) {
       await fetch(`${API_BASE}/auth/logout`, {
         method: 'POST',
@@ -81,9 +84,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       }).catch(() => {});
     }
 
-    cookieStore.delete('access_token');
-    cookieStore.delete('refresh_token');
-    return NextResponse.json({ data: { message: 'Đăng xuất thành công' } });
+    const response = NextResponse.json({ data: { message: 'Đăng xuất thành công' } });
+    response.headers.append('Set-Cookie', buildCookie('access_token', '', { path: '/', maxAge: 0 }));
+    response.headers.append('Set-Cookie', buildCookie('refresh_token', '', { path: '/', maxAge: 0 }));
+    return response;
   }
 
   return NextResponse.json({ message: 'Action không hợp lệ' }, { status: 400 });

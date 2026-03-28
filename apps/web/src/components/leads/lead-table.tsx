@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { LeadPoolActionButtons } from '@/components/leads/lead-pool-action-buttons';
 import { formatDate } from '@/lib/utils';
 
 interface Lead {
@@ -12,7 +13,15 @@ interface Lead {
   createdAt: string;
 }
 
-export function LeadTable({ leads }: { leads: Lead[] }) {
+interface LeadTableProps {
+  leads: Lead[];
+  /** Pool mode: 'new' = Kho Mới (assign only), 'floating' = Kho Thả Nổi (claim + assign), 'department' = Kho Phòng Ban (claim + assign) */
+  poolMode?: 'new' | 'floating' | 'department';
+  /** User list for assign dialog (required when poolMode is set) */
+  users?: { id: string; name: string }[];
+}
+
+export function LeadTable({ leads, poolMode, users = [] }: LeadTableProps) {
   if (leads.length === 0) {
     return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có lead nào</div>;
   }
@@ -28,6 +37,7 @@ export function LeadTable({ leads }: { leads: Lead[] }) {
             <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nguồn</th>
             <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nhân viên</th>
             <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Ngày tạo</th>
+            {poolMode && <th className="px-4 py-3 text-right font-medium text-gray-500">Thao tác</th>}
           </tr>
         </thead>
         <tbody>
@@ -43,6 +53,16 @@ export function LeadTable({ leads }: { leads: Lead[] }) {
               <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.source?.name || '—'}</td>
               <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.assignedUser?.name || '—'}</td>
               <td className="hidden lg:table-cell px-4 py-3 text-gray-400">{formatDate(lead.createdAt)}</td>
+              {poolMode && (
+                <td className="px-4 py-3 text-right">
+                  <LeadPoolActionButtons
+                    leadId={lead.id}
+                    leadName={lead.name}
+                    mode={poolMode === 'new' ? 'assign' : 'both'}
+                    users={users}
+                  />
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

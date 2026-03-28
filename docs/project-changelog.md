@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 07: Data Import & Third-Party API (2026-03-28)
+
+#### Added
+- CSV import: BullMQ background processing, stream parsing, progress tracking
+- ImportJob model with status tracking (PROCESSING/COMPLETED/FAILED)
+- Lead import: phone normalization, dedup (phone+source+product), auto-create customer
+- Customer import: phone dedup, validation
+- Error report CSV generation for failed rows
+- CSV export: leads, customers, orders with formula injection prevention
+- Third-party lead ingestion API (POST /external/leads)
+- BullMQ queue configuration with Redis connection
+
 ### Phase 06: Activity Timeline & Call Integration (2026-03-28)
 
 #### Added

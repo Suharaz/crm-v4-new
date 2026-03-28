@@ -24,6 +24,10 @@ import { BankTransactionsModule } from './modules/bank-transactions/bank-transac
 import { ActivitiesModule } from './modules/activities/activities.module';
 import { CallLogsModule } from './modules/call-logs/call-logs.module';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
+import { ImportModule } from './modules/import/import.module';
+import { ExportModule } from './modules/export/export.module';
+import { ThirdPartyApiModule } from './modules/third-party-api/third-party-api.module';
+import { BullModule } from '@nestjs/bullmq';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles-authorization.guard';
 import { BigIntTransformInterceptor } from './common/interceptors/bigint-transform.interceptor';
@@ -37,6 +41,12 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
       { name: 'auth', ttl: 60000, limit: 5 },        // 5 req/min for auth
     ]),
     ScheduleModule.forRoot(),
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6380'),
+      },
+    }),
     LoggerModule.forRoot({
       pinoHttp: {
         transport:
@@ -64,6 +74,9 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     ActivitiesModule,
     CallLogsModule,
     FileUploadModule,
+    ImportModule,
+    ExportModule,
+    ThirdPartyApiModule,
   ],
   controllers: [AppController],
   providers: [

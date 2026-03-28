@@ -28,7 +28,7 @@ created: 2026-03-25
 | 04 | Core CRM: Leads & Customers | 16h | completed | [phase-04](phase-04-core-crm-leads-and-customers.md) |
 | 05 | Products, Orders & Payments + Bank Webhook | 16h | completed | [phase-05](phase-05-products-orders-and-payments.md) |
 | 06 | Activity Timeline & Call Integration | 12h | completed | [phase-06](phase-06-activity-timeline-and-call-integration.md) |
-| 07 | Data Import & Third-Party API | 10h | pending | [phase-07](phase-07-data-import-and-third-party-api.md) |
+| 07 | Data Import & Third-Party API | 10h | completed | [phase-07](phase-07-data-import-and-third-party-api.md) |
 | 08 | Frontend Layout & Auth UI | 10h | pending | [phase-08](phase-08-frontend-layout-and-auth-ui.md) |
 | 09 | Frontend Leads & Customers Pages | 14h | pending | [phase-09](phase-09-frontend-leads-customers-pages.md) |
 | 10 | Frontend Orders, Payments & Settings | 10h | pending | [phase-10](phase-10-frontend-orders-payments-settings.md) |

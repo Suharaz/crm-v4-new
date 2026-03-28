@@ -92,6 +92,12 @@ enum TaskPriority {
   HIGH
 }
 
+enum ImportStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 // ─── USER & ORGANIZATION ────────────────────────────────────────────────────
 
 model User {
@@ -148,6 +154,9 @@ model User {
 
   // Notifications
   notifications Notification[]
+
+  // Import jobs
+  importJobs ImportJob[]
 
   // Template membership
   templateMemberships AssignmentTemplateMember[]
@@ -704,4 +713,25 @@ model Notification {
 
   @@index([userId, isRead, createdAt])
   @@map("notifications")
+}
+
+// ─── IMPORT JOBS ────────────────────────────────────────────────────────────
+
+model ImportJob {
+  id           BigInt       @id @default(autoincrement())
+  type         String       // "leads" | "customers"
+  fileName     String       @map("file_name")
+  fileUrl      String       @map("file_url")
+  status       ImportStatus @default(PROCESSING)
+  totalRows    Int          @default(0) @map("total_rows")
+  successCount Int          @default(0) @map("success_count")
+  errorCount   Int          @default(0) @map("error_count")
+  errorFileUrl String?      @map("error_file_url")
+  createdBy    BigInt       @map("created_by")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  completedAt  DateTime?    @map("completed_at")
+
+  user User @relation(fields: [createdBy], references: [id])
+
+  @@map("import_jobs")
 }

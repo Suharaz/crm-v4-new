@@ -1,7 +1,7 @@
 ---
 phase: 7
 title: "Data Import & Third-Party API"
-status: pending
+status: completed
 priority: P1
 effort: 10h
 depends_on: [4]

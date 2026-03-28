@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 17: Frontend Polish — Dashboard, Pagination, Distribution UI (2026-03-28)
+
+#### Added
+- **Dashboard Stats API**: `GET /dashboard/stats` with role-based filtering (8 KPIs)
+- **Dashboard KPI Cards**: Real data — new leads, in progress, converted, monthly revenue, total customers, orders, pending payments, overdue tasks
+- **Cursor Pagination**: "Tải thêm" controls on leads, customers, orders, users list pages
+- **AI Distribution Config UI**: Department-based weight config (workload/level/conversion), scores preview, batch auto-distribute button
+- **Pagination Controls**: Reusable component with URL-based cursor state
+- Sidebar nav: added "Phân phối AI" link (SUPER_ADMIN/MANAGER)
+
+### Phase 16: Missing Features Gap Fill (2026-03-28)
+
+#### Backend
+- **File Upload Controller**: `POST /files/upload` (multipart) + `GET /files/*` (serve static)
+- **Assignment Templates CRUD**: Create/update/delete templates with member lists, round-robin apply to POOL/FLOATING leads
+- **Recall Config CRUD**: Auto-recall cron (every 2h) moves stale leads/customers to FLOATING + auto-label
+
+#### Frontend
+- **Global Search**: Debounced search bar in header with grouped results dropdown (leads/customers/orders)
+- **Notifications**: Bell icon with unread count badge, 30s polling, mark read/all, dropdown list
+- **Tasks Page**: Create dialog, complete/cancel actions, filter tabs (Tất cả/Đang chờ/Hoàn thành/Đã hủy)
+- **CSV Import**: Drag-drop upload zones, job status polling (3s), import history table
+- **CSV Export**: Export buttons on leads, customers, orders list pages
+- Sidebar nav: added "Công việc" link
+
 ### Phase 15: Frontend CRUD Implementation (2026-03-28)
 
 #### Added

@@ -2,7 +2,7 @@
 
 ## Timeline Overview
 
-**Total effort:** 172h across 14 phases
+**Total effort:** ~190h across 17 phases
 **Start:** 2026-03-27
 **Plan:** `plans/260325-1458-crm-v3-implementation/plan.md`
 
@@ -52,6 +52,9 @@ Phase 14 (Testing/Deploy) ← runs LAST ─────────┘
 | 12 | AI Lead Distribution | 8h | Complete | 100% |
 | 13 | Tasks, Transfer & Advanced Features | 16h | Complete | 100% |
 | 14 | Testing & Deployment | 12h | Complete | 100% |
+| 15 | Frontend CRUD Implementation | 8h | Complete | 100% |
+| 16 | Missing Features Gap Fill | 8h | Complete | 100% |
+| 17 | Frontend Polish (Dashboard, Pagination, Distribution) | 4h | Complete | 100% |
 
 ## Milestones
 

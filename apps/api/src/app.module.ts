@@ -31,6 +31,8 @@ import { DistributionModule } from './modules/distribution/distribution.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { SearchModule } from './modules/search/search.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { AssignmentTemplatesModule } from './modules/assignment-templates/assignment-templates.module';
+import { RecallConfigModule } from './modules/recall-config/recall-config.module';
 import { BullModule } from '@nestjs/bullmq';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles-authorization.guard';
@@ -85,6 +87,8 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     TasksModule,
     SearchModule,
     NotificationsModule,
+    AssignmentTemplatesModule,
+    RecallConfigModule,
   ],
   controllers: [AppController],
   providers: [

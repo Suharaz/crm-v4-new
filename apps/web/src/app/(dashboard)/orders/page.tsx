@@ -37,10 +37,10 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
               <tr>
                 <th className="px-4 py-3 text-left font-medium text-gray-500">Mã</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-500">Khách hàng</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Sản phẩm</th>
+                <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Sản phẩm</th>
                 <th className="px-4 py-3 text-right font-medium text-gray-500">Tổng tiền</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-500">Trạng thái</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Ngày tạo</th>
+                <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Ngày tạo</th>
               </tr>
             </thead>
             <tbody>
@@ -50,10 +50,10 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                     <Link href={`/orders/${o.id}`} className="font-medium text-sky-600 hover:underline">#{o.id}</Link>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{o.customer?.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{o.product?.name || '—'}</td>
+                  <td className="hidden md:table-cell px-4 py-3 text-gray-600">{o.product?.name || '—'}</td>
                   <td className="px-4 py-3 text-right font-medium text-gray-900">{formatVND(Number(o.totalAmount))}</td>
                   <td className="px-4 py-3"><StatusBadge status={o.status} /></td>
-                  <td className="px-4 py-3 text-gray-400">{formatDate(o.createdAt)}</td>
+                  <td className="hidden lg:table-cell px-4 py-3 text-gray-400">{formatDate(o.createdAt)}</td>
                 </tr>
               ))}
             </tbody>

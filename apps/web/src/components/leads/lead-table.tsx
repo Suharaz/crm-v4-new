@@ -25,9 +25,9 @@ export function LeadTable({ leads }: { leads: Lead[] }) {
             <th className="px-4 py-3 text-left font-medium text-gray-500">Họ tên</th>
             <th className="px-4 py-3 text-left font-medium text-gray-500">SĐT</th>
             <th className="px-4 py-3 text-left font-medium text-gray-500">Trạng thái</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Nguồn</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Nhân viên</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Ngày tạo</th>
+            <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nguồn</th>
+            <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nhân viên</th>
+            <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Ngày tạo</th>
           </tr>
         </thead>
         <tbody>
@@ -40,9 +40,9 @@ export function LeadTable({ leads }: { leads: Lead[] }) {
               </td>
               <td className="px-4 py-3 text-gray-600">{lead.phone}</td>
               <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
-              <td className="px-4 py-3 text-gray-600">{lead.source?.name || '—'}</td>
-              <td className="px-4 py-3 text-gray-600">{lead.assignedUser?.name || '—'}</td>
-              <td className="px-4 py-3 text-gray-400">{formatDate(lead.createdAt)}</td>
+              <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.source?.name || '—'}</td>
+              <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.assignedUser?.name || '—'}</td>
+              <td className="hidden lg:table-cell px-4 py-3 text-gray-400">{formatDate(lead.createdAt)}</td>
             </tr>
           ))}
         </tbody>

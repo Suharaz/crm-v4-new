@@ -26,10 +26,10 @@ export function UserTable({ users }: UserTableProps) {
         <thead>
           <tr className="border-b border-gray-100 bg-gray-50">
             <th className="px-4 py-3 text-left font-medium text-gray-500">Họ tên</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Email</th>
+            <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Email</th>
             <th className="px-4 py-3 text-left font-medium text-gray-500">Vai trò</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Phòng ban</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Cấp bậc</th>
+            <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Phòng ban</th>
+            <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Cấp bậc</th>
             <th className="px-4 py-3 text-left font-medium text-gray-500">Trạng thái</th>
             <th className="px-4 py-3 text-right font-medium text-gray-500">Thao tác</th>
           </tr>
@@ -40,14 +40,14 @@ export function UserTable({ users }: UserTableProps) {
           ) : users.map((u: any) => (
             <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50">
               <td className="px-4 py-3 font-medium text-gray-900">{u.name}</td>
-              <td className="px-4 py-3 text-gray-600">{u.email}</td>
+              <td className="hidden md:table-cell px-4 py-3 text-gray-600">{u.email}</td>
               <td className="px-4 py-3">
                 <Badge variant={u.role === 'SUPER_ADMIN' ? 'destructive' : u.role === 'MANAGER' ? 'default' : 'secondary'}>
                   {ROLE_LABELS[u.role] || u.role}
                 </Badge>
               </td>
-              <td className="px-4 py-3 text-gray-600">{u.department?.name || '—'}</td>
-              <td className="px-4 py-3 text-gray-600">{u.employeeLevel?.name || '—'}</td>
+              <td className="hidden md:table-cell px-4 py-3 text-gray-600">{u.department?.name || '—'}</td>
+              <td className="hidden lg:table-cell px-4 py-3 text-gray-600">{u.employeeLevel?.name || '—'}</td>
               <td className="px-4 py-3">
                 <Badge variant={u.status === 'ACTIVE' ? 'success' : 'secondary'}>
                   {u.status === 'ACTIVE' ? 'Hoạt động' : 'Vô hiệu hóa'}

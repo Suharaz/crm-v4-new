@@ -44,10 +44,10 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
               <tr>
                 <th className="px-4 py-3 text-left font-medium text-gray-500">Họ tên</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-500">SĐT</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Email</th>
+                <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Email</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-500">Trạng thái</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Nhân viên</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Ngày tạo</th>
+                <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nhân viên</th>
+                <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Ngày tạo</th>
               </tr>
             </thead>
             <tbody>
@@ -57,10 +57,10 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                     <Link href={`/customers/${c.id}`} className="font-medium text-sky-600 hover:underline">{c.name}</Link>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{c.phone}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.email || '—'}</td>
+                  <td className="hidden md:table-cell px-4 py-3 text-gray-600">{c.email || '—'}</td>
                   <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
-                  <td className="px-4 py-3 text-gray-600">{c.assignedUser?.name || '—'}</td>
-                  <td className="px-4 py-3 text-gray-400">{formatDate(c.createdAt)}</td>
+                  <td className="hidden md:table-cell px-4 py-3 text-gray-600">{c.assignedUser?.name || '—'}</td>
+                  <td className="hidden lg:table-cell px-4 py-3 text-gray-400">{formatDate(c.createdAt)}</td>
                 </tr>
               ))}
             </tbody>

@@ -24,9 +24,9 @@ export default async function CallLogsPage() {
               <tr>
                 <th className="px-4 py-3 text-left font-medium text-gray-500">SĐT</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-500">Loại</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Thời lượng</th>
+                <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Thời lượng</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-500">Ghép nối</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Thời gian</th>
+                <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Thời gian</th>
               </tr>
             </thead>
             <tbody>
@@ -34,9 +34,9 @@ export default async function CallLogsPage() {
                 <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50 last:border-0">
                   <td className="px-4 py-3 font-medium text-gray-700">{c.phoneNumber}</td>
                   <td className="px-4 py-3 text-gray-600">{c.callType === 'INCOMING' ? 'Đến' : c.callType === 'OUTGOING' ? 'Đi' : 'Nhỡ'}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.duration}s</td>
+                  <td className="hidden md:table-cell px-4 py-3 text-gray-600">{c.duration}s</td>
                   <td className="px-4 py-3"><StatusBadge status={c.matchStatus === 'AUTO_MATCHED' ? 'VERIFIED' : c.matchStatus === 'MANUALLY_MATCHED' ? 'CONFIRMED' : 'PENDING'} /></td>
-                  <td className="px-4 py-3 text-gray-400">{formatDateTime(c.callTime)}</td>
+                  <td className="hidden md:table-cell px-4 py-3 text-gray-400">{formatDateTime(c.callTime)}</td>
                 </tr>
               ))}
             </tbody>

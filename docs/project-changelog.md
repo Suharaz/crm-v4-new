@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 19: Full Project Audit & Quality Fixes (2026-03-28)
+
+#### Backend
+- **Manager dept permission**: `checkTransferPermission()` now queries ManagerDepartment table (leads + customers)
+- **Activities controller**: Replaced standalone PrismaClient with LeadsService DI for `triggerInProgress`
+- **Cron error handling**: `processReminders()` and `runAutoRecall()` wrapped with try-catch + Logger
+- **Redis config**: BullMQ now parses `REDIS_URL` env var, fallback to `REDIS_HOST`/`REDIS_PORT`
+- **Bank transaction validation**: Amount must be > 0 on webhook ingest
+
+#### Frontend
+- **API port fix**: Corrected fallback from 3001 to 3010 in api-client.ts
+- **Error boundary**: Dashboard-level `error.tsx` catches runtime errors gracefully
+- **Zod form validation**: 8 schemas for all forms (lead, customer, user, product, order, task, settings)
+  - Vietnamese phone validation (0 + 9-10 digits), field-level Vietnamese error messages
+  - Shared `zod-form-validation-schemas.ts` + `parseZodErrors()` helper
+- **Mobile responsive tables**: Hide non-essential columns on mobile (md:hidden, lg:hidden)
+- **Loading skeletons**: `loading.tsx` for dashboard, leads, customers, orders routes using DataTableSkeleton
+
+#### Audit Summary
+- Full scan: 28 backend modules, 25 frontend pages, 70+ components, 3 packages
+- Backend actual completeness: ~90% (was reported 85%, @Roles pattern verified correct via service-layer checks)
+- Frontend actual completeness: ~85% (validation + error handling gaps now fixed)
+- Remaining: Test coverage (0%), @crm/types population (deferred), Prisma migrations init
+
 ### Phase 18: Tasks/Todo Full Enhancement (2026-03-28)
 
 #### Backend

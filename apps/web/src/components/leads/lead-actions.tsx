@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useFormAction } from '@/hooks/use-form-action';
 import { useAuth } from '@/providers/auth-provider';
+import { api } from '@/lib/api-client';
 import { UserPlus, ArrowRightLeft, TrendingUp, Trash2, Tag, MessageSquarePlus } from 'lucide-react';
 
 interface LeadActionsProps {
@@ -34,6 +35,7 @@ export function LeadActions({ lead, users, departments, labels }: LeadActionsPro
   const [newStatus, setNewStatus] = useState('');
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
   const [noteContent, setNoteContent] = useState('');
+  const [createTaskFromNote, setCreateTaskFromNote] = useState(false);
 
   const assignAction = useFormAction({ successMessage: 'Đã phân lead' });
   const claimAction = useFormAction({ successMessage: 'Đã nhận lead' });
@@ -232,13 +234,39 @@ export function LeadActions({ lead, users, departments, labels }: LeadActionsPro
             placeholder="Nội dung ghi chú..."
             rows={4}
           />
+          <label className="flex items-center gap-2 text-sm text-gray-600">
+            <input
+              type="checkbox"
+              checked={createTaskFromNote}
+              onChange={e => setCreateTaskFromNote(e.target.checked)}
+              className="rounded"
+            />
+            Tạo công việc từ ghi chú này
+          </label>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNoteOpen(false)}>Hủy</Button>
             <Button
               disabled={!noteContent.trim() || noteAction.isLoading}
               onClick={async () => {
                 const r = await noteAction.execute('post', `/leads/${lead.id}/activities`, { type: 'NOTE', content: noteContent });
-                if (r) { setNoteOpen(false); setNoteContent(''); }
+                if (r) {
+                  if (createTaskFromNote && user) {
+                    try {
+                      await api.post('/tasks', {
+                        title: noteContent.substring(0, 50),
+                        description: noteContent,
+                        entityType: 'LEAD',
+                        entityId: String(lead.id),
+                        assignedTo: String(user.id),
+                      });
+                    } catch {
+                      // task creation failure is non-blocking
+                    }
+                  }
+                  setNoteOpen(false);
+                  setNoteContent('');
+                  setCreateTaskFromNote(false);
+                }
               }}
             >
               {noteAction.isLoading ? 'Đang xử lý...' : 'Thêm'}

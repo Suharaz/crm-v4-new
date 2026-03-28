@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestjs/common';
 import { TaskStatus } from '@prisma/client';
 import { TasksService } from './tasks.service';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
@@ -31,5 +31,20 @@ export class TasksController {
   @Post(':id/cancel')
   async cancel(@Param('id', ParseBigIntPipe) id: bigint) {
     return { data: await this.service.cancel(id) };
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id', ParseBigIntPipe) id: bigint,
+    @Body() body: any,
+    @CurrentUser() user: any,
+  ) {
+    return { data: await this.service.update(id, body, user.id) };
+  }
+
+  @Delete(':id')
+  async remove(@Param('id', ParseBigIntPipe) id: bigint) {
+    await this.service.remove(id);
+    return { data: { success: true } };
   }
 }

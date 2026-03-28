@@ -58,13 +58,21 @@ function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
   return <div className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)} {...props} />;
 }
 
-function DialogTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cn('text-lg font-semibold text-gray-900', className)} {...props} />;
-}
+const DialogTitle = React.forwardRef<
+  React.ComponentRef<typeof DialogPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title ref={ref} className={cn('text-lg font-semibold text-gray-900', className)} {...props} />
+));
+DialogTitle.displayName = 'DialogTitle';
 
-function DialogDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn('text-sm text-gray-500', className)} {...props} />;
-}
+const DialogDescription = React.forwardRef<
+  React.ComponentRef<typeof DialogPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description ref={ref} className={cn('text-sm text-gray-500', className)} {...props} />
+));
+DialogDescription.displayName = 'DialogDescription';
 
 function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return <div className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-4', className)} {...props} />;

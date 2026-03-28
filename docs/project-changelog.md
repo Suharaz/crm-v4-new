@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 12-13: Advanced Features (2026-03-28)
+
+#### Phase 12: AI Lead Distribution
+- Weighted scoring: workload (30%) + level (30%) + conversion rate (40%)
+- Auto-distribution service: pick best user for lead assignment
+- Batch distribution for department pools
+- Config CRUD per department (toggle on/off, weight config)
+- Score preview endpoint
+
+#### Phase 13: Tasks, Search, Notifications
+- Tasks CRUD: create, complete, cancel with priority and due dates
+- Task reminders: cron every 5min, creates notification
+- Global search: across leads, customers, orders (name/phone/email)
+- Notifications: list, unread count, mark read, mark all read
+- Notification creation service (injectable by other modules)
+
 ### Phase 09-11: Frontend Pages (2026-03-28)
 
 #### Phase 09: Leads & Customers

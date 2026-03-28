@@ -49,8 +49,8 @@ Phase 14 (Testing/Deploy) ← runs LAST ─────────┘
 | 09 | Frontend Leads & Customers Pages | 14h | Complete | 100% |
 | 10 | Frontend Orders, Payments & Settings | 10h | Complete | 100% |
 | 11 | Frontend Analytics Dashboard | 10h | Complete | 100% |
-| 12 | AI Lead Distribution | 8h | Pending | 0% |
-| 13 | Tasks, Transfer & Advanced Features | 16h | Pending | 0% |
+| 12 | AI Lead Distribution | 8h | Complete | 100% |
+| 13 | Tasks, Transfer & Advanced Features | 16h | Complete | 100% |
 | 14 | Testing & Deployment | 12h | Pending | 0% |
 
 ## Milestones

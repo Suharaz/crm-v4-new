@@ -27,6 +27,10 @@ import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { ImportModule } from './modules/import/import.module';
 import { ExportModule } from './modules/export/export.module';
 import { ThirdPartyApiModule } from './modules/third-party-api/third-party-api.module';
+import { DistributionModule } from './modules/distribution/distribution.module';
+import { TasksModule } from './modules/tasks/tasks.module';
+import { SearchModule } from './modules/search/search.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { BullModule } from '@nestjs/bullmq';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles-authorization.guard';
@@ -77,6 +81,10 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     ImportModule,
     ExportModule,
     ThirdPartyApiModule,
+    DistributionModule,
+    TasksModule,
+    SearchModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

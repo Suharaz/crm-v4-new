@@ -2,6 +2,8 @@ import { serverFetch } from '@/lib/auth';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 /** Customer list page with search. */
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
@@ -16,8 +18,15 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Khách hàng</h1>
-      <p className="text-sm text-gray-500">Quản lý thông tin khách hàng</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Khách hàng</h1>
+          <p className="text-sm text-gray-500">Quản lý thông tin khách hàng</p>
+        </div>
+        <Link href="/customers/new">
+          <Button><Plus className="h-4 w-4 mr-1" />Tạo khách hàng</Button>
+        </Link>
+      </div>
 
       <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 bg-white">
         {data.length === 0 ? (

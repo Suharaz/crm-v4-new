@@ -1,0 +1,98 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FormField } from '@/components/shared/form-field';
+import { useFormAction } from '@/hooks/use-form-action';
+
+interface CustomerFormProps {
+  customer?: any;
+  departments: any[];
+  users: any[];
+}
+
+/** Create/edit form for customers. */
+export function CustomerForm({ customer, departments, users }: CustomerFormProps) {
+  const router = useRouter();
+  const isEdit = !!customer;
+  const { execute, isLoading, error } = useFormAction({
+    successMessage: isEdit ? 'Đã cập nhật khách hàng' : 'Đã tạo khách hàng',
+    onSuccess: () => router.push('/customers'),
+  });
+
+  const [form, setForm] = useState({
+    phone: customer?.phone || '',
+    name: customer?.name || '',
+    email: customer?.email || '',
+    assignedUserId: customer?.assignedUserId || '',
+    assignedDepartmentId: customer?.assignedDepartmentId || '',
+  });
+
+  function update(key: string, value: string) {
+    setForm(prev => ({ ...prev, [key]: value }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const body: Record<string, any> = { phone: form.phone, name: form.name };
+    if (form.email) body.email = form.email;
+    if (form.assignedUserId) body.assignedUserId = form.assignedUserId;
+    if (form.assignedDepartmentId) body.assignedDepartmentId = form.assignedDepartmentId;
+
+    if (isEdit) {
+      await execute('patch', `/customers/${customer.id}`, body);
+    } else {
+      await execute('post', '/customers', body);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
+      {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+
+      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
+        <h3 className="font-semibold text-gray-900">Thông tin khách hàng</h3>
+
+        <FormField label="Số điện thoại" required>
+          <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" />
+        </FormField>
+
+        <FormField label="Họ tên" required>
+          <Input value={form.name} onChange={e => update('name', e.target.value)} placeholder="Nguyễn Văn A" />
+        </FormField>
+
+        <FormField label="Email">
+          <Input type="email" value={form.email} onChange={e => update('email', e.target.value)} placeholder="email@example.com" />
+        </FormField>
+
+        <FormField label="Phòng ban">
+          <Select value={form.assignedDepartmentId} onValueChange={v => update('assignedDepartmentId', v)}>
+            <SelectTrigger><SelectValue placeholder="Chọn phòng ban" /></SelectTrigger>
+            <SelectContent>
+              {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </FormField>
+
+        <FormField label="Nhân viên phụ trách">
+          <Select value={form.assignedUserId} onValueChange={v => update('assignedUserId', v)}>
+            <SelectTrigger><SelectValue placeholder="Chọn nhân viên" /></SelectTrigger>
+            <SelectContent>
+              {users.map(u => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </FormField>
+      </div>
+
+      <div className="flex gap-3">
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? 'Đang lưu...' : (isEdit ? 'Cập nhật' : 'Tạo khách hàng')}
+        </Button>
+        <Button type="button" variant="outline" onClick={() => router.back()}>Hủy</Button>
+      </div>
+    </form>
+  );
+}

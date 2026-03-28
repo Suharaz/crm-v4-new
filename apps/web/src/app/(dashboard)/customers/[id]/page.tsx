@@ -1,10 +1,13 @@
 import { serverFetch } from '@/lib/auth';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { CustomerActions } from '@/components/customers/customer-actions';
 import { formatDate, formatVND } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Pencil } from 'lucide-react';
 
-/** Customer detail: info + leads + orders + timeline. */
+/** Customer detail: info + actions + leads + orders + timeline. */
 export default async function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   let customer: any;
@@ -17,20 +20,35 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
   }
 
   let activities: any[] = [];
+  let departments: any[] = [];
+  let labels: any[] = [];
+
   try {
-    const result = await serverFetch<{ data: any[] }>(`/customers/${id}/activities`);
-    activities = result.data;
-  } catch { /* empty */ }
+    [activities, departments, labels] = await Promise.all([
+      serverFetch<{ data: any[] }>(`/customers/${id}/activities`).then(r => r.data).catch(() => []),
+      serverFetch<{ data: any[] }>('/departments').then(r => r.data).catch(() => []),
+      serverFetch<{ data: any[] }>('/labels').then(r => r.data).catch(() => []),
+    ]);
+  } catch { /* partial ok */ }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{customer.name}</h1>
           <p className="text-gray-500">{customer.phone}</p>
         </div>
-        <StatusBadge status={customer.status} />
+        <div className="flex items-center gap-3">
+          <StatusBadge status={customer.status} />
+          <Link href={`/customers/${id}/edit`}>
+            <Button variant="outline" size="sm"><Pencil className="h-4 w-4 mr-1" />Sửa</Button>
+          </Link>
+        </div>
       </div>
+
+      {/* Actions */}
+      <CustomerActions customer={customer} departments={departments} labels={labels} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Info */}
@@ -77,7 +95,6 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
 
         {/* Orders + Timeline */}
         <div className="space-y-6 lg:col-span-2">
-          {/* Orders */}
           {customer.orders?.length > 0 && (
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="mb-3 font-semibold text-gray-900">Đơn hàng ({customer.orders.length})</h3>
@@ -95,7 +112,6 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             </div>
           )}
 
-          {/* Timeline */}
           <div className="rounded-xl border border-gray-200 bg-white p-5">
             <h3 className="mb-4 font-semibold text-gray-900">Lịch sử hoạt động</h3>
             {activities.length === 0 ? (

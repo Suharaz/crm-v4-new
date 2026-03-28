@@ -1,9 +1,13 @@
 import { serverFetch } from '@/lib/auth';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { LeadActions } from '@/components/leads/lead-actions';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Pencil } from 'lucide-react';
 
-/** Lead detail page: info + timeline + labels. */
+/** Lead detail page: info + actions + timeline + labels. */
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   let lead: any;
@@ -15,12 +19,20 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
     notFound();
   }
 
-  // Fetch timeline
+  // Fetch supporting data in parallel
   let activities: any[] = [];
+  let users: any[] = [];
+  let departments: any[] = [];
+  let labels: any[] = [];
+
   try {
-    const result = await serverFetch<{ data: any[] }>(`/leads/${id}/activities`);
-    activities = result.data;
-  } catch { /* empty */ }
+    [activities, users, departments, labels] = await Promise.all([
+      serverFetch<{ data: any[] }>(`/leads/${id}/activities`).then(r => r.data).catch(() => []),
+      serverFetch<{ data: any[] }>('/users').then(r => r.data).catch(() => []),
+      serverFetch<{ data: any[] }>('/departments').then(r => r.data).catch(() => []),
+      serverFetch<{ data: any[] }>('/labels').then(r => r.data).catch(() => []),
+    ]);
+  } catch { /* partial ok */ }
 
   return (
     <div className="space-y-6">
@@ -30,8 +42,16 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
           <h1 className="text-2xl font-bold text-gray-900">{lead.name}</h1>
           <p className="text-gray-500">{lead.phone}</p>
         </div>
-        <StatusBadge status={lead.status} />
+        <div className="flex items-center gap-3">
+          <StatusBadge status={lead.status} />
+          <Link href={`/leads/${id}/edit`}>
+            <Button variant="outline" size="sm"><Pencil className="h-4 w-4 mr-1" />Sửa</Button>
+          </Link>
+        </div>
       </div>
+
+      {/* Actions */}
+      <LeadActions lead={lead} users={users} departments={departments} labels={labels} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Info panel */}

@@ -2,6 +2,7 @@ import { serverFetch } from '@/lib/auth';
 import { LeadTable } from '@/components/leads/lead-table';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 /** Lead list page — shows all leads with filters. */
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
@@ -22,6 +23,9 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
           <p className="text-sm text-gray-500">Quản lý leads và phân phối</p>
         </div>
         <div className="flex gap-2">
+          <Link href="/leads/new">
+            <Button><Plus className="h-4 w-4 mr-1" />Tạo Lead</Button>
+          </Link>
           <Link href="/leads/pool/new">
             <Button variant="outline" size="sm">Kho Mới</Button>
           </Link>

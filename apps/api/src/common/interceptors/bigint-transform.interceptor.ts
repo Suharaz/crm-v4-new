@@ -16,6 +16,10 @@ export class BigIntTransformInterceptor implements NestInterceptor {
     if (data === null || data === undefined) return data;
     if (typeof data === 'bigint') return data.toString();
     if (data instanceof Date) return data;
+    // Handle Prisma Decimal objects (have toNumber/toFixed methods and {s, e, d} shape)
+    if (typeof data === 'object' && data !== null && 'toFixed' in data && 'd' in data) {
+      return Number((data as { toFixed: (n: number) => string }).toFixed(2));
+    }
     if (Array.isArray(data)) return data.map((item) => this.transformBigInts(item));
     if (typeof data === 'object') {
       const result: Record<string, unknown> = {};

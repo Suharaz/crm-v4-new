@@ -3,16 +3,19 @@
 import { useAuth } from '@/providers/auth-provider';
 import { LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SearchBar } from '@/components/layout/search-bar';
+import { NotificationBell } from '@/components/layout/notification-bell';
 
 export function AppHeader() {
   const { user, logout } = useAuth();
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-6">
-      <div />
+      <SearchBar />
 
       {/* User menu */}
       <div className="flex items-center gap-3">
+        <NotificationBell />
         <div className="flex items-center gap-2 text-sm">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 text-sky-600">
             <User size={16} />

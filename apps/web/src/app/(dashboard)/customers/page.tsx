@@ -4,6 +4,7 @@ import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { CsvExportButton } from '@/components/shared/csv-export-button';
 
 /** Customer list page with search. */
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
@@ -23,9 +24,12 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           <h1 className="text-2xl font-bold text-gray-900">Khách hàng</h1>
           <p className="text-sm text-gray-500">Quản lý thông tin khách hàng</p>
         </div>
-        <Link href="/customers/new">
-          <Button><Plus className="h-4 w-4 mr-1" />Tạo khách hàng</Button>
-        </Link>
+        <div className="flex gap-2">
+          <CsvExportButton exportPath="/exports/customers" />
+          <Link href="/customers/new">
+            <Button><Plus className="h-4 w-4 mr-1" />Tạo khách hàng</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 bg-white">

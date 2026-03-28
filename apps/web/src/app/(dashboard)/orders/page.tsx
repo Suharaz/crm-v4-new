@@ -2,6 +2,7 @@ import { serverFetch } from '@/lib/auth';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { formatDate, formatVND } from '@/lib/utils';
 import Link from 'next/link';
+import { CsvExportButton } from '@/components/shared/csv-export-button';
 
 /** Orders list page. */
 export default async function OrdersPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
@@ -16,8 +17,13 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Đơn hàng</h1>
-      <p className="text-sm text-gray-500">Quản lý đơn hàng và thanh toán</p>
+      <div className="flex items-center justify-between mb-1">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Đơn hàng</h1>
+          <p className="text-sm text-gray-500">Quản lý đơn hàng và thanh toán</p>
+        </div>
+        <CsvExportButton exportPath="/exports/orders" />
+      </div>
 
       <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 bg-white">
         {data.length === 0 ? (

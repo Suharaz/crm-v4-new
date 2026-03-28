@@ -3,6 +3,7 @@ import { LeadTable } from '@/components/leads/lead-table';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { CsvExportButton } from '@/components/shared/csv-export-button';
 
 /** Lead list page — shows all leads with filters. */
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
@@ -23,6 +24,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
           <p className="text-sm text-gray-500">Quản lý leads và phân phối</p>
         </div>
         <div className="flex gap-2">
+          <CsvExportButton exportPath="/exports/leads" />
           <Link href="/leads/new">
             <Button><Plus className="h-4 w-4 mr-1" />Tạo Lead</Button>
           </Link>

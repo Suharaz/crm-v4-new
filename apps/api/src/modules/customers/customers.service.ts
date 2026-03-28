@@ -231,6 +231,8 @@ export class CustomersService {
     if (user.role === UserRole.SUPER_ADMIN) return;
     if (customer.assignedUserId === user.id) return;
     if (user.role === UserRole.MANAGER) {
+      // Manager can transfer unowned customers (no assignee)
+      if (!customer.assignedUserId) return;
       // Check if manager manages the customer's department
       const deptId = customer.assignedDepartmentId as bigint | null;
       if (deptId) {

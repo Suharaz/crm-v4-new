@@ -18,4 +18,8 @@ export class CreateLeadDto {
   @IsOptional()
   @IsString()
   productId?: string;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }

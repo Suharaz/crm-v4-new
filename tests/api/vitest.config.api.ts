@@ -6,12 +6,7 @@ export default defineConfig({
     testTimeout: 30000,
     hookTimeout: 30000,
     // Sequential — shared DB state, cannot run in parallel
-    pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
+    sequence: { concurrent: false },
     include: ['tests/api/**/*.test.ts'],
     reporters: ['verbose'],
   },

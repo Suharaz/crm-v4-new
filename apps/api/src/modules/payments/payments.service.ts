@@ -82,7 +82,7 @@ export class PaymentsService {
   }
 
   async verifyManual(id: bigint, userId: bigint, bankTransactionId?: string) {
-    return this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx) => {
       const payment = await tx.payment.findFirst({ where: { id, status: 'PENDING' } });
       if (!payment) throw new ConflictException('Thanh toán không ở trạng thái PENDING');
 
@@ -106,9 +106,10 @@ export class PaymentsService {
 
       // Check conversion trigger
       await this.matchingService.checkConversionTrigger(tx, id);
-
-      return this.findById(id);
     });
+
+    // Read after transaction commits to return up-to-date status
+    return this.findById(id);
   }
 
   async reject(id: bigint, userId: bigint) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, HttpCode } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { DistributionService } from './distribution.service';
 import { Roles } from '../auth/decorators/roles-required.decorator';
@@ -30,6 +30,7 @@ export class DistributionController {
   }
 
   @Post('distribute/:deptId')
+  @HttpCode(200)
   async batchDistribute(
     @Param('deptId', ParseBigIntPipe) deptId: bigint,
     @CurrentUser() user: any,

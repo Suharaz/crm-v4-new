@@ -28,6 +28,46 @@ interface RequestOptions {
 export class ApiTestClient {
   private accessToken: string | null = null;
   private refreshToken: string | null = null;
+  private tokenExpiresAt: number = 0; // Unix timestamp in seconds
+
+  /** Decode JWT exp claim without verification */
+  private getTokenExpiry(token: string): number {
+    try {
+      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+      return payload.exp ?? 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  /** Check if access token is about to expire (within 60 seconds) */
+  private isTokenExpiringSoon(): boolean {
+    if (!this.accessToken) return false;
+    return Date.now() / 1000 > this.tokenExpiresAt - 60;
+  }
+
+  /** Refresh access token if about to expire */
+  async ensureFreshToken(): Promise<void> {
+    if (!this.isTokenExpiringSoon()) return;
+    if (!this.refreshToken) return;
+    try {
+      const res = await fetch(`${BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: this.refreshToken }),
+      });
+      if (res.ok) {
+        const json = (await res.json()) as LoginResponse;
+        if (json.data?.accessToken) {
+          this.accessToken = json.data.accessToken;
+          this.refreshToken = json.data.refreshToken;
+          this.tokenExpiresAt = this.getTokenExpiry(json.data.accessToken);
+        }
+      }
+    } catch {
+      // Ignore refresh errors, let request fail with 401
+    }
+  }
 
   /** Đăng nhập và lưu token */
   async login(email: string, password: string): Promise<LoginResponse> {
@@ -40,6 +80,7 @@ export class ApiTestClient {
     if (res.ok && json.data?.accessToken) {
       this.accessToken = json.data.accessToken;
       this.refreshToken = json.data.refreshToken;
+      this.tokenExpiresAt = this.getTokenExpiry(json.data.accessToken);
     }
     return json;
   }
@@ -86,6 +127,7 @@ export class ApiTestClient {
   }
 
   async get(path: string, opts?: RequestOptions): Promise<Response> {
+    await this.ensureFreshToken();
     return fetch(`${BASE_URL}${path}`, {
       method: 'GET',
       headers: this.buildHeaders(opts?.headers),
@@ -93,6 +135,7 @@ export class ApiTestClient {
   }
 
   async post(path: string, opts?: RequestOptions): Promise<Response> {
+    await this.ensureFreshToken();
     const isFormData = opts?.isFormData ?? false;
     const headers = this.buildHeaders(opts?.headers);
     if (!isFormData) {
@@ -110,6 +153,7 @@ export class ApiTestClient {
   }
 
   async patch(path: string, opts?: RequestOptions): Promise<Response> {
+    await this.ensureFreshToken();
     return fetch(`${BASE_URL}${path}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', ...this.buildHeaders(opts?.headers) },
@@ -118,6 +162,7 @@ export class ApiTestClient {
   }
 
   async delete(path: string, opts?: RequestOptions): Promise<Response> {
+    await this.ensureFreshToken();
     return fetch(`${BASE_URL}${path}`, {
       method: 'DELETE',
       headers: this.buildHeaders(opts?.headers),

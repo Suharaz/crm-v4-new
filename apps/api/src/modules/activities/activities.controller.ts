@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, Inject, forwardRef } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Inject, forwardRef, BadRequestException } from '@nestjs/common';
 import { EntityType } from '@prisma/client';
 import { ActivitiesService } from './activities.service';
 import { LeadsService } from '../leads/leads.service';
@@ -28,6 +28,9 @@ export class ActivitiesController {
     @Body() body: { content: string },
     @CurrentUser() user: any,
   ) {
+    if (!body.content || body.content.trim() === '') {
+      throw new BadRequestException('Nội dung ghi chú không được để trống');
+    }
     const data = await this.service.createNote('LEAD' as EntityType, id, user.id, body.content);
 
     // Auto-trigger IN_PROGRESS on first note for ASSIGNED lead
@@ -52,6 +55,9 @@ export class ActivitiesController {
     @Body() body: { content: string },
     @CurrentUser() user: any,
   ) {
+    if (!body.content || body.content.trim() === '') {
+      throw new BadRequestException('Nội dung ghi chú không được để trống');
+    }
     const data = await this.service.createNote('CUSTOMER' as EntityType, id, user.id, body.content);
     return { data };
   }

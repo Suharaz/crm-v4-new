@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaClient, Prisma, EntityType } from '@prisma/client';
 
 @Injectable()
@@ -24,8 +24,11 @@ export class NotificationsService {
   }
 
   async markAsRead(id: bigint, userId: bigint) {
-    return this.prisma.notification.updateMany({
-      where: { id, userId },
+    const notification = await this.prisma.notification.findFirst({ where: { id } });
+    if (!notification) throw new NotFoundException('Không tìm thấy thông báo');
+    if (notification.userId !== userId) throw new ForbiddenException('Không có quyền đọc thông báo này');
+    return this.prisma.notification.update({
+      where: { id },
       data: { isRead: true },
     });
   }

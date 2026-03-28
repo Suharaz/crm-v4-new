@@ -72,13 +72,17 @@ describe('Customers CRUD, Transfer & Dedup', () => {
       expect(status).toBe(400);
     });
 
-    it('phone normalization: +84912000001 → 0912000001', async () => {
+    it('phone normalization: +84 format → 0x format', async () => {
+      // Dùng số ngẫu nhiên để tránh conflict giữa các lần chạy test
+      const suffix = Math.floor(10000000 + Math.random() * 89999999);
+      const intlPhone = `+849${suffix}`;
+      const localPhone = `09${suffix}`;
       const { status, body } = await manager.postJson<any>('/customers', {
         name: 'Phone Norm Customer',
-        phone: '+84912000001',
+        phone: intlPhone,
       });
       expect(status).toBe(201);
-      expect(body.data.phone).toBe('0912000001');
+      expect(body.data.phone).toBe(localPhone);
     });
   });
 

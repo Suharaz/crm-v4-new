@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient, Prisma, EntityType, ActivityType } from '@prisma/client';
 
 const ACTIVITY_SELECT = {
@@ -12,8 +12,20 @@ const ACTIVITY_SELECT = {
 export class ActivitiesService {
   constructor(private readonly prisma: PrismaClient) {}
 
+  /** Validate entity exists, throw 404 if not. */
+  private async validateEntityExists(entityType: EntityType, entityId: bigint) {
+    if (entityType === 'LEAD') {
+      const lead = await this.prisma.lead.findFirst({ where: { id: entityId, deletedAt: null } });
+      if (!lead) throw new NotFoundException('Không tìm thấy lead');
+    } else if (entityType === 'CUSTOMER') {
+      const customer = await this.prisma.customer.findFirst({ where: { id: entityId, deletedAt: null } });
+      if (!customer) throw new NotFoundException('Không tìm thấy khách hàng');
+    }
+  }
+
   /** Get paginated timeline for an entity. */
   async getTimeline(entityType: EntityType, entityId: bigint, limit = 20, cursor?: string) {
+    await this.validateEntityExists(entityType, entityId);
     const take = limit + 1;
     const activities = await this.prisma.activity.findMany({
       where: { entityType, entityId, deletedAt: null },
@@ -30,6 +42,7 @@ export class ActivitiesService {
 
   /** Create a manual note. */
   async createNote(entityType: EntityType, entityId: bigint, userId: bigint, content: string) {
+    await this.validateEntityExists(entityType, entityId);
     return this.prisma.activity.create({
       data: { entityType, entityId, userId, type: 'NOTE', content },
       select: ACTIVITY_SELECT,

@@ -193,16 +193,37 @@ describe('Bank Transactions — Webhook & Matching', () => {
 
   describe('POST /bank-transactions/:id/match — manual match', () => {
     it('MANAGER manual match tx với payment → 200', async () => {
-      if (!ingestedTxId || !pendingPaymentId) return;
+      // Tạo tx + payment mới với nội dung độc đáo để tránh auto-match
+      const anon = new ApiTestClient();
+      const uniqueContent = `Manual-Manager-${Date.now()}`;
+      const txRes = await anon.post('/webhooks/bank-transactions', {
+        body: {
+          externalId: `TX-MGR-MANUAL-${Date.now()}`,
+          amount: 2500000,
+          content: uniqueContent,
+          transactionTime: new Date().toISOString(),
+        },
+      });
+      const txBody = await txRes.json() as any;
+      const manualTxId = txBody.data.id;
+
+      const { body: orderBody } = await user.postJson<any>('/orders', {
+        customerId,
+        amount: 2500000,
+      });
+      const { body: pmtBody } = await user.postJson<any>('/payments', {
+        orderId: orderBody.data.id,
+        amount: 2500000,
+      });
 
       const { status, body } = await manager.postJson<any>(
-        `/bank-transactions/${ingestedTxId}/match`,
-        { paymentId: pendingPaymentId },
+        `/bank-transactions/${manualTxId}/match`,
+        { paymentId: pmtBody.data.id },
       );
       expect(status).toBe(200);
       expect(body.data).toBeDefined();
-      // matchStatus phải là MANUALLY_MATCHED sau khi match thủ công
-      expect(body.data.matchStatus).toBe('MANUALLY_MATCHED');
+      // service trả về { bankTxId, paymentId, status }
+      expect(body.data.status).toBe('MANUALLY_MATCHED');
     });
 
     it('SUPER_ADMIN manual match → 200', async () => {

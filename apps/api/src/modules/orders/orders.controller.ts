@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, BadRequestException } from '@nestjs/common';
+import { IsOptional, IsString, IsEnum } from 'class-validator';
 import { UserRole, OrderStatus } from '@prisma/client';
 import { OrdersService } from './orders.service';
 import { Roles } from '../auth/decorators/roles-required.decorator';
@@ -6,18 +7,27 @@ import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
+class OrderListQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsEnum(OrderStatus)
+  status?: OrderStatus;
+
+  @IsOptional()
+  @IsString()
+  customerId?: string;
+
+  @IsOptional()
+  @IsString()
+  leadId?: string;
+}
+
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly service: OrdersService) {}
 
   @Get()
-  async list(
-    @Query() query: PaginationQueryDto,
-    @Query('status') status?: OrderStatus,
-    @Query('customerId') customerId?: string,
-    @Query('leadId') leadId?: string,
-  ) {
-    return this.service.list({ ...query, status, customerId, leadId });
+  async list(@Query() query: OrderListQueryDto) {
+    return this.service.list(query);
   }
 
   @Get(':id')
@@ -30,6 +40,9 @@ export class OrdersController {
     @Body() body: { leadId?: string; customerId: string; productId?: string; amount: number; notes?: string },
     @CurrentUser() user: any,
   ) {
+    if (!body.customerId) throw new BadRequestException('customerId là bắt buộc');
+    if (body.amount === undefined || body.amount === null) throw new BadRequestException('amount là bắt buộc');
+    if (typeof body.amount !== 'number' || body.amount <= 0) throw new BadRequestException('amount phải là số dương');
     return { data: await this.service.create(body, user.id) };
   }
 

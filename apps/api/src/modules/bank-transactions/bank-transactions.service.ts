@@ -44,6 +44,12 @@ export class BankTransactionsService {
     bankAccount?: string; senderName?: string; senderAccount?: string;
     transactionTime: string; rawData?: Record<string, unknown>;
   }) {
+    if (!data.externalId) {
+      throw new BadRequestException('externalId là bắt buộc');
+    }
+    if (!data.transactionTime) {
+      throw new BadRequestException('transactionTime là bắt buộc');
+    }
     if (!data.amount || data.amount <= 0) {
       throw new BadRequestException('Số tiền giao dịch phải lớn hơn 0');
     }

@@ -1,17 +1,24 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, BadRequestException } from '@nestjs/common';
+import { IsOptional, IsString } from 'class-validator';
 import { UserRole } from '@prisma/client';
 import { ProductsService } from './products.service';
 import { Roles } from '../auth/decorators/roles-required.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
+class ProductListQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+}
+
 @Controller('products')
 export class ProductsController {
   constructor(private readonly service: ProductsService) {}
 
   @Get()
-  async list(@Query() query: PaginationQueryDto, @Query('search') search?: string) {
-    return this.service.list({ ...query, search });
+  async list(@Query() query: ProductListQueryDto) {
+    return this.service.list(query);
   }
 
   @Get(':id')
@@ -22,6 +29,15 @@ export class ProductsController {
   @Post()
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
   async create(@Body() body: { name: string; price: number; description?: string; categoryId?: string; vatRate?: number }) {
+    if (!body.name || typeof body.name !== 'string' || body.name.trim() === '') {
+      throw new BadRequestException('Tên sản phẩm là bắt buộc');
+    }
+    if (body.price === undefined || body.price === null) {
+      throw new BadRequestException('Giá sản phẩm là bắt buộc');
+    }
+    if (typeof body.price !== 'number' || body.price < 0) {
+      throw new BadRequestException('Giá sản phẩm phải là số không âm');
+    }
     return { data: await this.service.create(body) };
   }
 

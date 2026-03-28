@@ -44,8 +44,8 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ThrottlerModule.forRoot([
-      { name: 'short', ttl: 60000, limit: 100 },   // 100 req/min general
-      { name: 'auth', ttl: 60000, limit: 5 },        // 5 req/min for auth
+      { name: 'short', ttl: 60000, limit: parseInt(process.env.THROTTLE_LIMIT || '100', 10) },
+      { name: 'auth', ttl: 60000, limit: parseInt(process.env.THROTTLE_AUTH_LIMIT || '5', 10) },
     ]),
     ScheduleModule.forRoot(),
     BullModule.forRoot({

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -50,12 +50,14 @@ export class CustomersController {
   }
 
   @Post(':id/claim')
+  @HttpCode(200)
   async claim(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
     const data = await this.customersService.claim(id, user);
     return { data };
   }
 
   @Post(':id/transfer')
+  @HttpCode(200)
   async transfer(
     @Param('id', ParseBigIntPipe) id: bigint,
     @Body() body: { targetType: string; targetDeptId?: string },
@@ -66,6 +68,7 @@ export class CustomersController {
   }
 
   @Post(':id/reactivate')
+  @HttpCode(200)
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
   async reactivate(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
     const data = await this.customersService.reactivate(id, user);

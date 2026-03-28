@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode } from '@nestjs/common';
 import { UserRole, LeadStatus } from '@prisma/client';
 import { LeadsService } from './leads.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
@@ -65,6 +65,7 @@ export class LeadsController {
   }
 
   @Post(':id/assign')
+  @HttpCode(200)
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
   async assign(
     @Param('id', ParseBigIntPipe) id: bigint,
@@ -76,12 +77,14 @@ export class LeadsController {
   }
 
   @Post(':id/claim')
+  @HttpCode(200)
   async claim(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
     const data = await this.leadsService.claim(id, user);
     return { data };
   }
 
   @Post(':id/transfer')
+  @HttpCode(200)
   async transfer(
     @Param('id', ParseBigIntPipe) id: bigint,
     @Body() body: { targetType: string; targetDeptId?: string },
@@ -92,6 +95,7 @@ export class LeadsController {
   }
 
   @Post(':id/status')
+  @HttpCode(200)
   async changeStatus(
     @Param('id', ParseBigIntPipe) id: bigint,
     @Body() body: { status: LeadStatus },
@@ -102,6 +106,7 @@ export class LeadsController {
   }
 
   @Post(':id/convert')
+  @HttpCode(200)
   async convert(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
     const data = await this.leadsService.convert(id, user);
     return { data };

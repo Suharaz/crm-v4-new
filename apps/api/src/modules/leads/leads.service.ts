@@ -297,6 +297,11 @@ export class LeadsService {
 
   // ── Status Change ───────────────────────────────────────────────────────
   async changeStatus(id: bigint, newStatus: LeadStatus, user: CurrentUser) {
+    const validStatuses = Object.keys(ALLOWED_TRANSITIONS) as LeadStatus[];
+    if (!validStatuses.includes(newStatus)) {
+      throw new BadRequestException(`Trạng thái không hợp lệ: ${newStatus}`);
+    }
+
     const lead = await this.findById(id);
     const currentStatus = lead.status as LeadStatus;
 
@@ -405,6 +410,8 @@ export class LeadsService {
     if (user.role === UserRole.SUPER_ADMIN) return;
     if (lead.assignedUserId === user.id) return;
     if (user.role === UserRole.MANAGER) {
+      // Manager can transfer unowned leads (POOL with no assignee)
+      if (!lead.assignedUserId) return;
       // Check if manager manages the lead's department
       const deptId = lead.departmentId as bigint | null;
       if (deptId) {

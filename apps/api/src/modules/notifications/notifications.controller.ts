@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, HttpCode } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
@@ -19,12 +19,14 @@ export class NotificationsController {
   }
 
   @Post(':id/read')
+  @HttpCode(200)
   async markAsRead(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
     await this.service.markAsRead(id, user.id);
     return { data: { message: 'Đã đọc' } };
   }
 
   @Post('read-all')
+  @HttpCode(200)
   async markAllAsRead(@CurrentUser() user: any) {
     await this.service.markAllAsRead(user.id);
     return { data: { message: 'Đã đọc tất cả' } };

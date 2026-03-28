@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { PrismaClient, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { UsersRepository } from './users.repository';
@@ -120,6 +120,9 @@ export class UsersService {
   }
 
   async deactivate(id: bigint, performedBy: bigint) {
+    if (id === performedBy) {
+      throw new BadRequestException('Không thể vô hiệu hóa chính mình');
+    }
     const user = await this.repo.findById(id);
     if (!user) throw new NotFoundException('Không tìm thấy người dùng');
 

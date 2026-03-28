@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { PrismaClient, Prisma, TaskStatus } from '@prisma/client';
 import { Cron } from '@nestjs/schedule';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
@@ -60,6 +60,8 @@ export class TasksService {
   async complete(id: bigint) {
     const task = await this.prisma.task.findFirst({ where: { id, deletedAt: null } });
     if (!task) throw new NotFoundException('Không tìm thấy công việc');
+    if (task.status === 'COMPLETED') throw new ConflictException('Công việc đã hoàn thành');
+    if (task.status === 'CANCELLED') throw new ConflictException('Không thể hoàn thành công việc đã hủy');
     return this.prisma.task.update({
       where: { id },
       data: { status: 'COMPLETED', completedAt: new Date() },

@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 15: Frontend CRUD Implementation (2026-03-28)
+
+#### Added
+- Full CRUD UI for all CRM entities (previously read-only)
+- shadcn/ui components: Dialog, Select, Textarea, AlertDialog, DropdownMenu, Tabs, Badge
+- Sonner toast notifications on all mutations
+- Reusable form infrastructure: useFormAction hook, ConfirmDialog, FormField
+- **Settings CRUD**: Tabbed page with create/edit/delete for departments, employee levels, lead sources, payment types, labels (color picker)
+- **Users Management**: List/create/edit/deactivate users (SUPER_ADMIN) with department/team cascading dropdowns
+- **Leads CRUD**: Create/edit form + action bar (assign, claim, transfer, convert, status change, label management, add notes)
+- **Customers CRUD**: Create/edit form + action bar (claim, transfer, reactivate, labels)
+- **Products CRUD**: Dialog-based create/edit/delete with price, VAT, category
+- **Orders**: Status change dialog, create order from customer detail with product auto-fill
+- **Payments**: Create payment, verify/reject buttons for pending payments (MANAGER+)
+- Role-based button visibility across all pages
+- "Quản lý NV" sidebar nav item for SUPER_ADMIN
+
 ### Phase 14: Testing & Deployment (2026-03-28)
 
 #### Added

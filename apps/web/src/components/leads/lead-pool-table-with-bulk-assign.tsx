@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -11,7 +11,7 @@ import { LeadPoolActionButtons } from '@/components/leads/lead-pool-action-butto
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/providers/auth-provider';
 import { formatDate } from '@/lib/utils';
-import { Users } from 'lucide-react';
+import { Users, Shuffle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Lead {
@@ -39,6 +39,17 @@ export function LeadPoolTableWithBulkAssign({ leads, users, poolMode }: PoolTabl
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [bulkUserId, setBulkUserId] = useState('');
   const [bulkAssigning, setBulkAssigning] = useState(false);
+
+  // Template state
+  const [templates, setTemplates] = useState<{ id: string; name: string; members: { user: { name: string } }[] }[]>([]);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [templateApplying, setTemplateApplying] = useState(false);
+
+  useEffect(() => {
+    if (!isManager) return;
+    api.get<{ data: any[] }>('/assignment-templates').then(res => setTemplates(res.data || [])).catch(() => {});
+  }, [isManager]);
 
   const allSelected = leads.length > 0 && selected.size === leads.length;
   const someSelected = selected.size > 0;
@@ -80,6 +91,25 @@ export function LeadPoolTableWithBulkAssign({ leads, users, poolMode }: PoolTabl
     router.refresh();
   }
 
+  async function handleTemplateApply() {
+    if (!selectedTemplateId || selected.size === 0) return;
+    setTemplateApplying(true);
+    try {
+      const res = await api.post<{ data: { assigned: number } }>(
+        `/assignment-templates/${selectedTemplateId}/apply`,
+        { leadIds: Array.from(selected) },
+      );
+      toast.success(`Đã phân phối ${res.data?.assigned ?? 0} leads theo template`);
+    } catch (err: any) {
+      toast.error(err.message || 'Lỗi phân phối theo template');
+    }
+    setTemplateApplying(false);
+    setTemplateDialogOpen(false);
+    setSelected(new Set());
+    setSelectedTemplateId('');
+    router.refresh();
+  }
+
   if (leads.length === 0) {
     return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có lead nào</div>;
   }
@@ -93,9 +123,14 @@ export function LeadPoolTableWithBulkAssign({ leads, users, poolMode }: PoolTabl
             Đã chọn {selected.size} lead
           </span>
           <Button size="sm" onClick={() => setBulkDialogOpen(true)}>
-            <Users className="h-4 w-4 mr-1" />Phân hàng loạt
+            <Users className="h-4 w-4 mr-1" />Phân cho 1 người
           </Button>
-          <Button size="sm" variant="outline" onClick={() => setSelected(new Set())}>
+          {templates.length > 0 && (
+            <Button size="sm" variant="outline" onClick={() => setTemplateDialogOpen(true)}>
+              <Shuffle className="h-4 w-4 mr-1" />Áp dụng Template
+            </Button>
+          )}
+          <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>
             Bỏ chọn
           </Button>
         </div>
@@ -185,6 +220,39 @@ export function LeadPoolTableWithBulkAssign({ leads, users, poolMode }: PoolTabl
             <Button variant="outline" onClick={() => setBulkDialogOpen(false)}>Hủy</Button>
             <Button onClick={handleBulkAssign} disabled={!bulkUserId || bulkAssigning}>
               {bulkAssigning ? `Đang phân ${selected.size} leads...` : `Phân ${selected.size} leads`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Template apply dialog */}
+      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Phân phối {selected.size} leads theo Template</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+              <SelectTrigger><SelectValue placeholder="Chọn template" /></SelectTrigger>
+              <SelectContent>
+                {templates.map(t => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.name} ({t.members?.length || 0} người)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedTemplateId && (
+              <p className="text-xs text-gray-500">
+                Round-robin: {selected.size} leads chia đều cho{' '}
+                {templates.find(t => t.id === selectedTemplateId)?.members?.map(m => m.user.name).join(', ')}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Hủy</Button>
+            <Button onClick={handleTemplateApply} disabled={!selectedTemplateId || templateApplying}>
+              {templateApplying ? 'Đang phân phối...' : `Phân phối ${selected.size} leads`}
             </Button>
           </DialogFooter>
         </DialogContent>

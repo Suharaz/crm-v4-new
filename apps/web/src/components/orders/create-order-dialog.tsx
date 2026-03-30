@@ -16,10 +16,11 @@ interface CreateOrderDialogProps {
   customerId: string;
   leadId?: string;
   products: any[];
+  paymentTypes?: any[];
 }
 
 /** Dialog to create an order — pick product (price auto-filled), then optionally create first payment. */
-export function CreateOrderDialog({ customerId, leadId, products }: CreateOrderDialogProps) {
+export function CreateOrderDialog({ customerId, leadId, products, paymentTypes = [] }: CreateOrderDialogProps) {
   const router = useRouter();
   const [step, setStep] = useState<'order' | 'payment'>('order');
   const [open, setOpen] = useState(false);
@@ -33,6 +34,8 @@ export function CreateOrderDialog({ customerId, leadId, products }: CreateOrderD
 
   // Payment form
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentTypeId, setPaymentTypeId] = useState('');
+  const [transferContent, setTransferContent] = useState('');
 
   const selectedProduct = products.find(p => p.id === productId);
   const price = selectedProduct ? Number(selectedProduct.price) : 0;
@@ -48,6 +51,8 @@ export function CreateOrderDialog({ customerId, leadId, products }: CreateOrderD
     setCreatedOrderId(null);
     setOrderAmount(0);
     setPaymentAmount('');
+    setPaymentTypeId('');
+    setTransferContent('');
   }
 
   async function handleCreateOrder() {
@@ -82,10 +87,13 @@ export function CreateOrderDialog({ customerId, leadId, products }: CreateOrderD
     if (!createdOrderId || !paymentAmount) return;
     setSubmitting(true);
     try {
-      await api.post('/payments', {
+      const paymentBody: Record<string, any> = {
         orderId: createdOrderId,
         amount: Number(paymentAmount),
-      });
+      };
+      if (paymentTypeId) paymentBody.paymentTypeId = paymentTypeId;
+      if (transferContent) paymentBody.transferContent = transferContent;
+      await api.post('/payments', paymentBody);
       toast.success('Đã tạo thanh toán');
       resetAndClose();
       router.refresh();
@@ -162,6 +170,20 @@ export function CreateOrderDialog({ customerId, leadId, products }: CreateOrderD
                 <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-700">
                   Đơn hàng đã tạo thành công — tổng: {formatVND(orderAmount)}
                 </div>
+
+                {paymentTypes.length > 0 && (
+                  <FormField label="Hình thức thanh toán">
+                    <Select value={paymentTypeId} onValueChange={setPaymentTypeId}>
+                      <SelectTrigger><SelectValue placeholder="Chọn hình thức" /></SelectTrigger>
+                      <SelectContent>
+                        {paymentTypes.map(pt => (
+                          <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                )}
+
                 <FormField label="Số tiền thanh toán (VNĐ)" required>
                   <input
                     type="number"
@@ -170,10 +192,23 @@ export function CreateOrderDialog({ customerId, leadId, products }: CreateOrderD
                     onChange={e => setPaymentAmount(e.target.value)}
                     placeholder={String(orderAmount)}
                   />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Toàn bộ = 1 lần, hoặc nhập một phần cho đợt 1
+                  </p>
                 </FormField>
-                <p className="text-xs text-gray-400">
-                  Nhập toàn bộ để thanh toán 1 lần, hoặc nhập một phần cho đợt 1
-                </p>
+
+                <FormField label="Nội dung chuyển khoản">
+                  <input
+                    type="text"
+                    className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    value={transferContent}
+                    onChange={e => setTransferContent(e.target.value)}
+                    placeholder="VD: CK LAN 1 KHOA HOC DM"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Dùng để match tự động với giao dịch ngân hàng
+                  </p>
+                </FormField>
               </div>
               <DialogFooter className="flex gap-2">
                 <Button variant="outline" onClick={handleSkipPayment}>Bỏ qua</Button>

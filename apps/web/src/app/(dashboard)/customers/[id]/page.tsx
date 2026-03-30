@@ -25,13 +25,15 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
   let departments: any[] = [];
   let labels: any[] = [];
   let products: any[] = [];
+  let paymentTypes: any[] = [];
 
   try {
-    [activities, departments, labels, products] = await Promise.all([
+    [activities, departments, labels, products, paymentTypes] = await Promise.all([
       serverFetch<{ data: any[] }>(`/customers/${id}/activities`).then(r => r.data).catch(() => []),
       serverFetch<{ data: any[] }>('/departments').then(r => r.data).catch(() => []),
       serverFetch<{ data: any[] }>('/labels').then(r => r.data).catch(() => []),
       serverFetch<{ data: any[] }>('/products').then(r => r.data).catch(() => []),
+      serverFetch<{ data: any[] }>('/payment-types').then(r => r.data).catch(() => []),
     ]);
   } catch { /* partial ok */ }
 
@@ -54,7 +56,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
       {/* Actions */}
       <div className="flex flex-wrap items-center gap-2">
         <CustomerActions customer={customer} departments={departments} labels={labels} />
-        <CreateOrderDialog customerId={customer.id} products={products} />
+        <CreateOrderDialog customerId={customer.id} products={products} paymentTypes={paymentTypes} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

@@ -27,14 +27,16 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   let departments: any[] = [];
   let labels: any[] = [];
   let products: any[] = [];
+  let paymentTypes: any[] = [];
 
   try {
-    [activities, users, departments, labels, products] = await Promise.all([
+    [activities, users, departments, labels, products, paymentTypes] = await Promise.all([
       serverFetch<{ data: any[] }>(`/leads/${id}/activities`).then(r => r.data).catch(() => []),
       serverFetch<{ data: any[] }>('/users').then(r => r.data).catch(() => []),
       serverFetch<{ data: any[] }>('/departments').then(r => r.data).catch(() => []),
       serverFetch<{ data: any[] }>('/labels').then(r => r.data).catch(() => []),
       serverFetch<{ data: any[] }>('/products').then(r => r.data).catch(() => []),
+      serverFetch<{ data: any[] }>('/payment-types').then(r => r.data).catch(() => []),
     ]);
   } catch { /* partial ok */ }
 
@@ -58,7 +60,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
       <div className="flex flex-wrap items-center gap-2">
         <LeadActions lead={lead} users={users} departments={departments} labels={labels} />
         {lead.customerId && (
-          <CreateOrderDialog customerId={lead.customerId} leadId={lead.id} products={products} />
+          <CreateOrderDialog customerId={lead.customerId} leadId={lead.id} products={products} paymentTypes={paymentTypes} />
         )}
       </div>
 

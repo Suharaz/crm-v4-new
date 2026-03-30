@@ -88,7 +88,7 @@ export class PaymentMatchingService {
       where: { id: paymentId },
       include: { order: { select: { id: true, totalAmount: true, leadId: true } } },
     });
-    if (!payment?.order?.leadId) return;
+    if (!payment?.order) return;
 
     // Sum verified payments for this order
     const result = await tx.payment.aggregate({
@@ -100,7 +100,14 @@ export class PaymentMatchingService {
     const orderTotal = Number(payment.order.totalAmount);
 
     if (totalVerified >= orderTotal) {
-      // Trigger conversion
+      // Auto-complete order when fully paid
+      await tx.order.update({
+        where: { id: payment.orderId },
+        data: { status: 'COMPLETED' },
+      });
+
+      // Trigger lead conversion if linked
+      if (!payment.order.leadId) return;
       const lead = await tx.lead.findFirst({
         where: { id: payment.order.leadId, deletedAt: null },
       });

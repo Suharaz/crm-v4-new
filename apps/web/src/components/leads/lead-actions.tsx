@@ -9,7 +9,7 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useFormAction } from '@/hooks/use-form-action';
 import { useAuth } from '@/providers/auth-provider';
 import { api } from '@/lib/api-client';
-import { UserPlus, ArrowRightLeft, TrendingUp, Trash2, Tag, MessageSquarePlus } from 'lucide-react';
+import { UserPlus, ArrowRightLeft, Trash2, Tag, MessageSquarePlus } from 'lucide-react';
 
 interface LeadActionsProps {
   lead: any;
@@ -41,13 +41,12 @@ export function LeadActions({ lead, users, departments, labels }: LeadActionsPro
   const claimAction = useFormAction({ successMessage: 'Đã nhận lead' });
   const transferAction = useFormAction({ successMessage: 'Đã chuyển lead' });
   const statusAction = useFormAction({ successMessage: 'Đã đổi trạng thái' });
-  const convertAction = useFormAction({ successMessage: 'Đã chuyển đổi thành khách hàng' });
   const deleteAction = useFormAction({ successMessage: 'Đã xóa lead' });
   const labelAction = useFormAction({ successMessage: 'Đã gắn nhãn' });
   const noteAction = useFormAction({ successMessage: 'Đã thêm ghi chú' });
 
   const canClaim = ['POOL', 'FLOATING'].includes(lead.status);
-  const canConvert = lead.status === 'IN_PROGRESS';
+
   const canAssign = isManager && ['POOL', 'FLOATING', 'ASSIGNED'].includes(lead.status);
 
   return (
@@ -170,17 +169,7 @@ export function LeadActions({ lead, users, departments, labels }: LeadActionsPro
       </Dialog>
 
       {/* Convert */}
-      {canConvert && (
-        <ConfirmDialog
-          trigger={<Button size="sm"><TrendingUp className="h-4 w-4 mr-1" />Chuyển đổi KH</Button>}
-          title="Chuyển đổi thành khách hàng"
-          description="Lead sẽ được chuyển sang trạng thái CONVERTED và tạo/cập nhật khách hàng."
-          confirmLabel="Chuyển đổi"
-          onConfirm={() => convertAction.execute('post', `/leads/${lead.id}/convert`)}
-          isLoading={convertAction.isLoading}
-        />
-      )}
-
+     
       {/* Labels */}
       <Button size="sm" variant="outline" onClick={() => setLabelOpen(true)}>
         <Tag className="h-4 w-4 mr-1" />Nhãn

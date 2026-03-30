@@ -1,19 +1,37 @@
 import { serverFetch } from '@/lib/auth';
 import { DistributionAiWeightConfigClient } from '@/components/settings/distribution-ai-weight-config-client';
+import { AssignmentTemplateCrudWithApply } from '@/components/settings/assignment-template-crud-with-apply';
 
-/** AI distribution config page — weight settings and auto-assign per department. */
+/** Distribution config page — AI weights + manual assignment templates. */
 export default async function DistributionSettingsPage() {
   let departments: { id: string; name: string }[] = [];
+  let users: { id: string; name: string }[] = [];
   try {
-    const result = await serverFetch<{ data: { id: string; name: string }[] }>('/departments');
-    departments = result.data;
+    const [deptRes, usersRes] = await Promise.all([
+      serverFetch<{ data: { id: string; name: string }[] }>('/departments'),
+      serverFetch<{ data: any[] }>('/users').catch(() => ({ data: [] })),
+    ]);
+    departments = deptRes.data;
+    users = (usersRes.data || []).map((u: any) => ({ id: String(u.id), name: u.name }));
   } catch { /* empty */ }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900">Phân phối AI</h1>
-      <p className="text-sm text-gray-500 mb-6">Cấu hình trọng số và phân phối leads tự động theo phòng ban</p>
-      <DistributionAiWeightConfigClient departments={departments} />
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Phân phối Leads</h1>
+        <p className="text-sm text-gray-500">Cấu hình phân phối tự động (AI) và thủ công (template round-robin)</p>
+      </div>
+
+      {/* AI Distribution */}
+      <div className="rounded-xl border border-gray-200 bg-white p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Phân phối AI tự động</h2>
+        <DistributionAiWeightConfigClient departments={departments} />
+      </div>
+
+      {/* Manual Assignment Templates */}
+      <div className="rounded-xl border border-gray-200 bg-white p-6">
+        <AssignmentTemplateCrudWithApply users={users} />
+      </div>
     </div>
   );
 }

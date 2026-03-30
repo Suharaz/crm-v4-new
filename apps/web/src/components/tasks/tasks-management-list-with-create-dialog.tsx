@@ -153,8 +153,8 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
       const body: Record<string, string> = { title: quickTitle.trim() };
       if (quickPreset) body.dueDate = new Date(getPresetDate(quickPreset)).toISOString();
       if (user) body.assignedTo = String(user.id);
-      const created = await api.post<Task>('/tasks', body);
-      setTasks(prev => [created, ...prev]);
+      const res = await api.post<{ data: Task }>('/tasks', body);
+      setTasks(prev => [res.data, ...prev]);
       setQuickTitle('');
       setQuickPreset('');
       toast.success('Đã tạo công việc');
@@ -182,12 +182,12 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
       if (form.assignedTo) body.assignedTo = form.assignedTo;
 
       if (editTask) {
-        const updated = await api.patch<Task>(`/tasks/${editTask.id}`, body);
-        setTasks(prev => prev.map(t => t.id === editTask.id ? { ...t, ...updated } : t));
+        const res = await api.patch<{ data: Task }>(`/tasks/${editTask.id}`, body);
+        setTasks(prev => prev.map(t => t.id === editTask.id ? { ...t, ...res.data } : t));
         toast.success('Đã cập nhật công việc');
       } else {
-        const created = await api.post<Task>('/tasks', body);
-        setTasks(prev => [created, ...prev]);
+        const res = await api.post<{ data: Task }>('/tasks', body);
+        setTasks(prev => [res.data, ...prev]);
         toast.success('Đã tạo công việc');
       }
       setDialogOpen(false);

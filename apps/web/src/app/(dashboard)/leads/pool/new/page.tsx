@@ -1,5 +1,5 @@
 import { serverFetch } from '@/lib/auth';
-import { LeadTable } from '@/components/leads/lead-table';
+import { LeadPoolTableWithBulkAssign } from '@/components/leads/lead-pool-table-with-bulk-assign';
 
 /** Kho Mới: POOL leads with no department (manager+ only). */
 export default async function PoolNewPage() {
@@ -16,10 +16,10 @@ export default async function PoolNewPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Kho Mới</h1>
-      <p className="text-sm text-gray-500">Leads chưa phân phối phòng ban</p>
+      <h1 className="text-2xl font-bold text-gray-900">Chờ phân phối</h1>
+      <p className="text-sm text-gray-500">Leads chưa phân phối phòng ban — chọn checkbox để phân hàng loạt</p>
       <div className="mt-4">
-        <LeadTable leads={data} poolMode="new" users={users} />
+        <LeadPoolTableWithBulkAssign leads={data} users={users} poolMode="new" />
       </div>
     </div>
   );

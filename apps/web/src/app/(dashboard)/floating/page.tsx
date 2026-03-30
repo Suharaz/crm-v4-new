@@ -1,5 +1,5 @@
 import { serverFetch } from '@/lib/auth';
-import { LeadTable } from '@/components/leads/lead-table';
+import { LeadPoolTableWithBulkAssign } from '@/components/leads/lead-pool-table-with-bulk-assign';
 
 /** Kho Thả Nổi: FLOATING leads visible to ALL users. */
 export default async function FloatingPoolPage() {
@@ -17,9 +17,9 @@ export default async function FloatingPoolPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900">Kho Thả Nổi</h1>
-      <p className="text-sm text-gray-500">Leads và khách hàng thả nổi — bất kỳ ai cũng có thể claim</p>
+      <p className="text-sm text-gray-500">Leads thả nổi — bất kỳ ai cũng có thể nhận, manager phân hàng loạt</p>
       <div className="mt-4">
-        <LeadTable leads={data} poolMode="floating" users={users} />
+        <LeadPoolTableWithBulkAssign leads={data} users={users} poolMode="floating" />
       </div>
     </div>
   );

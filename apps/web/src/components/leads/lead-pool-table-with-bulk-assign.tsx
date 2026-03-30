@@ -61,26 +61,21 @@ export function LeadPoolTableWithBulkAssign({ leads, users, poolMode }: PoolTabl
   async function handleBulkAssign() {
     if (!bulkUserId || selected.size === 0) return;
     setBulkAssigning(true);
-    let successCount = 0;
-    let failCount = 0;
-
-    // Assign từng lead (API chưa có bulk endpoint)
-    for (const leadId of selected) {
-      try {
-        await api.post(`/leads/${leadId}/assign`, { userId: bulkUserId });
-        successCount++;
-      } catch {
-        failCount++;
-      }
+    try {
+      const res = await api.post<{ data: { assigned: number; skipped: number } }>(
+        '/leads/bulk-assign',
+        { leadIds: Array.from(selected), userId: bulkUserId },
+      );
+      const { assigned, skipped } = res.data;
+      toast.success(`Đã phân ${assigned} leads thành công${skipped > 0 ? ` (${skipped} bỏ qua)` : ''}`);
+    } catch (err: any) {
+      toast.error(err.message || 'Lỗi phân phối hàng loạt');
     }
 
     setBulkAssigning(false);
     setBulkDialogOpen(false);
     setSelected(new Set());
     setBulkUserId('');
-
-    if (successCount > 0) toast.success(`Đã phân ${successCount} leads thành công`);
-    if (failCount > 0) toast.error(`${failCount} leads phân thất bại`);
     router.refresh();
   }
 

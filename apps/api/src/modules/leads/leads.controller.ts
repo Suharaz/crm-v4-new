@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode, BadRequestException } from '@nestjs/common';
 import { UserRole, LeadStatus } from '@prisma/client';
 import { LeadsService } from './leads.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
@@ -62,6 +62,22 @@ export class LeadsController {
   ) {
     const data = await this.leadsService.update(id, body, user);
     return { data };
+  }
+
+  @Post('bulk-assign')
+  @HttpCode(200)
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async bulkAssign(
+    @Body() body: { leadIds: string[]; userId: string },
+    @CurrentUser() user: any,
+  ) {
+    if (!body.leadIds?.length) throw new BadRequestException('leadIds là bắt buộc');
+    if (!body.userId) throw new BadRequestException('userId là bắt buộc');
+    return this.leadsService.bulkAssign(
+      body.leadIds.map(id => BigInt(id)),
+      BigInt(body.userId),
+      user,
+    );
   }
 
   @Post(':id/assign')

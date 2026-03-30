@@ -215,6 +215,51 @@ export class LeadsService {
     return this.findById(id);
   }
 
+  /** Bulk assign multiple leads to a single user in one transaction */
+  async bulkAssign(leadIds: bigint[], targetUserId: bigint, user: CurrentUser) {
+    const targetUser = await this.prisma.user.findFirst({
+      where: { id: targetUserId, deletedAt: null, status: 'ACTIVE' },
+      select: { id: true, departmentId: true, name: true },
+    });
+    if (!targetUser) throw new NotFoundException('Không tìm thấy nhân viên');
+
+    const leads = await this.prisma.lead.findMany({
+      where: { id: { in: leadIds }, status: { in: ['POOL', 'FLOATING'] }, deletedAt: null },
+      select: { id: true, assignedUserId: true, departmentId: true },
+    });
+
+    if (leads.length === 0) {
+      throw new BadRequestException('Không có lead nào ở trạng thái có thể phân phối');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.lead.updateMany({
+        where: { id: { in: leads.map(l => l.id) } },
+        data: { assignedUserId: targetUserId, departmentId: targetUser.departmentId, status: 'ASSIGNED' },
+      });
+
+      await tx.assignmentHistory.createMany({
+        data: leads.map(l => ({
+          entityType: 'LEAD' as const, entityId: l.id,
+          fromUserId: l.assignedUserId, toUserId: targetUserId,
+          fromDepartmentId: l.departmentId, toDepartmentId: targetUser.departmentId,
+          assignedBy: user.id,
+        })),
+      });
+
+      await tx.activity.createMany({
+        data: leads.map(l => ({
+          entityType: 'LEAD' as const, entityId: l.id, userId: user.id,
+          type: 'ASSIGNMENT',
+          content: `Phân hàng loạt cho ${targetUser.name}`,
+          metadata: { toUserId: targetUserId.toString(), bulk: true },
+        })),
+      });
+    });
+
+    return { data: { assigned: leads.length, skipped: leadIds.length - leads.length, targetUser: { id: targetUser.id.toString(), name: targetUser.name } } };
+  }
+
   // ── Claim ───────────────────────────────────────────────────────────────
   async claim(id: bigint, user: CurrentUser) {
     const lead = await this.findById(id);

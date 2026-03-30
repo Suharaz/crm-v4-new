@@ -59,7 +59,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
       {/* Actions */}
       <div className="flex flex-wrap items-center gap-2">
         <LeadActions lead={lead} users={users} departments={departments} labels={labels} />
-        {lead.customerId && (
+        {['IN_PROGRESS', 'CONVERTED'].includes(lead.status) && (
           <CreateOrderDialog customerId={lead.customerId} leadId={lead.id} products={products} paymentTypes={paymentTypes} />
         )}
       </div>

@@ -60,10 +60,10 @@ export function CreateOrderDialog({ customerId, leadId, products, paymentTypes =
     setSubmitting(true);
     try {
       const body: Record<string, any> = {
-        customerId,
         productId,
         amount: price,
       };
+      if (customerId) body.customerId = customerId;
       if (leadId) body.leadId = leadId;
       if (notes) body.notes = notes;
 

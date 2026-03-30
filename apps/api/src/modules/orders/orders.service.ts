@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaClient, Prisma, OrderStatus } from '@prisma/client';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
@@ -59,7 +59,7 @@ export class OrdersService {
   }
 
   async create(data: {
-    leadId?: string; customerId: string; productId?: string;
+    leadId?: string; customerId?: string; productId?: string;
     amount: number; notes?: string;
   }, userId: bigint) {
     // Get product VAT rate if productId provided
@@ -72,15 +72,42 @@ export class OrdersService {
       vatRate = Number(product.vatRate);
     }
 
+    // Auto-create customer from lead if no customerId
+    let customerId = data.customerId ? BigInt(data.customerId) : null;
+    if (!customerId && data.leadId) {
+      const lead = await this.prisma.lead.findFirst({
+        where: { id: BigInt(data.leadId), deletedAt: null },
+        select: { id: true, phone: true, name: true, email: true, customerId: true, assignedUserId: true, departmentId: true },
+      });
+      if (!lead) throw new NotFoundException('Lead không tồn tại');
+
+      if (lead.customerId) {
+        customerId = lead.customerId;
+      } else {
+        // Create customer from lead data
+        const customer = await this.prisma.customer.create({
+          data: {
+            phone: lead.phone, name: lead.name, email: lead.email,
+            assignedUserId: lead.assignedUserId, assignedDepartmentId: lead.departmentId,
+          },
+        });
+        customerId = customer.id;
+        // Link customer to lead
+        await this.prisma.lead.update({ where: { id: lead.id }, data: { customerId: customer.id } });
+      }
+    }
+
+    if (!customerId) throw new BadRequestException('Cần customerId hoặc leadId để tạo đơn hàng');
+
     const amount = data.amount;
-    const vatAmount = Math.round(amount * vatRate) / 100;
+    const vatAmount = Math.round(amount * vatRate / 100);
     const totalAmount = amount + vatAmount;
 
     const order = await this.prisma.order.create({
       data: {
         amount, vatRate, vatAmount, totalAmount,
         notes: data.notes,
-        customer: { connect: { id: BigInt(data.customerId) } },
+        customer: { connect: { id: customerId } },
         creator: { connect: { id: userId } },
         ...(data.leadId ? { lead: { connect: { id: BigInt(data.leadId) } } } : {}),
         ...(data.productId ? { product: { connect: { id: BigInt(data.productId) } } } : {}),

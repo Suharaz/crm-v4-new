@@ -1,7 +1,8 @@
 import { serverFetch } from '@/lib/auth';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { ActivityTimelineWithFilterTabs } from '@/components/shared/activity-timeline-with-filter-tabs';
 import { LeadActions } from '@/components/leads/lead-actions';
-import { formatDate, formatDateTime } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -101,29 +102,9 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
           )}
         </div>
 
-        {/* Timeline */}
+        {/* Timeline with filter tabs */}
         <div className="lg:col-span-2">
-          <div className="rounded-xl border border-gray-200 bg-white p-5">
-            <h3 className="mb-4 font-semibold text-gray-900">Lịch sử hoạt động</h3>
-            {activities.length === 0 ? (
-              <p className="text-sm text-gray-400">Chưa có hoạt động nào</p>
-            ) : (
-              <div className="space-y-3">
-                {activities.map((a: any) => (
-                  <div key={a.id} className="flex gap-3 border-b border-gray-100 pb-3 last:border-0">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-700">{a.user?.name}</span>
-                        <span className="text-xs text-gray-400">{a.type}</span>
-                      </div>
-                      {a.content && <p className="mt-0.5 text-sm text-gray-600">{a.content}</p>}
-                    </div>
-                    <span className="whitespace-nowrap text-xs text-gray-400">{formatDateTime(a.createdAt)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <ActivityTimelineWithFilterTabs activities={activities} />
         </div>
       </div>
     </div>

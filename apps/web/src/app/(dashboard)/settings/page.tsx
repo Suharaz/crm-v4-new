@@ -8,14 +8,16 @@ export default async function SettingsPage() {
   let sources: any[] = [];
   let labels: any[] = [];
   let paymentTypes: any[] = [];
+  let productCategories: any[] = [];
 
   try {
-    [departments, levels, sources, labels, paymentTypes] = await Promise.all([
+    [departments, levels, sources, labels, paymentTypes, productCategories] = await Promise.all([
       serverFetch<{ data: any[] }>('/departments').then(r => r.data),
       serverFetch<{ data: any[] }>('/employee-levels').then(r => r.data),
       serverFetch<{ data: any[] }>('/lead-sources').then(r => r.data),
       serverFetch<{ data: any[] }>('/labels').then(r => r.data),
       serverFetch<{ data: any[] }>('/payment-types').then(r => r.data),
+      serverFetch<{ data: any[] }>('/product-categories').then(r => r.data),
     ]);
   } catch { /* partial data ok */ }
 
@@ -30,6 +32,7 @@ export default async function SettingsPage() {
         sources={sources}
         paymentTypes={paymentTypes}
         labels={labels}
+        productCategories={productCategories}
       />
     </div>
   );

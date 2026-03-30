@@ -6,6 +6,7 @@ import { EmployeeLevelSettings } from '@/components/settings/employee-level-sett
 import { LeadSourceSettings } from '@/components/settings/lead-source-settings';
 import { PaymentTypeSettings } from '@/components/settings/payment-type-settings';
 import { LabelSettings } from '@/components/settings/label-settings';
+import { SettingsCrudList } from '@/components/settings/settings-crud-list';
 import { useAuth } from '@/providers/auth-provider';
 
 interface SettingsPageClientProps {
@@ -14,21 +15,24 @@ interface SettingsPageClientProps {
   sources: any[];
   paymentTypes: any[];
   labels: any[];
+  productCategories: any[];
 }
 
-export function SettingsPageClient({ departments, levels, sources, paymentTypes, labels }: SettingsPageClientProps) {
+export function SettingsPageClient({ departments, levels, sources, paymentTypes, labels, productCategories }: SettingsPageClientProps) {
   const { user } = useAuth();
   const canEdit = user?.role === 'SUPER_ADMIN';
   const canEditLabels = user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER';
+  const canEditCategories = user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER';
 
   return (
     <Tabs defaultValue="departments" className="w-full">
-      <TabsList>
+      <TabsList className="flex-wrap">
         <TabsTrigger value="departments">Phòng ban</TabsTrigger>
         <TabsTrigger value="levels">Cấp bậc</TabsTrigger>
         <TabsTrigger value="sources">Nguồn lead</TabsTrigger>
         <TabsTrigger value="payment-types">Thanh toán</TabsTrigger>
         <TabsTrigger value="labels">Nhãn</TabsTrigger>
+        <TabsTrigger value="product-categories">Danh mục SP</TabsTrigger>
       </TabsList>
 
       <TabsContent value="departments">
@@ -45,6 +49,15 @@ export function SettingsPageClient({ departments, levels, sources, paymentTypes,
       </TabsContent>
       <TabsContent value="labels">
         <LabelSettings data={labels} canEdit={canEditLabels} />
+      </TabsContent>
+      <TabsContent value="product-categories">
+        <SettingsCrudList
+          data={productCategories}
+          endpoint="/product-categories"
+          entityName="Danh mục sản phẩm"
+          fields={[{ key: 'name', label: 'Tên danh mục', required: true, placeholder: 'VD: Khóa học, Tư vấn...' }]}
+          canEdit={canEditCategories}
+        />
       </TabsContent>
     </Tabs>
   );

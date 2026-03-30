@@ -1,5 +1,6 @@
 import { serverFetch } from '@/lib/auth';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { ActivityTimelineWithFilterTabs } from '@/components/shared/activity-timeline-with-filter-tabs';
 import { CustomerActions } from '@/components/customers/customer-actions';
 import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
 import { formatDate, formatVND } from '@/lib/utils';
@@ -118,24 +119,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             </div>
           )}
 
-          <div className="rounded-xl border border-gray-200 bg-white p-5">
-            <h3 className="mb-4 font-semibold text-gray-900">Lịch sử hoạt động</h3>
-            {activities.length === 0 ? (
-              <p className="text-sm text-gray-400">Chưa có hoạt động nào</p>
-            ) : (
-              <div className="space-y-3">
-                {activities.map((a: any) => (
-                  <div key={a.id} className="border-b border-gray-100 pb-3 last:border-0">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">{a.user?.name} — {a.type}</span>
-                      <span className="text-xs text-gray-400">{formatDate(a.createdAt)}</span>
-                    </div>
-                    {a.content && <p className="mt-0.5 text-sm text-gray-600">{a.content}</p>}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <ActivityTimelineWithFilterTabs activities={activities} />
         </div>
       </div>
     </div>

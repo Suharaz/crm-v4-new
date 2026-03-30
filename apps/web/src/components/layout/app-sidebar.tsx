@@ -4,23 +4,37 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, UserCheck, ShoppingCart, Package,
-  Phone, Settings, Upload, Waves, ChevronLeft, ChevronRight, UserCog, CheckSquare, Zap,
+  Phone, Settings, Upload, Waves, ChevronLeft, ChevronRight, ChevronDown,
+  UserCog, CheckSquare, Zap, Inbox, List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
 import { useState } from 'react';
 
+interface NavChild {
+  label: string;
+  href: string;
+  icon: React.ElementType;
+}
+
 interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
-  roles?: string[]; // visible only to these roles (empty = all)
+  roles?: string[];
+  children?: NavChild[];
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Trang chủ', href: '/', icon: LayoutDashboard },
-  { label: 'Leads', href: '/leads', icon: Users },
-  { label: 'Kho thả nổi', href: '/floating', icon: Waves },
+  {
+    label: 'Leads', href: '/leads', icon: Users,
+    children: [
+      { label: 'Chờ phân phối', href: '/leads/pool/new', icon: Inbox },
+      { label: 'Danh sách', href: '/leads', icon: List },
+      { label: 'Kho thả nổi', href: '/floating', icon: Waves },
+    ],
+  },
   { label: 'Khách hàng', href: '/customers', icon: UserCheck },
   { label: 'Đơn hàng', href: '/orders', icon: ShoppingCart },
   { label: 'Sản phẩm', href: '/products', icon: Package },
@@ -37,10 +51,41 @@ export function AppSidebar() {
   const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
+  // Auto-expand Leads group if current path is a child route
+  const leadsChildPaths = ['/leads', '/floating', '/leads/pool'];
+  const isLeadsActive = leadsChildPaths.some(p => pathname.startsWith(p));
+  const [leadsOpen, setLeadsOpen] = useState(isLeadsActive);
+
   const visibleItems = NAV_ITEMS.filter((item) => {
     if (!item.roles || item.roles.length === 0) return true;
     return user && item.roles.includes(user.role);
   });
+
+  function renderNavLink(item: { label: string; href: string; icon: React.ElementType }, indent = false) {
+    const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href) && item.href !== '/leads');
+    // Special case: /leads exact match only (not /leads/pool/new)
+    const isExactLeads = item.href === '/leads' && pathname === '/leads';
+    const active = item.href === '/leads' ? isExactLeads : isActive;
+
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={cn(
+          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+          active
+            ? 'bg-sky-50 text-sky-600'
+            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+          collapsed && 'justify-center px-2',
+          indent && !collapsed && 'pl-10',
+        )}
+        title={collapsed ? item.label : undefined}
+      >
+        <item.icon size={indent ? 16 : 20} />
+        {!collapsed && <span>{item.label}</span>}
+      </Link>
+    );
+  }
 
   return (
     <aside className={cn(
@@ -61,24 +106,39 @@ export function AppSidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-2">
         {visibleItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-sky-50 text-sky-600'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                collapsed && 'justify-center px-2',
-              )}
-              title={collapsed ? item.label : undefined}
-            >
-              <item.icon size={20} />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          );
+          // Expandable group (Leads)
+          if (item.children && !collapsed) {
+            return (
+              <div key={item.href}>
+                <button
+                  onClick={() => setLeadsOpen(!leadsOpen)}
+                  className={cn(
+                    'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    isLeadsActive
+                      ? 'text-sky-600'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                  )}
+                >
+                  <item.icon size={20} />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  <ChevronDown size={16} className={cn('transition-transform', leadsOpen && 'rotate-180')} />
+                </button>
+                {leadsOpen && (
+                  <div className="mt-0.5 space-y-0.5">
+                    {item.children.map(child => renderNavLink(child, true))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          // Collapsed mode with children — show just icon
+          if (item.children && collapsed) {
+            return renderNavLink(item);
+          }
+
+          // Regular nav item
+          return renderNavLink(item);
         })}
       </nav>
     </aside>

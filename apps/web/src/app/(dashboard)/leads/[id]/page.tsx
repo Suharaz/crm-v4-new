@@ -2,6 +2,7 @@ import { serverFetch } from '@/lib/auth';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { ActivityTimelineWithFilterTabs } from '@/components/shared/activity-timeline-with-filter-tabs';
 import { LeadActions } from '@/components/leads/lead-actions';
+import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
 import { formatDate } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -25,13 +26,15 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   let users: any[] = [];
   let departments: any[] = [];
   let labels: any[] = [];
+  let products: any[] = [];
 
   try {
-    [activities, users, departments, labels] = await Promise.all([
+    [activities, users, departments, labels, products] = await Promise.all([
       serverFetch<{ data: any[] }>(`/leads/${id}/activities`).then(r => r.data).catch(() => []),
       serverFetch<{ data: any[] }>('/users').then(r => r.data).catch(() => []),
       serverFetch<{ data: any[] }>('/departments').then(r => r.data).catch(() => []),
       serverFetch<{ data: any[] }>('/labels').then(r => r.data).catch(() => []),
+      serverFetch<{ data: any[] }>('/products').then(r => r.data).catch(() => []),
     ]);
   } catch { /* partial ok */ }
 
@@ -52,7 +55,12 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
       </div>
 
       {/* Actions */}
-      <LeadActions lead={lead} users={users} departments={departments} labels={labels} />
+      <div className="flex flex-wrap items-center gap-2">
+        <LeadActions lead={lead} users={users} departments={departments} labels={labels} />
+        {lead.customerId && (
+          <CreateOrderDialog customerId={lead.customerId} leadId={lead.id} products={products} />
+        )}
+      </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Info panel */}

@@ -23,10 +23,10 @@ export class AssignmentTemplatesController {
   @Post()
   async create(
     @Body() body: { name: string; strategy?: string; memberUserIds: string[] },
-    @CurrentUser('id') userId: bigint,
+    @CurrentUser() user: any,
   ) {
     const memberUserIds = body.memberUserIds.map((id) => BigInt(id));
-    return { data: await this.service.create({ ...body, memberUserIds }, userId) };
+    return { data: await this.service.create({ ...body, memberUserIds }, BigInt(user.id)) };
   }
 
   @Patch(':id')
@@ -47,9 +47,9 @@ export class AssignmentTemplatesController {
   async apply(
     @Param('id', ParseBigIntPipe) id: bigint,
     @Body() body: { leadIds: string[] },
-    @CurrentUser('id') userId: bigint,
+    @CurrentUser() user: any,
   ) {
     const leadIds = body.leadIds.map((lid) => BigInt(lid));
-    return { data: await this.service.applyTemplate(id, leadIds, userId) };
+    return { data: await this.service.applyTemplate(id, leadIds, BigInt(user.id)) };
   }
 }

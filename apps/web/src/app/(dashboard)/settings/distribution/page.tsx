@@ -12,7 +12,7 @@ export default async function DistributionSettingsPage() {
       serverFetch<{ data: any[] }>('/users').catch(() => ({ data: [] })),
     ]);
     departments = deptRes.data;
-    users = (usersRes.data || []).map((u: any) => ({ id: String(u.id), name: u.name }));
+    users = (usersRes.data || []).map((u: any) => ({ id: String(u.id), name: u.name, departmentId: u.departmentId ? String(u.departmentId) : undefined }));
   } catch { /* empty */ }
 
   return (
@@ -30,7 +30,7 @@ export default async function DistributionSettingsPage() {
 
       {/* Manual Assignment Templates */}
       <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <AssignmentTemplateCrudWithApply users={users} />
+        <AssignmentTemplateCrudWithApply users={users} departments={departments} />
       </div>
     </div>
   );

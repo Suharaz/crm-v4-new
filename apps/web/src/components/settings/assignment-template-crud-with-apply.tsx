@@ -6,11 +6,13 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { Plus, Pencil, Trash2, Play, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-interface User { id: string; name: string; }
+interface User { id: string; name: string; departmentId?: string; }
+interface Department { id: string; name: string; }
 interface Template {
   id: string; name: string; strategy: string; isActive: boolean;
   members: { user: { id: string; name: string } }[];
@@ -18,10 +20,11 @@ interface Template {
 
 interface Props {
   users: User[];
+  departments: Department[];
 }
 
 /** Assignment template CRUD + apply — round-robin manual distribution. */
-export function AssignmentTemplateCrudWithApply({ users }: Props) {
+export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
   const router = useRouter();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,8 +33,14 @@ export function AssignmentTemplateCrudWithApply({ users }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
+  const [selectedDeptId, setSelectedDeptId] = useState('');
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
+
+  // Filter users by selected department
+  const filteredUsers = selectedDeptId
+    ? users.filter(u => u.departmentId === selectedDeptId)
+    : users;
 
   // Apply state
   const [applyId, setApplyId] = useState<string | null>(null);
@@ -48,6 +57,7 @@ export function AssignmentTemplateCrudWithApply({ users }: Props) {
   function openCreate() {
     setEditingId(null);
     setName('');
+    setSelectedDeptId('');
     setSelectedUserIds(new Set());
     setDialogOpen(true);
   }
@@ -55,6 +65,7 @@ export function AssignmentTemplateCrudWithApply({ users }: Props) {
   function openEdit(t: Template) {
     setEditingId(t.id);
     setName(t.name);
+    setSelectedDeptId('');
     setSelectedUserIds(new Set(t.members.map(m => m.user.id)));
     setDialogOpen(true);
   }
@@ -188,23 +199,43 @@ export function AssignmentTemplateCrudWithApply({ users }: Props) {
               <Input value={name} onChange={e => setName(e.target.value)} placeholder="VD: Team Sales A" className="mt-1" />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Chọn nhân viên ({selectedUserIds.size} đã chọn)
-              </label>
-              <div className="max-h-48 overflow-y-auto space-y-1 border rounded-lg p-2">
-                {users.map(u => (
-                  <label key={u.id} className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-gray-50 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedUserIds.has(u.id)}
-                      onChange={() => toggleUser(u.id)}
-                      className="h-4 w-4 rounded border-gray-300 text-sky-600"
-                    />
-                    <span className="text-sm text-gray-700">{u.name}</span>
-                  </label>
-                ))}
-              </div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Phòng ban</label>
+              <Select value={selectedDeptId} onValueChange={(v) => { setSelectedDeptId(v); setSelectedUserIds(new Set()); }}>
+                <SelectTrigger><SelectValue placeholder="Chọn phòng ban" /></SelectTrigger>
+                <SelectContent>
+                  {departments.map(d => (
+                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+            {selectedDeptId && (
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Chọn nhân viên ({selectedUserIds.size}/{filteredUsers.length} đã chọn)
+                  <button
+                    type="button"
+                    onClick={() => setSelectedUserIds(new Set(filteredUsers.map(u => u.id)))}
+                    className="ml-2 text-xs text-sky-600 hover:underline"
+                  >Chọn tất cả</button>
+                </label>
+                <div className="max-h-48 overflow-y-auto space-y-1 border rounded-lg p-2">
+                  {filteredUsers.length === 0 ? (
+                    <p className="text-xs text-gray-400 p-2">Không có nhân viên trong phòng ban này</p>
+                  ) : filteredUsers.map(u => (
+                    <label key={u.id} className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedUserIds.has(u.id)}
+                        onChange={() => toggleUser(u.id)}
+                        className="h-4 w-4 rounded border-gray-300 text-sky-600"
+                      />
+                      <span className="text-sm text-gray-700">{u.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Hủy</Button>

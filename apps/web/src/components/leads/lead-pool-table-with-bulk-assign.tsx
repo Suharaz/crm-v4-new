@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { EntityQuickPreviewDialog } from '@/components/shared/entity-quick-preview-dialog';
 import { LeadPoolActionButtons } from '@/components/leads/lead-pool-action-buttons';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/providers/auth-provider';
@@ -35,6 +35,7 @@ export function LeadPoolTableWithBulkAssign({ leads, users, poolMode }: PoolTabl
   const isManager = user?.role === 'MANAGER' || user?.role === 'SUPER_ADMIN';
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [previewId, setPreviewId] = useState<string | null>(null);
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [bulkUserId, setBulkUserId] = useState('');
   const [bulkAssigning, setBulkAssigning] = useState(false);
@@ -140,9 +141,13 @@ export function LeadPoolTableWithBulkAssign({ leads, users, poolMode }: PoolTabl
                   </td>
                 )}
                 <td className="px-4 py-3">
-                  <Link href={`/leads/${lead.id}`} className="font-medium text-sky-600 hover:underline">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewId(lead.id)}
+                    className="font-medium text-sky-600 hover:underline text-left"
+                  >
                     {lead.name}
-                  </Link>
+                  </button>
                 </td>
                 <td className="px-4 py-3 text-gray-600">{lead.phone}</td>
                 <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
@@ -184,6 +189,14 @@ export function LeadPoolTableWithBulkAssign({ leads, users, poolMode }: PoolTabl
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Quick preview popup */}
+      <EntityQuickPreviewDialog
+        open={!!previewId}
+        onOpenChange={(open) => { if (!open) setPreviewId(null); }}
+        entityType="lead"
+        entityId={previewId}
+      />
     </div>
   );
 }

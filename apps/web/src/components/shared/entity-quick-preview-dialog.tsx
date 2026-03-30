@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { api } from '@/lib/api-client';
@@ -21,13 +21,24 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
+  const [activities, setActivities] = useState<any[]>([]);
+
   useEffect(() => {
     if (!open || !entityId) return;
     setLoading(true);
     setData(null);
+    setActivities([]);
     const endpoint = entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`;
-    api.get<{ data: any }>(endpoint)
-      .then(res => setData(res.data))
+    const activitiesEndpoint = `/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`;
+
+    Promise.all([
+      api.get<{ data: any }>(endpoint),
+      api.get<{ data: any[] }>(activitiesEndpoint).catch(() => ({ data: [] })),
+    ])
+      .then(([entityRes, actRes]) => {
+        setData(entityRes.data);
+        setActivities(actRes.data || []);
+      })
       .catch(() => setData(null))
       .finally(() => setLoading(false));
   }, [open, entityId, entityType]);
@@ -38,6 +49,9 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0">
+        <DialogTitle className="sr-only">
+          {entityType === 'lead' ? 'Chi tiết Lead' : 'Chi tiết Khách hàng'}
+        </DialogTitle>
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-sky-500" />
@@ -101,27 +115,28 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                 </div>
               )}
 
-              {/* Recent activities preview */}
-              {entityType === 'lead' && data.activities && data.activities.length > 0 && (
+              {/* Notes & Activities */}
+              {activities.length > 0 && (
                 <div>
-                  <span className="text-xs font-medium text-gray-500 uppercase">Hoạt động gần đây</span>
-                  <div className="mt-1 space-y-1.5">
-                    {data.activities.slice(0, 3).map((a: any) => (
-                      <div key={a.id} className="text-xs text-gray-600 bg-gray-50 rounded-md px-2.5 py-1.5">
-                        <span className="font-medium">{a.user?.name || '—'}</span>
-                        {' — '}
-                        {a.content?.substring(0, 80)}{a.content?.length > 80 ? '...' : ''}
+                  <span className="text-xs font-medium text-gray-500 uppercase">
+                    Ghi chú & Hoạt động ({activities.length})
+                  </span>
+                  <div className="mt-1.5 space-y-1.5 max-h-40 overflow-y-auto">
+                    {activities.slice(0, 5).map((a: any) => (
+                      <div key={a.id} className="text-xs bg-gray-50 rounded-md px-2.5 py-2 border border-gray-100">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="font-medium text-gray-700">{a.user?.name || '—'}</span>
+                          <span className="text-gray-300">·</span>
+                          <span className="text-gray-400">{a.type === 'NOTE' ? 'Ghi chú' : a.type === 'CALL' ? 'Cuộc gọi' : a.type}</span>
+                          <span className="text-gray-300">·</span>
+                          <span className="text-gray-400">{formatDate(a.createdAt)}</span>
+                        </div>
+                        <p className="text-gray-600 whitespace-pre-line">
+                          {a.content?.substring(0, 120)}{a.content?.length > 120 ? '...' : ''}
+                        </p>
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {/* Notes for customer */}
-              {entityType === 'customer' && data.notes && (
-                <div>
-                  <span className="text-xs font-medium text-gray-500 uppercase">Ghi chú</span>
-                  <p className="mt-1 text-sm text-gray-600">{data.notes}</p>
                 </div>
               )}
             </div>

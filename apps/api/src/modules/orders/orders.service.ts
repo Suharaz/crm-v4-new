@@ -92,8 +92,11 @@ export class OrdersService {
           },
         });
         customerId = customer.id;
-        // Link customer to lead
-        await this.prisma.lead.update({ where: { id: lead.id }, data: { customerId: customer.id } });
+        // Link customer to lead + convert lead
+        await this.prisma.lead.update({
+          where: { id: lead.id },
+          data: { customerId: customer.id, status: 'CONVERTED' },
+        });
       }
     }
 

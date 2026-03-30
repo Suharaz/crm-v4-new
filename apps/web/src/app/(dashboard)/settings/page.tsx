@@ -9,15 +9,17 @@ export default async function SettingsPage() {
   let labels: any[] = [];
   let paymentTypes: any[] = [];
   let productCategories: any[] = [];
+  let users: any[] = [];
 
   try {
-    [departments, levels, sources, labels, paymentTypes, productCategories] = await Promise.all([
+    [departments, levels, sources, labels, paymentTypes, productCategories, users] = await Promise.all([
       serverFetch<{ data: any[] }>('/departments').then(r => r.data),
       serverFetch<{ data: any[] }>('/employee-levels').then(r => r.data),
       serverFetch<{ data: any[] }>('/lead-sources').then(r => r.data),
       serverFetch<{ data: any[] }>('/labels').then(r => r.data),
       serverFetch<{ data: any[] }>('/payment-types').then(r => r.data),
       serverFetch<{ data: any[] }>('/product-categories').then(r => r.data),
+      serverFetch<{ data: any[] }>('/users').then(r => (r.data || []).map((u: any) => ({ id: String(u.id), name: u.name, departmentId: u.departmentId ? String(u.departmentId) : undefined }))).catch(() => []),
     ]);
   } catch { /* partial data ok */ }
 
@@ -33,6 +35,7 @@ export default async function SettingsPage() {
         paymentTypes={paymentTypes}
         labels={labels}
         productCategories={productCategories}
+        users={users}
       />
     </div>
   );

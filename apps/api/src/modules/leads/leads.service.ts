@@ -142,11 +142,15 @@ export class LeadsService {
       skipPool = source?.skipPool ?? false;
     }
 
-    // Create lead: status=POOL by default (Kho Mới)
+    // skipPool → assign directly to creator (skip Kho Mới), otherwise POOL
     const lead = await this.prisma.lead.create({
       data: {
         phone, name: dto.name, email: dto.email,
-        status: 'POOL',
+        status: skipPool ? 'ASSIGNED' : 'POOL',
+        ...(skipPool ? {
+          assignedUser: { connect: { id: user.id } },
+          department: user.departmentId ? { connect: { id: user.departmentId } } : undefined,
+        } : {}),
         customer: { connect: { id: customer.id } },
         ...(dto.sourceId ? { source: { connect: { id: BigInt(dto.sourceId) } } } : {}),
         ...(dto.productId ? { product: { connect: { id: BigInt(dto.productId) } } } : {}),
@@ -154,19 +158,7 @@ export class LeadsService {
       select: LEAD_SELECT,
     });
 
-    // Auto-distribute if source has skipPool=true
-    if (skipPool && user.departmentId) {
-      try {
-        const { ScoringService } = await import('../distribution/scoring.service');
-        const scoring = new ScoringService(this.prisma);
-        const bestUserId = await scoring.pickBestUser(user.departmentId);
-        if (bestUserId) {
-          await this.assign(lead.id, bestUserId, user);
-        }
-      } catch { /* fallback: stay in pool if auto-distribute fails */ }
-    }
-
-    return this.findById(lead.id);
+    return lead;
   }
 
   // ── Update ──────────────────────────────────────────────────────────────

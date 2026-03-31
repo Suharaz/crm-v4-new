@@ -12,7 +12,7 @@ import { Pencil, Trash2, Plus } from 'lucide-react';
 interface FieldConfig {
   key: string;
   label: string;
-  type?: 'text' | 'number' | 'color';
+  type?: 'text' | 'number' | 'color' | 'checkbox';
   required?: boolean;
   placeholder?: string;
 }
@@ -38,7 +38,7 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
   function openCreate() {
     setEditingItem(null);
     const defaults: Record<string, any> = {};
-    fields.forEach(f => { defaults[f.key] = f.type === 'number' ? '' : (f.type === 'color' ? '#6b7280' : ''); });
+    fields.forEach(f => { defaults[f.key] = f.type === 'checkbox' ? false : f.type === 'number' ? '' : (f.type === 'color' ? '#6b7280' : ''); });
     setFormData(defaults);
     setFieldErrors({});
     setDialogOpen(true);
@@ -67,7 +67,9 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
     const body: Record<string, any> = {};
     fields.forEach(f => {
       const val = formData[f.key];
-      if (val !== '' && val !== undefined) {
+      if (f.type === 'checkbox') {
+        body[f.key] = !!val;
+      } else if (val !== '' && val !== undefined) {
         body[f.key] = f.type === 'number' ? Number(val) : val;
       }
     });
@@ -142,16 +144,28 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
                   {f.label}
                   {f.required && <span className="text-red-500 ml-0.5">*</span>}
                 </label>
-                <Input
-                  type={f.type === 'color' ? 'color' : f.type === 'number' ? 'number' : 'text'}
-                  placeholder={f.placeholder}
-                  value={formData[f.key] ?? ''}
-                  onChange={e => {
-                    setFormData(prev => ({ ...prev, [f.key]: e.target.value }));
-                    if (fieldErrors[f.key]) setFieldErrors(prev => ({ ...prev, [f.key]: '' }));
-                  }}
-                  className={f.type === 'color' ? 'h-10 w-20 p-1' : undefined}
-                />
+                {f.type === 'checkbox' ? (
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={!!formData[f.key]}
+                      onChange={e => setFormData(prev => ({ ...prev, [f.key]: e.target.checked }))}
+                      className="h-4 w-4 rounded border-gray-300 text-sky-600"
+                    />
+                    <span className="text-sm text-gray-600">{f.placeholder || 'Bật'}</span>
+                  </label>
+                ) : (
+                  <Input
+                    type={f.type === 'color' ? 'color' : f.type === 'number' ? 'number' : 'text'}
+                    placeholder={f.placeholder}
+                    value={formData[f.key] ?? ''}
+                    onChange={e => {
+                      setFormData(prev => ({ ...prev, [f.key]: e.target.value }));
+                      if (fieldErrors[f.key]) setFieldErrors(prev => ({ ...prev, [f.key]: '' }));
+                    }}
+                    className={f.type === 'color' ? 'h-10 w-20 p-1' : undefined}
+                  />
+                )}
                 {fieldErrors[f.key] && <p className="text-xs text-red-500">{fieldErrors[f.key]}</p>}
               </div>
             ))}

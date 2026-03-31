@@ -191,12 +191,13 @@ model Department {
 }
 
 model EmployeeLevel {
-  id        BigInt    @id @default(autoincrement())
-  name      String
-  rank      Int
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  id            BigInt    @id @default(autoincrement())
+  name          String
+  rank          Int
+  maxLeads      Int?      @map("max_leads")      /// Max leads+customers a user at this level can hold (null = unlimited)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
 
   users User[]
 
@@ -298,6 +299,7 @@ model LeadSource {
   name        String
   description String?
   isActive    Boolean  @default(true) @map("is_active")
+  skipPool    Boolean  @default(false) @map("skip_pool")  /// If true, leads from this source skip pool and go directly to AI distribution
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 

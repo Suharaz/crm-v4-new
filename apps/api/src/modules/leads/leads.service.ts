@@ -132,8 +132,18 @@ export class LeadsService {
       });
     }
 
-    // Create lead: status=POOL, dept=null (Kho Mới)
-    return this.prisma.lead.create({
+    // Check if source has skipPool flag → auto-distribute instead of pool
+    let skipPool = false;
+    if (dto.sourceId) {
+      const source = await this.prisma.leadSource.findFirst({
+        where: { id: BigInt(dto.sourceId) },
+        select: { skipPool: true },
+      });
+      skipPool = source?.skipPool ?? false;
+    }
+
+    // Create lead: status=POOL by default (Kho Mới)
+    const lead = await this.prisma.lead.create({
       data: {
         phone, name: dto.name, email: dto.email,
         status: 'POOL',
@@ -143,6 +153,20 @@ export class LeadsService {
       },
       select: LEAD_SELECT,
     });
+
+    // Auto-distribute if source has skipPool=true
+    if (skipPool && user.departmentId) {
+      try {
+        const { ScoringService } = await import('../distribution/scoring.service');
+        const scoring = new ScoringService(this.prisma);
+        const bestUserId = await scoring.pickBestUser(user.departmentId);
+        if (bestUserId) {
+          await this.assign(lead.id, bestUserId, user);
+        }
+      } catch { /* fallback: stay in pool if auto-distribute fails */ }
+    }
+
+    return this.findById(lead.id);
   }
 
   // ── Update ──────────────────────────────────────────────────────────────
@@ -167,12 +191,36 @@ export class LeadsService {
   }
 
   // ── Assign ──────────────────────────────────────────────────────────────
+  /** Check if user has capacity to hold more leads (maxLeads from EmployeeLevel) */
+  private async checkUserCapacity(userId: bigint, count = 1) {
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId },
+      select: { employeeLevel: { select: { maxLeads: true } } },
+    });
+    const maxLeads = user?.employeeLevel?.maxLeads;
+    if (maxLeads === null || maxLeads === undefined) return; // unlimited
+
+    const currentCount = await this.prisma.lead.count({
+      where: { assignedUserId: userId, status: { in: ['ASSIGNED', 'IN_PROGRESS'] }, deletedAt: null },
+    });
+    const customerCount = await this.prisma.customer.count({
+      where: { assignedUserId: userId, status: 'ACTIVE', deletedAt: null },
+    });
+
+    if (currentCount + customerCount + count > maxLeads) {
+      throw new ConflictException(`Nhân viên đã đạt giới hạn ${maxLeads} leads+customers`);
+    }
+  }
+
   async assign(id: bigint, targetUserId: bigint, user: CurrentUser) {
     const lead = await this.findById(id);
 
     if (lead.status !== 'POOL' && lead.status !== 'FLOATING') {
       throw new ConflictException('Chỉ gán lead ở trạng thái POOL hoặc FLOATING');
     }
+
+    // Check capacity before assigning
+    await this.checkUserCapacity(targetUserId);
 
     // Get target user's department
     const targetUser = await this.prisma.user.findFirst({
@@ -263,6 +311,9 @@ export class LeadsService {
   // ── Claim ───────────────────────────────────────────────────────────────
   async claim(id: bigint, user: CurrentUser) {
     const lead = await this.findById(id);
+
+    // Check capacity before claiming
+    await this.checkUserCapacity(user.id);
 
     // Dept pool: only same dept users can claim
     if (lead.status === 'POOL' && lead.departmentId) {

@@ -20,11 +20,17 @@ export class LeadsController {
     return this.leadsService.list(query);
   }
 
-  // 3 Kho endpoints
+  // 4 Kho endpoints
   @Get('pool/new')
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
   async poolNew(@Query('limit') limit?: number, @Query('cursor') cursor?: string) {
     return this.leadsService.poolNewFiltered(limit ?? 20, cursor);
+  }
+
+  @Get('pool/redata')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async poolRedata(@Query('limit') limit?: number, @Query('cursor') cursor?: string) {
+    return this.leadsService.poolRedata(limit ?? 20, cursor);
   }
 
   @Get('pool/department/:deptId')

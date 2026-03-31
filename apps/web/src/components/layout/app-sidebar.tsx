@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, UserCheck, ShoppingCart, Package,
   Phone, Settings, Upload, Waves, ChevronLeft, ChevronRight, ChevronDown,
-  UserCog, CheckSquare, Zap, Inbox, List,
+  UserCog, CheckSquare, Zap, Inbox, List, RotateCcw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
@@ -31,6 +31,7 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Leads', href: '/leads', icon: Users,
     children: [
       { label: 'Chờ phân phối', href: '/leads/pool/new', icon: Inbox },
+      { label: 'Re-data', href: '/leads/pool/redata', icon: RotateCcw },
       { label: 'Danh sách', href: '/leads', icon: List },
       { label: 'Kho thả nổi', href: '/floating', icon: Waves },
     ],

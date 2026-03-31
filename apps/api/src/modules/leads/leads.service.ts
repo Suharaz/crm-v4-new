@@ -7,6 +7,7 @@ import { LeadListQueryDto } from './dto/lead-list-query.dto';
 // Valid status transitions
 const ALLOWED_TRANSITIONS: Record<LeadStatus, LeadStatus[]> = {
   POOL: ['ASSIGNED', 'FLOATING'],
+  REDATA: ['ASSIGNED', 'POOL', 'FLOATING'], // Kho Re-data: có thể assign, chuyển pool, hoặc thả nổi
   ASSIGNED: ['IN_PROGRESS', 'POOL', 'FLOATING'],
   IN_PROGRESS: ['CONVERTED', 'LOST', 'POOL', 'FLOATING'],
   CONVERTED: [], // terminal
@@ -83,6 +84,19 @@ export class LeadsService {
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }
 
+  async poolRedata(limit: number, cursor?: string) {
+    // Kho Re-data: REDATA status, chưa assign
+    const take = (limit ?? 20) + 1;
+    const leads = await this.prisma.lead.findMany({
+      where: { status: 'REDATA', deletedAt: null },
+      select: LEAD_SELECT, orderBy: { id: 'desc' }, take,
+      ...(cursor ? { skip: 1, cursor: { id: BigInt(cursor) } } : {}),
+    });
+    const hasMore = leads.length > (limit ?? 20);
+    const data = hasMore ? leads.slice(0, limit ?? 20) : leads;
+    return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
+  }
+
   async poolDepartment(deptId: bigint, limit: number, cursor?: string) {
     const take = (limit ?? 20) + 1;
     const leads = await this.prisma.lead.findMany({
@@ -142,15 +156,11 @@ export class LeadsService {
       skipPool = source?.skipPool ?? false;
     }
 
-    // skipPool → assign directly to creator (skip Kho Mới), otherwise POOL
+    // skipPool → status REDATA (kho re-data riêng), otherwise POOL (Kho Mới)
     const lead = await this.prisma.lead.create({
       data: {
         phone, name: dto.name, email: dto.email,
-        status: skipPool ? 'ASSIGNED' : 'POOL',
-        ...(skipPool ? {
-          assignedUser: { connect: { id: user.id } },
-          department: user.departmentId ? { connect: { id: user.departmentId } } : undefined,
-        } : {}),
+        status: skipPool ? 'REDATA' : 'POOL',
         customer: { connect: { id: customer.id } },
         ...(dto.sourceId ? { source: { connect: { id: BigInt(dto.sourceId) } } } : {}),
         ...(dto.productId ? { product: { connect: { id: BigInt(dto.productId) } } } : {}),
@@ -207,8 +217,8 @@ export class LeadsService {
   async assign(id: bigint, targetUserId: bigint, user: CurrentUser) {
     const lead = await this.findById(id);
 
-    if (lead.status !== 'POOL' && lead.status !== 'FLOATING') {
-      throw new ConflictException('Chỉ gán lead ở trạng thái POOL hoặc FLOATING');
+    if (!['POOL', 'REDATA', 'FLOATING'].includes(lead.status)) {
+      throw new ConflictException('Chỉ gán lead ở trạng thái POOL, REDATA hoặc FLOATING');
     }
 
     // Check capacity before assigning
@@ -316,7 +326,7 @@ export class LeadsService {
 
     // Floating: any user can claim
     if (lead.status !== 'POOL' && lead.status !== 'FLOATING') {
-      throw new ConflictException('Chỉ claim lead ở trạng thái POOL hoặc FLOATING');
+      throw new ConflictException('Chỉ claim lead ở trạng thái POOL, REDATA hoặc FLOATING');
     }
 
     // Atomic claim

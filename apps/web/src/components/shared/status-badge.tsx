@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 const STATUS_STYLES: Record<string, string> = {
   // Lead statuses
   POOL: 'bg-sky-100 text-sky-700',
+  REDATA: 'bg-orange-100 text-orange-700',
   ASSIGNED: 'bg-blue-100 text-blue-700',
   IN_PROGRESS: 'bg-amber-100 text-amber-700',
   CONVERTED: 'bg-emerald-100 text-emerald-700',
@@ -24,6 +25,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, string> = {
   POOL: 'Kho',
+  REDATA: 'Re-data',
   ASSIGNED: 'Đã gán',
   IN_PROGRESS: 'Đang xử lý',
   CONVERTED: 'Đã chuyển đổi',

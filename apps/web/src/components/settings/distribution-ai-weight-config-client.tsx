@@ -49,7 +49,7 @@ export function DistributionAiWeightConfigClient({ departments }: Props) {
       api.get<{ data: UserScore[] }>(`/distribution/scores/${deptId}`),
     ])
       .then(([configRes, scoresRes]) => {
-        setConfig(configRes.data);
+        setConfig(configRes.data ?? { isActive: false, weightConfig: { workload: 40, level: 30, conversion: 30 } });
         setScores(scoresRes.data ?? []);
       })
       .catch(() => toast.error('Không thể tải cấu hình phân phối'))

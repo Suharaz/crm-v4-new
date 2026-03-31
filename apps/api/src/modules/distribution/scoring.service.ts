@@ -43,17 +43,40 @@ export class ScoringService {
     );
     const maxWorkload = Math.max(...workloads.map((w) => w.count), 1);
 
-    // Calculate conversion rates (last 90 days)
+    // Calculate conversion rates (last 90 days) — based on assignment history, not current assignedUserId
+    // This ensures leads that were converted then unassigned still count for the user who converted them
     const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
     const conversions = await Promise.all(
       users.map(async (u) => {
-        const total = await this.prisma.lead.count({
-          where: { assignedUserId: u.id, createdAt: { gte: since }, deletedAt: null },
+        // Count distinct leads ever assigned to this user (via history)
+        const historyLeads = await this.prisma.assignmentHistory.findMany({
+          where: { toUserId: u.id, entityType: 'LEAD', createdAt: { gte: since } },
+          select: { entityId: true },
+          distinct: ['entityId'],
         });
-        const converted = await this.prisma.lead.count({
-          where: { assignedUserId: u.id, status: 'CONVERTED', createdAt: { gte: since }, deletedAt: null },
+        const totalAssigned = historyLeads.length;
+
+        if (totalAssigned === 0) {
+          // Fallback: count current leads if no history
+          const currentTotal = await this.prisma.lead.count({
+            where: { assignedUserId: u.id, deletedAt: null, createdAt: { gte: since } },
+          });
+          const currentConverted = await this.prisma.lead.count({
+            where: { assignedUserId: u.id, status: 'CONVERTED', deletedAt: null, createdAt: { gte: since } },
+          });
+          return { userId: u.id, rate: currentTotal > 0 ? currentConverted / currentTotal : 0 };
+        }
+
+        // Count how many of those distinct leads are now CONVERTED
+        const convertedCount = await this.prisma.lead.count({
+          where: {
+            id: { in: historyLeads.map(h => h.entityId) },
+            status: 'CONVERTED',
+            deletedAt: null,
+          },
         });
-        return { userId: u.id, rate: total > 0 ? converted / total : 0 };
+
+        return { userId: u.id, rate: convertedCount / totalAssigned };
       }),
     );
 

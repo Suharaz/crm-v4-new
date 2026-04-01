@@ -152,12 +152,22 @@ export class ImportProcessor extends WorkerHost {
       if (src?.skipPool) status = 'REDATA';
     }
 
+    // Extra columns → metadata JSONB (any column not in known fields)
+    const knownKeys = new Set(['phone', 'Số điện thoại', 'name', 'Họ tên', 'email', 'Email', 'source', 'Nguồn', 'product', 'Sản phẩm']);
+    const metadata: Record<string, string> = {};
+    for (const [key, val] of Object.entries(row)) {
+      if (!knownKeys.has(key) && val && val.trim()) {
+        metadata[key] = val.trim();
+      }
+    }
+
     const lead = await this.prisma.lead.create({
       data: {
         phone, name, email: row.email || null,
         status,
         customerId: customer.id,
         sourceId, productId,
+        ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
       },
     });
 

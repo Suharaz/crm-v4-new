@@ -3,6 +3,7 @@ import { StatusBadge } from '@/components/shared/status-badge';
 import { ActivityTimelineWithFilterTabs } from '@/components/shared/activity-timeline-with-filter-tabs';
 import { CustomerActions } from '@/components/customers/customer-actions';
 import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
+import { MetadataKeyValueEditor } from '@/components/shared/metadata-key-value-editor';
 import { formatDate, formatVND } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -100,6 +101,9 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
               </div>
             </div>
           )}
+
+          {/* Metadata */}
+          <MetadataKeyValueEditor entityType="customers" entityId={id} metadata={customer.metadata} />
         </div>
 
         {/* Orders + Timeline */}

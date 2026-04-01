@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
@@ -25,11 +25,30 @@ interface FilterBarProps {
 }
 
 /** Advanced filter bar for leads list — URL-based state (shareable). */
+const STORAGE_KEY = 'crm_lead_filters';
+
 export function LeadListAdvancedFilterBar({ sources, products, users, departments, labels }: FilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [expanded, setExpanded] = useState(false);
+  const [restored, setRestored] = useState(false);
+
+  // Restore filters from localStorage if URL has no params
+  useEffect(() => {
+    if (restored) return;
+    setRestored(true);
+    if (searchParams.toString()) {
+      // URL has params → save to storage
+      localStorage.setItem(STORAGE_KEY, searchParams.toString());
+    } else {
+      // No params → restore from storage
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        router.replace(`${pathname}?${saved}`);
+      }
+    }
+  }, [restored, searchParams, pathname, router]);
 
   // Read current filters from URL
   const currentSearch = searchParams.get('search') || '';
@@ -48,11 +67,14 @@ export function LeadListAdvancedFilterBar({ sources, products, users, department
   function updateFilter(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
     if (value) { params.set(key, value); } else { params.delete(key); }
-    params.delete('cursor'); // reset pagination
-    router.push(`${pathname}?${params.toString()}`);
+    params.delete('cursor');
+    const qs = params.toString();
+    localStorage.setItem(STORAGE_KEY, qs);
+    router.push(`${pathname}?${qs}`);
   }
 
   function clearAll() {
+    localStorage.removeItem(STORAGE_KEY);
     router.push(pathname);
   }
 

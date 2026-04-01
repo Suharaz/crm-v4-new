@@ -19,6 +19,7 @@ interface Lead {
   status: string; source?: { name: string } | null;
   assignedUser?: { name: string } | null;
   department?: { name: string } | null;
+  customerId?: string | null;
   createdAt: string;
 }
 
@@ -179,9 +180,12 @@ export function LeadPoolTableWithBulkAssign({ leads, users, poolMode }: PoolTabl
                   <button
                     type="button"
                     onClick={() => setPreviewId(lead.id)}
-                    className="font-medium text-sky-600 hover:underline text-left"
+                    className="font-medium text-sky-600 hover:underline text-left inline-flex items-center gap-1.5"
                   >
                     {lead.name}
+                    {lead.customerId && (
+                      <span className="inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">KH</span>
+                    )}
                   </button>
                 </td>
                 <td className="px-4 py-3 text-gray-600">{lead.phone}</td>

@@ -46,12 +46,22 @@ export class LeadsService {
 
     if (query.status) where.status = query.status;
     if (query.sourceId) where.sourceId = BigInt(query.sourceId);
+    if (query.productId) where.productId = BigInt(query.productId);
     if (query.assignedUserId) where.assignedUserId = BigInt(query.assignedUserId);
     if (query.departmentId) where.departmentId = BigInt(query.departmentId);
+    if (query.labelId) where.labels = { some: { labelId: BigInt(query.labelId) } };
+    if (query.hasOrder === 'true') where.orders = { some: { status: 'COMPLETED' } };
+    if (query.hasOrder === 'false') where.orders = { none: { status: 'COMPLETED' } };
+    if (query.dateFrom || query.dateTo) {
+      where.createdAt = {};
+      if (query.dateFrom) (where.createdAt as any).gte = new Date(query.dateFrom);
+      if (query.dateTo) (where.createdAt as any).lte = new Date(query.dateTo + 'T23:59:59Z');
+    }
     if (query.search) {
       where.OR = [
         { name: { contains: query.search, mode: 'insensitive' } },
         { phone: { contains: query.search } },
+        { email: { contains: query.search, mode: 'insensitive' } },
       ];
     }
 

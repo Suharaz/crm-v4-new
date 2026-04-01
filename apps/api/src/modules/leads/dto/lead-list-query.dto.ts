@@ -13,11 +13,31 @@ export class LeadListQueryDto extends PaginationQueryDto {
 
   @IsOptional()
   @IsString()
+  productId?: string;
+
+  @IsOptional()
+  @IsString()
   assignedUserId?: string;
 
   @IsOptional()
   @IsString()
   departmentId?: string;
+
+  @IsOptional()
+  @IsString()
+  labelId?: string;
+
+  @IsOptional()
+  @IsString()
+  hasOrder?: string; // 'true' or 'false'
+
+  @IsOptional()
+  @IsString()
+  dateFrom?: string; // ISO date
+
+  @IsOptional()
+  @IsString()
+  dateTo?: string; // ISO date
 
   @IsOptional()
   @IsString()

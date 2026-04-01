@@ -26,6 +26,11 @@ export function CreateOrderDialog({ customerId, leadId, products, paymentTypes =
   const [open, setOpen] = useState(false);
   const [productId, setProductId] = useState('');
   const [notes, setNotes] = useState('');
+  const [format, setFormat] = useState('');
+  const [groupType, setGroupType] = useState('');
+  const [session, setSession] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [courseCode, setCourseCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   // Created order state (for payment step)
@@ -48,6 +53,11 @@ export function CreateOrderDialog({ customerId, leadId, products, paymentTypes =
     setStep('order');
     setProductId('');
     setNotes('');
+    setFormat('');
+    setGroupType('');
+    setSession('');
+    setBankName('');
+    setCourseCode('');
     setCreatedOrderId(null);
     setOrderAmount(0);
     setPaymentAmount('');
@@ -66,6 +76,11 @@ export function CreateOrderDialog({ customerId, leadId, products, paymentTypes =
       if (customerId) body.customerId = customerId;
       if (leadId) body.leadId = leadId;
       if (notes) body.notes = notes;
+      if (format) body.format = format;
+      if (groupType) body.groupType = groupType;
+      if (session) body.session = Number(session);
+      if (bankName) body.bankName = bankName;
+      if (courseCode) body.courseCode = courseCode;
 
       const res = await api.post<{ data: any }>('/orders', body);
       const order = res.data;
@@ -152,6 +167,44 @@ export function CreateOrderDialog({ customerId, leadId, products, paymentTypes =
                   </div>
                 )}
 
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField label="Hình thức">
+                    <Select value={format} onValueChange={setFormat}>
+                      <SelectTrigger><SelectValue placeholder="Chọn" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ZOOM_REPLAY">Zoom phát lại</SelectItem>
+                        <SelectItem value="ZOOM_LIVE">Zoom trực tiếp</SelectItem>
+                        <SelectItem value="ZOOM_OLD_CUSTOMER">Zoom khách cũ</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                  <FormField label="Nhóm">
+                    <Select value={groupType} onValueChange={setGroupType}>
+                      <SelectTrigger><SelectValue placeholder="Chọn" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ONLINE">Online</SelectItem>
+                        <SelectItem value="TOOL">Tool</SelectItem>
+                        <SelectItem value="OFFLINE">Offline</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                  <FormField label="Buổi">
+                    <Select value={session} onValueChange={setSession}>
+                      <SelectTrigger><SelectValue placeholder="Chọn" /></SelectTrigger>
+                      <SelectContent>
+                        {[1,2,3,4,5,6,7].map(n => <SelectItem key={n} value={String(n)}>Buổi {n}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                  <FormField label="Mã khoá">
+                    <input type="text" value={courseCode} onChange={e => setCourseCode(e.target.value)} placeholder="VD: KH001"
+                      className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                  </FormField>
+                </div>
+                <FormField label="Ngân hàng">
+                  <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} placeholder="VD: Vietcombank"
+                    className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                </FormField>
                 <FormField label="Ghi chú">
                   <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Ghi chú đơn hàng..." rows={2} />
                 </FormField>

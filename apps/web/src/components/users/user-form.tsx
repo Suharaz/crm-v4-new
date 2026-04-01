@@ -30,6 +30,7 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
     password: '',
     name: user?.name || '',
     phone: user?.phone || '',
+    address: user?.address || '',
     role: user?.role || 'USER',
     departmentId: user?.departmentId || '',
     teamId: user?.teamId || '',
@@ -70,6 +71,7 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
     if (isEdit) {
       if (form.name) body.name = form.name;
       if (form.phone) body.phone = form.phone;
+      if (form.address !== undefined) body.address = form.address;
       if (form.password) body.password = form.password;
       body.role = form.role;
       body.status = form.status;
@@ -82,6 +84,7 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
       body.password = form.password;
       body.name = form.name;
       if (form.phone) body.phone = form.phone;
+      if (form.address) body.address = form.address;
       if (form.role) body.role = form.role;
       if (form.departmentId) body.departmentId = form.departmentId;
       if (form.teamId) body.teamId = form.teamId;
@@ -129,6 +132,14 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
             value={form.phone}
             onChange={e => update('phone', e.target.value)}
             placeholder="0912345678"
+          />
+        </FormField>
+
+        <FormField label="Địa chỉ">
+          <Input
+            value={form.address}
+            onChange={e => update('address', e.target.value)}
+            placeholder="Số nhà, đường, quận/huyện, tỉnh/TP"
           />
         </FormField>
       </div>

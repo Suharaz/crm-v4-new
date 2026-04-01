@@ -33,6 +33,9 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
     productId: lead?.productId || '',
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [metadataRows, setMetadataRows] = useState<{ key: string; value: string }[]>(
+    lead?.metadata ? Object.entries(lead.metadata).map(([k, v]) => ({ key: k, value: String(v) })) : []
+  );
   const [phoneDuplicate, setPhoneDuplicate] = useState<{ name: string; phone: string; diffs?: string[] } | null>(null);
 
   // Auto-fill from existing customer when phone matches
@@ -82,6 +85,10 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
     if (form.email) body.email = form.email;
     if (form.sourceId) body.sourceId = form.sourceId;
     if (form.productId) body.productId = form.productId;
+    // Metadata from key-value rows
+    const meta: Record<string, string> = {};
+    metadataRows.forEach(r => { if (r.key.trim() && r.value.trim()) meta[r.key.trim()] = r.value.trim(); });
+    if (Object.keys(meta).length > 0) body.metadata = meta;
 
     if (isEdit) {
       await execute('patch', `/leads/${lead.id}`, body);
@@ -136,6 +143,36 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
             </SelectContent>
           </Select>
         </FormField>
+      </div>
+
+      {/* Metadata key-value pairs */}
+      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900">Thông tin thêm</h3>
+          <Button type="button" size="sm" variant="outline" onClick={() => setMetadataRows(prev => [...prev, { key: '', value: '' }])}>
+            + Thêm trường
+          </Button>
+        </div>
+        {metadataRows.map((row, i) => (
+          <div key={i} className="flex gap-2 items-center">
+            <Input
+              value={row.key}
+              onChange={e => setMetadataRows(prev => prev.map((r, j) => j === i ? { ...r, key: e.target.value } : r))}
+              placeholder="Tên trường"
+              className="w-40"
+            />
+            <Input
+              value={row.value}
+              onChange={e => setMetadataRows(prev => prev.map((r, j) => j === i ? { ...r, value: e.target.value } : r))}
+              placeholder="Giá trị"
+              className="flex-1"
+            />
+            <Button type="button" size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={() => setMetadataRows(prev => prev.filter((_, j) => j !== i))}>
+              <span className="text-red-400">×</span>
+            </Button>
+          </div>
+        ))}
+        {metadataRows.length === 0 && <p className="text-sm text-gray-400">Chưa có trường nào. Nhấn "Thêm trường" để bắt đầu.</p>}
       </div>
 
       <div className="flex gap-3">

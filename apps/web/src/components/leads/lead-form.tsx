@@ -33,24 +33,34 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
     productId: lead?.productId || '',
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [phoneDuplicate, setPhoneDuplicate] = useState<{ name: string; phone: string } | null>(null);
+  const [phoneDuplicate, setPhoneDuplicate] = useState<{ name: string; phone: string; diffs?: string[] } | null>(null);
 
-  // Check phone duplicate on blur
+  // Auto-fill from existing customer when phone matches
   useEffect(() => {
     if (isEdit || form.phone.length < 10) { setPhoneDuplicate(null); return; }
     const timer = setTimeout(async () => {
       try {
         const res = await api.get<{ data: any[] }>(`/customers/search?phone=${form.phone}`);
         const match = res.data?.[0];
-        if (match && match.name !== form.name) {
-          setPhoneDuplicate({ name: match.name, phone: match.phone });
+        if (match) {
+          // Auto-fill empty fields from customer data
+          setForm(prev => ({
+            ...prev,
+            name: prev.name || match.name || '',
+            email: prev.email || match.email || '',
+          }));
+          // Warn if user entered different info
+          const diffs: string[] = [];
+          if (form.name && match.name && form.name !== match.name) diffs.push(`Tên: ${match.name}`);
+          if (form.email && match.email && form.email !== match.email) diffs.push(`Email: ${match.email}`);
+          setPhoneDuplicate({ name: match.name, phone: match.phone, diffs });
         } else {
           setPhoneDuplicate(null);
         }
       } catch { setPhoneDuplicate(null); }
     }, 500);
     return () => clearTimeout(timer);
-  }, [form.phone, form.name, isEdit]);
+  }, [form.phone, isEdit]);
 
   function update(key: string, value: string) {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -90,8 +100,13 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
         <FormField label="Số điện thoại" required error={fieldErrors.phone}>
           <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" />
           {phoneDuplicate && (
-            <div className="mt-1 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
-              ⚠ SĐT đã tồn tại — <span className="font-semibold">{phoneDuplicate.name}</span> ({phoneDuplicate.phone})
+            <div className="mt-1 rounded-md bg-sky-50 border border-sky-200 px-3 py-2 text-xs text-sky-700">
+              Khách hàng đã có: <span className="font-semibold">{phoneDuplicate.name}</span> — dữ liệu đã tự điền
+              {phoneDuplicate.diffs && phoneDuplicate.diffs.length > 0 && (
+                <div className="mt-1 text-red-600 font-medium">
+                  ⚠ Thông tin khác biệt: {phoneDuplicate.diffs.join(', ')}
+                </div>
+              )}
             </div>
           )}
         </FormField>

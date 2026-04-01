@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
-import { Upload, CheckCircle2, XCircle, Loader2, FileText } from 'lucide-react';
+import { Upload, CheckCircle2, XCircle, Loader2, FileText, Download } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/api/v1';
@@ -167,6 +167,28 @@ function JobStatusRow({ job, onUpdate }: { job: ImportJob; onUpdate: (updated: I
   );
 }
 
+function downloadTemplate(type: 'lead' | 'customer') {
+  const templates = {
+    lead: {
+      filename: 'mau-import-leads.csv',
+      header: 'Số điện thoại,Họ tên,Email,Nguồn,Sản phẩm',
+      sample: '0912345678,Nguyễn Văn A,a@email.com,Facebook,Khóa học Sales Pro\n0987654321,Trần Thị B,,Website,\n0911222333,,,Cold Call,Tư vấn Marketing',
+    },
+    customer: {
+      filename: 'mau-import-khach-hang.csv',
+      header: 'Số điện thoại,Họ tên,Email',
+      sample: '0912345678,Nguyễn Văn A,a@email.com\n0987654321,Trần Thị B,b@email.com',
+    },
+  };
+  const t = templates[type];
+  const bom = '\uFEFF'; // UTF-8 BOM for Excel
+  const blob = new Blob([bom + t.header + '\n' + t.sample], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = t.filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function CsvImportPageClient({ initialHistory }: { initialHistory: ImportJob[] }) {
   const [jobs, setJobs] = useState<ImportJob[]>(initialHistory);
 
@@ -180,6 +202,25 @@ export function CsvImportPageClient({ initialHistory }: { initialHistory: Import
 
   return (
     <div className="space-y-6">
+      {/* Template downloads */}
+      <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <h3 className="font-semibold text-gray-900 mb-3">Tải file mẫu</h3>
+        <div className="flex gap-3">
+          <button
+            onClick={() => downloadTemplate('lead')}
+            className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+          >
+            <Download className="h-4 w-4 text-sky-500" />Mẫu import leads
+          </button>
+          <button
+            onClick={() => downloadTemplate('customer')}
+            className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+          >
+            <Download className="h-4 w-4 text-emerald-500" />Mẫu import khách hàng
+          </button>
+        </div>
+      </div>
+
       {/* Upload zones */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <UploadZone

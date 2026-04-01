@@ -107,8 +107,8 @@ export class ImportProcessor extends WorkerHost {
 
   private async processLeadRow(row: Record<string, string>, rowNum: number) {
     const phone = normalizePhone(row.phone || row['Số điện thoại'] || '');
-    const name = row.name || row['Họ tên'] || '';
-    if (!phone || !name) throw new Error('Thiếu phone hoặc name');
+    const name = row.name || row['Họ tên'] || phone;
+    if (!phone) throw new Error('Thiếu số điện thoại');
     if (!isValidVNPhone(phone)) throw new Error(`SĐT không hợp lệ: ${phone}`);
 
     // Find or create customer
@@ -145,14 +145,35 @@ export class ImportProcessor extends WorkerHost {
     });
     if (existingLead) throw new Error(`Trùng lead: SĐT ${phone} + nguồn + sản phẩm`);
 
-    await this.prisma.lead.create({
+    // Check skipPool on source
+    let status: 'POOL' | 'REDATA' = 'POOL';
+    if (sourceId) {
+      const src = await this.prisma.leadSource.findFirst({ where: { id: sourceId }, select: { skipPool: true } });
+      if (src?.skipPool) status = 'REDATA';
+    }
+
+    const lead = await this.prisma.lead.create({
       data: {
         phone, name, email: row.email || null,
-        status: 'POOL',
+        status,
         customerId: customer.id,
         sourceId, productId,
       },
     });
+
+    // Merge labels from customer → new lead
+    if (customer.id) {
+      const custLabels = await this.prisma.customerLabel.findMany({
+        where: { customerId: customer.id },
+        select: { labelId: true },
+      });
+      if (custLabels.length > 0) {
+        await this.prisma.leadLabel.createMany({
+          data: custLabels.map(cl => ({ leadId: lead.id, labelId: cl.labelId })),
+          skipDuplicates: true,
+        });
+      }
+    }
   }
 
   private async processCustomerRow(row: Record<string, string>, rowNum: number) {

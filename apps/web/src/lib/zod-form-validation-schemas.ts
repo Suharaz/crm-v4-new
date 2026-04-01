@@ -14,10 +14,7 @@ const emailOptional = z
 // Lead form
 export const leadSchema = z.object({
   phone: phoneVN,
-  name: z
-    .string()
-    .min(2, 'Họ tên phải có ít nhất 2 ký tự')
-    .max(100, 'Họ tên không được vượt quá 100 ký tự'),
+  name: z.string().max(100, 'Họ tên không được vượt quá 100 ký tự').optional(),
   email: emailOptional,
   sourceId: z.string().optional(),
   productId: z.string().optional(),

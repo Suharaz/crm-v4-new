@@ -13,6 +13,7 @@ interface Lead {
   department?: { name: string } | null;
   customerId?: string | null;
   orders?: { id: string }[];
+  labels?: { label: { id: string; name: string; color: string } }[];
   createdAt: string;
 }
 
@@ -39,6 +40,7 @@ export function LeadTable({ leads, poolMode, users = [] }: LeadTableProps) {
               <th className="px-4 py-3 text-left font-medium text-gray-500">SĐT</th>
               <th className="px-4 py-3 text-left font-medium text-gray-500">Trạng thái</th>
               <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nguồn</th>
+              <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nhãn</th>
               <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nhân viên</th>
               <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Ngày tạo</th>
               {poolMode && <th className="px-4 py-3 text-right font-medium text-gray-500">Thao tác</th>}
@@ -62,6 +64,14 @@ export function LeadTable({ leads, poolMode, users = [] }: LeadTableProps) {
                 <td className="px-4 py-3 text-gray-600">{lead.phone}</td>
                 <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
                 <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.source?.name || '—'}</td>
+                <td className="hidden md:table-cell px-4 py-3">
+                  <div className="flex flex-wrap gap-1">
+                    {lead.labels?.slice(0, 3).map(ll => (
+                      <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white" style={{ backgroundColor: ll.label.color }}>{ll.label.name}</span>
+                    ))}
+                    {(lead.labels?.length || 0) > 3 && <span className="text-[10px] text-gray-400">+{(lead.labels?.length || 0) - 3}</span>}
+                  </div>
+                </td>
                 <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.assignedUser?.name || '—'}</td>
                 <td className="hidden lg:table-cell px-4 py-3 text-gray-400">{formatDate(lead.createdAt)}</td>
                 {poolMode && (

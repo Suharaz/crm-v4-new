@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FormField } from '@/components/shared/form-field';
 import { useFormAction } from '@/hooks/use-form-action';
 import { leadSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
+import { api } from '@/lib/api-client';
 
 interface LeadFormProps {
   lead?: any;
@@ -32,6 +33,24 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
     productId: lead?.productId || '',
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [phoneDuplicate, setPhoneDuplicate] = useState<{ name: string; phone: string } | null>(null);
+
+  // Check phone duplicate on blur
+  useEffect(() => {
+    if (isEdit || form.phone.length < 10) { setPhoneDuplicate(null); return; }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await api.get<{ data: any[] }>(`/customers/search?phone=${form.phone}`);
+        const match = res.data?.[0];
+        if (match && match.name !== form.name) {
+          setPhoneDuplicate({ name: match.name, phone: match.phone });
+        } else {
+          setPhoneDuplicate(null);
+        }
+      } catch { setPhoneDuplicate(null); }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [form.phone, form.name, isEdit]);
 
   function update(key: string, value: string) {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -70,9 +89,14 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
 
         <FormField label="Số điện thoại" required error={fieldErrors.phone}>
           <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" />
+          {phoneDuplicate && (
+            <div className="mt-1 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
+              ⚠ SĐT đã tồn tại — <span className="font-semibold">{phoneDuplicate.name}</span> ({phoneDuplicate.phone})
+            </div>
+          )}
         </FormField>
 
-        <FormField label="Họ tên" required error={fieldErrors.name}>
+        <FormField label="Họ tên" error={fieldErrors.name}>
           <Input value={form.name} onChange={e => update('name', e.target.value)} placeholder="Nguyễn Văn A" />
         </FormField>
 

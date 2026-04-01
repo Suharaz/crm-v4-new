@@ -4,8 +4,9 @@ export class CreateLeadDto {
   @IsString()
   phone!: string;
 
+  @IsOptional()
   @IsString()
-  name!: string;
+  name?: string;
 
   @IsOptional()
   @IsEmail()

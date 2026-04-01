@@ -137,13 +137,16 @@ export class LeadsService {
     const phone = normalizePhone(dto.phone);
     if (!isValidVNPhone(phone)) throw new BadRequestException('Số điện thoại không hợp lệ');
 
-    // Find or create customer by phone
+    // Find or create customer by phone + gather duplicate info
     let customer = await this.prisma.customer.findFirst({
       where: { phone, deletedAt: null },
+      include: { labels: { select: { labelId: true } } },
     });
+    const isDuplicate = !!customer;
     if (!customer) {
       customer = await this.prisma.customer.create({
-        data: { phone, name: dto.name, email: dto.email },
+        data: { phone, name: dto.name || phone, email: dto.email },
+        include: { labels: { select: { labelId: true } } },
       });
     }
 
@@ -160,7 +163,7 @@ export class LeadsService {
     // skipPool → status REDATA (kho re-data riêng), otherwise POOL (Kho Mới)
     const lead = await this.prisma.lead.create({
       data: {
-        phone, name: dto.name, email: dto.email,
+        phone, name: dto.name || phone, email: dto.email,
         status: skipPool ? 'REDATA' : 'POOL',
         customer: { connect: { id: customer.id } },
         ...(dto.sourceId ? { source: { connect: { id: BigInt(dto.sourceId) } } } : {}),
@@ -169,7 +172,25 @@ export class LeadsService {
       select: LEAD_SELECT,
     });
 
-    return lead;
+    // Merge labels from customer → new lead (if customer already has labels)
+    if (isDuplicate && customer.labels?.length > 0) {
+      await this.prisma.leadLabel.createMany({
+        data: customer.labels.map((cl: any) => ({ leadId: lead.id, labelId: cl.labelId })),
+        skipDuplicates: true,
+      });
+    }
+
+    // Return lead with duplicate warning
+    const result = await this.findById(lead.id);
+    if (isDuplicate) {
+      (result as any)._warning = {
+        type: 'DUPLICATE_PHONE',
+        message: `SĐT ${phone} đã tồn tại — ${customer.name || 'khách hàng'}`,
+        existingCustomerId: customer.id.toString(),
+        existingName: customer.name,
+      };
+    }
+    return result;
   }
 
   // ── Update ──────────────────────────────────────────────────────────────

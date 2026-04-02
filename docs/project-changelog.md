@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### UI Redesign — Status Rename + Role-based Navigation + Products Tabs (2026-04-02)
+- **Status rename:** REDATA → ZOOM across full stack (Prisma enum, backend, frontend, routes)
+- **Role-based sidebar:** Manager sees Leads submenu (Chờ phân phối, Zoom, Kho thả nổi). Super Admin sees flat /leads link
+- **Products page:** Merged products + categories into one tabbed page (Sản phẩm / Danh mục). Removed Danh mục SP from Settings
+- **Auth fix:** Prevent stale cookies from blocking login — middleware JWT expiry check, proxy cookie cleanup on failed refresh, api-client 401 redirect
+
 ### Phase 23: RBAC E2E Tests + Lead Flow (2026-03-28)
 - **RBAC E2E** (19 tests): Kiểm tra sidebar, page access, action buttons cho 3 roles qua trình duyệt
 - **Lead Lifecycle Flow** (7 tests): Manager tạo lead → assign → sale claim → note → convert → order → dashboard

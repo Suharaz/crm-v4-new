@@ -6,13 +6,13 @@ import { LeadListQueryDto } from './dto/lead-list-query.dto';
 
 // Valid status transitions
 const ALLOWED_TRANSITIONS: Record<LeadStatus, LeadStatus[]> = {
-  POOL: ['ASSIGNED', 'FLOATING'],
-  ZOOM: ['ASSIGNED', 'POOL', 'FLOATING'], // Kho Zoom: có thể assign, chuyển pool, hoặc thả nổi
-  ASSIGNED: ['IN_PROGRESS', 'POOL', 'FLOATING'],
+  POOL: ['IN_PROGRESS', 'FLOATING'],
+  ZOOM: ['IN_PROGRESS', 'POOL', 'FLOATING'],
+  ASSIGNED: ['IN_PROGRESS', 'POOL', 'FLOATING'], // legacy, assign now goes directly to IN_PROGRESS
   IN_PROGRESS: ['CONVERTED', 'LOST', 'POOL', 'FLOATING'],
   CONVERTED: [], // terminal
-  LOST: ['FLOATING'], // LOST → FLOATING (kho thả nổi)
-  FLOATING: ['ASSIGNED'], // claim
+  LOST: ['FLOATING'],
+  FLOATING: ['IN_PROGRESS'], // claim → auto IN_PROGRESS
 };
 
 const LEAD_SELECT = {
@@ -282,7 +282,7 @@ export class LeadsService {
       data: {
         assignedUserId: targetUserId,
         departmentId: targetUser.departmentId,
-        status: 'ASSIGNED',
+        status: 'IN_PROGRESS',
       },
     });
 
@@ -331,7 +331,7 @@ export class LeadsService {
     await this.prisma.$transaction(async (tx) => {
       await tx.lead.updateMany({
         where: { id: { in: leads.map(l => l.id) } },
-        data: { assignedUserId: targetUserId, departmentId: targetUser.departmentId, status: 'ASSIGNED' },
+        data: { assignedUserId: targetUserId, departmentId: targetUser.departmentId, status: 'IN_PROGRESS' },
       });
 
       await tx.assignmentHistory.createMany({
@@ -375,13 +375,13 @@ export class LeadsService {
       throw new ConflictException('Chỉ claim lead ở trạng thái POOL, ZOOM hoặc FLOATING');
     }
 
-    // Atomic claim
+    // Atomic claim → auto IN_PROGRESS
     const result = await this.prisma.lead.updateMany({
       where: { id, assignedUserId: null, deletedAt: null, status: { in: ['POOL', 'FLOATING'] } },
       data: {
         assignedUserId: user.id,
         departmentId: user.departmentId,
-        status: 'ASSIGNED',
+        status: 'IN_PROGRESS',
       },
     });
     if (result.count === 0) throw new ConflictException('Lead đã được claim bởi người khác');

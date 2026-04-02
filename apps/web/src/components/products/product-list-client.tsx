@@ -29,6 +29,7 @@ export function ProductListClient({ products, categories }: ProductListClientPro
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [viewingProduct, setViewingProduct] = useState<any | null>(null);
   const [form, setForm] = useState({ name: '', price: '', description: '', categoryId: '', vatRate: '0' });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -104,14 +105,14 @@ export function ProductListClient({ products, categories }: ProductListClientPro
             {products.length === 0 ? (
               <div className="col-span-full rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có sản phẩm nào</div>
             ) : products.map((p: any) => (
-              <div key={p.id} className="rounded-xl border border-gray-200 bg-white p-5">
+              <div key={p.id} className="rounded-xl border border-gray-200 bg-white p-5 cursor-pointer hover:border-sky-200 hover:shadow-sm transition-all" onClick={() => setViewingProduct(p)}>
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-semibold text-gray-900">{p.name}</h3>
                     <p className="mt-1 text-sm text-gray-500">{p.category?.name || 'Chưa phân loại'}</p>
                   </div>
                   {isManager && (
-                    <div className="flex gap-1">
+                    <div className="flex gap-1" onClick={e => e.stopPropagation()}>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(p)}>
                         <Pencil className="h-3.5 w-3.5 text-gray-400" />
                       </Button>
@@ -136,7 +137,7 @@ export function ProductListClient({ products, categories }: ProductListClientPro
                   <span className="text-lg font-bold text-sky-600">{formatVND(Number(p.price))}</span>
                   {Number(p.vatRate) > 0 && <span className="text-xs text-gray-400">+VAT {p.vatRate}%</span>}
                 </div>
-                {p.description && <p className="mt-2 text-sm text-gray-600">{p.description}</p>}
+                {p.description && <p className="mt-2 line-clamp-2 text-sm text-gray-600">{p.description}</p>}
               </div>
             ))}
           </div>
@@ -153,6 +154,42 @@ export function ProductListClient({ products, categories }: ProductListClientPro
           />
         </TabsContent>
       </Tabs>
+
+      {/* View Product Detail Dialog */}
+      <Dialog open={!!viewingProduct} onOpenChange={() => setViewingProduct(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{viewingProduct?.name}</DialogTitle>
+          </DialogHeader>
+          {viewingProduct && (
+            <div className="space-y-3 py-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-500">Danh mục</span>
+                <span className="font-medium">{viewingProduct.category?.name || 'Chưa phân loại'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-500">Giá</span>
+                <span className="text-lg font-bold text-sky-600">{formatVND(Number(viewingProduct.price))}</span>
+              </div>
+              {Number(viewingProduct.vatRate) > 0 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">VAT</span>
+                  <span>{viewingProduct.vatRate}%</span>
+                </div>
+              )}
+              {viewingProduct.description && (
+                <div>
+                  <span className="text-gray-500">Mô tả</span>
+                  <p className="mt-1 whitespace-pre-wrap text-gray-700">{viewingProduct.description}</p>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewingProduct(null)}>Đóng</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Create/Edit Product Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

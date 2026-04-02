@@ -7,7 +7,7 @@ import { LeadListQueryDto } from './dto/lead-list-query.dto';
 // Valid status transitions
 const ALLOWED_TRANSITIONS: Record<LeadStatus, LeadStatus[]> = {
   POOL: ['ASSIGNED', 'FLOATING'],
-  REDATA: ['ASSIGNED', 'POOL', 'FLOATING'], // Kho Re-data: có thể assign, chuyển pool, hoặc thả nổi
+  ZOOM: ['ASSIGNED', 'POOL', 'FLOATING'], // Kho Zoom: có thể assign, chuyển pool, hoặc thả nổi
   ASSIGNED: ['IN_PROGRESS', 'POOL', 'FLOATING'],
   IN_PROGRESS: ['CONVERTED', 'LOST', 'POOL', 'FLOATING'],
   CONVERTED: [], // terminal
@@ -95,11 +95,11 @@ export class LeadsService {
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }
 
-  async poolRedata(limit: number, cursor?: string) {
-    // Kho Re-data: REDATA status, chưa assign
+  async poolZoom(limit: number, cursor?: string) {
+    // Kho Zoom: ZOOM status, chưa assign
     const take = (limit ?? 20) + 1;
     const leads = await this.prisma.lead.findMany({
-      where: { status: 'REDATA', deletedAt: null },
+      where: { status: 'ZOOM', deletedAt: null },
       select: LEAD_SELECT, orderBy: { id: 'desc' }, take,
       ...(cursor ? { skip: 1, cursor: { id: BigInt(cursor) } } : {}),
     });
@@ -170,11 +170,11 @@ export class LeadsService {
       skipPool = source?.skipPool ?? false;
     }
 
-    // skipPool → status REDATA (kho re-data riêng), otherwise POOL (Kho Mới)
+    // skipPool → status ZOOM (kho zoom riêng), otherwise POOL (Kho Mới)
     const lead = await this.prisma.lead.create({
       data: {
         phone, name: dto.name || phone, email: dto.email,
-        status: skipPool ? 'REDATA' : 'POOL',
+        status: skipPool ? 'ZOOM' : 'POOL',
         customer: { connect: { id: customer.id } },
         ...(dto.sourceId ? { source: { connect: { id: BigInt(dto.sourceId) } } } : {}),
         ...(dto.productId ? { product: { connect: { id: BigInt(dto.productId) } } } : {}),
@@ -249,8 +249,8 @@ export class LeadsService {
   async assign(id: bigint, targetUserId: bigint, user: CurrentUser) {
     const lead = await this.findById(id);
 
-    if (!['POOL', 'REDATA', 'FLOATING'].includes(lead.status)) {
-      throw new ConflictException('Chỉ gán lead ở trạng thái POOL, REDATA hoặc FLOATING');
+    if (!['POOL', 'ZOOM', 'FLOATING'].includes(lead.status)) {
+      throw new ConflictException('Chỉ gán lead ở trạng thái POOL, ZOOM hoặc FLOATING');
     }
 
     // Check capacity before assigning
@@ -358,7 +358,7 @@ export class LeadsService {
 
     // Floating: any user can claim
     if (lead.status !== 'POOL' && lead.status !== 'FLOATING') {
-      throw new ConflictException('Chỉ claim lead ở trạng thái POOL, REDATA hoặc FLOATING');
+      throw new ConflictException('Chỉ claim lead ở trạng thái POOL, ZOOM hoặc FLOATING');
     }
 
     // Atomic claim

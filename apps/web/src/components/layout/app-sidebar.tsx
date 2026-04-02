@@ -31,7 +31,7 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Leads', href: '/leads', icon: Users,
     children: [
       { label: 'Chờ phân phối', href: '/leads/pool/new', icon: Inbox },
-      { label: 'Re-data', href: '/leads/pool/redata', icon: RotateCcw },
+      { label: 'Zoom', href: '/leads/pool/zoom', icon: RotateCcw },
       { label: 'Danh sách', href: '/leads', icon: List },
       { label: 'Kho thả nổi', href: '/floating', icon: Waves },
     ],

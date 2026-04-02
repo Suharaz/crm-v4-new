@@ -45,9 +45,9 @@ export function LeadActions({ lead, users, departments, labels }: LeadActionsPro
   const labelAction = useFormAction({ successMessage: 'Đã gắn nhãn' });
   const noteAction = useFormAction({ successMessage: 'Đã thêm ghi chú' });
 
-  const canClaim = ['POOL', 'REDATA', 'FLOATING'].includes(lead.status);
+  const canClaim = ['POOL', 'ZOOM', 'FLOATING'].includes(lead.status);
 
-  const canAssign = isManager && ['POOL', 'REDATA', 'FLOATING', 'ASSIGNED'].includes(lead.status);
+  const canAssign = isManager && ['POOL', 'ZOOM', 'FLOATING', 'ASSIGNED'].includes(lead.status);
 
   return (
     <div className="flex flex-wrap gap-2">

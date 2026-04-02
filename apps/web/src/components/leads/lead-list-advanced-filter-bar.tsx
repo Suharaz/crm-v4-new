@@ -8,7 +8,7 @@ import { Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
 
 const STATUSES = [
   { value: 'POOL', label: 'Kho Mới' },
-  { value: 'REDATA', label: 'Re-data' },
+  { value: 'ZOOM', label: 'Zoom' },
   { value: 'ASSIGNED', label: 'Đã gán' },
   { value: 'IN_PROGRESS', label: 'Đang xử lý' },
   { value: 'CONVERTED', label: 'Đã chuyển đổi' },

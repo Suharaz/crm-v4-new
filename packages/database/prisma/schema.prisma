@@ -22,7 +22,7 @@ enum UserStatus {
 
 enum LeadStatus {
   POOL
-  REDATA
+  ZOOM
   ASSIGNED
   IN_PROGRESS
   CONVERTED

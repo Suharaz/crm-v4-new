@@ -146,10 +146,10 @@ export class ImportProcessor extends WorkerHost {
     if (existingLead) throw new Error(`Trùng lead: SĐT ${phone} + nguồn + sản phẩm`);
 
     // Check skipPool on source
-    let status: 'POOL' | 'REDATA' = 'POOL';
+    let status: 'POOL' | 'ZOOM' = 'POOL';
     if (sourceId) {
       const src = await this.prisma.leadSource.findFirst({ where: { id: sourceId }, select: { skipPool: true } });
-      if (src?.skipPool) status = 'REDATA';
+      if (src?.skipPool) status = 'ZOOM';
     }
 
     // Extra columns → metadata JSONB (any column not in known fields)

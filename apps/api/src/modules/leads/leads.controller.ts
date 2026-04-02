@@ -27,10 +27,10 @@ export class LeadsController {
     return this.leadsService.poolNewFiltered(limit ?? 20, cursor);
   }
 
-  @Get('pool/redata')
+  @Get('pool/zoom')
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
-  async poolRedata(@Query('limit') limit?: number, @Query('cursor') cursor?: string) {
-    return this.leadsService.poolRedata(limit ?? 20, cursor);
+  async poolZoom(@Query('limit') limit?: number, @Query('cursor') cursor?: string) {
+    return this.leadsService.poolZoom(limit ?? 20, cursor);
   }
 
   @Get('pool/department/:deptId')

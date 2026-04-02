@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { FormField } from '@/components/shared/form-field';
+import { SettingsCrudList } from '@/components/settings/settings-crud-list';
 import { useFormAction } from '@/hooks/use-form-action';
 import { useAuth } from '@/providers/auth-provider';
 import { formatVND } from '@/lib/utils';
@@ -19,7 +21,7 @@ interface ProductListClientProps {
   categories: any[];
 }
 
-/** Products grid with dialog-based CRUD. */
+/** Products & categories page with tabs. */
 export function ProductListClient({ products, categories }: ProductListClientProps) {
   const { user } = useAuth();
   const isManager = user?.role === 'MANAGER' || user?.role === 'SUPER_ADMIN';
@@ -79,60 +81,80 @@ export function ProductListClient({ products, categories }: ProductListClientPro
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Sản phẩm</h1>
-          <p className="text-sm text-gray-500">Danh sách sản phẩm và dịch vụ</p>
-        </div>
-        {isManager && (
-          <Button onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-1" />Thêm sản phẩm
-          </Button>
-        )}
-      </div>
+      <h1 className="text-2xl font-bold text-gray-900">Sản phẩm</h1>
+      <p className="text-sm text-gray-500 mb-4">Quản lý sản phẩm và danh mục</p>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {products.length === 0 ? (
-          <div className="col-span-full rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có sản phẩm nào</div>
-        ) : products.map((p: any) => (
-          <div key={p.id} className="rounded-xl border border-gray-200 bg-white p-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="font-semibold text-gray-900">{p.name}</h3>
-                <p className="mt-1 text-sm text-gray-500">{p.category?.name || 'Chưa phân loại'}</p>
-              </div>
-              {isManager && (
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(p)}>
-                    <Pencil className="h-3.5 w-3.5 text-gray-400" />
-                  </Button>
-                  {isAdmin && (
-                    <ConfirmDialog
-                      trigger={
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Trash2 className="h-3.5 w-3.5 text-red-400" />
-                        </Button>
-                      }
-                      title="Xóa sản phẩm"
-                      description={`Bạn có chắc muốn xóa "${p.name}"?`}
-                      confirmLabel="Xóa"
-                      onConfirm={() => deleteAction.execute('delete', `/products/${p.id}`)}
-                      isLoading={deleteAction.isLoading}
-                    />
+      <Tabs defaultValue="products">
+        <TabsList>
+          <TabsTrigger value="products">Sản phẩm</TabsTrigger>
+          <TabsTrigger value="categories">Danh mục</TabsTrigger>
+        </TabsList>
+
+        {/* ── Tab: Sản phẩm ── */}
+        <TabsContent value="products">
+          <div className="flex items-center justify-end mb-4">
+            {isManager && (
+              <Button onClick={openCreate}>
+                <Plus className="h-4 w-4 mr-1" />Thêm sản phẩm
+              </Button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {products.length === 0 ? (
+              <div className="col-span-full rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có sản phẩm nào</div>
+            ) : products.map((p: any) => (
+              <div key={p.id} className="rounded-xl border border-gray-200 bg-white p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{p.name}</h3>
+                    <p className="mt-1 text-sm text-gray-500">{p.category?.name || 'Chưa phân loại'}</p>
+                  </div>
+                  {isManager && (
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(p)}>
+                        <Pencil className="h-3.5 w-3.5 text-gray-400" />
+                      </Button>
+                      {isAdmin && (
+                        <ConfirmDialog
+                          trigger={
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Trash2 className="h-3.5 w-3.5 text-red-400" />
+                            </Button>
+                          }
+                          title="Xóa sản phẩm"
+                          description={`Bạn có chắc muốn xóa "${p.name}"?`}
+                          confirmLabel="Xóa"
+                          onConfirm={() => deleteAction.execute('delete', `/products/${p.id}`)}
+                          isLoading={deleteAction.isLoading}
+                        />
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-lg font-bold text-sky-600">{formatVND(Number(p.price))}</span>
-              {Number(p.vatRate) > 0 && <span className="text-xs text-gray-400">+VAT {p.vatRate}%</span>}
-            </div>
-            {p.description && <p className="mt-2 text-sm text-gray-600">{p.description}</p>}
+                <div className="mt-3 flex items-baseline gap-2">
+                  <span className="text-lg font-bold text-sky-600">{formatVND(Number(p.price))}</span>
+                  {Number(p.vatRate) > 0 && <span className="text-xs text-gray-400">+VAT {p.vatRate}%</span>}
+                </div>
+                {p.description && <p className="mt-2 text-sm text-gray-600">{p.description}</p>}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </TabsContent>
 
-      {/* Create/Edit Dialog */}
+        {/* ── Tab: Danh mục ── */}
+        <TabsContent value="categories">
+          <SettingsCrudList
+            data={categories}
+            endpoint="/product-categories"
+            entityName="Danh mục sản phẩm"
+            fields={[{ key: 'name', label: 'Tên danh mục', required: true, placeholder: 'VD: Khóa học, Tư vấn...' }]}
+            canEdit={isManager}
+          />
+        </TabsContent>
+      </Tabs>
+
+      {/* Create/Edit Product Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>

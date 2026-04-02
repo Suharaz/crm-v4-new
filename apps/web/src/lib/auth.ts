@@ -14,6 +14,7 @@ export async function getAccessToken(): Promise<string | null> {
 export async function serverFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = await getAccessToken();
   const res = await fetch(`${API_BASE}${path}`, {
+    cache: 'no-store',
     ...options,
     headers: {
       'Content-Type': 'application/json',

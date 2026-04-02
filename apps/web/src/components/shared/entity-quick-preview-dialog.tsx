@@ -16,18 +16,31 @@ interface PreviewDialogProps {
   entityId: string | null;
 }
 
+/** In-memory cache: key → { data, activities, ts }. Expires after 2 min. */
+const previewCache = new Map<string, { data: any; activities: any[]; ts: number }>();
+const CACHE_TTL = 2 * 60 * 1000;
+
 /** Quick preview dialog for lead/customer — shows key info without page navigation. */
 export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entityId }: PreviewDialogProps) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-
   const [activities, setActivities] = useState<any[]>([]);
 
   useEffect(() => {
     if (!open || !entityId) return;
+
+    const cacheKey = `${entityType}:${entityId}`;
+    const cached = previewCache.get(cacheKey);
+
+    // Use cache if fresh (< 2 min old)
+    if (cached && Date.now() - cached.ts < CACHE_TTL) {
+      setData(cached.data);
+      setActivities(cached.activities);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
-    setData(null);
-    setActivities([]);
     const endpoint = entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`;
     const activitiesEndpoint = `/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`;
 
@@ -36,8 +49,11 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
       api.get<{ data: any[] }>(activitiesEndpoint).catch(() => ({ data: [] })),
     ])
       .then(([entityRes, actRes]) => {
-        setData(entityRes.data);
-        setActivities(actRes.data || []);
+        const d = entityRes.data;
+        const a = actRes.data || [];
+        setData(d);
+        setActivities(a);
+        previewCache.set(cacheKey, { data: d, activities: a, ts: Date.now() });
       })
       .catch(() => setData(null))
       .finally(() => setLoading(false));

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Access Control + Dashboard Redesign (2026-04-02)
+- **Leads RBAC:** USER sees only assigned leads. New `/my-dept-pool` endpoint. User sidebar: My Lead, Kho phòng ban, Thả nổi
+- **Orders RBAC:** USER sees only own orders. Inline expandable row replaces link-to-detail
+- **Call logs RBAC:** Opened to all roles. USER filtered by matchedUserId
+- **Products:** Click card to view full description in popup dialog
+- **Dashboard:** Time range picker (Hôm nay/Tuần/Tháng/Quý/Năm). Revenue bar chart + lead status pie chart. Role-based data filtering
+
 ### UI Redesign — Status Rename + Role-based Navigation + Products Tabs (2026-04-02)
 - **Status rename:** REDATA → ZOOM across full stack (Prisma enum, backend, frontend, routes)
 - **Role-based sidebar:** Manager sees Leads submenu (Chờ phân phối, Zoom, Kho thả nổi). Super Admin sees flat /leads link

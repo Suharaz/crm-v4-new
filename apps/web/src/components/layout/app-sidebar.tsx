@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, UserCheck, ShoppingCart, Package,
   Phone, Settings, Upload, Waves, ChevronLeft, ChevronRight, ChevronDown,
-  UserCog, CheckSquare, Zap, Inbox, List, RotateCcw,
+  UserCog, CheckSquare, Zap, Inbox, RotateCcw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
@@ -23,16 +23,18 @@ interface NavItem {
   icon: React.ElementType;
   roles?: string[];
   children?: NavChild[];
+  /** Roles that see the expandable children. Others see flat link. */
+  childRoles?: string[];
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Trang chủ', href: '/', icon: LayoutDashboard },
   {
     label: 'Leads', href: '/leads', icon: Users,
+    childRoles: ['MANAGER'],
     children: [
       { label: 'Chờ phân phối', href: '/leads/pool/new', icon: Inbox },
       { label: 'Zoom', href: '/leads/pool/zoom', icon: RotateCcw },
-      { label: 'Danh sách', href: '/leads', icon: List },
       { label: 'Kho thả nổi', href: '/floating', icon: Waves },
     ],
   },
@@ -107,8 +109,10 @@ export function AppSidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-2">
         {visibleItems.map((item) => {
-          // Expandable group (Leads)
-          if (item.children && !collapsed) {
+          const showChildren = item.children && item.childRoles?.includes(user?.role || '');
+
+          // Expandable group (only for matching roles, non-collapsed)
+          if (showChildren && !collapsed) {
             return (
               <div key={item.href}>
                 <button
@@ -126,19 +130,14 @@ export function AppSidebar() {
                 </button>
                 {leadsOpen && (
                   <div className="mt-0.5 space-y-0.5">
-                    {item.children.map(child => renderNavLink(child, true))}
+                    {item.children!.map(child => renderNavLink(child, true))}
                   </div>
                 )}
               </div>
             );
           }
 
-          // Collapsed mode with children — show just icon
-          if (item.children && collapsed) {
-            return renderNavLink(item);
-          }
-
-          // Regular nav item
+          // Regular nav item (flat link)
           return renderNavLink(item);
         })}
       </nav>

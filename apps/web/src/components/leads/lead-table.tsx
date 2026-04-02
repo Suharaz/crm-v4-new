@@ -64,11 +64,10 @@ export function LeadTable({ leads, poolMode, users = [] }: LeadTableProps) {
                 </td>
                 <td className="px-4 py-3 text-gray-600">
                   <span>{lead.phone}</span>
-                  {lead.customerId && (
-                    <span className="ml-1.5 inline-flex items-center rounded-full bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700">KH</span>
-                  )}
-                  {!lead.customerId && lead.activityCount != null && lead.activityCount > 0 && (
-                    <span className="ml-1.5 inline-flex items-center rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">Log</span>
+                  {lead.activityCount != null && lead.activityCount > 0 && (
+                    <span className="ml-1.5 inline-flex items-center rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700" title={`${lead.activityCount} hoạt động`}>
+                      {lead.activityCount} log
+                    </span>
                   )}
                 </td>
                 <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>

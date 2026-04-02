@@ -88,7 +88,7 @@ export class LeadsService {
       const ids = data.map(l => l.id);
       const activityCounts = await this.prisma.activity.groupBy({
         by: ['entityId'],
-        where: { entityType: 'LEAD', entityId: { in: ids }, deletedAt: null },
+        where: { entityType: 'LEAD', entityId: { in: ids }, deletedAt: null, type: { in: ['NOTE', 'CALL'] } },
         _count: true,
       });
       const countMap = new Map(activityCounts.map(a => [a.entityId.toString(), a._count]));

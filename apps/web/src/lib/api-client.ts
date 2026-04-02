@@ -24,6 +24,12 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   });
 
   if (!res.ok) {
+    // Session expired — redirect to login
+    if (res.status === 401 && typeof window !== 'undefined') {
+      window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      // Return a never-resolving promise to prevent downstream code from running
+      return new Promise<never>(() => {});
+    }
     const error = await res.json().catch(() => ({ message: 'Lỗi không xác định' }));
     throw new Error(error.message || `HTTP ${res.status}`);
   }

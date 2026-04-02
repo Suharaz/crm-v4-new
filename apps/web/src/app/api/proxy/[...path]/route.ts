@@ -86,6 +86,12 @@ export async function handler(request: NextRequest, { params }: { params: Promis
           return response;
         }
       }
+
+      // Refresh failed or no refresh token — clear stale cookies
+      const errResponse = NextResponse.json(data, { status: 401 });
+      errResponse.cookies.set('access_token', '', { path: '/', maxAge: 0 });
+      errResponse.cookies.set('refresh_token', '', { path: '/', maxAge: 0 });
+      return errResponse;
     }
 
     return NextResponse.json(data, { status: res.status });

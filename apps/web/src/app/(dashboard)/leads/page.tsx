@@ -1,14 +1,14 @@
 import { Suspense } from 'react';
 import { serverFetch } from '@/lib/auth';
-import { LeadTable } from '@/components/leads/lead-table';
 import { LeadListAdvancedFilterBar } from '@/components/leads/lead-list-advanced-filter-bar';
 import { PaginationControls } from '@/components/shared/pagination-controls';
+import { LeadListWithViewToggle } from '@/components/leads/lead-list-with-view-toggle';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { CsvExportButton } from '@/components/shared/csv-export-button';
 
-/** Lead list page — shows all leads with deep filters. */
+/** Lead list page — table or kanban view with deep filters. */
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const params = await searchParams;
   const query = new URLSearchParams(params).toString();
@@ -61,7 +61,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         />
       </Suspense>
 
-      <LeadTable leads={data} />
+      <LeadListWithViewToggle leads={data} />
       <PaginationControls nextCursor={nextCursor} />
     </div>
   );

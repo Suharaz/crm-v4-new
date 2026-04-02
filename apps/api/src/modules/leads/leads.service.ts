@@ -83,17 +83,26 @@ export class LeadsService {
     const hasMore = leads.length > limit;
     const data = hasMore ? leads.slice(0, limit) : leads;
 
-    // Batch-fetch activity counts for indicator tags
+    // Batch-fetch interaction counts (notes, calls, orders) for indicator tags
     if (data.length > 0) {
       const ids = data.map(l => l.id);
-      const activityCounts = await this.prisma.activity.groupBy({
-        by: ['entityId'],
-        where: { entityType: 'LEAD', entityId: { in: ids }, deletedAt: null, type: { in: ['NOTE', 'CALL'] } },
-        _count: true,
-      });
-      const countMap = new Map(activityCounts.map(a => [a.entityId.toString(), a._count]));
+      const [activityCounts, orderCounts] = await Promise.all([
+        this.prisma.activity.groupBy({
+          by: ['entityId'],
+          where: { entityType: 'LEAD', entityId: { in: ids }, deletedAt: null, type: { in: ['NOTE', 'CALL'] } },
+          _count: true,
+        }),
+        this.prisma.order.groupBy({
+          by: ['leadId'],
+          where: { leadId: { in: ids }, deletedAt: null },
+          _count: true,
+        }),
+      ]);
+      const actMap = new Map(activityCounts.map(a => [a.entityId.toString(), a._count]));
+      const ordMap = new Map(orderCounts.map(o => [o.leadId!.toString(), o._count]));
       for (const lead of data) {
-        (lead as any).activityCount = countMap.get(lead.id.toString()) || 0;
+        const id = lead.id.toString();
+        (lead as any).activityCount = (actMap.get(id) || 0) + (ordMap.get(id) || 0);
       }
     }
 

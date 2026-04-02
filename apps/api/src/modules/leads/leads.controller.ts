@@ -16,8 +16,17 @@ export class LeadsController {
   ) {}
 
   @Get()
-  async list(@Query() query: LeadListQueryDto) {
-    return this.leadsService.list(query);
+  async list(@Query() query: LeadListQueryDto, @CurrentUser() user: any) {
+    return this.leadsService.list(query, user);
+  }
+
+  @Get('my-dept-pool')
+  async myDeptPool(
+    @CurrentUser() user: any,
+    @Query('limit') limit?: number,
+    @Query('cursor') cursor?: string,
+  ) {
+    return this.leadsService.myDeptPool(user, limit ?? 20, cursor);
   }
 
   // 4 Kho endpoints

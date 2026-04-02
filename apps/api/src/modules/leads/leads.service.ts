@@ -39,15 +39,23 @@ interface CurrentUser {
 export class LeadsService {
   constructor(private readonly prisma: PrismaClient) {}
 
-  // ── List with filters ───────────────────────────────────────────────────
-  async list(query: LeadListQueryDto) {
+  // ── List with filters + role-based access ────────────────────────────────
+  async list(query: LeadListQueryDto, user?: CurrentUser) {
     const limit = query.limit ?? 20;
     const where: Prisma.LeadWhereInput = { deletedAt: null };
+
+    // USER role: only sees leads assigned to them
+    if (user && user.role === UserRole.USER) {
+      where.assignedUserId = user.id;
+    }
 
     if (query.status) where.status = query.status;
     if (query.sourceId) where.sourceId = BigInt(query.sourceId);
     if (query.productId) where.productId = BigInt(query.productId);
-    if (query.assignedUserId) where.assignedUserId = BigInt(query.assignedUserId);
+    // Only allow assignedUserId filter override for manager+
+    if (query.assignedUserId && (!user || user.role !== UserRole.USER)) {
+      where.assignedUserId = BigInt(query.assignedUserId);
+    }
     if (query.departmentId) where.departmentId = BigInt(query.departmentId);
     if (query.labelId) where.labels = { some: { labelId: BigInt(query.labelId) } };
     if (query.hasOrder === 'true') where.orders = { some: { status: 'COMPLETED' } };
@@ -75,6 +83,12 @@ export class LeadsService {
     const hasMore = leads.length > limit;
     const data = hasMore ? leads.slice(0, limit) : leads;
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
+  }
+
+  // ── My department pool (for USER role) ──────────────────────────────────
+  async myDeptPool(user: CurrentUser, limit: number, cursor?: string) {
+    if (!user.departmentId) return { data: [], meta: {} };
+    return this.poolDepartment(user.departmentId, limit, cursor);
   }
 
   // ── 3 Kho Pool Endpoints ────────────────────────────────────────────────

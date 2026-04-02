@@ -32,12 +32,14 @@ const ORDER_SELECT = {
 export class OrdersService {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async list(query: PaginationQueryDto & { status?: OrderStatus; customerId?: string; leadId?: string }) {
+  async list(query: PaginationQueryDto & { status?: OrderStatus; customerId?: string; leadId?: string; createdByFilter?: bigint }) {
     const limit = query.limit ?? 20;
     const where: Prisma.OrderWhereInput = { deletedAt: null };
     if (query.status) where.status = query.status;
     if (query.customerId) where.customerId = BigInt(query.customerId);
     if (query.leadId) where.leadId = BigInt(query.leadId);
+    // Role-based: USER only sees own orders
+    if (query.createdByFilter) where.createdBy = query.createdByFilter;
 
     const orders = await this.prisma.order.findMany({
       where, select: ORDER_SELECT, orderBy: { id: 'desc' },

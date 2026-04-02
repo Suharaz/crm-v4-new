@@ -14,10 +14,12 @@ const CALL_LOG_SELECT = {
 export class CallLogsService {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async list(query: PaginationQueryDto & { matchStatus?: string }) {
+  async list(query: PaginationQueryDto & { matchStatus?: string; matchedUserFilter?: bigint }) {
     const limit = query.limit ?? 20;
     const where: Prisma.CallLogWhereInput = { deletedAt: null };
     if (query.matchStatus) where.matchStatus = query.matchStatus as any;
+    // Role-based: USER only sees own matched calls
+    if (query.matchedUserFilter) where.matchedUserId = query.matchedUserFilter;
 
     const logs = await this.prisma.callLog.findMany({
       where, select: CALL_LOG_SELECT, orderBy: { callTime: 'desc' },

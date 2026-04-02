@@ -26,8 +26,10 @@ export class OrdersController {
   constructor(private readonly service: OrdersService) {}
 
   @Get()
-  async list(@Query() query: OrderListQueryDto) {
-    return this.service.list(query);
+  async list(@Query() query: OrderListQueryDto, @CurrentUser() user: any) {
+    // USER role: only see own orders
+    const createdByFilter = user.role === UserRole.USER ? BigInt(user.id) : undefined;
+    return this.service.list({ ...query, createdByFilter });
   }
 
   @Get(':id')

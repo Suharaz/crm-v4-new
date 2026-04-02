@@ -22,9 +22,10 @@ export class CallLogsController {
   }
 
   @Get()
-  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
-  async list(@Query() query: PaginationQueryDto, @Query('matchStatus') matchStatus?: string) {
-    return this.service.list({ ...query, matchStatus });
+  async list(@Query() query: PaginationQueryDto, @CurrentUser() user: any, @Query('matchStatus') matchStatus?: string) {
+    // USER only sees calls matched to them
+    const matchedUserFilter = user.role === UserRole.USER ? BigInt(user.id) : undefined;
+    return this.service.list({ ...query, matchStatus, matchedUserFilter });
   }
 
   @Get('unmatched')

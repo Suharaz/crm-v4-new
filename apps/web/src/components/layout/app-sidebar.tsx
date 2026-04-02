@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, UserCheck, ShoppingCart, Package,
   Phone, Settings, Upload, Waves, ChevronLeft, ChevronRight, ChevronDown,
-  UserCog, CheckSquare, Zap, Inbox, RotateCcw,
+  UserCog, CheckSquare, Zap, Inbox, RotateCcw, User, Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
@@ -22,21 +22,29 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   roles?: string[];
-  children?: NavChild[];
   /** Roles that see the expandable children. Others see flat link. */
   childRoles?: string[];
+  /** Role-specific children menus */
+  childrenByRole?: Record<string, NavChild[]>;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Trang chủ', href: '/', icon: LayoutDashboard },
   {
     label: 'Leads', href: '/leads', icon: Users,
-    childRoles: ['MANAGER'],
-    children: [
-      { label: 'Chờ phân phối', href: '/leads/pool/new', icon: Inbox },
-      { label: 'Zoom', href: '/leads/pool/zoom', icon: RotateCcw },
-      { label: 'Kho thả nổi', href: '/floating', icon: Waves },
-    ],
+    childRoles: ['MANAGER', 'USER'],
+    childrenByRole: {
+      MANAGER: [
+        { label: 'Chờ phân phối', href: '/leads/pool/new', icon: Inbox },
+        { label: 'Zoom', href: '/leads/pool/zoom', icon: RotateCcw },
+        { label: 'Kho thả nổi', href: '/floating', icon: Waves },
+      ],
+      USER: [
+        { label: 'My Lead', href: '/leads', icon: User },
+        { label: 'Kho phòng ban', href: '/leads/dept', icon: Building2 },
+        { label: 'Thả nổi', href: '/floating', icon: Waves },
+      ],
+    },
   },
   { label: 'Khách hàng', href: '/customers', icon: UserCheck },
   { label: 'Đơn hàng', href: '/orders', icon: ShoppingCart },
@@ -55,7 +63,7 @@ export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
 
   // Auto-expand Leads group if current path is a child route
-  const leadsChildPaths = ['/leads', '/floating', '/leads/pool'];
+  const leadsChildPaths = ['/leads', '/floating', '/leads/pool', '/leads/dept'];
   const isLeadsActive = leadsChildPaths.some(p => pathname.startsWith(p));
   const [leadsOpen, setLeadsOpen] = useState(isLeadsActive);
 
@@ -109,7 +117,9 @@ export function AppSidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-2">
         {visibleItems.map((item) => {
-          const showChildren = item.children && item.childRoles?.includes(user?.role || '');
+          const role = user?.role || '';
+          const roleChildren = item.childrenByRole?.[role];
+          const showChildren = roleChildren && item.childRoles?.includes(role);
 
           // Expandable group (only for matching roles, non-collapsed)
           if (showChildren && !collapsed) {
@@ -130,7 +140,7 @@ export function AppSidebar() {
                 </button>
                 {leadsOpen && (
                   <div className="mt-0.5 space-y-0.5">
-                    {item.children!.map(child => renderNavLink(child, true))}
+                    {roleChildren.map(child => renderNavLink(child, true))}
                   </div>
                 )}
               </div>

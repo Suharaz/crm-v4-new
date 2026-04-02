@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { invalidatePreviewCache } from '@/components/shared/entity-quick-preview-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -59,6 +60,7 @@ export function CustomerForm({ customer, departments, users }: CustomerFormProps
 
     if (isEdit) {
       await execute('patch', `/customers/${customer.id}`, body);
+      invalidatePreviewCache('customer', customer.id);
     } else {
       await execute('post', '/customers', body);
     }

@@ -16,9 +16,29 @@ interface PreviewDialogProps {
   entityId: string | null;
 }
 
-/** In-memory cache: key → { data, activities, ts }. Expires after 2 min. */
-const previewCache = new Map<string, { data: any; activities: any[]; ts: number }>();
-const CACHE_TTL = 2 * 60 * 1000;
+const CACHE_PREFIX = 'crm_preview_';
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+/** Read from localStorage with TTL check. */
+function readCache(key: string) {
+  try {
+    const raw = localStorage.getItem(CACHE_PREFIX + key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (Date.now() - parsed.ts > CACHE_TTL) { localStorage.removeItem(CACHE_PREFIX + key); return null; }
+    return parsed;
+  } catch { return null; }
+}
+
+/** Write to localStorage with timestamp. */
+function writeCache(key: string, data: any, activities: any[]) {
+  try { localStorage.setItem(CACHE_PREFIX + key, JSON.stringify({ data, activities, ts: Date.now() })); } catch { /* quota */ }
+}
+
+/** Invalidate cache for a specific entity. Call after update/edit. */
+export function invalidatePreviewCache(entityType: string, entityId: string) {
+  try { localStorage.removeItem(CACHE_PREFIX + `${entityType}:${entityId}`); } catch { /* */ }
+}
 
 /** Quick preview dialog for lead/customer — shows key info without page navigation. */
 export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entityId }: PreviewDialogProps) {
@@ -30,10 +50,9 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
     if (!open || !entityId) return;
 
     const cacheKey = `${entityType}:${entityId}`;
-    const cached = previewCache.get(cacheKey);
+    const cached = readCache(cacheKey);
 
-    // Use cache if fresh (< 2 min old)
-    if (cached && Date.now() - cached.ts < CACHE_TTL) {
+    if (cached) {
       setData(cached.data);
       setActivities(cached.activities);
       setLoading(false);
@@ -53,7 +72,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
         const a = actRes.data || [];
         setData(d);
         setActivities(a);
-        previewCache.set(cacheKey, { data: d, activities: a, ts: Date.now() });
+        writeCache(cacheKey, d, a);
       })
       .catch(() => setData(null))
       .finally(() => setLoading(false));

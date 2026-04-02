@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { invalidatePreviewCache } from '@/components/shared/entity-quick-preview-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -92,6 +93,7 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
 
     if (isEdit) {
       await execute('patch', `/leads/${lead.id}`, body);
+      invalidatePreviewCache('lead', lead.id);
     } else {
       await execute('post', '/leads', body);
     }

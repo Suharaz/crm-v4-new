@@ -82,6 +82,21 @@ export class LeadsService {
 
     const hasMore = leads.length > limit;
     const data = hasMore ? leads.slice(0, limit) : leads;
+
+    // Batch-fetch activity counts for indicator tags
+    if (data.length > 0) {
+      const ids = data.map(l => l.id);
+      const activityCounts = await this.prisma.activity.groupBy({
+        by: ['entityId'],
+        where: { entityType: 'LEAD', entityId: { in: ids }, deletedAt: null },
+        _count: true,
+      });
+      const countMap = new Map(activityCounts.map(a => [a.entityId.toString(), a._count]));
+      for (const lead of data) {
+        (lead as any).activityCount = countMap.get(lead.id.toString()) || 0;
+      }
+    }
+
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }
 

@@ -14,6 +14,7 @@ interface Lead {
   customerId?: string | null;
   orders?: { id: string }[];
   labels?: { label: { id: string; name: string; color: string } }[];
+  activityCount?: number;
   createdAt: string;
 }
 
@@ -61,7 +62,14 @@ export function LeadTable({ leads, poolMode, users = [] }: LeadTableProps) {
                     )}
                   </button>
                 </td>
-                <td className="px-4 py-3 text-gray-600">{lead.phone}</td>
+                <td className="px-4 py-3 text-gray-600">
+                  {lead.phone}
+                  {(lead.customerId || (lead.activityCount && lead.activityCount > 0)) && (
+                    <span className="ml-1.5 inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700" title={`${lead.activityCount || 0} hoạt động`}>
+                      {lead.customerId ? 'KH' : 'Log'}
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
                 <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.source?.name || '—'}</td>
                 <td className="hidden md:table-cell px-4 py-3">

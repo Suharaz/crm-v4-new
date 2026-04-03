@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/lib/api-client';
 import { formatDate } from '@/lib/utils';
-import { ExternalLink, Phone, Mail, User, Building, Tag, Calendar, Package, Loader2, MessageSquarePlus, Tags, ShoppingCart } from 'lucide-react';
+import { ExternalLink, Phone, Mail, User, Building, Tag, Calendar, Package, Loader2, MessageSquarePlus, Tags, ShoppingCart, ArrowRightLeft } from 'lucide-react';
 
 const CACHE_PREFIX = 'crm_preview_';
 const CACHE_TTL = 24 * 60 * 60 * 1000;
@@ -48,6 +48,9 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
   const [labelPickerOpen, setLabelPickerOpen] = useState(false);
   const [allLabels, setAllLabels] = useState<any[]>([]);
   const [labelSaving, setLabelSaving] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [allDepts, setAllDepts] = useState<any[]>([]);
+  const [transferring, setTransferring] = useState(false);
 
   useEffect(() => {
     const cacheKey = `${entityType}:${entityId}`;
@@ -104,6 +107,39 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     } catch { /* */ }
     setLabelSaving(false);
   }
+
+  async function transferToDept(deptId: string) {
+    setTransferring(true);
+    try {
+      await api.post(`/leads/${entityId}/transfer`, { targetType: 'DEPARTMENT', targetDeptId: deptId });
+      invalidateCache(entityType, entityId);
+      setTransferOpen(false);
+      router.refresh();
+    } catch { /* */ }
+    setTransferring(false);
+  }
+
+  async function transferToFloating() {
+    setTransferring(true);
+    try {
+      await api.post(`/leads/${entityId}/transfer`, { targetType: 'FLOATING' });
+      invalidateCache(entityType, entityId);
+      setTransferOpen(false);
+      router.refresh();
+    } catch { /* */ }
+    setTransferring(false);
+  }
+
+  // Fetch depts on transfer open
+  useEffect(() => {
+    if (!transferOpen || allDepts.length > 0) return;
+    const cached = readCache('_all_depts');
+    if (cached?.data) { setAllDepts(cached.data); return; }
+    api.get<{ data: any[] }>('/departments').then(r => {
+      setAllDepts(r.data || []);
+      writeCache('_all_depts', r.data || [], []);
+    }).catch(() => {});
+  }, [transferOpen, allDepts.length]);
 
   useEffect(() => {
     if (!labelPickerOpen || allLabels.length > 0) return;
@@ -190,6 +226,11 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
               <Button size="sm" variant={labelPickerOpen ? 'default' : 'outline'} onClick={() => { setLabelPickerOpen(!labelPickerOpen); setNoteOpen(false); }}>
                 <Tags className="h-3.5 w-3.5 mr-1" />Nhãn
               </Button>
+              {entityType === 'lead' && (
+                <Button size="sm" variant={transferOpen ? 'default' : 'outline'} onClick={() => { setTransferOpen(!transferOpen); setNoteOpen(false); setLabelPickerOpen(false); }}>
+                  <ArrowRightLeft className="h-3.5 w-3.5 mr-1" />Chuyển
+                </Button>
+              )}
               {entityType === 'lead' && data?.customerId && (
                 <Link href={`/leads/${entityId}`}>
                   <Button size="sm" variant="outline"><ShoppingCart className="h-3.5 w-3.5 mr-1" />Tạo đơn</Button>
@@ -221,6 +262,25 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                     style={{ backgroundColor: l.color || '#6b7280' }}
                   >{l.name}</button>
                 ))}
+              </div>
+            )}
+
+            {/* Inline transfer picker */}
+            {transferOpen && (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-500">Chọn phòng ban hoặc thả nổi:</p>
+                <div className="flex flex-wrap gap-2">
+                  {allDepts.map((d: any) => (
+                    <Button key={d.id} size="sm" variant="outline" disabled={transferring || String(d.id) === String(data?.departmentId)}
+                      onClick={() => transferToDept(String(d.id))}
+                    >
+                      <Building className="h-3.5 w-3.5 mr-1" />{d.name}
+                    </Button>
+                  ))}
+                  <Button size="sm" variant="outline" className="text-violet-600 border-violet-200" disabled={transferring} onClick={transferToFloating}>
+                    Thả nổi
+                  </Button>
+                </div>
               </div>
             )}
           </div>

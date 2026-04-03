@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { EntityQuickPreviewDialog } from '@/components/shared/entity-quick-preview-dialog';
+import { LeadInlineExpandDetail } from '@/components/leads/lead-inline-expand-detail';
 import { LeadPoolActionButtons } from '@/components/leads/lead-pool-action-buttons';
 import { formatDate } from '@/lib/utils';
+import { ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Lead {
   id: string; name: string; phone: string; email?: string | null;
@@ -25,86 +27,86 @@ interface LeadTableProps {
 }
 
 export function LeadTable({ leads, poolMode, users = [] }: LeadTableProps) {
-  const [previewId, setPreviewId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const colCount = 7 + (poolMode ? 1 : 0);
+
+  function toggle(id: string) {
+    setExpandedId(prev => prev === id ? null : id);
+  }
 
   if (leads.length === 0) {
     return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có lead nào</div>;
   }
 
   return (
-    <>
-      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-        <table className="w-full text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left font-medium text-gray-500">Họ tên</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-500">SĐT</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-500">Trạng thái</th>
-              <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nguồn</th>
-              <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nhãn</th>
-              <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nhân viên</th>
-              <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Ngày tạo</th>
-              {poolMode && <th className="px-4 py-3 text-right font-medium text-gray-500">Thao tác</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {leads.map((lead) => (
-              <tr key={lead.id} className="border-b border-gray-100 hover:bg-gray-50 last:border-0">
-                <td className="px-4 py-3">
-                  <button
-                    type="button"
-                    onClick={() => setPreviewId(lead.id)}
-                    className="font-medium text-sky-600 hover:underline text-left"
-                  >
-                    {lead.name}
-                    {lead.orders && lead.orders.length > 0 && (
-                      <span className="ml-1.5 inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Đã mua</span>
-                    )}
-                  </button>
-                </td>
-                <td className="px-4 py-3 text-gray-600">
-                  <span>{lead.phone}</span>
-                  {lead.activityCount != null && lead.activityCount > 0 && (
-                    <span className="ml-1.5 inline-flex items-center rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700" title={`${lead.activityCount} hoạt động`}>
-                      {lead.activityCount} log
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
-                <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.source?.name || '—'}</td>
-                <td className="hidden md:table-cell px-4 py-3">
-                  <div className="flex flex-wrap gap-1">
-                    {lead.labels?.slice(0, 3).map(ll => (
-                      <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white" style={{ backgroundColor: ll.label.color }}>{ll.label.name}</span>
-                    ))}
-                    {(lead.labels?.length || 0) > 3 && <span className="text-[10px] text-gray-400">+{(lead.labels?.length || 0) - 3}</span>}
-                  </div>
-                </td>
-                <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.assignedUser?.name || '—'}</td>
-                <td className="hidden lg:table-cell px-4 py-3 text-gray-400">{formatDate(lead.createdAt)}</td>
-                {poolMode && (
-                  <td className="px-4 py-3 text-right">
-                    <LeadPoolActionButtons
-                      leadId={lead.id}
-                      leadName={lead.name}
-                      mode={poolMode === 'new' ? 'assign' : 'both'}
-                      users={users}
-                    />
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      <table className="w-full text-sm">
+        <thead className="border-b border-gray-200 bg-gray-50">
+          <tr>
+            <th className="px-4 py-3 text-left font-medium text-gray-500">Họ tên</th>
+            <th className="px-4 py-3 text-left font-medium text-gray-500">SĐT</th>
+            <th className="px-4 py-3 text-left font-medium text-gray-500">Trạng thái</th>
+            <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nguồn</th>
+            <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nhãn</th>
+            <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nhân viên</th>
+            <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Ngày tạo</th>
+            {poolMode && <th className="px-4 py-3 text-right font-medium text-gray-500">Thao tác</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {leads.map((lead) => {
+            const isExpanded = expandedId === lead.id;
+            return (
+              <LeadRow key={lead.id} lead={lead} isExpanded={isExpanded} onToggle={() => toggle(lead.id)} poolMode={poolMode} users={users} colSpan={colCount} />
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
-      {/* Quick preview popup */}
-      <EntityQuickPreviewDialog
-        open={!!previewId}
-        onOpenChange={(open) => { if (!open) setPreviewId(null); }}
-        entityType="lead"
-        entityId={previewId}
-      />
+function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan }: {
+  lead: Lead; isExpanded: boolean; onToggle: () => void;
+  poolMode?: string; users: { id: string; name: string }[]; colSpan: number;
+}) {
+  return (
+    <>
+      <tr className={cn('border-b border-gray-100 hover:bg-gray-50 cursor-pointer', isExpanded && 'bg-sky-50/50')} onClick={onToggle}>
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-1.5">
+            <ChevronDown size={14} className={cn('text-gray-400 transition-transform shrink-0', isExpanded && 'rotate-180')} />
+            <span className="font-medium text-sky-600">{lead.name}</span>
+            {lead.orders && lead.orders.length > 0 && (
+              <span className="inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Đã mua</span>
+            )}
+          </div>
+        </td>
+        <td className="px-4 py-3 text-gray-600">
+          <span>{lead.phone}</span>
+          {lead.activityCount != null && lead.activityCount > 0 && (
+            <span className="ml-1.5 inline-flex items-center rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700">{lead.activityCount} log</span>
+          )}
+        </td>
+        <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
+        <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.source?.name || '—'}</td>
+        <td className="hidden md:table-cell px-4 py-3">
+          <div className="flex flex-wrap gap-1">
+            {lead.labels?.slice(0, 3).map(ll => (
+              <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white" style={{ backgroundColor: ll.label.color }}>{ll.label.name}</span>
+            ))}
+            {(lead.labels?.length || 0) > 3 && <span className="text-[10px] text-gray-400">+{(lead.labels?.length || 0) - 3}</span>}
+          </div>
+        </td>
+        <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.assignedUser?.name || '—'}</td>
+        <td className="hidden lg:table-cell px-4 py-3 text-gray-400">{formatDate(lead.createdAt)}</td>
+        {poolMode && (
+          <td className="px-4 py-3 text-right" onClick={e => e.stopPropagation()}>
+            <LeadPoolActionButtons leadId={lead.id} leadName={lead.name} mode={poolMode === 'new' ? 'assign' : 'both'} users={users} />
+          </td>
+        )}
+      </tr>
+      {isExpanded && <LeadInlineExpandDetail entityType="lead" entityId={lead.id} colSpan={colSpan} />}
     </>
   );
 }

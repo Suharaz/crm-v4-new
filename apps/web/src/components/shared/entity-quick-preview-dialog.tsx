@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { api } from '@/lib/api-client';
 import { formatDate } from '@/lib/utils';
-import { ExternalLink, Phone, Mail, User, Building, Tag, Calendar, Package, Loader2 } from 'lucide-react';
+import { ExternalLink, Phone, Mail, User, Building, Tag, Calendar, Package, Loader2, MessageSquarePlus, Tags, ShoppingCart } from 'lucide-react';
 
 interface PreviewDialogProps {
   open: boolean;
@@ -40,11 +42,19 @@ export function invalidatePreviewCache(entityType: string, entityId: string) {
   try { localStorage.removeItem(CACHE_PREFIX + `${entityType}:${entityId}`); } catch { /* */ }
 }
 
-/** Quick preview dialog for lead/customer — shows key info without page navigation. */
+/** Quick preview dialog for lead/customer — shows key info + quick actions. */
 export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entityId }: PreviewDialogProps) {
+  const router = useRouter();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [activities, setActivities] = useState<any[]>([]);
+  // Quick action states
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [noteSaving, setNoteSaving] = useState(false);
+  const [labelPickerOpen, setLabelPickerOpen] = useState(false);
+  const [allLabels, setAllLabels] = useState<any[]>([]);
+  const [labelSaving, setLabelSaving] = useState(false);
 
   useEffect(() => {
     if (!open || !entityId) return;
@@ -80,6 +90,48 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
 
   const detailUrl = entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`;
   const labels = data?.labels || data?.leadLabels || data?.customerLabels || [];
+  const currentLabelIds = new Set(labels.map((ll: any) => String((ll.label || ll).id)));
+
+  // Quick note submit
+  async function submitNote() {
+    if (!noteText.trim() || !entityId) return;
+    setNoteSaving(true);
+    try {
+      await api.post(`/activities`, { entityType: entityType === 'lead' ? 'LEAD' : 'CUSTOMER', entityId, type: 'NOTE', content: noteText.trim() });
+      setNoteText('');
+      setNoteOpen(false);
+      invalidatePreviewCache(entityType, entityId);
+      // Refresh activities in-place
+      const actRes = await api.get<{ data: any[] }>(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`).catch(() => ({ data: [] }));
+      setActivities(actRes.data || []);
+      router.refresh();
+    } catch { /* */ }
+    setNoteSaving(false);
+  }
+
+  // Quick label toggle
+  async function toggleLabel(labelId: string) {
+    if (!entityId) return;
+    setLabelSaving(true);
+    try {
+      if (currentLabelIds.has(labelId)) {
+        await api.delete(`/${entityType}s/${entityId}/labels/${labelId}`);
+      } else {
+        await api.post(`/${entityType}s/${entityId}/labels`, { labelIds: [labelId] });
+      }
+      invalidatePreviewCache(entityType, entityId);
+      // Refresh entity data
+      const res = await api.get<{ data: any }>(entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`);
+      setData(res.data);
+    } catch { /* */ }
+    setLabelSaving(false);
+  }
+
+  // Fetch labels list on label picker open
+  useEffect(() => {
+    if (!labelPickerOpen || allLabels.length > 0) return;
+    api.get<{ data: any[] }>('/labels').then(r => setAllLabels(r.data || [])).catch(() => {});
+  }, [labelPickerOpen, allLabels.length]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -172,6 +224,58 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="border-t border-gray-100 px-5 py-3 space-y-2">
+              <div className="flex gap-2">
+                <Button size="sm" variant={noteOpen ? 'default' : 'outline'} onClick={() => { setNoteOpen(!noteOpen); setLabelPickerOpen(false); }}>
+                  <MessageSquarePlus className="h-3.5 w-3.5 mr-1" />Ghi chú
+                </Button>
+                <Button size="sm" variant={labelPickerOpen ? 'default' : 'outline'} onClick={() => { setLabelPickerOpen(!labelPickerOpen); setNoteOpen(false); }}>
+                  <Tags className="h-3.5 w-3.5 mr-1" />Nhãn
+                </Button>
+                {entityType === 'lead' && data?.customerId && (
+                  <Link href={`/orders/new?customerId=${data.customerId}&leadId=${entityId}`} onClick={() => onOpenChange(false)}>
+                    <Button size="sm" variant="outline"><ShoppingCart className="h-3.5 w-3.5 mr-1" />Tạo đơn</Button>
+                  </Link>
+                )}
+              </div>
+
+              {/* Inline note form */}
+              {noteOpen && (
+                <div className="space-y-2">
+                  <Textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="Nhập ghi chú..." rows={2} className="text-sm" autoFocus />
+                  <div className="flex justify-end gap-2">
+                    <Button size="sm" variant="ghost" onClick={() => setNoteOpen(false)}>Hủy</Button>
+                    <Button size="sm" onClick={submitNote} disabled={noteSaving || !noteText.trim()}>
+                      {noteSaving ? 'Đang lưu...' : 'Lưu'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Inline label picker */}
+              {labelPickerOpen && (
+                <div className="flex flex-wrap gap-1.5">
+                  {allLabels.length === 0 && <span className="text-xs text-gray-400">Đang tải...</span>}
+                  {allLabels.map((l: any) => (
+                    <button
+                      key={l.id}
+                      onClick={() => toggleLabel(String(l.id))}
+                      disabled={labelSaving}
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all ${
+                        currentLabelIds.has(String(l.id))
+                          ? 'text-white ring-2 ring-offset-1 ring-gray-400'
+                          : 'text-white opacity-50 hover:opacity-80'
+                      }`}
+                      style={{ backgroundColor: l.color || '#6b7280' }}
+                    >
+                      {l.name}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>

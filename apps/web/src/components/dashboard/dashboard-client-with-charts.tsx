@@ -251,30 +251,26 @@ export function DashboardClientWithCharts() {
         </ChartCard>
       </div>
 
-      {/* Lead Aging — all roles */}
+      {/* Lead Aging — all roles, full-width */}
       {aging.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <ChartCard title="Lead chưa tương tác — cảnh báo bỏ quên">
-            <div className="space-y-3">
-              {aging.map((a: any) => {
-                const isDanger = a.bucket.includes('7+');
-                const isWarn = a.bucket.includes('3-7');
-                const color = isDanger ? COLORS.danger : isWarn ? COLORS.warning : COLORS.success;
-                const maxCount = Math.max(...aging.map((x: any) => x.count), 1);
-                return (
-                  <div key={a.bucket} className="flex items-center gap-3">
-                    <span className="text-xs text-gray-500 w-16 shrink-0">{a.bucket}</span>
-                    <div className="flex-1 h-4 rounded-full bg-gray-100 overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${Math.max(a.count / maxCount * 100, 4)}%`, backgroundColor: color }} />
-                    </div>
-                    <span className="text-sm font-bold tabular-nums w-8 text-right" style={{ color }}>{a.count}</span>
+        <ChartCard title="Lead chưa tương tác — cảnh báo bỏ quên">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-2 sm:grid-cols-4">
+            {aging.map((a: any) => {
+              const isDanger = a.bucket.includes('7+');
+              const isWarn = a.bucket.includes('3-7');
+              const color = isDanger ? COLORS.danger : isWarn ? COLORS.warning : COLORS.success;
+              return (
+                <div key={a.bucket} className="text-center">
+                  <span className="text-3xl font-bold tabular-nums" style={{ color }}>{a.count}</span>
+                  <div className="mt-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-full rounded-full" style={{ backgroundColor: color, width: '100%' }} />
                   </div>
-                );
-              })}
-            </div>
-          </ChartCard>
-        </div>
+                  <span className="text-xs text-gray-500 mt-1 block">{a.bucket}</span>
+                </div>
+              );
+            })}
+          </div>
+        </ChartCard>
       )}
 
       {/* Manager+ Insight Charts */}

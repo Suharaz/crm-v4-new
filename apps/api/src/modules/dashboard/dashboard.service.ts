@@ -160,7 +160,10 @@ export class DashboardService {
       GROUP BY bucket
       ORDER BY MIN(age)
     `;
-    return rows.map(r => ({ bucket: r.bucket, count: Number(r.count) }));
+    // Always return all 4 buckets, fill 0 for missing
+    const countMap = new Map(rows.map(r => [r.bucket, Number(r.count)]));
+    const buckets = ['0-1 ngày', '1-3 ngày', '3-7 ngày', '7+ ngày'];
+    return buckets.map(b => ({ bucket: b, count: countMap.get(b) || 0 }));
   }
 
   /** Manager+: revenue + leads per department */

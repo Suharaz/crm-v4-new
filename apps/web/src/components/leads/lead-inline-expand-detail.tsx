@@ -197,12 +197,27 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
           {/* Col 1: Info + AI Summary */}
           <div className="space-y-2">
             {/* AI Summary badges */}
-            {(data.metadata as any)?.aiSummary && (
-              <div className="rounded-lg border border-purple-100 bg-purple-50 p-2.5">
-                <p className="text-[10px] font-semibold text-purple-600 uppercase mb-1">AI Tóm tắt</p>
-                <p className="text-xs text-purple-900">{(data.metadata as any).aiSummary}</p>
-              </div>
-            )}
+            {(data.metadata as any)?.aiSummary && (() => {
+              const meta = data.metadata as any;
+              const level = meta.aiLevel;
+              const score = meta.aiScore;
+              const levelColor = level === 'HOT' ? 'bg-red-500' : level === 'WARM' ? 'bg-amber-500' : 'bg-sky-500';
+              const levelText = level === 'HOT' ? 'Nóng' : level === 'WARM' ? 'Ấm' : level === 'COLD' ? 'Lạnh' : null;
+              return (
+                <div className="rounded-lg border border-purple-100 bg-purple-50 p-2.5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-[10px] font-semibold text-purple-600 uppercase">AI Tóm tắt</p>
+                    {score && (
+                      <span className={`${levelColor} text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full`}>
+                        {score}/10 {levelText}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-purple-900">{meta.aiSummary}</p>
+                  {meta.aiScoreReason && <p className="text-[10px] text-purple-500 mt-1">{meta.aiScoreReason}</p>}
+                </div>
+              );
+            })()}
             <h4 className="font-semibold text-gray-700 text-xs uppercase">Thông tin</h4>
             <div className="space-y-1.5 text-gray-600">
               <div className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-gray-400" /><a href={`tel:${data.phone}`} className="text-sky-600">{data.phone}</a></div>

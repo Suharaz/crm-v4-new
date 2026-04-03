@@ -16,6 +16,7 @@ interface Lead {
   labels?: { label: { id: string; name: string; color: string } }[];
   activityCount?: number;
   lastInteractionAt?: string;
+  metadata?: { aiLevel?: string; aiScore?: number };
   createdAt: string;
 }
 
@@ -98,6 +99,11 @@ function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan }: {
       <tr className={cn('border-b border-gray-100 hover:bg-gray-50 cursor-pointer', isExpanded && 'bg-sky-50/50')} onClick={onToggle}>
         <td className="px-4 py-3">
           <span className="font-medium text-sky-600">{lead.name}</span>
+          {lead.metadata?.aiLevel && (
+            <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full text-white ${
+              lead.metadata.aiLevel === 'HOT' ? 'bg-red-500' : lead.metadata.aiLevel === 'WARM' ? 'bg-amber-500' : 'bg-sky-400'
+            }`}>{lead.metadata.aiScore || '?'}</span>
+          )}
           {lead.orders && lead.orders.length > 0 && (
             <span className="ml-1.5 inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Đã mua</span>
           )}

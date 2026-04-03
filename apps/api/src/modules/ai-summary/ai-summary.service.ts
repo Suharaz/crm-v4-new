@@ -52,25 +52,49 @@ export class AiSummaryService {
       select: { status: true, totalAmount: true, product: { select: { name: true } } },
     });
 
-    const prompt = `Bạn là trợ lý CRM. Tóm tắt lead này bằng tiếng Việt, tối đa 2 câu ngắn gọn, nêu keyword chính:
+    const prompt = `Bạn là trợ lý CRM chuyên đánh giá lead. Trả lời bằng JSON (không markdown):
+{"summary":"tóm tắt 2 câu tiếng Việt","score":7,"level":"HOT","reason":"lý do ngắn"}
+
+Quy tắc score: 1-3=COLD (ít tiềm năng), 4-6=WARM (trung bình), 7-10=HOT (tiềm năng cao)
+Xét: số hoạt động, có đơn hàng chưa, sản phẩm quan tâm, tần suất tương tác.
 
 Lead: ${lead.name} (${lead.phone}) — Trạng thái: ${lead.status}
-Sản phẩm quan tâm: ${lead.product?.name || 'chưa rõ'}
+Sản phẩm: ${lead.product?.name || 'chưa rõ'}
 Nguồn: ${lead.source?.name || 'chưa rõ'}
-Hoạt động gần đây (${activities.length}):
-${activities.map(a => `- [${a.type}] ${a.content || '(không có nội dung)'}`).join('\n')}
+Hoạt động (${activities.length}):
+${activities.map(a => `- [${a.type}] ${a.content || '—'}`).join('\n')}
 Đơn hàng (${orders.length}):
-${orders.map(o => `- ${o.product?.name}: ${o.status} — ${o.totalAmount}`).join('\n') || 'Chưa có'}
+${orders.map(o => `- ${o.product?.name}: ${o.status} — ${o.totalAmount}`).join('\n') || 'Chưa có'}`;
 
-Tóm tắt:`;
+    const raw = await this.callAI(prompt);
+    if (!raw) return;
 
-    const summary = await this.callAI(prompt);
-    if (!summary) return;
+    // Parse JSON response, fallback to raw text
+    let summary = raw;
+    let score: number | null = null;
+    let level: string | null = null;
+    let reason: string | null = null;
+    try {
+      const json = JSON.parse(raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
+      summary = json.summary || raw;
+      score = Number(json.score) || null;
+      level = json.level || null;
+      reason = json.reason || null;
+    } catch { /* use raw text as summary */ }
 
     const existingMeta = (lead.metadata as Record<string, unknown>) || {};
     await this.prisma.lead.update({
       where: { id: leadId },
-      data: { metadata: { ...existingMeta, aiSummary: summary, aiSummaryAt: new Date().toISOString() } },
+      data: {
+        metadata: {
+          ...existingMeta,
+          aiSummary: summary,
+          aiScore: score,
+          aiLevel: level,
+          aiScoreReason: reason,
+          aiSummaryAt: new Date().toISOString(),
+        },
+      },
     });
 
     // Chain: if lead has customer, generate customer summaries too

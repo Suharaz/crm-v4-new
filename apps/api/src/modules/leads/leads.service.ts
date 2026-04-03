@@ -83,10 +83,10 @@ export class LeadsService {
     const hasMore = leads.length > limit;
     const data = hasMore ? leads.slice(0, limit) : leads;
 
-    // Batch-fetch interaction counts (notes, calls, orders) for indicator tags
+    // Batch-fetch interaction counts + last interaction time
     if (data.length > 0) {
       const ids = data.map(l => l.id);
-      const [activityCounts, orderCounts] = await Promise.all([
+      const [activityCounts, orderCounts, lastActivities, lastOrders] = await Promise.all([
         this.prisma.activity.groupBy({
           by: ['entityId'],
           where: { entityType: 'LEAD', entityId: { in: ids }, deletedAt: null, type: { in: ['NOTE', 'CALL'] } },
@@ -97,12 +97,30 @@ export class LeadsService {
           where: { leadId: { in: ids }, deletedAt: null },
           _count: true,
         }),
+        // Last activity date per lead
+        this.prisma.activity.groupBy({
+          by: ['entityId'],
+          where: { entityType: 'LEAD', entityId: { in: ids }, deletedAt: null },
+          _max: { createdAt: true },
+        }),
+        // Last order date per lead
+        this.prisma.order.groupBy({
+          by: ['leadId'],
+          where: { leadId: { in: ids }, deletedAt: null },
+          _max: { createdAt: true },
+        }),
       ]);
       const actMap = new Map(activityCounts.map(a => [a.entityId.toString(), a._count]));
       const ordMap = new Map(orderCounts.map(o => [o.leadId!.toString(), o._count]));
+      const lastActMap = new Map(lastActivities.map(a => [a.entityId.toString(), a._max.createdAt]));
+      const lastOrdMap = new Map(lastOrders.map(o => [o.leadId!.toString(), o._max.createdAt]));
+
       for (const lead of data) {
         const id = lead.id.toString();
         (lead as any).activityCount = (actMap.get(id) || 0) + (ordMap.get(id) || 0);
+        // lastInteractionAt = max of updatedAt, last activity, last order
+        const dates = [lead.updatedAt, lastActMap.get(id), lastOrdMap.get(id)].filter(Boolean) as Date[];
+        (lead as any).lastInteractionAt = dates.length > 0 ? new Date(Math.max(...dates.map(d => new Date(d).getTime()))) : lead.updatedAt;
       }
     }
 

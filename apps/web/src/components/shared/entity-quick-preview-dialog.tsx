@@ -127,10 +127,15 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
     setLabelSaving(false);
   }
 
-  // Fetch labels list on label picker open
+  // Fetch labels list (cached in localStorage 24h)
   useEffect(() => {
     if (!labelPickerOpen || allLabels.length > 0) return;
-    api.get<{ data: any[] }>('/labels').then(r => setAllLabels(r.data || [])).catch(() => {});
+    const cached = readCache('_all_labels');
+    if (cached?.data) { setAllLabels(cached.data); return; }
+    api.get<{ data: any[] }>('/labels').then(r => {
+      setAllLabels(r.data || []);
+      writeCache('_all_labels', r.data || [], []);
+    }).catch(() => {});
   }, [labelPickerOpen, allLabels.length]);
 
   return (
@@ -238,7 +243,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                   <Tags className="h-3.5 w-3.5 mr-1" />Nhãn
                 </Button>
                 {entityType === 'lead' && data?.customerId && (
-                  <Link href={`/orders/new?customerId=${data.customerId}&leadId=${entityId}`} onClick={() => onOpenChange(false)}>
+                  <Link href={`/leads/${entityId}`} onClick={() => onOpenChange(false)}>
                     <Button size="sm" variant="outline"><ShoppingCart className="h-3.5 w-3.5 mr-1" />Tạo đơn</Button>
                   </Link>
                 )}

@@ -143,13 +143,13 @@ Summary trước đó (nếu có): ${prevShort}`;
       return null;
     }
 
-    const provider = this.config.get('AI_PROVIDER') || 'gemini';
+    const provider = this.config.get('AI_PROVIDER') || 'openrouter';
 
     try {
       if (provider === 'gemini') {
         return await this.callGemini(apiKey, prompt);
       }
-      // OpenAI-compatible (Claude, OpenAI, etc.)
+      // OpenRouter / OpenAI-compatible
       return await this.callOpenAICompatible(apiKey, prompt);
     } catch (err) {
       this.logger.error(`AI call failed (${provider})`, err);
@@ -171,8 +171,8 @@ Summary trước đó (nếu có): ${prevShort}`;
   }
 
   private async callOpenAICompatible(apiKey: string, prompt: string): Promise<string | null> {
-    const baseUrl = this.config.get('AI_BASE_URL') || 'https://api.openai.com/v1';
-    const model = this.config.get('AI_MODEL') || 'gpt-4o-mini';
+    const baseUrl = this.config.get('AI_BASE_URL') || 'https://openrouter.ai/api/v1';
+    const model = this.config.get('AI_MODEL') || 'google/gemini-2.0-flash-exp:free';
     const res = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },

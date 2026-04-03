@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, UserCheck, ShoppingCart, Package,
   Phone, Settings, Upload, Waves, ChevronLeft, ChevronRight, ChevronDown,
-  UserCog, CheckSquare, Zap, Inbox, RotateCcw, User, Building2,
+  UserCog, CheckSquare, Zap, Inbox, RotateCcw, User, Building2, Landmark,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
@@ -53,6 +53,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Công việc', href: '/tasks', icon: CheckSquare },
   { label: 'Nhập dữ liệu', href: '/import', icon: Upload, roles: ['SUPER_ADMIN', 'MANAGER'] },
   { label: 'Quản lý NV', href: '/users', icon: UserCog, roles: ['SUPER_ADMIN'] },
+  { label: 'Đối soát CK', href: '/settings/bank-transactions', icon: Landmark, roles: ['SUPER_ADMIN', 'MANAGER'] },
   { label: 'Phân phối AI', href: '/settings/distribution', icon: Zap, roles: ['SUPER_ADMIN', 'MANAGER'] },
   { label: 'Cài đặt', href: '/settings', icon: Settings, roles: ['SUPER_ADMIN', 'MANAGER'] },
 ];

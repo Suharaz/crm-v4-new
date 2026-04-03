@@ -3,6 +3,7 @@ import { UserRole, EntityType } from '@prisma/client';
 import { CallLogsService } from './call-logs.service';
 import { Roles } from '../auth/decorators/roles-required.decorator';
 import { Public } from '../auth/decorators/public-route.decorator';
+import { ApiKeyAuth } from '../auth/decorators/api-key-auth.decorator';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
@@ -13,6 +14,7 @@ export class CallLogsController {
 
   /** Ingest call from 3rd party (API key auth - simplified to Public for now). */
   @Public()
+  @ApiKeyAuth()
   @Post('ingest')
   async ingest(@Body() body: {
     externalId: string; phoneNumber: string; callType: string;

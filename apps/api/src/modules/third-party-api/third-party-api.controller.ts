@@ -2,16 +2,15 @@ import { Controller, Post, Body } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { normalizePhone, isValidVNPhone } from '@crm/utils';
 import { Public } from '../auth/decorators/public-route.decorator';
+import { ApiKeyAuth } from '../auth/decorators/api-key-auth.decorator';
 
-/**
- * External lead ingestion API.
- * Uses API key auth (simplified to @Public for now, API key guard in future).
- */
+/** External lead ingestion API — requires x-api-key header. */
 @Controller('external')
 export class ThirdPartyApiController {
   constructor(private readonly prisma: PrismaClient) {}
 
   @Public()
+  @ApiKeyAuth()
   @Post('leads')
   async createExternalLead(@Body() body: {
     name: string; phone: string; email?: string;

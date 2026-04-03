@@ -34,6 +34,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { AssignmentTemplatesModule } from './modules/assignment-templates/assignment-templates.module';
 import { RecallConfigModule } from './modules/recall-config/recall-config.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { PrismaClient } from '@prisma/client';
+import { ApiKeysModule } from './modules/api-keys/api-keys.module';
+import { ApiKeyAuthGuard } from './modules/auth/guards/api-key-auth.guard';
 import { BullModule } from '@nestjs/bullmq';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles-authorization.guard';
@@ -95,6 +98,7 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     AssignmentTemplatesModule,
     RecallConfigModule,
     DashboardModule,
+    ApiKeysModule,
   ],
   controllers: [AppController],
   providers: [
@@ -102,6 +106,10 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     // Global roles guard
     { provide: APP_GUARD, useClass: RolesGuard },
+    // PrismaClient for API key guard
+    PrismaClient,
+    // API key auth for external endpoints
+    { provide: APP_GUARD, useClass: ApiKeyAuthGuard },
     // Global rate limiting
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     // BigInt → string serialization

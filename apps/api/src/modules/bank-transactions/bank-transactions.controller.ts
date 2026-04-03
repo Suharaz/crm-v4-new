@@ -5,6 +5,7 @@ import { BankTransactionsService } from './bank-transactions.service';
 import { Roles } from '../auth/decorators/roles-required.decorator';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { Public } from '../auth/decorators/public-route.decorator';
+import { ApiKeyAuth } from '../auth/decorators/api-key-auth.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
@@ -18,8 +19,9 @@ class BankTransactionListQueryDto extends PaginationQueryDto {
 export class BankTransactionsController {
   constructor(private readonly service: BankTransactionsService) {}
 
-  /** Webhook endpoint for bank transaction ingestion (API key auth - simplified to Public for now). */
+  /** Webhook endpoint for bank transaction ingestion — requires x-api-key header. */
   @Public()
+  @ApiKeyAuth()
   @Post('webhooks/bank-transactions')
   async ingest(@Body() body: {
     externalId: string; amount: number; content: string;

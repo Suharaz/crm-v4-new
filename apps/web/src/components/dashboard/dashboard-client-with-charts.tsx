@@ -61,26 +61,38 @@ export function DashboardClientWithCharts() {
   const [stats, setStats] = useState<any>(null);
   const [funnel, setFunnel] = useState<any[]>([]);
   const [revenue, setRevenue] = useState<any[]>([]);
+  const [performers, setPerformers] = useState<any[]>([]);
+  const [sourceData, setSourceData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     const { from, to } = getDateRange(range);
     try {
-      const [statsRes, funnelRes, revenueRes] = await Promise.all([
+      const promises: Promise<any>[] = [
         api.get<{ data: any }>(`/dashboard/stats?from=${from}&to=${to}`),
         api.get<{ data: any[] }>('/dashboard/lead-funnel'),
         api.get<{ data: any[] }>(`/dashboard/revenue-trend?from=${from}&to=${to}`),
-      ]);
-      setStats(statsRes.data);
-      setFunnel(funnelRes.data);
-      setRevenue(revenueRes.data.map((r: any) => ({
+      ];
+      // Manager+ gets extra insights
+      if (isAdmin) {
+        promises.push(
+          api.get<{ data: any[] }>(`/dashboard/top-performers?from=${from}&to=${to}`),
+          api.get<{ data: any[] }>(`/dashboard/leads-by-source?from=${from}&to=${to}`),
+        );
+      }
+      const results = await Promise.all(promises);
+      setStats(results[0].data);
+      setFunnel(results[1].data);
+      setRevenue(results[2].data.map((r: any) => ({
         ...r,
         day: new Date(r.day).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
       })));
+      if (isAdmin && results[3]) setPerformers(results[3].data || []);
+      if (isAdmin && results[4]) setSourceData(results[4].data || []);
     } catch { /* empty */ }
     setLoading(false);
-  }, [range]);
+  }, [range, isAdmin]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -111,11 +123,11 @@ export function DashboardClientWithCharts() {
 
       {/* KPI Cards */}
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiCard title="Leads mới" value={fmtNum(stats?.newLeads)} subtitle="Đang trong kho" color="text-sky-600" />
-        <KpiCard title="Đang xử lý" value={fmtNum(stats?.inProgress)} subtitle="Leads tiến hành" color="text-amber-600" />
+        <KpiCard title="Leads mới" value={fmtNum(stats?.newLeads)} subtitle="Trong kỳ" color="text-sky-600" />
+        <KpiCard title="Đang xử lý" value={fmtNum(stats?.inProgress)} subtitle="Hiện tại" color="text-amber-600" />
         <KpiCard title="Chuyển đổi" value={fmtNum(stats?.converted)} subtitle="Trong kỳ" color="text-emerald-600" />
-        <KpiCard title="Doanh thu" value={stats ? fmtVND(stats.monthlyRevenue) : '--'} subtitle="Đã xác nhận" color="text-purple-600" />
-        <KpiCard title="Khách hàng" value={fmtNum(stats?.totalCustomers)} subtitle="Đang hoạt động" color="text-indigo-600" />
+        <KpiCard title="Doanh thu" value={stats ? fmtVND(stats.revenue) : '--'} subtitle="Đã xác nhận" color="text-purple-600" />
+        <KpiCard title="Khách mới" value={fmtNum(stats?.newCustomers)} subtitle="Trong kỳ" color="text-indigo-600" />
         <KpiCard title="Đơn hàng" value={fmtNum(stats?.totalOrders)} subtitle="Trong kỳ" color="text-teal-600" />
         <KpiCard
           title="Thanh toán chờ" value={fmtNum(stats?.pendingPayments)} subtitle="Chờ xác nhận"
@@ -177,6 +189,45 @@ export function DashboardClientWithCharts() {
           )}
         </div>
       </div>
+
+      {/* Manager+ Insight Charts */}
+      {isAdmin && (performers.length > 0 || sourceData.length > 0) && (
+        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {/* Top Performers */}
+          {performers.length > 0 && (
+            <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <h3 className="mb-3 text-sm font-semibold text-gray-700">Top nhân viên trong kỳ</h3>
+              <div className="space-y-2">
+                {performers.map((p: any, i: number) => (
+                  <div key={p.userId} className="flex items-center gap-3 text-sm">
+                    <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${i < 3 ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}`}>{i + 1}</span>
+                    <span className="flex-1 font-medium text-gray-700">{p.name}</span>
+                    <span className="text-emerald-600">{p.converted} convert</span>
+                    <span className="font-semibold text-purple-600">{fmtVND(p.revenue)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Leads by Source */}
+          {sourceData.length > 0 && (
+            <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <h3 className="mb-3 text-sm font-semibold text-gray-700">Leads theo nguồn</h3>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={sourceData} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 11 }} />
+                  <YAxis type="category" dataKey="source" tick={{ fontSize: 11 }} width={90} />
+                  <Tooltip />
+                  <Bar dataKey="total" fill="#0ea5e9" radius={[0, 4, 4, 0]} name="Tổng leads" />
+                  <Bar dataKey="converted" fill="#22c55e" radius={[0, 4, 4, 0]} name="Đã convert" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

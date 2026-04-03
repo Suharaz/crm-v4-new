@@ -3,7 +3,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/providers/auth-provider';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, CartesianGrid, Area, AreaChart,
+  Legend,
+} from 'recharts';
 
 // ── Time range presets ────────────────────────────────────────────────────
 type RangeKey = 'today' | 'week' | 'month' | 'quarter' | 'year';
@@ -17,7 +21,6 @@ function getDateRange(key: RangeKey): { from: string; to: string } {
   const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
   const fmt = (dt: Date) => dt.toISOString().split('T')[0];
   const to = fmt(now);
-
   switch (key) {
     case 'today': return { from: to, to };
     case 'week': { const start = new Date(y, m, d - now.getDay() + 1); return { from: fmt(start), to }; }
@@ -27,10 +30,21 @@ function getDateRange(key: RangeKey): { from: string; to: string } {
   }
 }
 
-// ── Chart colors ──────────────────────────────────────────────────────────
+// ── Design tokens from design-guidelines.md ───────────────────────────────
+const COLORS = {
+  primary: '#0ea5e9', primaryLight: '#e0f2fe',
+  success: '#10b981', successLight: '#d1fae5',
+  warning: '#f59e0b', warningLight: '#fef3c7',
+  danger: '#ef4444', dangerLight: '#fee2e2',
+  purple: '#8b5cf6', purpleLight: '#ede9fe',
+  indigo: '#6366f1', indigoLight: '#e0e7ff',
+  teal: '#14b8a6', tealLight: '#ccfbf1',
+  orange: '#f97316',
+};
+
 const FUNNEL_COLORS: Record<string, string> = {
-  POOL: '#0ea5e9', ZOOM: '#f97316', ASSIGNED: '#3b82f6', IN_PROGRESS: '#eab308',
-  CONVERTED: '#22c55e', LOST: '#ef4444', FLOATING: '#8b5cf6',
+  POOL: COLORS.primary, ZOOM: COLORS.orange, ASSIGNED: COLORS.indigo, IN_PROGRESS: COLORS.warning,
+  CONVERTED: COLORS.success, LOST: COLORS.danger, FLOATING: COLORS.purple,
 };
 const FUNNEL_LABELS: Record<string, string> = {
   POOL: 'Kho', ZOOM: 'Zoom', ASSIGNED: 'Đã gán', IN_PROGRESS: 'Đang xử lý',
@@ -40,14 +54,44 @@ const FUNNEL_LABELS: Record<string, string> = {
 // ── Format helpers ────────────────────────────────────────────────────────
 function fmtVND(v: number) { return new Intl.NumberFormat('vi-VN').format(v) + ' ₫'; }
 function fmtNum(v: number | null | undefined) { return v != null ? new Intl.NumberFormat('vi-VN').format(v) : '--'; }
+function fmtShort(v: number) { return v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : String(v); }
 
-// ── KPI Card ──────────────────────────────────────────────────────────────
-function KpiCard({ title, value, subtitle, color }: { title: string; value: string; subtitle: string; color: string }) {
+// ── Custom Tooltip ────────────────────────────────────────────────────────
+function ChartTooltip({ active, payload, label, valueFormatter }: any) {
+  if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <p className="text-sm font-medium text-gray-500">{title}</p>
-      <p className={`mt-1 text-2xl font-bold ${color}`}>{value}</p>
-      <p className="mt-0.5 text-xs text-gray-400">{subtitle}</p>
+    <div className="rounded-lg border border-gray-200 bg-white/95 backdrop-blur-sm px-3 py-2 shadow-lg">
+      <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
+      {payload.map((p: any) => (
+        <p key={p.name} className="text-sm font-semibold" style={{ color: p.color }}>
+          {p.name}: {valueFormatter ? valueFormatter(p.value) : fmtNum(p.value)}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+// ── KPI Card with icon accent ─────────────────────────────────────────────
+function KpiCard({ title, value, subtitle, accentColor, bgColor }: {
+  title: string; value: string; subtitle: string; accentColor: string; bgColor: string;
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
+      <div className="absolute -right-3 -top-3 h-16 w-16 rounded-full opacity-10" style={{ backgroundColor: accentColor }} />
+      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{title}</p>
+      <p className="mt-1.5 text-2xl font-bold" style={{ color: accentColor }}>{value}</p>
+      <p className="mt-0.5 text-[11px] text-gray-400">{subtitle}</p>
+      <div className="absolute bottom-0 left-0 h-0.5 w-full" style={{ background: `linear-gradient(to right, ${accentColor}, ${bgColor})` }} />
+    </div>
+  );
+}
+
+// ── Chart Card wrapper ────────────────────────────────────────────────────
+function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+      <h3 className="mb-4 text-sm font-semibold text-gray-700">{title}</h3>
+      {children}
     </div>
   );
 }
@@ -74,7 +118,6 @@ export function DashboardClientWithCharts() {
         api.get<{ data: any[] }>('/dashboard/lead-funnel'),
         api.get<{ data: any[] }>(`/dashboard/revenue-trend?from=${from}&to=${to}`),
       ];
-      // Manager+ gets extra insights
       if (isAdmin) {
         promises.push(
           api.get<{ data: any[] }>(`/dashboard/top-performers?from=${from}&to=${to}`),
@@ -85,8 +128,7 @@ export function DashboardClientWithCharts() {
       setStats(results[0].data);
       setFunnel(results[1].data);
       setRevenue(results[2].data.map((r: any) => ({
-        ...r,
-        day: new Date(r.day).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
+        ...r, day: new Date(r.day).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
       })));
       if (isAdmin && results[3]) setPerformers(results[3].data || []);
       if (isAdmin && results[4]) setSourceData(results[4].data || []);
@@ -96,135 +138,156 @@ export function DashboardClientWithCharts() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  const activeFunnel = funnel.filter(f => f.count > 0);
+  const totalFunnel = activeFunnel.reduce((s, f) => s + f.count, 0);
+
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header + Time Range */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Trang chủ</h1>
-          <p className="text-sm text-gray-500">
-            {isAdmin ? 'Tổng quan hệ thống CRM' : 'Thống kê cá nhân'}
-          </p>
+          <p className="text-sm text-gray-500">{isAdmin ? 'Tổng quan hệ thống CRM' : 'Thống kê cá nhân'}</p>
         </div>
-        <div className="flex gap-1 rounded-lg border border-gray-200 bg-white p-1">
+        <div className="flex rounded-xl border border-gray-200 bg-white p-1 shadow-sm">
           {(Object.keys(RANGE_LABELS) as RangeKey[]).map(key => (
-            <button
-              key={key}
-              onClick={() => setRange(key)}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                range === key ? 'bg-sky-500 text-white' : 'text-gray-600 hover:bg-gray-100'
+            <button key={key} onClick={() => setRange(key)}
+              className={`rounded-lg px-3.5 py-1.5 text-xs font-medium transition-all ${
+                range === key ? 'bg-sky-500 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
               }`}
-            >
-              {RANGE_LABELS[key]}
-            </button>
+            >{RANGE_LABELS[key]}</button>
           ))}
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiCard title="Leads mới" value={fmtNum(stats?.newLeads)} subtitle="Trong kỳ" color="text-sky-600" />
-        <KpiCard title="Đang xử lý" value={fmtNum(stats?.inProgress)} subtitle="Hiện tại" color="text-amber-600" />
-        <KpiCard title="Chuyển đổi" value={fmtNum(stats?.converted)} subtitle="Trong kỳ" color="text-emerald-600" />
-        <KpiCard title="Doanh thu" value={stats ? fmtVND(stats.revenue) : '--'} subtitle="Đã xác nhận" color="text-purple-600" />
-        <KpiCard title="Khách mới" value={fmtNum(stats?.newCustomers)} subtitle="Trong kỳ" color="text-indigo-600" />
-        <KpiCard title="Đơn hàng" value={fmtNum(stats?.totalOrders)} subtitle="Trong kỳ" color="text-teal-600" />
-        <KpiCard
-          title="Thanh toán chờ" value={fmtNum(stats?.pendingPayments)} subtitle="Chờ xác nhận"
-          color={stats?.pendingPayments ? 'text-orange-600' : 'text-gray-900'}
-        />
-        <KpiCard
-          title="Quá hạn" value={fmtNum(stats?.overdueTask)} subtitle="Cần xử lý ngay"
-          color={stats?.overdueTask ? 'text-red-600' : 'text-gray-900'}
-        />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <KpiCard title="Leads mới" value={fmtNum(stats?.newLeads)} subtitle="Trong kỳ" accentColor={COLORS.primary} bgColor={COLORS.primaryLight} />
+        <KpiCard title="Đang xử lý" value={fmtNum(stats?.inProgress)} subtitle="Hiện tại" accentColor={COLORS.warning} bgColor={COLORS.warningLight} />
+        <KpiCard title="Chuyển đổi" value={fmtNum(stats?.converted)} subtitle="Trong kỳ" accentColor={COLORS.success} bgColor={COLORS.successLight} />
+        <KpiCard title="Doanh thu" value={stats ? fmtVND(stats.revenue) : '--'} subtitle="Đã xác nhận" accentColor={COLORS.purple} bgColor={COLORS.purpleLight} />
+        <KpiCard title="Khách mới" value={fmtNum(stats?.newCustomers)} subtitle="Trong kỳ" accentColor={COLORS.indigo} bgColor={COLORS.indigoLight} />
+        <KpiCard title="Đơn hàng" value={fmtNum(stats?.totalOrders)} subtitle="Trong kỳ" accentColor={COLORS.teal} bgColor={COLORS.tealLight} />
+        <KpiCard title="Thanh toán chờ" value={fmtNum(stats?.pendingPayments)} subtitle="Chờ xác nhận"
+          accentColor={stats?.pendingPayments ? COLORS.orange : '#94a3b8'} bgColor={COLORS.warningLight} />
+        <KpiCard title="Quá hạn" value={fmtNum(stats?.overdueTask)} subtitle="Cần xử lý ngay"
+          accentColor={stats?.overdueTask ? COLORS.danger : '#94a3b8'} bgColor={COLORS.dangerLight} />
       </div>
 
-      {/* Charts Row */}
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Revenue Trend */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <h3 className="mb-4 text-sm font-semibold text-gray-700">Doanh thu theo ngày</h3>
+      {/* Charts Row 1: Revenue + Lead Funnel */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Revenue Area Chart */}
+        <ChartCard title="Doanh thu theo ngày">
           {revenue.length === 0 ? (
-            <p className="py-8 text-center text-sm text-gray-400">{loading ? 'Đang tải...' : 'Chưa có dữ liệu'}</p>
+            <p className="py-12 text-center text-sm text-gray-400">{loading ? 'Đang tải...' : 'Chưa có dữ liệu trong kỳ'}</p>
           ) : (
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={revenue}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => v >= 1e6 ? `${v / 1e6}M` : fmtNum(v)} />
-                <Tooltip formatter={(v) => fmtVND(Number(v))} labelFormatter={l => `Ngày ${l}`} />
-                <Bar dataKey="revenue" fill="#0ea5e9" radius={[4, 4, 0, 0]} name="Doanh thu" />
-              </BarChart>
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={revenue}>
+                <defs>
+                  <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={COLORS.primary} stopOpacity={0.3} />
+                    <stop offset="100%" stopColor={COLORS.primary} stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={fmtShort} />
+                <Tooltip content={<ChartTooltip valueFormatter={fmtVND} />} />
+                <Area type="monotone" dataKey="revenue" stroke={COLORS.primary} strokeWidth={2.5}
+                  fill="url(#revenueGrad)" name="Doanh thu" dot={false} activeDot={{ r: 5, strokeWidth: 2, fill: '#fff' }} />
+              </AreaChart>
             </ResponsiveContainer>
           )}
-        </div>
+        </ChartCard>
 
-        {/* Lead Funnel */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <h3 className="mb-4 text-sm font-semibold text-gray-700">Phân bổ leads theo trạng thái</h3>
-          {funnel.length === 0 ? (
-            <p className="py-8 text-center text-sm text-gray-400">{loading ? 'Đang tải...' : 'Chưa có dữ liệu'}</p>
+        {/* Lead Funnel Donut */}
+        <ChartCard title="Phân bổ leads theo trạng thái">
+          {activeFunnel.length === 0 ? (
+            <p className="py-12 text-center text-sm text-gray-400">{loading ? 'Đang tải...' : 'Chưa có dữ liệu'}</p>
           ) : (
-            <div className="flex items-center gap-4">
-              <ResponsiveContainer width="50%" height={220}>
-                <PieChart>
-                  <Pie data={funnel.filter(f => f.count > 0)} dataKey="count" nameKey="status" cx="50%" cy="50%" outerRadius={80} innerRadius={40}>
-                    {funnel.filter(f => f.count > 0).map(f => (
-                      <Cell key={f.status} fill={FUNNEL_COLORS[f.status] || '#9ca3af'} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(v, name) => [fmtNum(Number(v)), FUNNEL_LABELS[String(name)] || String(name)]} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="flex-1 space-y-1.5">
-                {funnel.filter(f => f.count > 0).map(f => (
-                  <div key={f.status} className="flex items-center gap-2 text-sm">
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: FUNNEL_COLORS[f.status] }} />
-                    <span className="flex-1 text-gray-600">{FUNNEL_LABELS[f.status] || f.status}</span>
-                    <span className="font-medium">{fmtNum(f.count)}</span>
-                  </div>
-                ))}
+            <div className="flex items-center gap-6">
+              <div className="relative">
+                <ResponsiveContainer width={180} height={180}>
+                  <PieChart>
+                    <Pie data={activeFunnel} dataKey="count" nameKey="status" cx="50%" cy="50%"
+                      outerRadius={80} innerRadius={50} paddingAngle={2} strokeWidth={0}>
+                      {activeFunnel.map(f => <Cell key={f.status} fill={FUNNEL_COLORS[f.status] || '#9ca3af'} />)}
+                    </Pie>
+                    <Tooltip content={<ChartTooltip valueFormatter={(v: number) => `${fmtNum(v)} (${totalFunnel ? Math.round(v / totalFunnel * 100) : 0}%)`} />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Center total */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-2xl font-bold text-gray-900">{fmtNum(totalFunnel)}</span>
+                  <span className="text-[10px] text-gray-400">Tổng leads</span>
+                </div>
+              </div>
+              <div className="flex-1 space-y-2">
+                {activeFunnel.map(f => {
+                  const pct = totalFunnel ? Math.round(f.count / totalFunnel * 100) : 0;
+                  return (
+                    <div key={f.status} className="flex items-center gap-2.5 text-sm">
+                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: FUNNEL_COLORS[f.status] }} />
+                      <span className="flex-1 text-gray-600">{FUNNEL_LABELS[f.status] || f.status}</span>
+                      <span className="font-semibold text-gray-900 tabular-nums">{fmtNum(f.count)}</span>
+                      <span className="text-xs text-gray-400 w-8 text-right tabular-nums">{pct}%</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
-        </div>
+        </ChartCard>
       </div>
 
       {/* Manager+ Insight Charts */}
       {isAdmin && (performers.length > 0 || sourceData.length > 0) && (
-        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {/* Top Performers */}
           {performers.length > 0 && (
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="mb-3 text-sm font-semibold text-gray-700">Top nhân viên trong kỳ</h3>
-              <div className="space-y-2">
-                {performers.map((p: any, i: number) => (
-                  <div key={p.userId} className="flex items-center gap-3 text-sm">
-                    <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${i < 3 ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}`}>{i + 1}</span>
-                    <span className="flex-1 font-medium text-gray-700">{p.name}</span>
-                    <span className="text-emerald-600">{p.converted} convert</span>
-                    <span className="font-semibold text-purple-600">{fmtVND(p.revenue)}</span>
-                  </div>
-                ))}
+            <ChartCard title="Top nhân viên trong kỳ">
+              <div className="space-y-2.5">
+                {performers.map((p: any, i: number) => {
+                  const maxRev = performers[0]?.revenue || 1;
+                  const barWidth = Math.max(p.revenue / maxRev * 100, 8);
+                  return (
+                    <div key={p.userId} className="flex items-center gap-3">
+                      <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold shrink-0 ${
+                        i === 0 ? 'bg-amber-400 text-white' : i === 1 ? 'bg-gray-300 text-white' : i === 2 ? 'bg-orange-300 text-white' : 'bg-gray-100 text-gray-500'
+                      }`}>{i + 1}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline justify-between mb-1">
+                          <span className="text-sm font-medium text-gray-700 truncate">{p.name}</span>
+                          <span className="text-xs text-gray-500 ml-2 shrink-0">{p.converted} convert</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                          <div className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${barWidth}%`, background: `linear-gradient(to right, ${COLORS.primary}, ${COLORS.purple})` }} />
+                        </div>
+                      </div>
+                      <span className="text-sm font-bold text-purple-600 tabular-nums shrink-0 w-24 text-right">{fmtVND(p.revenue)}</span>
+                    </div>
+                  );
+                })}
               </div>
-            </div>
+            </ChartCard>
           )}
 
           {/* Leads by Source */}
           {sourceData.length > 0 && (
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="mb-3 text-sm font-semibold text-gray-700">Leads theo nguồn</h3>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={sourceData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                  <XAxis type="number" tick={{ fontSize: 11 }} />
-                  <YAxis type="category" dataKey="source" tick={{ fontSize: 11 }} width={90} />
-                  <Tooltip />
-                  <Bar dataKey="total" fill="#0ea5e9" radius={[0, 4, 4, 0]} name="Tổng leads" />
-                  <Bar dataKey="converted" fill="#22c55e" radius={[0, 4, 4, 0]} name="Đã convert" />
+            <ChartCard title="Leads theo nguồn — Tổng vs Chuyển đổi">
+              <ResponsiveContainer width="100%" height={Math.max(sourceData.length * 40, 160)}>
+                <BarChart data={sourceData} layout="vertical" barGap={2}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="source" tick={{ fontSize: 11, fill: '#64748b' }} width={90} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Bar dataKey="total" fill={COLORS.primary} radius={[0, 6, 6, 0]} name="Tổng leads" barSize={14} />
+                  <Bar dataKey="converted" fill={COLORS.success} radius={[0, 6, 6, 0]} name="Đã convert" barSize={14} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+            </ChartCard>
           )}
         </div>
       )}

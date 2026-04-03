@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/providers/auth-provider';
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, CartesianGrid, Area, AreaChart,
   Legend,
 } from 'recharts';
@@ -107,31 +107,36 @@ export function DashboardClientWithCharts() {
   const [revenue, setRevenue] = useState<any[]>([]);
   const [performers, setPerformers] = useState<any[]>([]);
   const [sourceData, setSourceData] = useState<any[]>([]);
+  const [convTrend, setConvTrend] = useState<any[]>([]);
+  const [aging, setAging] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     const { from, to } = getDateRange(range);
+    const fmtDay = (d: any) => new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
     try {
       const promises: Promise<any>[] = [
         api.get<{ data: any }>(`/dashboard/stats?from=${from}&to=${to}`),
         api.get<{ data: any[] }>('/dashboard/lead-funnel'),
         api.get<{ data: any[] }>(`/dashboard/revenue-trend?from=${from}&to=${to}`),
+        api.get<{ data: any[] }>('/dashboard/lead-aging'),
       ];
       if (isAdmin) {
         promises.push(
           api.get<{ data: any[] }>(`/dashboard/top-performers?from=${from}&to=${to}`),
           api.get<{ data: any[] }>(`/dashboard/leads-by-source?from=${from}&to=${to}`),
+          api.get<{ data: any[] }>(`/dashboard/conversion-trend?from=${from}&to=${to}`),
         );
       }
       const results = await Promise.all(promises);
       setStats(results[0].data);
       setFunnel(results[1].data);
-      setRevenue(results[2].data.map((r: any) => ({
-        ...r, day: new Date(r.day).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
-      })));
-      if (isAdmin && results[3]) setPerformers(results[3].data || []);
-      if (isAdmin && results[4]) setSourceData(results[4].data || []);
+      setRevenue(results[2].data.map((r: any) => ({ ...r, day: fmtDay(r.day) })));
+      setAging(results[3].data || []);
+      if (isAdmin && results[4]) setPerformers(results[4].data || []);
+      if (isAdmin && results[5]) setSourceData(results[5].data || []);
+      if (isAdmin && results[6]) setConvTrend(results[6].data.map((r: any) => ({ ...r, day: fmtDay(r.day) })));
     } catch { /* empty */ }
     setLoading(false);
   }, [range, isAdmin]);
@@ -240,9 +245,81 @@ export function DashboardClientWithCharts() {
         </ChartCard>
       </div>
 
-      {/* Manager+ Insight Charts */}
-      {isAdmin && (performers.length > 0 || sourceData.length > 0) && (
+      {/* Lead Aging — all roles */}
+      {aging.length > 0 && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <ChartCard title="Lead chưa tương tác — cảnh báo bỏ quên">
+            <div className="space-y-3">
+              {aging.map((a: any) => {
+                const isDanger = a.bucket.includes('7+');
+                const isWarn = a.bucket.includes('3-7');
+                const color = isDanger ? COLORS.danger : isWarn ? COLORS.warning : COLORS.success;
+                const maxCount = Math.max(...aging.map((x: any) => x.count), 1);
+                return (
+                  <div key={a.bucket} className="flex items-center gap-3">
+                    <span className="text-xs text-gray-500 w-16 shrink-0">{a.bucket}</span>
+                    <div className="flex-1 h-4 rounded-full bg-gray-100 overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${Math.max(a.count / maxCount * 100, 4)}%`, backgroundColor: color }} />
+                    </div>
+                    <span className="text-sm font-bold tabular-nums w-8 text-right" style={{ color }}>{a.count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </ChartCard>
+        </div>
+      )}
+
+      {/* Manager+ Insight Charts */}
+      {isAdmin && (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {/* Conversion Trend — new leads vs converted per day */}
+          {convTrend.length > 0 && (
+            <ChartCard title="Xu hướng chuyển đổi — Leads mới vs Convert">
+              <ResponsiveContainer width="100%" height={240}>
+                <AreaChart data={convTrend}>
+                  <defs>
+                    <linearGradient id="newLeadsGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={COLORS.primary} stopOpacity={0.2} />
+                      <stop offset="100%" stopColor={COLORS.primary} stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="convertGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={COLORS.success} stopOpacity={0.2} />
+                      <stop offset="100%" stopColor={COLORS.success} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Area type="monotone" dataKey="newLeads" stroke={COLORS.primary} strokeWidth={2} fill="url(#newLeadsGrad)" name="Leads mới" dot={false} />
+                  <Area type="monotone" dataKey="converted" stroke={COLORS.success} strokeWidth={2} fill="url(#convertGrad)" name="Đã convert" dot={false} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          )}
+
+          {/* Leads by Source with conversion rate */}
+          {sourceData.length > 0 && (
+            <ChartCard title="Chất lượng nguồn lead — Tỷ lệ chuyển đổi">
+              <div className="space-y-3">
+                {sourceData.map((s: any) => (
+                  <div key={s.source} className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-gray-700">{s.source}</span>
+                      <span className="text-xs text-gray-500">{s.converted}/{s.total} — <span className="font-bold" style={{ color: s.rate >= 30 ? COLORS.success : s.rate >= 10 ? COLORS.warning : COLORS.danger }}>{s.rate}%</span></span>
+                    </div>
+                    <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${s.rate}%`, background: s.rate >= 30 ? COLORS.success : s.rate >= 10 ? COLORS.warning : COLORS.danger }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ChartCard>
+          )}
+
           {/* Top Performers */}
           {performers.length > 0 && (
             <ChartCard title="Top nhân viên trong kỳ">
@@ -270,23 +347,6 @@ export function DashboardClientWithCharts() {
                   );
                 })}
               </div>
-            </ChartCard>
-          )}
-
-          {/* Leads by Source */}
-          {sourceData.length > 0 && (
-            <ChartCard title="Leads theo nguồn — Tổng vs Chuyển đổi">
-              <ResponsiveContainer width="100%" height={Math.max(sourceData.length * 40, 160)}>
-                <BarChart data={sourceData} layout="vertical" barGap={2}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="source" tick={{ fontSize: 11, fill: '#64748b' }} width={90} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Bar dataKey="total" fill={COLORS.primary} radius={[0, 6, 6, 0]} name="Tổng leads" barSize={14} />
-                  <Bar dataKey="converted" fill={COLORS.success} radius={[0, 6, 6, 0]} name="Đã convert" barSize={14} />
-                </BarChart>
-              </ResponsiveContainer>
             </ChartCard>
           )}
         </div>

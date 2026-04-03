@@ -111,6 +111,55 @@ export class DashboardService {
       GROUP BY ls.name
       ORDER BY total DESC
     `;
-    return rows.map(r => ({ source: r.source_name, total: Number(r.total), converted: Number(r.converted) }));
+    return rows.map(r => ({
+      source: r.source_name, total: Number(r.total), converted: Number(r.converted),
+      rate: Number(r.total) > 0 ? Math.round(Number(r.converted) / Number(r.total) * 100) : 0,
+    }));
+  }
+
+  /** Manager+: daily conversion rate trend (new leads vs converted) */
+  async getConversionTrend(dateFrom: Date, dateTo: Date) {
+    const rows = await this.prisma.$queryRaw<{ day: Date; new_leads: bigint; converted: bigint }[]>`
+      SELECT d.day,
+        COALESCE(SUM(CASE WHEN l.created_at::date = d.day THEN 1 ELSE 0 END), 0)::bigint as new_leads,
+        COALESCE(SUM(CASE WHEN l.status = 'CONVERTED' AND l.updated_at::date = d.day THEN 1 ELSE 0 END), 0)::bigint as converted
+      FROM generate_series(${dateFrom}::date, ${dateTo}::date, '1 day'::interval) d(day)
+      LEFT JOIN leads l ON l.deleted_at IS NULL AND (l.created_at::date = d.day OR (l.status = 'CONVERTED' AND l.updated_at::date = d.day))
+      GROUP BY d.day ORDER BY d.day
+    `;
+    return rows.map(r => ({
+      day: r.day,
+      newLeads: Number(r.new_leads),
+      converted: Number(r.converted),
+    }));
+  }
+
+  /** Manager+: lead aging — how many leads haven't been interacted with */
+  async getLeadAging(userId: bigint, role: string) {
+    const isAdmin = role === 'SUPER_ADMIN' || role === 'MANAGER';
+    const userFilter = isAdmin ? Prisma.sql`` : Prisma.sql`AND l.assigned_user_id = ${userId}`;
+
+    const rows = await this.prisma.$queryRaw<{ bucket: string; count: bigint }[]>`
+      SELECT
+        CASE
+          WHEN age <= 1 THEN '0-1 ngày'
+          WHEN age <= 3 THEN '1-3 ngày'
+          WHEN age <= 7 THEN '3-7 ngày'
+          ELSE '7+ ngày'
+        END as bucket,
+        COUNT(*)::bigint as count
+      FROM (
+        SELECT EXTRACT(DAY FROM NOW() - GREATEST(
+          l.updated_at,
+          COALESCE((SELECT MAX(a.created_at) FROM activities a WHERE a.entity_type = 'LEAD' AND a.entity_id = l.id), l.updated_at)
+        )) as age
+        FROM leads l
+        WHERE l.deleted_at IS NULL AND l.status IN ('IN_PROGRESS', 'ASSIGNED')
+        ${userFilter}
+      ) sub
+      GROUP BY bucket
+      ORDER BY MIN(age)
+    `;
+    return rows.map(r => ({ bucket: r.bucket, count: Number(r.count) }));
   }
 }

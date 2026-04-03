@@ -46,4 +46,16 @@ export class DashboardController {
     const { dateFrom, dateTo } = parseDates(from, to);
     return { data: await this.service.getLeadsBySource(dateFrom, dateTo) };
   }
+
+  @Get('conversion-trend')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async getConversionTrend(@Query('from') from?: string, @Query('to') to?: string) {
+    const { dateFrom, dateTo } = parseDates(from, to);
+    return { data: await this.service.getConversionTrend(dateFrom, dateTo) };
+  }
+
+  @Get('lead-aging')
+  async getLeadAging(@CurrentUser() user: any) {
+    return { data: await this.service.getLeadAging(user.id, user.role) };
+  }
 }

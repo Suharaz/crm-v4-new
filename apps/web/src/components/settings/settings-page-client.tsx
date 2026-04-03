@@ -7,6 +7,7 @@ import { LeadSourceSettings } from '@/components/settings/lead-source-settings';
 import { PaymentTypeSettings } from '@/components/settings/payment-type-settings';
 import { LabelSettings } from '@/components/settings/label-settings';
 import { TeamManagementWithLeaderSelect } from '@/components/settings/team-management-with-leader-select';
+import { ApiKeySettings } from '@/components/settings/api-key-settings';
 import { useAuth } from '@/providers/auth-provider';
 
 interface SettingsPageClientProps {
@@ -16,9 +17,10 @@ interface SettingsPageClientProps {
   paymentTypes: any[];
   labels: any[];
   users: any[];
+  apiKeys: any[];
 }
 
-export function SettingsPageClient({ departments, levels, sources, paymentTypes, labels, users }: SettingsPageClientProps) {
+export function SettingsPageClient({ departments, levels, sources, paymentTypes, labels, users, apiKeys }: SettingsPageClientProps) {
   const { user } = useAuth();
   const canEdit = user?.role === 'SUPER_ADMIN';
   const canEditLabels = user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER';
@@ -32,6 +34,7 @@ export function SettingsPageClient({ departments, levels, sources, paymentTypes,
         <TabsTrigger value="payment-types">Thanh toán</TabsTrigger>
         <TabsTrigger value="labels">Nhãn</TabsTrigger>
         <TabsTrigger value="teams">Teams</TabsTrigger>
+        {canEdit && <TabsTrigger value="api-keys">API Keys</TabsTrigger>}
       </TabsList>
 
       <TabsContent value="departments">
@@ -52,6 +55,11 @@ export function SettingsPageClient({ departments, levels, sources, paymentTypes,
       <TabsContent value="teams">
         <TeamManagementWithLeaderSelect departments={departments} users={users} canEdit={canEdit} />
       </TabsContent>
+      {canEdit && (
+        <TabsContent value="api-keys">
+          <ApiKeySettings apiKeys={apiKeys} />
+        </TabsContent>
+      )}
     </Tabs>
   );
 }

@@ -109,6 +109,8 @@ export function DashboardClientWithCharts() {
   const [sourceData, setSourceData] = useState<any[]>([]);
   const [convTrend, setConvTrend] = useState<any[]>([]);
   const [aging, setAging] = useState<any[]>([]);
+  const [depts, setDepts] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -127,6 +129,8 @@ export function DashboardClientWithCharts() {
           api.get<{ data: any[] }>(`/dashboard/top-performers?from=${from}&to=${to}`),
           api.get<{ data: any[] }>(`/dashboard/leads-by-source?from=${from}&to=${to}`),
           api.get<{ data: any[] }>(`/dashboard/conversion-trend?from=${from}&to=${to}`),
+          api.get<{ data: any[] }>(`/dashboard/dept-performance?from=${from}&to=${to}`),
+          api.get<{ data: any[] }>(`/dashboard/team-performance?from=${from}&to=${to}`),
         );
       }
       const results = await Promise.all(promises);
@@ -137,6 +141,8 @@ export function DashboardClientWithCharts() {
       if (isAdmin && results[4]) setPerformers(results[4].data || []);
       if (isAdmin && results[5]) setSourceData(results[5].data || []);
       if (isAdmin && results[6]) setConvTrend(results[6].data.map((r: any) => ({ ...r, day: fmtDay(r.day) })));
+      if (isAdmin && results[7]) setDepts(results[7].data || []);
+      if (isAdmin && results[8]) setTeams(results[8].data || []);
     } catch { /* empty */ }
     setLoading(false);
   }, [range, isAdmin]);
@@ -343,6 +349,74 @@ export function DashboardClientWithCharts() {
                         </div>
                       </div>
                       <span className="text-sm font-bold text-purple-600 tabular-nums shrink-0 w-24 text-right">{fmtVND(p.revenue)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </ChartCard>
+          )}
+        </div>
+      )}
+
+      {/* Dept + Team Performance — manager only */}
+      {isAdmin && (depts.length > 0 || teams.length > 0) && (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {/* Department Performance */}
+          {depts.length > 0 && (
+            <ChartCard title="Doanh số theo phòng ban">
+              <div className="space-y-3">
+                {depts.map((d: any) => {
+                  const maxRev = Math.max(...depts.map((x: any) => x.revenue), 1);
+                  const barW = Math.max(d.revenue / maxRev * 100, 4);
+                  return (
+                    <div key={d.deptId} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-gray-700">{d.name}</span>
+                        <div className="flex gap-3 text-xs text-gray-500">
+                          <span>{d.leads} leads</span>
+                          <span className="text-emerald-600">{d.converted} convert</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden">
+                          <div className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${barW}%`, background: `linear-gradient(to right, ${COLORS.primary}, ${COLORS.teal})` }} />
+                        </div>
+                        <span className="text-sm font-bold text-teal-600 tabular-nums w-28 text-right">{fmtVND(d.revenue)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </ChartCard>
+          )}
+
+          {/* Team Performance */}
+          {teams.length > 0 && (
+            <ChartCard title="Doanh số theo team">
+              <div className="space-y-3">
+                {teams.map((t: any) => {
+                  const maxRev = Math.max(...teams.map((x: any) => x.revenue), 1);
+                  const barW = Math.max(t.revenue / maxRev * 100, 4);
+                  return (
+                    <div key={t.teamId} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <div>
+                          <span className="font-medium text-gray-700">{t.name}</span>
+                          <span className="ml-1.5 text-xs text-gray-400">{t.dept} · {t.members} NV</span>
+                        </div>
+                        <div className="flex gap-3 text-xs text-gray-500">
+                          <span>{t.leads} leads</span>
+                          <span className="text-emerald-600">{t.converted} convert</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden">
+                          <div className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${barW}%`, background: `linear-gradient(to right, ${COLORS.indigo}, ${COLORS.purple})` }} />
+                        </div>
+                        <span className="text-sm font-bold text-indigo-600 tabular-nums w-28 text-right">{fmtVND(t.revenue)}</span>
+                      </div>
                     </div>
                   );
                 })}

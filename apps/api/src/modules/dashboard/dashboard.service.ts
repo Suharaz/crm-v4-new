@@ -162,4 +162,50 @@ export class DashboardService {
     `;
     return rows.map(r => ({ bucket: r.bucket, count: Number(r.count) }));
   }
+
+  /** Manager+: revenue + leads per department */
+  async getDeptPerformance(dateFrom: Date, dateTo: Date) {
+    const rows = await this.prisma.$queryRaw<{ dept_id: bigint; dept_name: string; revenue: bigint; leads: bigint; converted: bigint }[]>`
+      SELECT d.id as dept_id, d.name as dept_name,
+        COALESCE(SUM(CASE WHEN p.status = 'VERIFIED' AND p.verified_at >= ${dateFrom} AND p.verified_at <= ${dateTo} THEN p.amount ELSE 0 END), 0)::bigint as revenue,
+        COUNT(DISTINCT CASE WHEN l.created_at >= ${dateFrom} AND l.created_at <= ${dateTo} THEN l.id END)::bigint as leads,
+        COUNT(DISTINCT CASE WHEN l.status = 'CONVERTED' AND l.updated_at >= ${dateFrom} AND l.updated_at <= ${dateTo} THEN l.id END)::bigint as converted
+      FROM departments d
+      LEFT JOIN users u ON u.department_id = d.id AND u.deleted_at IS NULL
+      LEFT JOIN leads l ON l.assigned_user_id = u.id AND l.deleted_at IS NULL
+      LEFT JOIN orders o ON o.created_by = u.id AND o.deleted_at IS NULL
+      LEFT JOIN payments p ON p.order_id = o.id
+      WHERE d.deleted_at IS NULL
+      GROUP BY d.id, d.name
+      ORDER BY revenue DESC
+    `;
+    return rows.map(r => ({
+      deptId: r.dept_id.toString(), name: r.dept_name,
+      revenue: Number(r.revenue), leads: Number(r.leads), converted: Number(r.converted),
+    }));
+  }
+
+  /** Manager+: revenue + leads per team within a department (or all) */
+  async getTeamPerformance(dateFrom: Date, dateTo: Date) {
+    const rows = await this.prisma.$queryRaw<{ team_id: bigint; team_name: string; dept_name: string; revenue: bigint; leads: bigint; converted: bigint; members: bigint }[]>`
+      SELECT t.id as team_id, t.name as team_name, d.name as dept_name,
+        COALESCE(SUM(CASE WHEN p.status = 'VERIFIED' AND p.verified_at >= ${dateFrom} AND p.verified_at <= ${dateTo} THEN p.amount ELSE 0 END), 0)::bigint as revenue,
+        COUNT(DISTINCT CASE WHEN l.created_at >= ${dateFrom} AND l.created_at <= ${dateTo} THEN l.id END)::bigint as leads,
+        COUNT(DISTINCT CASE WHEN l.status = 'CONVERTED' AND l.updated_at >= ${dateFrom} AND l.updated_at <= ${dateTo} THEN l.id END)::bigint as converted,
+        COUNT(DISTINCT u.id)::bigint as members
+      FROM teams t
+      JOIN departments d ON d.id = t.department_id
+      LEFT JOIN users u ON u.team_id = t.id AND u.deleted_at IS NULL
+      LEFT JOIN leads l ON l.assigned_user_id = u.id AND l.deleted_at IS NULL
+      LEFT JOIN orders o ON o.created_by = u.id AND o.deleted_at IS NULL
+      LEFT JOIN payments p ON p.order_id = o.id
+      WHERE t.deleted_at IS NULL
+      GROUP BY t.id, t.name, d.name
+      ORDER BY revenue DESC
+    `;
+    return rows.map(r => ({
+      teamId: r.team_id.toString(), name: r.team_name, dept: r.dept_name,
+      revenue: Number(r.revenue), leads: Number(r.leads), converted: Number(r.converted), members: Number(r.members),
+    }));
+  }
 }

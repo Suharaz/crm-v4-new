@@ -58,4 +58,18 @@ export class DashboardController {
   async getLeadAging(@CurrentUser() user: any) {
     return { data: await this.service.getLeadAging(user.id, user.role) };
   }
+
+  @Get('dept-performance')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async getDeptPerformance(@Query('from') from?: string, @Query('to') to?: string) {
+    const { dateFrom, dateTo } = parseDates(from, to);
+    return { data: await this.service.getDeptPerformance(dateFrom, dateTo) };
+  }
+
+  @Get('team-performance')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async getTeamPerformance(@Query('from') from?: string, @Query('to') to?: string) {
+    const { dateFrom, dateTo } = parseDates(from, to);
+    return { data: await this.service.getTeamPerformance(dateFrom, dateTo) };
+  }
 }

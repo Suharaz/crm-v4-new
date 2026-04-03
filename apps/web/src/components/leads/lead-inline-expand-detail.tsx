@@ -194,8 +194,15 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     <tr className="bg-sky-50/20">
       <td colSpan={colSpan} className="px-4 py-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          {/* Col 1: Info */}
+          {/* Col 1: Info + AI Summary */}
           <div className="space-y-2">
+            {/* AI Summary badges */}
+            {(data.metadata as any)?.aiSummary && (
+              <div className="rounded-lg border border-purple-100 bg-purple-50 p-2.5">
+                <p className="text-[10px] font-semibold text-purple-600 uppercase mb-1">AI Tóm tắt</p>
+                <p className="text-xs text-purple-900">{(data.metadata as any).aiSummary}</p>
+              </div>
+            )}
             <h4 className="font-semibold text-gray-700 text-xs uppercase">Thông tin</h4>
             <div className="space-y-1.5 text-gray-600">
               <div className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-gray-400" /><a href={`tel:${data.phone}`} className="text-sky-600">{data.phone}</a></div>

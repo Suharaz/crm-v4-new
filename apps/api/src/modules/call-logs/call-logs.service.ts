@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { PrismaClient, Prisma, EntityType } from '@prisma/client';
 import { normalizePhone } from '@crm/utils';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import { AiSummaryService } from '../ai-summary/ai-summary.service';
 
 const CALL_LOG_SELECT = {
   id: true, externalId: true, phoneNumber: true, callType: true,
@@ -12,7 +13,10 @@ const CALL_LOG_SELECT = {
 
 @Injectable()
 export class CallLogsService {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly aiSummary: AiSummaryService,
+  ) {}
 
   async list(query: PaginationQueryDto & { matchStatus?: string; matchedUserFilter?: bigint }) {
     const limit = query.limit ?? 20;
@@ -128,6 +132,13 @@ export class CallLogsService {
         }
       }
     }
+
+    // Fire-and-forget: AI summary if call is long enough
+    this.aiSummary.triggerFromCall({
+      matchedEntityType, matchedEntityId,
+      content: data.content || null,
+      duration: data.duration || null,
+    }).catch(() => {});
 
     return callLog;
   }

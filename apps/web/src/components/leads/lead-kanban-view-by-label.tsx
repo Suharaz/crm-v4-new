@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { formatDate } from '@/lib/utils';
 
@@ -19,6 +20,7 @@ interface Props {
 }
 
 const MAX_LABEL_COLUMNS = 5;
+const INITIAL_CARDS_PER_COLUMN = 20;
 
 /** Kanban board grouped by lead labels. Max 5 label columns + "Khác". */
 export function LeadKanbanViewByLabel({ leads, onLeadClick }: Props) {
@@ -72,48 +74,72 @@ export function LeadKanbanViewByLabel({ leads, onLeadClick }: Props) {
   return (
     <div className="flex gap-3 overflow-x-auto pb-4">
       {allColumns.map(col => (
-        <div key={col.id} className="flex w-72 flex-shrink-0 flex-col rounded-xl border border-gray-200 bg-gray-50/50">
-          {/* Column header */}
-          <div className="flex items-center gap-2 border-b border-gray-200 px-3 py-2.5">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: col.color }} />
-            <span className="text-sm font-semibold text-gray-700">{col.name}</span>
-            <span className="ml-auto rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">{col.leads.length}</span>
-          </div>
+        <KanbanColumn key={col.id} col={col} onLeadClick={onLeadClick} />
+      ))}
+    </div>
+  );
+}
 
-          {/* Cards */}
-          <div className="flex-1 space-y-2 overflow-y-auto p-2" style={{ maxHeight: '70vh' }}>
-            {col.leads.length === 0 ? (
-              <p className="py-4 text-center text-xs text-gray-400">Trống</p>
-            ) : col.leads.map(lead => (
-              <div
-                key={lead.id}
-                onClick={() => onLeadClick?.(lead.id)}
-                className="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-all hover:border-sky-200 hover:shadow"
-              >
-                <div className="flex items-start justify-between">
-                  <span className="text-sm font-medium text-gray-900">{lead.name}</span>
-                  <StatusBadge status={lead.status} />
-                </div>
-                <p className="mt-1 text-xs text-gray-500">{lead.phone}
-                  {lead.customerId && <span className="ml-1 rounded-full bg-blue-100 px-1 text-[9px] text-blue-700">KH</span>}
-                </p>
-                <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
-                  <span>{lead.assignedUser?.name || '—'}</span>
-                  <span>{formatDate(lead.createdAt)}</span>
-                </div>
-                {/* Label pills */}
-                {lead.labels && lead.labels.length > 0 && (
-                  <div className="mt-1.5 flex flex-wrap gap-1">
-                    {lead.labels.slice(0, 2).map(ll => (
-                      <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: ll.label.color }}>{ll.label.name}</span>
-                    ))}
-                  </div>
+/** Single kanban column with "Xem thêm" pagination */
+function KanbanColumn({ col, onLeadClick }: { col: { id: string; name: string; color: string; leads: Lead[] }; onLeadClick?: (id: string) => void }) {
+  const [showAll, setShowAll] = useState(false);
+  const visibleLeads = showAll ? col.leads : col.leads.slice(0, INITIAL_CARDS_PER_COLUMN);
+  const remaining = col.leads.length - INITIAL_CARDS_PER_COLUMN;
+
+  return (
+    <div className="flex w-72 flex-shrink-0 flex-col rounded-xl border border-gray-200 bg-gray-50/50">
+      {/* Column header */}
+      <div className="flex items-center gap-2 border-b border-gray-200 px-3 py-2.5">
+        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: col.color }} />
+        <span className="text-sm font-semibold text-gray-700">{col.name}</span>
+        <span className="ml-auto rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">{col.leads.length}</span>
+      </div>
+
+      {/* Cards */}
+      <div className="flex-1 space-y-2 overflow-y-auto p-2" style={{ maxHeight: '70vh' }}>
+        {col.leads.length === 0 ? (
+          <p className="py-4 text-center text-xs text-gray-400">Trống</p>
+        ) : visibleLeads.map(lead => (
+          <div
+            key={lead.id}
+            onClick={() => onLeadClick?.(lead.id)}
+            className="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-all hover:border-sky-200 hover:shadow"
+          >
+            <div className="flex items-start justify-between">
+              <span className="text-sm font-medium text-gray-900">{lead.name}</span>
+              <StatusBadge status={lead.status} />
+            </div>
+            <p className="mt-1 text-xs text-gray-500">{lead.phone}
+              {lead.customerId && <span className="ml-1 rounded-full bg-blue-100 px-1 text-[9px] text-blue-700">KH</span>}
+            </p>
+            <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
+              <span>{lead.assignedUser?.name || '—'}</span>
+              <span>{formatDate(lead.createdAt)}</span>
+            </div>
+            {/* Label pills (max 2 + indicator) */}
+            {lead.labels && lead.labels.length > 0 && (
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {lead.labels.slice(0, 2).map(ll => (
+                  <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: ll.label.color }}>{ll.label.name}</span>
+                ))}
+                {lead.labels.length > 2 && (
+                  <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-[9px] font-medium text-gray-500">+{lead.labels.length - 2}</span>
                 )}
               </div>
-            ))}
+            )}
           </div>
-        </div>
-      ))}
+        ))}
+
+        {/* "Xem thêm" / "Thu gọn" */}
+        {remaining > 0 && (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="w-full rounded-lg border border-dashed border-gray-300 py-2 text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+          >
+            {showAll ? 'Thu gọn' : `Xem thêm ${remaining} leads`}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

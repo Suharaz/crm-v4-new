@@ -1,4 +1,4 @@
-import { serverFetch } from '@/lib/auth';
+import { serverFetch, getCurrentUser } from '@/lib/auth';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import { CustomerTableWithPreview } from '@/components/customers/customer-table-with-preview';
 import Link from 'next/link';
@@ -10,6 +10,9 @@ import { CsvExportButton } from '@/components/shared/csv-export-button';
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const params = await searchParams;
   const query = new URLSearchParams(params).toString();
+
+  const currentUser = await getCurrentUser();
+  const isManager = ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
 
   let data: any[] = [];
   let nextCursor: string | undefined;
@@ -28,9 +31,11 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
         </div>
         <div className="flex gap-2">
           <CsvExportButton exportPath="/exports/customers" />
-          <Link href="/customers/new">
-            <Button><Plus className="h-4 w-4 mr-1" />Tạo khách hàng</Button>
-          </Link>
+          {isManager && (
+            <Link href="/customers/new">
+              <Button><Plus className="h-4 w-4 mr-1" />Tạo khách hàng</Button>
+            </Link>
+          )}
         </div>
       </div>
 

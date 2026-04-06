@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { serverFetch } from '@/lib/auth';
+import { serverFetch, getCurrentUser } from '@/lib/auth';
 import { LeadListAdvancedFilterBar } from '@/components/leads/lead-list-advanced-filter-bar';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import { LeadListWithViewToggle } from '@/components/leads/lead-list-with-view-toggle';
@@ -12,6 +12,9 @@ import { CsvExportButton } from '@/components/shared/csv-export-button';
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const params = await searchParams;
   const query = new URLSearchParams(params).toString();
+
+  const currentUser = await getCurrentUser();
+  const isManager = ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
 
   let data: any[] = [];
   let nextCursor: string | undefined;
@@ -48,9 +51,11 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         </div>
         <div className="flex gap-2">
           <CsvExportButton exportPath="/exports/leads" />
-          <Link href="/leads/new">
-            <Button><Plus className="h-4 w-4 mr-1" />Tạo Lead</Button>
-          </Link>
+          {isManager && (
+            <Link href="/leads/new">
+              <Button><Plus className="h-4 w-4 mr-1" />Tạo Lead</Button>
+            </Link>
+          )}
         </div>
       </div>
 

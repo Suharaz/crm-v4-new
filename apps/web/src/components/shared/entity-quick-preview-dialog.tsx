@@ -120,9 +120,10 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
         await api.post(`/${entityType}s/${entityId}/labels`, { labelIds: [labelId] });
       }
       invalidatePreviewCache(entityType, entityId);
-      // Refresh entity data
+      // Refresh entity data + server page
       const res = await api.get<{ data: any }>(entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`);
       setData(res.data);
+      router.refresh();
     } catch { /* */ }
     setLabelSaving(false);
   }

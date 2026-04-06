@@ -26,7 +26,15 @@ const LEAD_SELECT = {
   assignedUser: { select: { id: true, name: true } },
   department: { select: { id: true, name: true } },
   labels: { include: { label: true } },
-  orders: { where: { deletedAt: null }, select: { id: true, status: true, totalAmount: true, product: { select: { name: true } } }, orderBy: { id: 'desc' as const } },
+  orders: {
+    where: { deletedAt: null },
+    select: {
+      id: true, status: true, totalAmount: true,
+      product: { select: { name: true } },
+      payments: { select: { id: true, amount: true, status: true, transferContent: true, createdAt: true, paymentType: { select: { name: true } } } },
+    },
+    orderBy: { id: 'desc' as const },
+  },
 } satisfies Prisma.LeadSelect;
 
 interface CurrentUser {

@@ -238,8 +238,44 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
             )}
           </div>
 
-          {/* Col 2: Activities */}
+          {/* Col 2: Orders + Activities */}
           <div className="space-y-2">
+            {/* Orders section */}
+            {data.orders && data.orders.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-gray-700 text-xs uppercase mb-1">Đơn hàng ({data.orders.length})</h4>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {data.orders.map((o: any) => (
+                    <div key={o.id} className="rounded-md border border-gray-100 bg-white text-xs">
+                      <div className="flex items-center justify-between px-2.5 py-1.5">
+                        <div>
+                          <span className="font-medium text-gray-700">#{o.id}</span>
+                          <span className="ml-1.5 text-gray-500">{o.product?.name || '—'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-gray-900">{formatVND(Number(o.totalAmount))}</span>
+                          <StatusBadge status={o.status} />
+                        </div>
+                      </div>
+                      {o.payments && o.payments.length > 0 && (
+                        <div className="border-t border-gray-50 px-2.5 py-1 space-y-0.5">
+                          {o.payments.map((p: any) => (
+                            <div key={p.id} className="flex items-center justify-between text-[11px] text-gray-500">
+                              <span>{p.paymentType?.name || 'CK'} {p.transferContent ? `— ${p.transferContent}` : ''}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-medium text-gray-700">{formatVND(Number(p.amount))}</span>
+                                <StatusBadge status={p.status} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <h4 className="font-semibold text-gray-700 text-xs uppercase">Hoạt động ({activities.length})</h4>
             {activities.length === 0 ? (
               <p className="text-xs text-gray-400">Chưa có hoạt động</p>

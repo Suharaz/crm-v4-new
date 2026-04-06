@@ -106,9 +106,6 @@ function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan }: {
           {lead.orders && lead.orders.length > 0 && (
             <span className="ml-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">{lead.orders.length} đơn</span>
           )}
-          {lead.activityCount != null && lead.activityCount > 0 && (
-            <span className="ml-1 rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700">{lead.activityCount} log</span>
-          )}
         </td>
         <td className="hidden md:table-cell px-4 py-3">
           <div className="flex flex-wrap gap-1">

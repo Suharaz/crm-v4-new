@@ -10,6 +10,7 @@ import { FormField } from '@/components/shared/form-field';
 import { useFormAction } from '@/hooks/use-form-action';
 import { leadSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
 import { api } from '@/lib/api-client';
+import { useAuth } from '@/providers/auth-provider';
 
 interface LeadFormProps {
   lead?: any;
@@ -20,7 +21,9 @@ interface LeadFormProps {
 /** Create/edit form for leads. */
 export function LeadForm({ lead, sources, products }: LeadFormProps) {
   const router = useRouter();
+  const { user: currentUser } = useAuth();
   const isEdit = !!lead;
+  const canEditPhone = !isEdit || ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
   const { execute, isLoading, error } = useFormAction({
     successMessage: isEdit ? 'Đã cập nhật lead' : 'Đã tạo lead',
     onSuccess: () => router.push('/leads'),
@@ -117,7 +120,8 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
         <h3 className="font-semibold text-gray-900">Thông tin lead</h3>
 
         <FormField label="Số điện thoại" required error={fieldErrors.phone}>
-          <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" />
+          <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" readOnly={!canEditPhone} className={!canEditPhone ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''} />
+          {!canEditPhone && <p className="text-xs text-gray-400 mt-0.5">Chỉ quản lý mới được sửa SĐT</p>}
           {phoneDuplicate && (
             <div className="mt-1 rounded-md bg-sky-50 border border-sky-200 px-3 py-2 text-xs text-sky-700">
               Khách hàng đã có: <span className="font-semibold">{phoneDuplicate.name}</span> — dữ liệu đã tự điền

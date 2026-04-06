@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FormField } from '@/components/shared/form-field';
 import { useFormAction } from '@/hooks/use-form-action';
 import { customerSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
+import { useAuth } from '@/providers/auth-provider';
 
 interface CustomerFormProps {
   customer?: any;
@@ -19,7 +20,9 @@ interface CustomerFormProps {
 /** Create/edit form for customers. */
 export function CustomerForm({ customer, departments, users }: CustomerFormProps) {
   const router = useRouter();
+  const { user: currentUser } = useAuth();
   const isEdit = !!customer;
+  const canEditPhone = !isEdit || ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
   const { execute, isLoading, error } = useFormAction({
     successMessage: isEdit ? 'Đã cập nhật khách hàng' : 'Đã tạo khách hàng',
     onSuccess: () => router.push('/customers'),
@@ -84,7 +87,8 @@ export function CustomerForm({ customer, departments, users }: CustomerFormProps
         <h3 className="font-semibold text-gray-900">Thông tin khách hàng</h3>
 
         <FormField label="Số điện thoại" required error={fieldErrors.phone}>
-          <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" />
+          <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" readOnly={!canEditPhone} className={!canEditPhone ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''} />
+          {!canEditPhone && <p className="text-xs text-gray-400 mt-0.5">Chỉ quản lý mới được sửa SĐT</p>}
         </FormField>
 
         <FormField label="Họ tên" required error={fieldErrors.name}>

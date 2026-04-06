@@ -21,6 +21,8 @@ interface Lead {
   department?: { name: string } | null;
   customerId?: string | null;
   orders?: { id: string }[];
+  labels?: { label: { id: string; name: string; color: string } }[];
+  activityCount?: number;
   createdAt: string;
 }
 
@@ -178,16 +180,30 @@ export function LeadPoolTableWithBulkAssign({ leads, users, poolMode }: PoolTabl
                   </td>
                 )}
                 <td className="px-4 py-3">
-                  <button
-                    type="button"
-                    onClick={() => setPreviewId(lead.id)}
-                    className="font-medium text-sky-600 hover:underline text-left"
-                  >
-                    {lead.name}
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewId(lead.id)}
+                      className="font-medium text-sky-600 hover:underline text-left"
+                    >
+                      {lead.name}
+                    </button>
+                    {lead.customerId && <span className="ml-1 rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">KH</span>}
                     {lead.orders && lead.orders.length > 0 && (
-                      <span className="ml-1.5 inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Đã mua</span>
+                      <span className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Đã mua</span>
                     )}
-                  </button>
+                    {typeof lead.activityCount === 'number' && lead.activityCount > 0 && (
+                      <span className="ml-1 rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">{lead.activityCount} log</span>
+                    )}
+                  </div>
+                  {lead.labels && lead.labels.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {lead.labels.slice(0, 3).map(ll => (
+                        <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: ll.label.color }}>{ll.label.name}</span>
+                      ))}
+                      {lead.labels.length > 3 && <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-[9px] text-gray-500">+{lead.labels.length - 3}</span>}
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-gray-600">{lead.phone}</td>
                 <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>

@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 interface Lead {
   id: string; name: string; phone: string; email?: string | null;
-  status: string; source?: { name: string } | null;
+  status: string; source?: { name: string } | null; product?: { name: string } | null;
   assignedUser?: { name: string } | null;
   department?: { name: string } | null;
   customerId?: string | null;
@@ -50,7 +50,7 @@ interface LeadTableProps {
 
 export function LeadTable({ leads, poolMode, users = [] }: LeadTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const colCount = 4 + (poolMode ? 1 : 0);
+  const colCount = 5 + (poolMode ? 1 : 0);
 
   function toggle(id: string) {
     setExpandedId(prev => prev === id ? null : id);
@@ -67,6 +67,7 @@ export function LeadTable({ leads, poolMode, users = [] }: LeadTableProps) {
           <tr>
             <th className="px-4 py-3 text-left font-medium text-gray-500">Họ tên</th>
             <th className="px-4 py-3 text-left font-medium text-gray-500">SĐT</th>
+            <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Sản phẩm</th>
             <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nhãn</th>
             <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Tương tác lần cuối</th>
             {poolMode && <th className="px-4 py-3 text-right font-medium text-gray-500">Thao tác</th>}
@@ -99,7 +100,6 @@ function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan }: {
               lead.metadata.aiLevel === 'HOT' ? 'bg-red-500' : lead.metadata.aiLevel === 'WARM' ? 'bg-amber-500' : 'bg-sky-400'
             }`}>{lead.metadata.aiScore || '?'}</span>
           )}
-          {lead.customerId && <span className="ml-1 rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">KH</span>}
         </td>
         <td className="px-4 py-3 text-gray-600">
           <span>{lead.phone}</span>
@@ -107,6 +107,7 @@ function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan }: {
             <span className="ml-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">{lead.orders.length} đơn</span>
           )}
         </td>
+        <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.product?.name || '—'}</td>
         <td className="hidden md:table-cell px-4 py-3">
           <div className="flex flex-wrap gap-1">
             {lead.labels?.slice(0, 3).map(ll => (

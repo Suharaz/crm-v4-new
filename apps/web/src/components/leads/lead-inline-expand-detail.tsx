@@ -219,62 +219,8 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
   return (
     <tr className="bg-sky-50/20">
       <td colSpan={colSpan} className="px-4 py-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          {/* Col 1: Info + AI Summary */}
-          <div className="space-y-2">
-            {/* AI Summary badges */}
-            {(data.metadata as any)?.aiSummary && (() => {
-              const meta = data.metadata as any;
-              const level = meta.aiLevel;
-              const score = meta.aiScore;
-              const levelColor = level === 'HOT' ? 'bg-red-500' : level === 'WARM' ? 'bg-amber-500' : 'bg-sky-500';
-              const levelText = level === 'HOT' ? 'Nóng' : level === 'WARM' ? 'Ấm' : level === 'COLD' ? 'Lạnh' : null;
-              return (
-                <div className="rounded-lg border border-purple-100 bg-purple-50 p-2.5">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-[10px] font-semibold text-purple-600 uppercase">AI Tóm tắt</p>
-                    {score && (
-                      <span className={`${levelColor} text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full`}>
-                        {score}/10 {levelText}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-purple-900">{meta.aiSummary}</p>
-                  {meta.aiScoreReason && <p className="text-[10px] text-purple-500 mt-1">{meta.aiScoreReason}</p>}
-                </div>
-              );
-            })()}
-            <h4 className="font-semibold text-gray-700 text-xs uppercase">Thông tin</h4>
-            <div className="space-y-1.5 text-gray-600">
-              <div className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-gray-400" /><a href={`tel:${data.phone}`} className="text-sky-600">{data.phone}</a></div>
-              {data.email && <div className="flex items-center gap-2"><Mail className="h-3.5 w-3.5 text-gray-400" />{data.email}</div>}
-              {data.source?.name && <div className="flex items-center gap-2"><Tag className="h-3.5 w-3.5 text-gray-400" />{data.source.name}</div>}
-              {data.product?.name && <div className="flex items-center gap-2"><Package className="h-3.5 w-3.5 text-gray-400" />{data.product.name}</div>}
-              {data.assignedUser?.name && <div className="flex items-center gap-2"><User className="h-3.5 w-3.5 text-gray-400" />{data.assignedUser.name}</div>}
-              {data.department?.name && <div className="flex items-center gap-2"><Building className="h-3.5 w-3.5 text-gray-400" />{data.department.name}</div>}
-              <div className="flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-gray-400" />{formatDate(data.createdAt)}</div>
-              {data.companyName && <div className="flex items-center gap-2"><Building className="h-3.5 w-3.5 text-gray-400" /><span className="text-xs text-gray-500">CT:</span> {data.companyName}</div>}
-            </div>
-            {/* Social links */}
-            {(data.facebookUrl || data.instagramUrl || data.zaloPhone || data.linkedinUrl) && (
-              <div className="flex flex-wrap gap-2 pt-1">
-                {data.facebookUrl && <a href={data.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-sky-600 bg-sky-50 rounded px-1.5 py-0.5 hover:underline">Facebook</a>}
-                {data.instagramUrl && <a href={data.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-pink-600 bg-pink-50 rounded px-1.5 py-0.5 hover:underline">Instagram</a>}
-                {data.zaloPhone && <span className="text-[10px] text-blue-600 bg-blue-50 rounded px-1.5 py-0.5">Zalo: {data.zaloPhone}</span>}
-                {data.linkedinUrl && <a href={data.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-700 bg-blue-50 rounded px-1.5 py-0.5 hover:underline">LinkedIn</a>}
-              </div>
-            )}
-            {labels.length > 0 && (
-              <div className="flex flex-wrap gap-1 pt-1">
-                {labels.map((ll: any) => {
-                  const l = ll.label || ll;
-                  return <span key={l.id} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-white" style={{ backgroundColor: l.color || '#6b7280' }}>{l.name}</span>;
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Col 2: Orders + Activities */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          {/* Col 1: Calls + Notes + Orders */}
           <div className="space-y-2">
             {/* Orders section */}
             {data.orders && data.orders.length > 0 && (

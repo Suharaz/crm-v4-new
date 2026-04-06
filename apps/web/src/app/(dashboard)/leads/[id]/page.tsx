@@ -4,7 +4,7 @@ import { ActivityTimelineWithFilterTabs } from '@/components/shared/activity-tim
 import { LeadActions } from '@/components/leads/lead-actions';
 import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
 import { MetadataKeyValueEditor } from '@/components/shared/metadata-key-value-editor';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatVND } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -107,6 +107,42 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                   <span key={ll.label.id} className="rounded-full px-2.5 py-0.5 text-xs font-medium text-white" style={{ backgroundColor: ll.label.color }}>
                     {ll.label.name}
                   </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Orders + Payments */}
+          {lead.orders?.length > 0 && (
+            <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <h3 className="mb-3 font-semibold text-gray-900">Đơn hàng ({lead.orders.length})</h3>
+              <div className="space-y-3">
+                {lead.orders.map((o: any) => (
+                  <div key={o.id} className="rounded-lg border border-gray-100 p-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="font-medium text-gray-700">#{o.id}</span>
+                        <span className="ml-2 text-gray-500">{o.product?.name || '—'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-gray-900">{formatVND(Number(o.totalAmount))}</span>
+                        <StatusBadge status={o.status} />
+                      </div>
+                    </div>
+                    {o.payments?.length > 0 && (
+                      <div className="mt-2 space-y-1 border-t border-gray-50 pt-2">
+                        {o.payments.map((p: any) => (
+                          <div key={p.id} className="flex items-center justify-between text-xs text-gray-500">
+                            <span>{p.paymentType?.name || 'CK'} {p.transferContent ? `— ${p.transferContent}` : ''}</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-medium text-gray-700">{formatVND(Number(p.amount))}</span>
+                              <StatusBadge status={p.status} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>

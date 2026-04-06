@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { formatDate } from '@/lib/utils';
+import { Settings, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
 
 interface Lead {
   id: string; name: string; phone: string; status: string;
@@ -14,49 +15,94 @@ interface Lead {
   createdAt: string;
 }
 
+interface LabelInfo { id: string; name: string; color: string }
+
 interface Props {
   leads: Lead[];
+  allLabels?: LabelInfo[];
   onLeadClick?: (id: string) => void;
 }
 
-const MAX_LABEL_COLUMNS = 5;
+const MAX_LABEL_COLUMNS = 10;
 const INITIAL_CARDS_PER_COLUMN = 20;
+const STORAGE_KEY = 'crm_kanban_label_config';
 
-/** Kanban board grouped by lead labels. Max 5 label columns + "Khác". */
-export function LeadKanbanViewByLabel({ leads, onLeadClick }: Props) {
-  // Count leads per label to find top 5
-  const labelCounts = new Map<string, { label: { id: string; name: string; color: string }; count: number }>();
+interface KanbanConfig { selectedIds: string[] }
+
+function loadConfig(): KanbanConfig | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+
+function saveConfig(config: KanbanConfig) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(config)); } catch { /* */ }
+}
+
+/** Kanban board grouped by lead labels with customizable columns. */
+export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) {
+  const [configOpen, setConfigOpen] = useState(false);
+  const [config, setConfig] = useState<KanbanConfig | null>(null);
+  const [configLoaded, setConfigLoaded] = useState(false);
+
+  // Load config from localStorage on mount
+  useEffect(() => {
+    setConfig(loadConfig());
+    setConfigLoaded(true);
+  }, []);
+
+  // Build label list with lead counts
+  const labelCounts = new Map<string, number>();
   for (const lead of leads) {
-    if (!lead.labels || lead.labels.length === 0) continue;
+    if (!lead.labels) continue;
     for (const ll of lead.labels) {
-      const key = ll.label.id;
-      const existing = labelCounts.get(key);
-      if (existing) existing.count++;
-      else labelCounts.set(key, { label: ll.label, count: 1 });
+      labelCounts.set(ll.label.id, (labelCounts.get(ll.label.id) || 0) + 1);
     }
   }
 
-  // Sort by count desc, take top 5
-  const sorted = [...labelCounts.values()].sort((a, b) => b.count - a.count);
-  const topLabels = sorted.slice(0, MAX_LABEL_COLUMNS);
-  const topLabelIds = new Set(topLabels.map(l => l.label.id));
+  // All available labels — merge from allLabels prop + labels found in leads
+  const labelMap = new Map<string, LabelInfo>();
+  if (allLabels) {
+    for (const l of allLabels) labelMap.set(l.id, l);
+  }
+  for (const lead of leads) {
+    if (!lead.labels) continue;
+    for (const ll of lead.labels) {
+      if (!labelMap.has(ll.label.id)) labelMap.set(ll.label.id, ll.label);
+    }
+  }
+  const availableLabels = [...labelMap.values()];
+
+  // Determine which labels to show as columns (in order)
+  let selectedLabels: LabelInfo[];
+  if (config?.selectedIds && config.selectedIds.length > 0) {
+    // User-configured: preserve order, filter out deleted labels
+    selectedLabels = config.selectedIds
+      .map(id => labelMap.get(id))
+      .filter((l): l is LabelInfo => !!l);
+  } else {
+    // Auto mode: top 5 by lead count
+    selectedLabels = availableLabels
+      .filter(l => labelCounts.has(l.id))
+      .sort((a, b) => (labelCounts.get(b.id) || 0) - (labelCounts.get(a.id) || 0))
+      .slice(0, 5);
+  }
+
+  const selectedIds = new Set(selectedLabels.map(l => l.id));
 
   // Group leads into columns
-  const columns: { id: string; name: string; color: string; leads: Lead[] }[] = topLabels.map(tl => ({
-    id: tl.label.id, name: tl.label.name, color: tl.label.color, leads: [],
-  }));
+  const columns: { id: string; name: string; color: string; leads: Lead[] }[] =
+    selectedLabels.map(l => ({ id: l.id, name: l.name, color: l.color, leads: [] }));
   const otherColumn: Lead[] = [];
   const noLabelColumn: Lead[] = [];
 
   for (const lead of leads) {
-    if (!lead.labels || lead.labels.length === 0) {
-      noLabelColumn.push(lead);
-      continue;
-    }
-    // Place lead in first matching top-label column
+    if (!lead.labels || lead.labels.length === 0) { noLabelColumn.push(lead); continue; }
     let placed = false;
     for (const ll of lead.labels) {
-      if (topLabelIds.has(ll.label.id)) {
+      if (selectedIds.has(ll.label.id)) {
         const col = columns.find(c => c.id === ll.label.id);
         if (col) { col.leads.push(lead); placed = true; break; }
       }
@@ -64,18 +110,128 @@ export function LeadKanbanViewByLabel({ leads, onLeadClick }: Props) {
     if (!placed) otherColumn.push(lead);
   }
 
-  // Build final columns array
   const allColumns = [
     ...columns,
     ...(otherColumn.length > 0 ? [{ id: '_other', name: 'Khác', color: '#9ca3af', leads: otherColumn }] : []),
     ...(noLabelColumn.length > 0 ? [{ id: '_none', name: 'Chưa gắn nhãn', color: '#d1d5db', leads: noLabelColumn }] : []),
   ];
 
+  // Config handlers
+  function toggleLabel(labelId: string) {
+    const current = config?.selectedIds || selectedLabels.map(l => l.id);
+    let next: string[];
+    if (current.includes(labelId)) {
+      next = current.filter(id => id !== labelId);
+    } else {
+      if (current.length >= MAX_LABEL_COLUMNS) return;
+      next = [...current, labelId];
+    }
+    const newConfig = { selectedIds: next };
+    setConfig(newConfig);
+    saveConfig(newConfig);
+  }
+
+  function moveLabel(labelId: string, direction: -1 | 1) {
+    const current = config?.selectedIds || selectedLabels.map(l => l.id);
+    const idx = current.indexOf(labelId);
+    if (idx < 0) return;
+    const newIdx = idx + direction;
+    if (newIdx < 0 || newIdx >= current.length) return;
+    const next = [...current];
+    [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
+    const newConfig = { selectedIds: next };
+    setConfig(newConfig);
+    saveConfig(newConfig);
+  }
+
+  function resetConfig() {
+    setConfig(null);
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  const currentSelectedIds = config?.selectedIds || selectedLabels.map(l => l.id);
+
+  if (!configLoaded) return null;
+
   return (
-    <div className="flex gap-3 overflow-x-auto pb-4">
-      {allColumns.map(col => (
-        <KanbanColumn key={col.id} col={col} onLeadClick={onLeadClick} />
-      ))}
+    <div className="space-y-3">
+      {/* Config toolbar */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-gray-400">{allColumns.length} cột · {leads.length} leads</span>
+        <button
+          onClick={() => setConfigOpen(!configOpen)}
+          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+            configOpen ? 'bg-sky-100 text-sky-700' : 'text-gray-500 hover:bg-gray-100'
+          }`}
+        >
+          <Settings className="h-3.5 w-3.5" />Tuỳ chỉnh cột
+        </button>
+      </div>
+
+      {/* Config panel */}
+      {configOpen && (
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-gray-700">Chọn nhãn hiển thị (tối đa {MAX_LABEL_COLUMNS})</h4>
+            <button onClick={resetConfig} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600">
+              <RotateCcw className="h-3 w-3" />Mặc định
+            </button>
+          </div>
+
+          {/* Selected labels with reorder */}
+          {currentSelectedIds.length > 0 && (
+            <div className="space-y-1 mb-3">
+              <p className="text-[10px] font-medium text-gray-400 uppercase">Đang hiển thị</p>
+              {currentSelectedIds.map((id, idx) => {
+                const label = labelMap.get(id);
+                if (!label) return null;
+                return (
+                  <div key={id} className="flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: label.color }} />
+                    <span className="text-sm text-gray-700 flex-1">{label.name}</span>
+                    <span className="text-[10px] text-gray-400">{labelCounts.get(id) || 0}</span>
+                    <button onClick={() => moveLabel(id, -1)} disabled={idx === 0}
+                      className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30">
+                      <ChevronUp className="h-3.5 w-3.5" />
+                    </button>
+                    <button onClick={() => moveLabel(id, 1)} disabled={idx === currentSelectedIds.length - 1}
+                      className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30">
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </button>
+                    <button onClick={() => toggleLabel(id)} className="p-0.5 text-red-400 hover:text-red-600 text-xs font-bold">×</button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Available labels to add */}
+          {availableLabels.filter(l => !currentSelectedIds.includes(l.id)).length > 0 && (
+            <div className="space-y-1">
+              <p className="text-[10px] font-medium text-gray-400 uppercase">Có thể thêm</p>
+              <div className="flex flex-wrap gap-1.5">
+                {availableLabels.filter(l => !currentSelectedIds.includes(l.id)).map(label => (
+                  <button key={label.id} onClick={() => toggleLabel(label.id)}
+                    disabled={currentSelectedIds.length >= MAX_LABEL_COLUMNS}
+                    className="flex items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                  >
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: label.color }} />
+                    {label.name}
+                    <span className="text-gray-400">({labelCounts.get(label.id) || 0})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Kanban board */}
+      <div className="flex gap-3 overflow-x-auto pb-4">
+        {allColumns.map(col => (
+          <KanbanColumn key={col.id} col={col} onLeadClick={onLeadClick} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -88,23 +244,18 @@ function KanbanColumn({ col, onLeadClick }: { col: { id: string; name: string; c
 
   return (
     <div className="flex w-72 flex-shrink-0 flex-col rounded-xl border border-gray-200 bg-gray-50/50">
-      {/* Column header */}
       <div className="flex items-center gap-2 border-b border-gray-200 px-3 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: col.color }} />
         <span className="text-sm font-semibold text-gray-700">{col.name}</span>
         <span className="ml-auto rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">{col.leads.length}</span>
       </div>
 
-      {/* Cards */}
       <div className="flex-1 space-y-2 overflow-y-auto p-2" style={{ maxHeight: '70vh' }}>
         {col.leads.length === 0 ? (
           <p className="py-4 text-center text-xs text-gray-400">Trống</p>
         ) : visibleLeads.map(lead => (
-          <div
-            key={lead.id}
-            onClick={() => onLeadClick?.(lead.id)}
-            className="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-all hover:border-sky-200 hover:shadow"
-          >
+          <div key={lead.id} onClick={() => onLeadClick?.(lead.id)}
+            className="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-all hover:border-sky-200 hover:shadow">
             <div className="flex items-start justify-between">
               <span className="text-sm font-medium text-gray-900">{lead.name}</span>
               <StatusBadge status={lead.status} />
@@ -113,10 +264,9 @@ function KanbanColumn({ col, onLeadClick }: { col: { id: string; name: string; c
               {lead.customerId && <span className="ml-1 rounded-full bg-blue-100 px-1 text-[9px] text-blue-700">KH</span>}
             </p>
             <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
-              <span>{lead.assignedUser?.name || '—'}</span>
+
               <span>{formatDate(lead.createdAt)}</span>
             </div>
-            {/* Label pills (max 2 + indicator) */}
             {lead.labels && lead.labels.length > 0 && (
               <div className="mt-1.5 flex flex-wrap gap-1">
                 {lead.labels.slice(0, 2).map(ll => (
@@ -130,12 +280,9 @@ function KanbanColumn({ col, onLeadClick }: { col: { id: string; name: string; c
           </div>
         ))}
 
-        {/* "Xem thêm" / "Thu gọn" */}
         {remaining > 0 && (
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="w-full rounded-lg border border-dashed border-gray-300 py-2 text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
-          >
+          <button onClick={() => setShowAll(!showAll)}
+            className="w-full rounded-lg border border-dashed border-gray-300 py-2 text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors">
             {showAll ? 'Thu gọn' : `Xem thêm ${remaining} leads`}
           </button>
         )}

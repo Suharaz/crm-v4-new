@@ -12,10 +12,11 @@ type ViewMode = 'table' | 'kanban';
 
 interface Props {
   leads: any[];
+  allLabels?: { id: string; name: string; color: string }[];
 }
 
 /** Leads list with toggle between table and kanban views. Persists choice in localStorage. */
-export function LeadListWithViewToggle({ leads }: Props) {
+export function LeadListWithViewToggle({ leads, allLabels }: Props) {
   const [view, setView] = useState<ViewMode>('table');
   const [previewId, setPreviewId] = useState<string | null>(null);
 
@@ -56,7 +57,7 @@ export function LeadListWithViewToggle({ leads }: Props) {
       {view === 'table' ? (
         <LeadTable leads={leads} />
       ) : (
-        <LeadKanbanViewByLabel leads={leads} onLeadClick={setPreviewId} />
+        <LeadKanbanViewByLabel leads={leads} allLabels={allLabels} onLeadClick={setPreviewId} />
       )}
 
       {/* Quick preview for kanban card clicks */}

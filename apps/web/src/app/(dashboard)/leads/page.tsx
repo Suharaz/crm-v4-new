@@ -61,7 +61,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         />
       </Suspense>
 
-      <LeadListWithViewToggle leads={data} />
+      <LeadListWithViewToggle leads={data} allLabels={labels} />
       <PaginationControls nextCursor={nextCursor} />
     </div>
   );

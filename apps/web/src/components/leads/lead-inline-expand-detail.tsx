@@ -102,7 +102,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     if (!noteText.trim()) return;
     setNoteSaving(true);
     try {
-      await api.post('/activities', { entityType: entityType === 'lead' ? 'LEAD' : 'CUSTOMER', entityId, type: 'NOTE', content: noteText.trim() });
+      await api.post(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`, { type: 'NOTE', content: noteText.trim() });
       setNoteText(''); setNoteOpen(false);
       invalidateCache(entityType, entityId);
       const actRes = await api.get<{ data: any[] }>(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`).catch(() => ({ data: [] }));

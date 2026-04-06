@@ -109,7 +109,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
     if (!noteText.trim() || !entityId) return;
     setNoteSaving(true);
     try {
-      await api.post(`/activities`, { entityType: entityType === 'lead' ? 'LEAD' : 'CUSTOMER', entityId, type: 'NOTE', content: noteText.trim() });
+      await api.post(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`, { type: 'NOTE', content: noteText.trim() });
       setNoteText('');
       setNoteOpen(false);
       invalidatePreviewCache(entityType, entityId);

@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { api } from '@/lib/api-client';
 import { formatDate } from '@/lib/utils';
-import { ExternalLink, Phone, Mail, User, Building, Tag, Calendar, Package, Loader2, MessageSquarePlus, Tags, ShoppingCart } from 'lucide-react';
+import { ExternalLink, Phone, Mail, User, Building, Tag, Calendar, Package, Loader2, MessageSquarePlus, Tags, ShoppingCart, CreditCard } from 'lucide-react';
+import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
 
 interface PreviewDialogProps {
   open: boolean;
@@ -55,6 +56,9 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
   const [labelPickerOpen, setLabelPickerOpen] = useState(false);
   const [allLabels, setAllLabels] = useState<any[]>([]);
   const [labelSaving, setLabelSaving] = useState(false);
+  const [products, setProducts] = useState<any[]>([]);
+  const [paymentTypes, setPaymentTypes] = useState<any[]>([]);
+  const [orderDataLoaded, setOrderDataLoaded] = useState(false);
 
   useEffect(() => {
     if (!open || !entityId) return;
@@ -138,6 +142,21 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
       writeCache('_all_labels', r.data || [], []);
     }).catch(() => {});
   }, [labelPickerOpen, allLabels.length]);
+
+  // Lazy-load products + payment types for order creation
+  useEffect(() => {
+    if (!open || !data || orderDataLoaded) return;
+    const canCreateOrder = entityType === 'lead' && data.customerId && ['IN_PROGRESS', 'CONVERTED'].includes(data.status);
+    if (!canCreateOrder) return;
+    Promise.all([
+      api.get<{ data: any[] }>('/products').catch(() => ({ data: [] })),
+      api.get<{ data: any[] }>('/payment-types').catch(() => ({ data: [] })),
+    ]).then(([prodRes, ptRes]) => {
+      setProducts((prodRes.data || []).map((p: any) => ({ ...p, id: String(p.id) })));
+      setPaymentTypes((ptRes.data || []).map((pt: any) => ({ ...pt, id: String(pt.id) })));
+      setOrderDataLoaded(true);
+    });
+  }, [open, data, entityType, orderDataLoaded]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -243,10 +262,8 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                 <Button size="sm" variant={labelPickerOpen ? 'default' : 'outline'} onClick={() => { setLabelPickerOpen(!labelPickerOpen); setNoteOpen(false); }}>
                   <Tags className="h-3.5 w-3.5 mr-1" />Nhãn
                 </Button>
-                {entityType === 'lead' && data?.customerId && (
-                  <Link href={`/leads/${entityId}`} onClick={() => onOpenChange(false)}>
-                    <Button size="sm" variant="outline"><ShoppingCart className="h-3.5 w-3.5 mr-1" />Tạo đơn</Button>
-                  </Link>
+                {entityType === 'lead' && data?.customerId && ['IN_PROGRESS', 'CONVERTED'].includes(data.status) && products.length > 0 && (
+                  <CreateOrderDialog customerId={String(data.customerId)} leadId={entityId || undefined} products={products} paymentTypes={paymentTypes} />
                 )}
               </div>
 

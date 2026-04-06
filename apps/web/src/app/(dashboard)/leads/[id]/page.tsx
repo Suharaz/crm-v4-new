@@ -112,42 +112,6 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             </div>
           )}
 
-          {/* Orders + Payments */}
-          {lead.orders?.length > 0 && (
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="mb-3 font-semibold text-gray-900">Đơn hàng ({lead.orders.length})</h3>
-              <div className="space-y-3">
-                {lead.orders.map((o: any) => (
-                  <div key={o.id} className="rounded-lg border border-gray-100 p-3 text-sm">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="font-medium text-gray-700">#{o.id}</span>
-                        <span className="ml-2 text-gray-500">{o.product?.name || '—'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-gray-900">{formatVND(Number(o.totalAmount))}</span>
-                        <StatusBadge status={o.status} />
-                      </div>
-                    </div>
-                    {o.payments?.length > 0 && (
-                      <div className="mt-2 space-y-1 border-t border-gray-50 pt-2">
-                        {o.payments.map((p: any) => (
-                          <div key={p.id} className="flex items-center justify-between text-xs text-gray-500">
-                            <span>{p.paymentType?.name || 'CK'} {p.transferContent ? `— ${p.transferContent}` : ''}</span>
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-medium text-gray-700">{formatVND(Number(p.amount))}</span>
-                              <StatusBadge status={p.status} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Metadata */}
           <MetadataKeyValueEditor entityType="leads" entityId={id} metadata={lead.metadata} />
         </div>

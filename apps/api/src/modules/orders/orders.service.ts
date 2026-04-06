@@ -120,8 +120,16 @@ export class OrdersService {
       select: ORDER_SELECT,
     });
 
-    // Auto-trigger IN_PROGRESS on lead if ASSIGNED
+    // Log activity on lead timeline
     if (data.leadId) {
+      await this.prisma.activity.create({
+        data: {
+          entityType: 'LEAD', entityId: BigInt(data.leadId), userId,
+          type: 'NOTE',
+          content: `Tạo đơn hàng #${order.id} — ${order.product?.name || ''} — ${totalAmount.toLocaleString('vi-VN')}₫`,
+          metadata: { orderId: order.id.toString(), type: 'ORDER_CREATED' },
+        },
+      });
       await this.triggerLeadInProgress(BigInt(data.leadId), userId);
     }
 

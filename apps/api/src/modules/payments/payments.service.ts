@@ -78,6 +78,18 @@ export class PaymentsService {
       await this.matchingService.tryMatchPayment(payment.id);
     }
 
+    // Log activity on lead timeline
+    if (order.leadId) {
+      await this.prisma.activity.create({
+        data: {
+          entityType: 'LEAD', entityId: order.leadId, userId: order.createdBy,
+          type: 'NOTE',
+          content: `Thanh toán ${data.amount.toLocaleString('vi-VN')}₫ — ${data.transferContent || 'CK'} (chờ xác nhận)`,
+          metadata: { paymentId: payment.id.toString(), type: 'PAYMENT_CREATED' },
+        },
+      });
+    }
+
     return this.findById(payment.id);
   }
 
@@ -106,6 +118,19 @@ export class PaymentsService {
 
       // Check conversion trigger
       await this.matchingService.checkConversionTrigger(tx, id);
+
+      // Log verified activity on lead
+      const order = await tx.order.findFirst({ where: { id: payment.orderId }, select: { leadId: true } });
+      if (order?.leadId) {
+        await tx.activity.create({
+          data: {
+            entityType: 'LEAD', entityId: order.leadId, userId,
+            type: 'NOTE',
+            content: `Xác nhận thanh toán ${Number(payment.amount).toLocaleString('vi-VN')}₫ ✅`,
+            metadata: { paymentId: id.toString(), type: 'PAYMENT_VERIFIED' },
+          },
+        });
+      }
     });
 
     // Read after transaction commits to return up-to-date status

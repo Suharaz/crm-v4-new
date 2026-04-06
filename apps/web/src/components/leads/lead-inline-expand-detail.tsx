@@ -78,10 +78,19 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     Promise.all([
       api.get<{ data: any }>(endpoint),
       api.get<{ data: any[] }>(actEndpoint).catch(() => ({ data: [] })),
-    ]).then(([entityRes, actRes]) => {
+    ]).then(async ([entityRes, actRes]) => {
       setData(entityRes.data);
-      setActivities(actRes.data || []);
-      writeCache(cacheKey, entityRes.data, actRes.data || []);
+      let allActs = (actRes.data || []).map((a: any) => ({ ...a, _source: 'lead' }));
+      // Merge customer activities if lead has customerId
+      if (entityType === 'lead' && entityRes.data?.customerId) {
+        try {
+          const custActs = await api.get<{ data: any[] }>(`/customers/${entityRes.data.customerId}/activities`);
+          const custItems = (custActs.data || []).map((a: any) => ({ ...a, _source: 'customer' }));
+          allActs = [...allActs, ...custItems].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        } catch { /* ok */ }
+      }
+      setActivities(allActs);
+      writeCache(cacheKey, entityRes.data, allActs);
     }).catch(() => setData(null))
       .finally(() => setLoading(false));
   }, [entityType, entityId]);
@@ -303,25 +312,56 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
               </div>
             )}
 
-            <h4 className="font-semibold text-gray-700 text-xs uppercase">Hoạt động ({activities.length})</h4>
-            {activities.length === 0 ? (
-              <p className="text-xs text-gray-400">Chưa có hoạt động</p>
-            ) : (
-              <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                {activities.slice(0, 5).map((a: any) => (
-                  <div key={a.id} className="text-xs bg-white rounded-md px-2.5 py-2 border border-gray-100">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <span className="font-medium text-gray-700">{a.user?.name || '—'}</span>
-                      <span className="text-gray-300">·</span>
-                      <span className="text-gray-400">{a.type === 'NOTE' ? 'Ghi chú' : a.type === 'CALL' ? 'Cuộc gọi' : a.type}</span>
-                      <span className="text-gray-300">·</span>
-                      <span className="text-gray-400">{formatDate(a.createdAt)}</span>
-                    </div>
-                    <p className="text-gray-600">{a.content?.substring(0, 100)}{a.content?.length > 100 ? '...' : ''}</p>
+            {/* Cuộc gọi */}
+            {(() => {
+              const calls = activities.filter((a: any) => a.type === 'CALL');
+              return calls.length > 0 ? (
+                <div>
+                  <h4 className="font-semibold text-gray-700 text-xs uppercase mb-1">Cuộc gọi ({calls.length})</h4>
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {calls.slice(0, 5).map((a: any) => (
+                      <div key={a.id} className="text-xs bg-white rounded-md px-2.5 py-1.5 border border-gray-100">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium text-gray-700">{a.user?.name || '—'}</span>
+                          {a._source === 'customer' && <span className="text-[9px] bg-blue-100 text-blue-600 rounded px-1">KH</span>}
+                          <span className="text-gray-300">·</span>
+                          <span className="text-gray-400">{formatDate(a.createdAt)}</span>
+                          {a.metadata?.duration && <span className="text-gray-400 ml-auto">{Math.floor(a.metadata.duration / 60)}p{a.metadata.duration % 60}s</span>}
+                        </div>
+                        {a.content && <p className="text-gray-600 mt-0.5">{a.content.substring(0, 80)}{a.content.length > 80 ? '...' : ''}</p>}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              ) : null;
+            })()}
+
+            {/* Ghi chú */}
+            {(() => {
+              const notes = activities.filter((a: any) => a.type === 'NOTE');
+              return (
+                <div>
+                  <h4 className="font-semibold text-gray-700 text-xs uppercase mb-1">Ghi chú ({notes.length})</h4>
+                  {notes.length === 0 ? (
+                    <p className="text-xs text-gray-400">Chưa có ghi chú</p>
+                  ) : (
+                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                      {notes.slice(0, 5).map((a: any) => (
+                        <div key={a.id} className="text-xs bg-white rounded-md px-2.5 py-1.5 border border-gray-100">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-medium text-gray-700">{a.user?.name || '—'}</span>
+                            {a._source === 'customer' && <span className="text-[9px] bg-blue-100 text-blue-600 rounded px-1">KH</span>}
+                            <span className="text-gray-300">·</span>
+                            <span className="text-gray-400">{formatDate(a.createdAt)}</span>
+                          </div>
+                          <p className="text-gray-600 mt-0.5">{a.content?.substring(0, 100)}{(a.content?.length || 0) > 100 ? '...' : ''}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Col 3: Quick Actions */}

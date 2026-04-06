@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { StatusBadge } from '@/components/shared/status-badge';
 import { LeadInlineExpandDetail } from '@/components/leads/lead-inline-expand-detail';
 import { LeadPoolActionButtons } from '@/components/leads/lead-pool-action-buttons';
 import { cn } from '@/lib/utils';
@@ -35,7 +34,6 @@ function RelativeTime({ date }: { date?: string }) {
   else if (days < 30) text = `${Math.floor(days / 7)} tuần trước`;
   else text = `${Math.floor(days / 30)} tháng trước`;
 
-  // Color: green < 1d, normal < 3d, orange < 7d, red >= 7d
   const color = days < 1 ? 'text-emerald-600'
     : days < 3 ? 'text-gray-500'
     : days < 7 ? 'text-amber-600'
@@ -52,14 +50,14 @@ interface LeadTableProps {
 
 export function LeadTable({ leads, poolMode, users = [] }: LeadTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const colCount = 6 + (poolMode ? 1 : 0);
+  const colCount = 4 + (poolMode ? 1 : 0);
 
   function toggle(id: string) {
     setExpandedId(prev => prev === id ? null : id);
   }
 
   if (leads.length === 0) {
-    return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có lead nào</div>;
+    return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có data</div>;
   }
 
   return (
@@ -69,10 +67,8 @@ export function LeadTable({ leads, poolMode, users = [] }: LeadTableProps) {
           <tr>
             <th className="px-4 py-3 text-left font-medium text-gray-500">Họ tên</th>
             <th className="px-4 py-3 text-left font-medium text-gray-500">SĐT</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Trạng thái</th>
-            <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nguồn</th>
             <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nhãn</th>
-            <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Lần cuối</th>
+            <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Tương tác lần cuối</th>
             {poolMode && <th className="px-4 py-3 text-right font-medium text-gray-500">Thao tác</th>}
           </tr>
         </thead>
@@ -99,22 +95,21 @@ function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan }: {
         <td className="px-4 py-3">
           <span className="font-medium text-sky-600">{lead.name}</span>
           {lead.metadata?.aiLevel && (
-            <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full text-white ${
+            <span className={`ml-1 text-[9px] font-bold px-1 py-0.5 rounded-full text-white ${
               lead.metadata.aiLevel === 'HOT' ? 'bg-red-500' : lead.metadata.aiLevel === 'WARM' ? 'bg-amber-500' : 'bg-sky-400'
             }`}>{lead.metadata.aiScore || '?'}</span>
           )}
+          {lead.customerId && <span className="ml-1 rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">KH</span>}
           {lead.orders && lead.orders.length > 0 && (
-            <span className="ml-1.5 inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Đã mua</span>
+            <span className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Đã mua</span>
           )}
         </td>
         <td className="px-4 py-3 text-gray-600">
           <span>{lead.phone}</span>
           {lead.activityCount != null && lead.activityCount > 0 && (
-            <span className="ml-1.5 inline-flex items-center rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700">{lead.activityCount} log</span>
+            <span className="ml-1.5 rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700">{lead.activityCount} log</span>
           )}
         </td>
-        <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
-        <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.source?.name || '—'}</td>
         <td className="hidden md:table-cell px-4 py-3">
           <div className="flex flex-wrap gap-1">
             {lead.labels?.slice(0, 3).map(ll => (

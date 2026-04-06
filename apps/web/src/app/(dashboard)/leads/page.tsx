@@ -3,9 +3,7 @@ import { serverFetch, getCurrentUser } from '@/lib/auth';
 import { LeadListAdvancedFilterBar } from '@/components/leads/lead-list-advanced-filter-bar';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import { LeadListWithViewToggle } from '@/components/leads/lead-list-with-view-toggle';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { CreateLeadDialog } from '@/components/leads/create-lead-dialog';
 import { CsvExportButton } from '@/components/shared/csv-export-button';
 
 /** Lead list page — table or kanban view with deep filters. */
@@ -51,11 +49,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         </div>
         <div className="flex gap-2">
           <CsvExportButton exportPath="/exports/leads" />
-          {isManager && (
-            <Link href="/leads/new">
-              <Button><Plus className="h-4 w-4 mr-1" />Tạo Lead</Button>
-            </Link>
-          )}
+          {isManager && <CreateLeadDialog sources={sources} products={products} />}
         </div>
       </div>
 

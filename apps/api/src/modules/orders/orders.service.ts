@@ -79,7 +79,7 @@ export class OrdersService {
     if (!customerId && data.leadId) {
       const lead = await this.prisma.lead.findFirst({
         where: { id: BigInt(data.leadId), deletedAt: null },
-        select: { id: true, phone: true, name: true, email: true, customerId: true, assignedUserId: true, departmentId: true },
+        select: { id: true, phone: true, name: true, email: true, companyName: true, facebookUrl: true, instagramUrl: true, zaloPhone: true, linkedinUrl: true, customerId: true, assignedUserId: true, departmentId: true },
       });
       if (!lead) throw new NotFoundException('Lead không tồn tại');
 
@@ -90,6 +90,8 @@ export class OrdersService {
         const customer = await this.prisma.customer.create({
           data: {
             phone: lead.phone, name: lead.name, email: lead.email,
+            companyName: lead.companyName, facebookUrl: lead.facebookUrl,
+            instagramUrl: lead.instagramUrl, zaloPhone: lead.zaloPhone, linkedinUrl: lead.linkedinUrl,
             assignedUserId: lead.assignedUserId, assignedDepartmentId: lead.departmentId,
           },
         });

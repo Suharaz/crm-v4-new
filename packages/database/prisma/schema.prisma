@@ -243,6 +243,11 @@ model Customer {
   phone                String
   name                 String
   email                String?
+  companyName          String?        @map("company_name")
+  facebookUrl          String?        @map("facebook_url")
+  instagramUrl         String?        @map("instagram_url")
+  zaloPhone            String?        @map("zalo_phone")
+  linkedinUrl          String?        @map("linkedin_url")
   assignedUserId       BigInt?        @map("assigned_user_id")
   assignedDepartmentId BigInt?        @map("assigned_department_id")
   status               CustomerStatus @default(ACTIVE)
@@ -268,6 +273,11 @@ model Lead {
   phone            String
   name             String
   email            String?
+  companyName      String?    @map("company_name")
+  facebookUrl      String?    @map("facebook_url")
+  instagramUrl     String?    @map("instagram_url")
+  zaloPhone        String?    @map("zalo_phone")
+  linkedinUrl      String?    @map("linkedin_url")
   customerId       BigInt?    @map("customer_id")
   productId        BigInt?    @map("product_id")
   sourceId         BigInt?    @map("source_id")

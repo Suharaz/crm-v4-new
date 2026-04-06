@@ -22,5 +22,25 @@ export class CreateLeadDto {
 
   @IsOptional()
   @IsString()
+  companyName?: string;
+
+  @IsOptional()
+  @IsString()
+  facebookUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  instagramUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  zaloPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  linkedinUrl?: string;
+
+  @IsOptional()
+  @IsString()
   notes?: string;
 }

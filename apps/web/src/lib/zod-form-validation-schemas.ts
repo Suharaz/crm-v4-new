@@ -11,6 +11,8 @@ const emailOptional = z
   .optional()
   .refine(val => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), 'Email không hợp lệ');
 
+const urlOptional = z.string().optional().refine(val => !val || /^https?:\/\//.test(val), 'URL phải bắt đầu bằng http:// hoặc https://');
+
 // Lead form
 export const leadSchema = z.object({
   phone: phoneVN,
@@ -18,6 +20,11 @@ export const leadSchema = z.object({
   email: emailOptional,
   sourceId: z.string().optional(),
   productId: z.string().optional(),
+  companyName: z.string().max(200).optional(),
+  facebookUrl: urlOptional,
+  instagramUrl: urlOptional,
+  zaloPhone: z.string().optional(),
+  linkedinUrl: urlOptional,
 });
 
 export type LeadFormValues = z.infer<typeof leadSchema>;
@@ -27,6 +34,11 @@ export const customerSchema = z.object({
   phone: phoneVN,
   name: z.string().min(1, 'Vui lòng nhập họ tên'),
   email: emailOptional,
+  companyName: z.string().max(200).optional(),
+  facebookUrl: urlOptional,
+  instagramUrl: urlOptional,
+  zaloPhone: z.string().optional(),
+  linkedinUrl: urlOptional,
   assignedUserId: z.string().optional(),
   assignedDepartmentId: z.string().optional(),
 });

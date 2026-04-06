@@ -70,8 +70,32 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
               <div className="flex justify-between"><dt className="text-gray-500">Nhân viên</dt><dd className="text-gray-700">{customer.assignedUser?.name || '—'}</dd></div>
               <div className="flex justify-between"><dt className="text-gray-500">Phòng ban</dt><dd className="text-gray-700">{customer.assignedDepartment?.name || '—'}</dd></div>
               <div className="flex justify-between"><dt className="text-gray-500">Ngày tạo</dt><dd className="text-gray-700">{formatDate(customer.createdAt)}</dd></div>
+              {customer.companyName && (
+                <div className="flex justify-between"><dt className="text-gray-500">Công ty</dt><dd className="text-gray-700">{customer.companyName}</dd></div>
+              )}
             </dl>
           </div>
+
+          {/* Social links */}
+          {(customer.facebookUrl || customer.instagramUrl || customer.zaloPhone || customer.linkedinUrl) && (
+            <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <h3 className="mb-3 font-semibold text-gray-900">Mạng xã hội</h3>
+              <dl className="space-y-2 text-sm">
+                {customer.facebookUrl && (
+                  <div className="flex justify-between"><dt className="text-gray-500">Facebook</dt><dd><a href={customer.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Xem</a></dd></div>
+                )}
+                {customer.instagramUrl && (
+                  <div className="flex justify-between"><dt className="text-gray-500">Instagram</dt><dd><a href={customer.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Xem</a></dd></div>
+                )}
+                {customer.zaloPhone && (
+                  <div className="flex justify-between"><dt className="text-gray-500">Zalo</dt><dd className="text-gray-700">{customer.zaloPhone}</dd></div>
+                )}
+                {customer.linkedinUrl && (
+                  <div className="flex justify-between"><dt className="text-gray-500">LinkedIn</dt><dd><a href={customer.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Xem</a></dd></div>
+                )}
+              </dl>
+            </div>
+          )}
 
           {/* Labels */}
           {customer.labels?.length > 0 && (

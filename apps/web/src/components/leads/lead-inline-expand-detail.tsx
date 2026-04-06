@@ -227,7 +227,17 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
               {data.assignedUser?.name && <div className="flex items-center gap-2"><User className="h-3.5 w-3.5 text-gray-400" />{data.assignedUser.name}</div>}
               {data.department?.name && <div className="flex items-center gap-2"><Building className="h-3.5 w-3.5 text-gray-400" />{data.department.name}</div>}
               <div className="flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-gray-400" />{formatDate(data.createdAt)}</div>
+              {data.companyName && <div className="flex items-center gap-2"><Building className="h-3.5 w-3.5 text-gray-400" /><span className="text-xs text-gray-500">CT:</span> {data.companyName}</div>}
             </div>
+            {/* Social links */}
+            {(data.facebookUrl || data.instagramUrl || data.zaloPhone || data.linkedinUrl) && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {data.facebookUrl && <a href={data.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-sky-600 bg-sky-50 rounded px-1.5 py-0.5 hover:underline">Facebook</a>}
+                {data.instagramUrl && <a href={data.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-pink-600 bg-pink-50 rounded px-1.5 py-0.5 hover:underline">Instagram</a>}
+                {data.zaloPhone && <span className="text-[10px] text-blue-600 bg-blue-50 rounded px-1.5 py-0.5">Zalo: {data.zaloPhone}</span>}
+                {data.linkedinUrl && <a href={data.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-700 bg-blue-50 rounded px-1.5 py-0.5 hover:underline">LinkedIn</a>}
+              </div>
+            )}
             {labels.length > 0 && (
               <div className="flex flex-wrap gap-1 pt-1">
                 {labels.map((ll: any) => {

@@ -32,6 +32,11 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
     email: lead?.email || '',
     sourceId: lead?.sourceId || '',
     productId: lead?.productId || '',
+    companyName: lead?.companyName || '',
+    facebookUrl: lead?.facebookUrl || '',
+    instagramUrl: lead?.instagramUrl || '',
+    zaloPhone: lead?.zaloPhone || '',
+    linkedinUrl: lead?.linkedinUrl || '',
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [metadataRows, setMetadataRows] = useState<{ key: string; value: string }[]>(
@@ -86,6 +91,11 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
     if (form.email) body.email = form.email;
     if (form.sourceId) body.sourceId = form.sourceId;
     if (form.productId) body.productId = form.productId;
+    if (form.companyName) body.companyName = form.companyName;
+    if (form.facebookUrl) body.facebookUrl = form.facebookUrl;
+    if (form.instagramUrl) body.instagramUrl = form.instagramUrl;
+    if (form.zaloPhone) body.zaloPhone = form.zaloPhone;
+    if (form.linkedinUrl) body.linkedinUrl = form.linkedinUrl;
     // Metadata from key-value rows
     const meta: Record<string, string> = {};
     metadataRows.forEach(r => { if (r.key.trim() && r.value.trim()) meta[r.key.trim()] = r.value.trim(); });
@@ -145,6 +155,30 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
             </SelectContent>
           </Select>
         </FormField>
+      </div>
+
+      {/* Company + Social links */}
+      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
+        <h3 className="font-semibold text-gray-900">Công ty & Mạng xã hội</h3>
+
+        <FormField label="Tên công ty" error={fieldErrors.companyName}>
+          <Input value={form.companyName} onChange={e => update('companyName', e.target.value)} placeholder="Công ty ABC" />
+        </FormField>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField label="Facebook" error={fieldErrors.facebookUrl}>
+            <Input value={form.facebookUrl} onChange={e => update('facebookUrl', e.target.value)} placeholder="https://facebook.com/..." />
+          </FormField>
+          <FormField label="Instagram" error={fieldErrors.instagramUrl}>
+            <Input value={form.instagramUrl} onChange={e => update('instagramUrl', e.target.value)} placeholder="https://instagram.com/..." />
+          </FormField>
+          <FormField label="Zalo" error={fieldErrors.zaloPhone}>
+            <Input value={form.zaloPhone} onChange={e => update('zaloPhone', e.target.value)} placeholder="0912345678" />
+          </FormField>
+          <FormField label="LinkedIn" error={fieldErrors.linkedinUrl}>
+            <Input value={form.linkedinUrl} onChange={e => update('linkedinUrl', e.target.value)} placeholder="https://linkedin.com/in/..." />
+          </FormField>
+        </div>
       </div>
 
       {/* Metadata key-value pairs */}

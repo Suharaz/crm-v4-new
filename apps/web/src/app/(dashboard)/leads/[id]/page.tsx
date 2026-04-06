@@ -94,8 +94,47 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                 <dt className="text-gray-500">Ngày tạo</dt>
                 <dd className="text-gray-700">{formatDate(lead.createdAt)}</dd>
               </div>
+              {lead.companyName && (
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">Công ty</dt>
+                  <dd className="text-gray-700">{lead.companyName}</dd>
+                </div>
+              )}
             </dl>
           </div>
+
+          {/* Social links */}
+          {(lead.facebookUrl || lead.instagramUrl || lead.zaloPhone || lead.linkedinUrl) && (
+            <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <h3 className="mb-3 font-semibold text-gray-900">Mạng xã hội</h3>
+              <dl className="space-y-2 text-sm">
+                {lead.facebookUrl && (
+                  <div className="flex justify-between">
+                    <dt className="text-gray-500">Facebook</dt>
+                    <dd><a href={lead.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline truncate max-w-[180px] inline-block">Xem</a></dd>
+                  </div>
+                )}
+                {lead.instagramUrl && (
+                  <div className="flex justify-between">
+                    <dt className="text-gray-500">Instagram</dt>
+                    <dd><a href={lead.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline truncate max-w-[180px] inline-block">Xem</a></dd>
+                  </div>
+                )}
+                {lead.zaloPhone && (
+                  <div className="flex justify-between">
+                    <dt className="text-gray-500">Zalo</dt>
+                    <dd className="text-gray-700">{lead.zaloPhone}</dd>
+                  </div>
+                )}
+                {lead.linkedinUrl && (
+                  <div className="flex justify-between">
+                    <dt className="text-gray-500">LinkedIn</dt>
+                    <dd><a href={lead.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline truncate max-w-[180px] inline-block">Xem</a></dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          )}
 
           {/* Labels */}
           {lead.labels?.length > 0 && (

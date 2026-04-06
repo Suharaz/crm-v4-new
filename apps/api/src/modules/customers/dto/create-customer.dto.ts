@@ -13,6 +13,26 @@ export class CreateCustomerDto {
 
   @IsOptional()
   @IsString()
+  companyName?: string;
+
+  @IsOptional()
+  @IsString()
+  facebookUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  instagramUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  zaloPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  linkedinUrl?: string;
+
+  @IsOptional()
+  @IsString()
   assignedUserId?: string;
 
   @IsOptional()

@@ -9,6 +9,11 @@ const CUSTOMER_SELECT = {
   phone: true,
   name: true,
   email: true,
+  companyName: true,
+  facebookUrl: true,
+  instagramUrl: true,
+  zaloPhone: true,
+  linkedinUrl: true,
   assignedUserId: true,
   assignedDepartmentId: true,
   status: true,
@@ -98,6 +103,11 @@ export class CustomersService {
         phone,
         name: dto.name,
         email: dto.email,
+        companyName: dto.companyName,
+        facebookUrl: dto.facebookUrl,
+        instagramUrl: dto.instagramUrl,
+        zaloPhone: dto.zaloPhone,
+        linkedinUrl: dto.linkedinUrl,
         ...(dto.assignedUserId ? { assignedUser: { connect: { id: BigInt(dto.assignedUserId) } } } : {}),
         ...(dto.assignedDepartmentId ? { assignedDepartment: { connect: { id: BigInt(dto.assignedDepartmentId) } } } : {}),
       },
@@ -126,6 +136,11 @@ export class CustomersService {
       if (existing) throw new ConflictException('Số điện thoại đã tồn tại');
       updateData.phone = phone;
     }
+    if (data.companyName !== undefined) updateData.companyName = data.companyName as string | null;
+    if (data.facebookUrl !== undefined) updateData.facebookUrl = data.facebookUrl as string | null;
+    if (data.instagramUrl !== undefined) updateData.instagramUrl = data.instagramUrl as string | null;
+    if (data.zaloPhone !== undefined) updateData.zaloPhone = data.zaloPhone as string | null;
+    if (data.linkedinUrl !== undefined) updateData.linkedinUrl = data.linkedinUrl as string | null;
 
     return this.prisma.customer.update({ where: { id }, data: updateData, select: CUSTOMER_SELECT });
   }

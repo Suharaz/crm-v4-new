@@ -3,8 +3,7 @@ import { StatusBadge } from '@/components/shared/status-badge';
 import { ActivityTimelineWithFilterTabs } from '@/components/shared/activity-timeline-with-filter-tabs';
 import { LeadActions } from '@/components/leads/lead-actions';
 import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
-import { MetadataKeyValueEditor } from '@/components/shared/metadata-key-value-editor';
-import { formatDate, formatVND } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -112,8 +111,6 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             </div>
           )}
 
-          {/* Metadata */}
-          <MetadataKeyValueEditor entityType="leads" entityId={id} metadata={lead.metadata} />
         </div>
 
         {/* Timeline with filter tabs */}

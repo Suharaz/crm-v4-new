@@ -36,11 +36,10 @@ function RelativeTime({ date }: { date?: string }) {
   else text = `${Math.floor(days / 30)} tháng trước`;
 
   // Color: green < 1d, normal < 3d, orange < 7d, red >= 7d
-  let color = 'text-gray-400';
-  if (days < 1) color = 'text-emerald-600';
-  else if (days < 3) color = 'text-gray-500';
-  else if (days < 7) color = 'text-amber-600';
-  else color = 'text-red-600 font-semibold';
+  const color = days < 1 ? 'text-emerald-600'
+    : days < 3 ? 'text-gray-500'
+    : days < 7 ? 'text-amber-600'
+    : 'text-red-600 font-semibold';
 
   return <span className={cn('text-xs', color)}>{text}</span>;
 }

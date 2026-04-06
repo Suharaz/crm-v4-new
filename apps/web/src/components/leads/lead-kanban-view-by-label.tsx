@@ -23,7 +23,7 @@ interface Props {
   onLeadClick?: (id: string) => void;
 }
 
-const MAX_LABEL_COLUMNS = 10;
+const MAX_SELECTABLE_LABELS = 4; // 4 nhãn + 1 cột "Khác" = 5 cột tối đa
 const INITIAL_CARDS_PER_COLUMN = 20;
 const STORAGE_KEY = 'crm_kanban_label_config';
 
@@ -83,11 +83,11 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
       .map(id => labelMap.get(id))
       .filter((l): l is LabelInfo => !!l);
   } else {
-    // Auto mode: top 5 by lead count
+    // Auto mode: top 4 by lead count (+ "Khác" = 5 cột)
     selectedLabels = availableLabels
       .filter(l => labelCounts.has(l.id))
       .sort((a, b) => (labelCounts.get(b.id) || 0) - (labelCounts.get(a.id) || 0))
-      .slice(0, 5);
+      .slice(0, MAX_SELECTABLE_LABELS);
   }
 
   const selectedIds = new Set(selectedLabels.map(l => l.id));
@@ -96,10 +96,9 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
   const columns: { id: string; name: string; color: string; leads: Lead[] }[] =
     selectedLabels.map(l => ({ id: l.id, name: l.name, color: l.color, leads: [] }));
   const otherColumn: Lead[] = [];
-  const noLabelColumn: Lead[] = [];
 
   for (const lead of leads) {
-    if (!lead.labels || lead.labels.length === 0) { noLabelColumn.push(lead); continue; }
+    if (!lead.labels || lead.labels.length === 0) { otherColumn.push(lead); continue; }
     let placed = false;
     for (const ll of lead.labels) {
       if (selectedIds.has(ll.label.id)) {
@@ -110,10 +109,10 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
     if (!placed) otherColumn.push(lead);
   }
 
+  // 4 nhãn + "Khác" = max 5 cột
   const allColumns = [
     ...columns,
     ...(otherColumn.length > 0 ? [{ id: '_other', name: 'Khác', color: '#9ca3af', leads: otherColumn }] : []),
-    ...(noLabelColumn.length > 0 ? [{ id: '_none', name: 'Chưa gắn nhãn', color: '#d1d5db', leads: noLabelColumn }] : []),
   ];
 
   // Config handlers
@@ -123,7 +122,7 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
     if (current.includes(labelId)) {
       next = current.filter(id => id !== labelId);
     } else {
-      if (current.length >= MAX_LABEL_COLUMNS) return;
+      if (current.length >= MAX_SELECTABLE_LABELS) return;
       next = [...current, labelId];
     }
     const newConfig = { selectedIds: next };
@@ -172,7 +171,7 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
       {configOpen && (
         <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold text-gray-700">Chọn nhãn hiển thị (tối đa {MAX_LABEL_COLUMNS})</h4>
+            <h4 className="text-sm font-semibold text-gray-700">Chọn nhãn hiển thị (tối đa {MAX_SELECTABLE_LABELS}, +1 cột Khác)</h4>
             <button onClick={resetConfig} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600">
               <RotateCcw className="h-3 w-3" />Mặc định
             </button>
@@ -212,7 +211,7 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
               <div className="flex flex-wrap gap-1.5">
                 {availableLabels.filter(l => !currentSelectedIds.includes(l.id)).map(label => (
                   <button key={label.id} onClick={() => toggleLabel(label.id)}
-                    disabled={currentSelectedIds.length >= MAX_LABEL_COLUMNS}
+                    disabled={currentSelectedIds.length >= MAX_SELECTABLE_LABELS}
                     className="flex items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40"
                   >
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: label.color }} />

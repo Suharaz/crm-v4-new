@@ -146,7 +146,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
   // Lazy-load products + payment types for order creation
   useEffect(() => {
     if (!open || !data || orderDataLoaded) return;
-    const canCreateOrder = entityType === 'lead' && data.customerId && ['IN_PROGRESS', 'CONVERTED'].includes(data.status);
+    const canCreateOrder = entityType === 'lead' && ['IN_PROGRESS', 'CONVERTED'].includes(data.status);
     if (!canCreateOrder) return;
     Promise.all([
       api.get<{ data: any[] }>('/products').catch(() => ({ data: [] })),
@@ -262,8 +262,8 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                 <Button size="sm" variant={labelPickerOpen ? 'default' : 'outline'} onClick={() => { setLabelPickerOpen(!labelPickerOpen); setNoteOpen(false); }}>
                   <Tags className="h-3.5 w-3.5 mr-1" />Nhãn
                 </Button>
-                {entityType === 'lead' && data?.customerId && ['IN_PROGRESS', 'CONVERTED'].includes(data.status) && products.length > 0 && (
-                  <CreateOrderDialog customerId={String(data.customerId)} leadId={entityId || undefined} products={products} paymentTypes={paymentTypes} />
+                {entityType === 'lead' && ['IN_PROGRESS', 'CONVERTED'].includes(data.status) && products.length > 0 && (
+                  <CreateOrderDialog customerId={data.customerId ? String(data.customerId) : ''} leadId={entityId || undefined} products={products} paymentTypes={paymentTypes} />
                 )}
               </div>
 

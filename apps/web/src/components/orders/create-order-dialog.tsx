@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,13 +31,30 @@ export function CreateOrderDialog({ customerId, leadId, products, paymentTypes =
   const [notes, setNotes] = useState('');
   const [format, setFormat] = useState('');
   const [groupType, setGroupType] = useState('');
-  const [session, setSession] = useState('');
+  const [stt, setStt] = useState('');
   const [courseCode, setCourseCode] = useState('');
+  // New order fields
+  const [companyName, setCompanyName] = useState('');
+  const [taxCode, setTaxCode] = useState('');
+  const [contactPerson, setContactPerson] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [address, setAddress] = useState('');
 
-  // Payment fields (inline, same form)
+  // Payment fields
   const [paymentTypeId, setPaymentTypeId] = useState('');
+  const [bankAccountId, setBankAccountId] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
   const [transferContent, setTransferContent] = useState('');
+
+  // Lazy-load bank accounts
+  const [bankAccounts, setBankAccounts] = useState<any[]>([]);
+  useEffect(() => {
+    if (!open || bankAccounts.length > 0) return;
+    api.get<{ data: any[] }>('/bank-accounts').then(r => {
+      setBankAccounts((r.data || []).map((ba: any) => ({ id: String(ba.id), name: ba.name })));
+    }).catch(() => {});
+  }, [open, bankAccounts.length]);
 
   const selectedProduct = products.find(p => p.id === productId);
   const price = selectedProduct ? Number(selectedProduct.price) : 0;
@@ -48,8 +65,10 @@ export function CreateOrderDialog({ customerId, leadId, products, paymentTypes =
   function resetAndClose() {
     setOpen(false);
     setProductId(''); setNotes(''); setFormat(''); setGroupType('');
-    setSession(''); setCourseCode('');
-    setPaymentTypeId(''); setPaymentAmount(''); setTransferContent('');
+    setStt(''); setCourseCode('');
+    setCompanyName(''); setTaxCode(''); setContactPerson('');
+    setCustomerName(''); setCustomerPhone(''); setAddress('');
+    setPaymentTypeId(''); setBankAccountId(''); setPaymentAmount(''); setTransferContent('');
   }
 
   async function handleSubmit() {
@@ -63,16 +82,23 @@ export function CreateOrderDialog({ customerId, leadId, products, paymentTypes =
       if (notes) orderBody.notes = notes;
       if (format) orderBody.format = format;
       if (groupType) orderBody.groupType = groupType;
-      if (session) orderBody.session = Number(session);
+      if (stt) orderBody.stt = stt;
       if (courseCode) orderBody.courseCode = courseCode;
+      if (companyName) orderBody.companyName = companyName;
+      if (taxCode) orderBody.taxCode = taxCode;
+      if (contactPerson) orderBody.contactPerson = contactPerson;
+      if (customerName) orderBody.customerName = customerName;
+      if (customerPhone) orderBody.customerPhone = customerPhone;
+      if (address) orderBody.address = address;
 
       const orderRes = await api.post<{ data: any }>('/orders', orderBody);
       const order = orderRes.data;
 
-      // Step 2: Create payment (auto, same request flow)
+      // Step 2: Create payment
       const pmtAmount = Number(paymentAmount) || Number(order.totalAmount || totalAmount);
       const pmtBody: Record<string, any> = { orderId: order.id, amount: pmtAmount };
       if (paymentTypeId) pmtBody.paymentTypeId = paymentTypeId;
+      if (bankAccountId) pmtBody.bankAccountId = bankAccountId;
       if (transferContent) pmtBody.transferContent = transferContent;
 
       await api.post('/payments', pmtBody);
@@ -93,7 +119,7 @@ export function CreateOrderDialog({ customerId, leadId, products, paymentTypes =
         <Plus className="h-4 w-4 mr-1" />Tạo đơn hàng
       </Button>
       <Dialog open={open} onOpenChange={(v) => { if (!v) resetAndClose(); }}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Tạo đơn hàng + thanh toán</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             {/* Product selection */}
@@ -117,42 +143,65 @@ export function CreateOrderDialog({ customerId, leadId, products, paymentTypes =
               </div>
             )}
 
-            {/* Order details */}
-            <div className="grid grid-cols-2 gap-3">
-              <FormField label="Hình thức">
-                <Select value={format} onValueChange={setFormat}>
-                  <SelectTrigger><SelectValue placeholder="Chọn" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ZOOM_REPLAY">Zoom phát lại</SelectItem>
-                    <SelectItem value="ZOOM_LIVE">Zoom trực tiếp</SelectItem>
-                    <SelectItem value="ZOOM_OLD_CUSTOMER">Zoom khách cũ</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
-              <FormField label="Nhóm">
-                <Select value={groupType} onValueChange={setGroupType}>
-                  <SelectTrigger><SelectValue placeholder="Chọn" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ONLINE">Online</SelectItem>
-                    <SelectItem value="TOOL">Tool</SelectItem>
-                    <SelectItem value="OFFLINE">Offline</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
-              <FormField label="Buổi">
-                <Select value={session} onValueChange={setSession}>
-                  <SelectTrigger><SelectValue placeholder="Chọn" /></SelectTrigger>
-                  <SelectContent>
-                    {[1,2,3,4,5,6,7].map(n => <SelectItem key={n} value={String(n)}>Buổi {n}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </FormField>
-              <FormField label="Mã khoá">
-                <Input value={courseCode} onChange={e => setCourseCode(e.target.value)} placeholder="VD: KH001" />
-              </FormField>
+            {/* Customer info */}
+            <div className="border-t border-gray-200 pt-3">
+              <p className="text-sm font-semibold text-gray-700 mb-3">Thông tin khách hàng</p>
+              <div className="grid grid-cols-2 gap-3">
+                <FormField label="Tên khách">
+                  <Input value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Họ tên" />
+                </FormField>
+                <FormField label="SĐT khách">
+                  <Input value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="0912345678" />
+                </FormField>
+                <FormField label="Tên công ty">
+                  <Input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Công ty ABC" />
+                </FormField>
+                <FormField label="Mã số thuế">
+                  <Input value={taxCode} onChange={e => setTaxCode(e.target.value)} placeholder="0123456789" />
+                </FormField>
+                <FormField label="Người liên hệ">
+                  <Input value={contactPerson} onChange={e => setContactPerson(e.target.value)} placeholder="Tên người LH" />
+                </FormField>
+                <FormField label="Địa chỉ">
+                  <Input value={address} onChange={e => setAddress(e.target.value)} placeholder="Địa chỉ" />
+                </FormField>
+              </div>
             </div>
 
-            {/* Divider: payment section */}
+            {/* Order details */}
+            <div className="border-t border-gray-200 pt-3">
+              <p className="text-sm font-semibold text-gray-700 mb-3">Chi tiết đơn hàng</p>
+              <div className="grid grid-cols-2 gap-3">
+                <FormField label="Hình thức">
+                  <Select value={format} onValueChange={setFormat}>
+                    <SelectTrigger><SelectValue placeholder="Chọn" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ZOOM_REPLAY">Zoom phát lại</SelectItem>
+                      <SelectItem value="ZOOM_LIVE">Zoom trực tiếp</SelectItem>
+                      <SelectItem value="ZOOM_OLD_CUSTOMER">Zoom khách cũ</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField label="Nhóm">
+                  <Select value={groupType} onValueChange={setGroupType}>
+                    <SelectTrigger><SelectValue placeholder="Chọn" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ONLINE">Online</SelectItem>
+                      <SelectItem value="TOOL">Tool</SelectItem>
+                      <SelectItem value="OFFLINE">Offline</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField label="STT">
+                  <Input value={stt} onChange={e => setStt(e.target.value)} placeholder="VD: 1, 2, 3..." />
+                </FormField>
+                <FormField label="Mã khoá">
+                  <Input value={courseCode} onChange={e => setCourseCode(e.target.value)} placeholder="VD: KH001" />
+                </FormField>
+              </div>
+            </div>
+
+            {/* Payment section */}
             <div className="border-t border-gray-200 pt-3">
               <p className="text-sm font-semibold text-gray-700 mb-3">Thanh toán</p>
               <div className="grid grid-cols-2 gap-3">
@@ -162,6 +211,16 @@ export function CreateOrderDialog({ customerId, leadId, products, paymentTypes =
                       <SelectTrigger><SelectValue placeholder="Chọn" /></SelectTrigger>
                       <SelectContent>
                         {paymentTypes.map(pt => <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                )}
+                {bankAccounts.length > 0 && (
+                  <FormField label="Tài khoản NH">
+                    <Select value={bankAccountId} onValueChange={setBankAccountId}>
+                      <SelectTrigger><SelectValue placeholder="Chọn TK" /></SelectTrigger>
+                      <SelectContent>
+                        {bankAccounts.map(ba => <SelectItem key={ba.id} value={ba.id}>{ba.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </FormField>

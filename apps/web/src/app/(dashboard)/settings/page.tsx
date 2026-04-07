@@ -8,16 +8,18 @@ export default async function SettingsPage() {
   let sources: any[] = [];
   let labels: any[] = [];
   let paymentTypes: any[] = [];
+  let bankAccounts: any[] = [];
   let users: any[] = [];
   let apiKeys: any[] = [];
 
   try {
-    [departments, levels, sources, labels, paymentTypes, users, apiKeys] = await Promise.all([
+    [departments, levels, sources, labels, paymentTypes, bankAccounts, users, apiKeys] = await Promise.all([
       serverFetch<{ data: any[] }>('/departments').then(r => r.data),
       serverFetch<{ data: any[] }>('/employee-levels').then(r => r.data),
       serverFetch<{ data: any[] }>('/lead-sources').then(r => r.data),
       serverFetch<{ data: any[] }>('/labels').then(r => r.data),
       serverFetch<{ data: any[] }>('/payment-types').then(r => r.data),
+      serverFetch<{ data: any[] }>('/bank-accounts').then(r => r.data).catch(() => []),
       serverFetch<{ data: any[] }>('/users').then(r => (r.data || []).map((u: any) => ({ id: String(u.id), name: u.name, departmentId: u.departmentId ? String(u.departmentId) : undefined }))).catch(() => []),
       serverFetch<{ data: any[] }>('/api-keys').then(r => r.data).catch(() => []),
     ]);
@@ -33,6 +35,7 @@ export default async function SettingsPage() {
         levels={levels}
         sources={sources}
         paymentTypes={paymentTypes}
+        bankAccounts={bankAccounts}
         labels={labels}
         users={users}
         apiKeys={apiKeys}

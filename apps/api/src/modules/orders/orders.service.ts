@@ -14,6 +14,9 @@ const ORDER_SELECT = {
   id: true, leadId: true, customerId: true, productId: true,
   amount: true, vatRate: true, vatAmount: true, totalAmount: true,
   status: true, notes: true, createdBy: true,
+  companyName: true, taxCode: true, contactPerson: true,
+  customerName: true, customerPhone: true, address: true,
+  format: true, groupType: true, stt: true, courseCode: true,
   createdAt: true, updatedAt: true,
   lead: { select: { id: true, name: true, phone: true, status: true } },
   customer: { select: { id: true, name: true, phone: true } },
@@ -24,6 +27,7 @@ const ORDER_SELECT = {
       id: true, amount: true, status: true, transferContent: true,
       verifiedSource: true, verifiedAt: true, createdAt: true,
       paymentType: { select: { id: true, name: true } },
+      bankAccount: { select: { id: true, name: true } },
     },
   },
 } satisfies Prisma.OrderSelect;
@@ -63,6 +67,9 @@ export class OrdersService {
   async create(data: {
     leadId?: string; customerId?: string; productId?: string;
     amount: number; notes?: string;
+    companyName?: string; taxCode?: string; contactPerson?: string;
+    customerName?: string; customerPhone?: string; address?: string;
+    format?: string; groupType?: string; stt?: string; courseCode?: string;
   }, userId: bigint) {
     // Get product VAT rate if productId provided
     let vatRate = 0;
@@ -114,6 +121,11 @@ export class OrdersService {
       data: {
         amount, vatRate, vatAmount, totalAmount,
         notes: data.notes,
+        companyName: data.companyName, taxCode: data.taxCode,
+        contactPerson: data.contactPerson, customerName: data.customerName,
+        customerPhone: data.customerPhone, address: data.address,
+        format: data.format, groupType: data.groupType,
+        stt: data.stt, courseCode: data.courseCode,
         customer: { connect: { id: customerId } },
         creator: { connect: { id: userId } },
         ...(data.leadId ? { lead: { connect: { id: BigInt(data.leadId) } } } : {}),

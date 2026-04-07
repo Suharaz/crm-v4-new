@@ -1,0 +1,22 @@
+'use client';
+
+import { SettingsCrudList } from '@/components/settings/settings-crud-list';
+
+interface BankAccountSettingsProps {
+  data: any[];
+  canEdit: boolean;
+}
+
+export function BankAccountSettings({ data, canEdit }: BankAccountSettingsProps) {
+  return (
+    <SettingsCrudList
+      data={data}
+      endpoint="/bank-accounts"
+      entityName="Tài khoản ngân hàng"
+      canEdit={canEdit}
+      fields={[
+        { key: 'name', label: 'Tên hiển thị', required: true, placeholder: 'VD: VCB 999, MB 123' },
+      ]}
+    />
+  );
+}

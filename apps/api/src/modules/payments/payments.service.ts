@@ -4,10 +4,11 @@ import { PaymentMatchingService } from './payment-matching.service';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
 const PAYMENT_SELECT = {
-  id: true, orderId: true, paymentTypeId: true, amount: true,
+  id: true, orderId: true, paymentTypeId: true, bankAccountId: true, amount: true,
   status: true, transferContent: true, verifiedSource: true,
   verifiedBy: true, verifiedAt: true, createdAt: true, updatedAt: true,
   paymentType: { select: { id: true, name: true } },
+  bankAccount: { select: { id: true, name: true } },
   verifier: { select: { id: true, name: true } },
   matchedTransaction: { select: { id: true, externalId: true, amount: true, content: true, transactionTime: true } },
 } satisfies Prisma.PaymentSelect;
@@ -48,7 +49,7 @@ export class PaymentsService {
     return this.list({ limit, cursor, status: 'PENDING' });
   }
 
-  async create(data: { orderId: string; amount: number; paymentTypeId?: string; transferContent?: string }) {
+  async create(data: { orderId: string; amount: number; paymentTypeId?: string; bankAccountId?: string; transferContent?: string }) {
     const orderId = BigInt(data.orderId);
     const order = await this.prisma.order.findFirst({ where: { id: orderId, deletedAt: null } });
     if (!order) throw new NotFoundException('Đơn hàng không tồn tại');
@@ -69,6 +70,7 @@ export class PaymentsService {
         amount: data.amount,
         transferContent: data.transferContent,
         ...(data.paymentTypeId ? { paymentType: { connect: { id: BigInt(data.paymentTypeId) } } } : {}),
+        ...(data.bankAccountId ? { bankAccount: { connect: { id: BigInt(data.bankAccountId) } } } : {}),
       },
       select: PAYMENT_SELECT,
     });

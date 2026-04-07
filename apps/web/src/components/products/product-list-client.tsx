@@ -77,7 +77,11 @@ export function ProductListClient({ products, categories }: ProductListClientPro
       ? await execute('patch', `/products/${editingProduct.id}`, body)
       : await execute('post', '/products', body);
 
-    if (result) setDialogOpen(false);
+    if (result) {
+      setDialogOpen(false);
+      // Invalidate order dialog cache so new products show up
+      try { localStorage.removeItem('crm_order_products'); } catch { /* */ }
+    }
   }
 
   return (

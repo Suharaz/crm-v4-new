@@ -24,7 +24,16 @@ interface CreateOrderDialogProps {
 const CACHE_KEY_PRODUCTS = 'crm_order_products';
 const CACHE_KEY_PT = 'crm_order_payment_types';
 const CACHE_KEY_BA = 'crm_order_bank_accounts';
-const CACHE_TTL = 10 * 60 * 1000; // 10 min
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+
+/** Invalidate order dialog caches — call after adding/editing products, payment types, bank accounts */
+export function invalidateOrderCaches() {
+  try {
+    localStorage.removeItem(CACHE_KEY_PRODUCTS);
+    localStorage.removeItem(CACHE_KEY_PT);
+    localStorage.removeItem(CACHE_KEY_BA);
+  } catch { /* */ }
+}
 
 function readOrderCache(key: string) {
   try {

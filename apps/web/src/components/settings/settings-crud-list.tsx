@@ -24,10 +24,11 @@ interface SettingsCrudListProps {
   fields: FieldConfig[];
   canEdit: boolean;
   renderItem?: (item: any) => React.ReactNode;
+  onMutate?: () => void;
 }
 
 /** Generic CRUD list for settings entities with dialog-based create/edit/delete. */
-export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, renderItem }: SettingsCrudListProps) {
+export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, renderItem, onMutate }: SettingsCrudListProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -78,11 +79,12 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
       ? await execute('patch', `${endpoint}/${editingItem.id}`, body)
       : await execute('post', endpoint, body);
 
-    if (result) setDialogOpen(false);
+    if (result) { setDialogOpen(false); onMutate?.(); }
   }
 
   async function handleDelete(id: string) {
     await deleteAction.execute('delete', `${endpoint}/${id}`);
+    onMutate?.();
   }
 
   return (

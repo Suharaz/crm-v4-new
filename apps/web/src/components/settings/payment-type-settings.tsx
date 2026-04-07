@@ -1,6 +1,7 @@
 'use client';
 
 import { SettingsCrudList } from '@/components/settings/settings-crud-list';
+import { invalidateOrderCaches } from '@/components/orders/create-order-dialog';
 
 interface PaymentTypeSettingsProps {
   data: any[];
@@ -14,6 +15,7 @@ export function PaymentTypeSettings({ data, canEdit }: PaymentTypeSettingsProps)
       endpoint="/payment-types"
       entityName="Loại thanh toán"
       canEdit={canEdit}
+      onMutate={invalidateOrderCaches}
       fields={[
         { key: 'name', label: 'Tên loại', required: true, placeholder: 'VD: CK lần 1' },
         { key: 'description', label: 'Mô tả', placeholder: 'Mô tả loại thanh toán' },

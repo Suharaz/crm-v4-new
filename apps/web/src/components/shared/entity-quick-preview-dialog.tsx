@@ -173,8 +173,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
   // Lazy-load products + payment types for order creation
   useEffect(() => {
     if (!open || !data || orderDataLoaded) return;
-    const canCreateOrder = entityType === 'lead' && ['IN_PROGRESS', 'CONVERTED'].includes(data.status);
-    if (!canCreateOrder) return;
+    if (entityType !== 'lead') return;
     Promise.all([
       api.get<{ data: any[] }>('/products').catch(() => ({ data: [] })),
       api.get<{ data: any[] }>('/payment-types').catch(() => ({ data: [] })),
@@ -294,7 +293,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                     <CreditCard className="h-3.5 w-3.5 mr-1" />Thêm CK
                   </Button>
                 )}
-                {entityType === 'lead' && ['IN_PROGRESS', 'CONVERTED'].includes(data.status) && products.length > 0 && (
+                {entityType === 'lead' && products.length > 0 && (
                   <CreateOrderDialog customerId={data.customerId ? String(data.customerId) : ''} leadId={entityId || undefined} products={products} paymentTypes={paymentTypes} />
                 )}
               </div>

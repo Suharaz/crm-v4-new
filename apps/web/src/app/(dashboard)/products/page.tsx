@@ -8,7 +8,7 @@ export default async function ProductsPage() {
 
   try {
     [products, categories] = await Promise.all([
-      serverFetch<{ data: any[] }>('/products').then(r => r.data),
+      serverFetch<{ data: any[] }>('/products?includeInactive=true').then(r => r.data),
       serverFetch<{ data: any[] }>('/product-categories').then(r => r.data).catch(() => []),
     ]);
   } catch { /* empty */ }

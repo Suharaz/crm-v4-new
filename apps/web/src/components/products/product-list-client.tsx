@@ -14,7 +14,9 @@ import { useFormAction } from '@/hooks/use-form-action';
 import { useAuth } from '@/providers/auth-provider';
 import { formatVND } from '@/lib/utils';
 import { productSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Power } from 'lucide-react';
+import { toast } from 'sonner';
+import { api } from '@/lib/api-client';
 
 interface ProductListClientProps {
   products: any[];
@@ -35,6 +37,18 @@ export function ProductListClient({ products, categories }: ProductListClientPro
 
   const { execute, isLoading } = useFormAction({ successMessage: 'Đã lưu sản phẩm' });
   const deleteAction = useFormAction({ successMessage: 'Đã xóa sản phẩm' });
+  const [toggling, setToggling] = useState<string | null>(null);
+
+  async function toggleActive(p: any) {
+    setToggling(p.id);
+    try {
+      await api.patch(`/products/${p.id}`, { isActive: !p.isActive });
+      toast.success(p.isActive ? 'Đã ẩn sản phẩm' : 'Đã kích hoạt sản phẩm');
+      try { localStorage.removeItem('crm_order_products'); } catch { /* */ }
+      window.location.reload();
+    } catch { toast.error('Lỗi cập nhật'); }
+    setToggling(null);
+  }
 
   function update(key: string, value: string) {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -109,14 +123,20 @@ export function ProductListClient({ products, categories }: ProductListClientPro
             {products.length === 0 ? (
               <div className="col-span-full rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có sản phẩm nào</div>
             ) : products.map((p: any) => (
-              <div key={p.id} className="rounded-xl border border-gray-200 bg-white p-5 cursor-pointer hover:border-sky-200 hover:shadow-sm transition-all" onClick={() => setViewingProduct(p)}>
+              <div key={p.id} className={`rounded-xl border p-5 cursor-pointer hover:shadow-sm transition-all ${p.isActive ? 'border-gray-200 bg-white hover:border-sky-200' : 'border-gray-100 bg-gray-50 opacity-60'}`} onClick={() => setViewingProduct(p)}>
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900">{p.name}</h3>
+                    <h3 className="font-semibold text-gray-900">
+                      {p.name}
+                      {!p.isActive && <span className="ml-2 text-xs text-red-400 font-normal">Đã ẩn</span>}
+                    </h3>
                     <p className="mt-1 text-sm text-gray-500">{p.category?.name || 'Chưa phân loại'}</p>
                   </div>
                   {isManager && (
                     <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleActive(p)} disabled={toggling === p.id} title={p.isActive ? 'Ẩn sản phẩm' : 'Kích hoạt'}>
+                        <Power className={`h-3.5 w-3.5 ${p.isActive ? 'text-emerald-500' : 'text-gray-300'}`} />
+                      </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(p)}>
                         <Pencil className="h-3.5 w-3.5 text-gray-400" />
                       </Button>

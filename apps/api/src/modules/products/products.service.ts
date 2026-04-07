@@ -13,9 +13,10 @@ const PRODUCT_SELECT = {
 export class ProductsService {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async list(query: PaginationQueryDto & { search?: string }) {
+  async list(query: PaginationQueryDto & { search?: string; includeInactive?: string }) {
     const limit = query.limit ?? 20;
-    const where: Prisma.ProductWhereInput = { deletedAt: null, isActive: true };
+    const where: Prisma.ProductWhereInput = { deletedAt: null };
+    if (query.includeInactive !== 'true') where.isActive = true;
     if (query.search) {
       where.name = { contains: query.search, mode: 'insensitive' };
     }

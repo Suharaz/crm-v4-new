@@ -21,10 +21,73 @@ interface CreateOrderDialogProps {
 }
 
 /** Single-step dialog: create order + payment together. */
-export function CreateOrderDialog({ customerId, leadId, products, paymentTypes = [] }: CreateOrderDialogProps) {
+const CACHE_KEY_PRODUCTS = 'crm_order_products';
+const CACHE_KEY_PT = 'crm_order_payment_types';
+const CACHE_KEY_BA = 'crm_order_bank_accounts';
+const CACHE_TTL = 10 * 60 * 1000; // 10 min
+
+function readOrderCache(key: string) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (Date.now() - parsed.ts > CACHE_TTL) { localStorage.removeItem(key); return null; }
+    return parsed.data;
+  } catch { return null; }
+}
+function writeOrderCache(key: string, data: any[]) {
+  try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch { /* */ }
+}
+
+export function CreateOrderDialog({ customerId, leadId, products: propProducts, paymentTypes: propPaymentTypes = [] }: CreateOrderDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Self-loading data with cache (merge with props if provided)
+  const [loadedProducts, setLoadedProducts] = useState<any[]>(propProducts);
+  const [loadedPaymentTypes, setLoadedPaymentTypes] = useState<any[]>(propPaymentTypes);
+  const [bankAccounts, setBankAccounts] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    // Products
+    if (loadedProducts.length === 0) {
+      const cached = readOrderCache(CACHE_KEY_PRODUCTS);
+      if (cached) { setLoadedProducts(cached); }
+      else {
+        api.get<{ data: any[] }>('/products').then(r => {
+          const mapped = (r.data || []).map((p: any) => ({ ...p, id: String(p.id) }));
+          setLoadedProducts(mapped);
+          writeOrderCache(CACHE_KEY_PRODUCTS, mapped);
+        }).catch(() => {});
+      }
+    }
+    // Payment types
+    if (loadedPaymentTypes.length === 0) {
+      const cached = readOrderCache(CACHE_KEY_PT);
+      if (cached) { setLoadedPaymentTypes(cached); }
+      else {
+        api.get<{ data: any[] }>('/payment-types').then(r => {
+          const mapped = (r.data || []).map((pt: any) => ({ ...pt, id: String(pt.id) }));
+          setLoadedPaymentTypes(mapped);
+          writeOrderCache(CACHE_KEY_PT, mapped);
+        }).catch(() => {});
+      }
+    }
+    // Bank accounts
+    if (bankAccounts.length === 0) {
+      const cached = readOrderCache(CACHE_KEY_BA);
+      if (cached) { setBankAccounts(cached); }
+      else {
+        api.get<{ data: any[] }>('/bank-accounts').then(r => {
+          const mapped = (r.data || []).map((ba: any) => ({ id: String(ba.id), name: ba.name }));
+          setBankAccounts(mapped);
+          writeOrderCache(CACHE_KEY_BA, mapped);
+        }).catch(() => {});
+      }
+    }
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Order fields
   const [productId, setProductId] = useState('');
@@ -33,7 +96,6 @@ export function CreateOrderDialog({ customerId, leadId, products, paymentTypes =
   const [groupType, setGroupType] = useState('');
   const [stt, setStt] = useState('');
   const [courseCode, setCourseCode] = useState('');
-  // New order fields
   const [companyName, setCompanyName] = useState('');
   const [taxCode, setTaxCode] = useState('');
   const [contactPerson, setContactPerson] = useState('');
@@ -47,15 +109,8 @@ export function CreateOrderDialog({ customerId, leadId, products, paymentTypes =
   const [paymentAmount, setPaymentAmount] = useState('');
   const [transferContent, setTransferContent] = useState('');
 
-  // Lazy-load bank accounts
-  const [bankAccounts, setBankAccounts] = useState<any[]>([]);
-  useEffect(() => {
-    if (!open || bankAccounts.length > 0) return;
-    api.get<{ data: any[] }>('/bank-accounts').then(r => {
-      setBankAccounts((r.data || []).map((ba: any) => ({ id: String(ba.id), name: ba.name })));
-    }).catch(() => {});
-  }, [open, bankAccounts.length]);
-
+  const products = loadedProducts;
+  const paymentTypes = loadedPaymentTypes;
   const selectedProduct = products.find(p => p.id === productId);
   const price = selectedProduct ? Number(selectedProduct.price) : 0;
   const vatRate = selectedProduct?.vatRate || 0;

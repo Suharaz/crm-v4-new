@@ -58,9 +58,6 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
   const [labelPickerOpen, setLabelPickerOpen] = useState(false);
   const [allLabels, setAllLabels] = useState<any[]>([]);
   const [labelSaving, setLabelSaving] = useState(false);
-  const [products, setProducts] = useState<any[]>([]);
-  const [paymentTypes, setPaymentTypes] = useState<any[]>([]);
-  const [orderDataLoaded, setOrderDataLoaded] = useState(false);
   // Payment quick action
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [pmtOrderId, setPmtOrderId] = useState('');
@@ -169,20 +166,6 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
       writeCache('_all_labels', r.data || [], []);
     }).catch(() => {});
   }, [labelPickerOpen, allLabels.length]);
-
-  // Lazy-load products + payment types for order creation
-  useEffect(() => {
-    if (!open || !data || orderDataLoaded) return;
-    if (entityType !== 'lead') return;
-    Promise.all([
-      api.get<{ data: any[] }>('/products').catch(() => ({ data: [] })),
-      api.get<{ data: any[] }>('/payment-types').catch(() => ({ data: [] })),
-    ]).then(([prodRes, ptRes]) => {
-      setProducts((prodRes.data || []).map((p: any) => ({ ...p, id: String(p.id) })));
-      setPaymentTypes((ptRes.data || []).map((pt: any) => ({ ...pt, id: String(pt.id) })));
-      setOrderDataLoaded(true);
-    });
-  }, [open, data, entityType, orderDataLoaded]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -293,8 +276,8 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                     <CreditCard className="h-3.5 w-3.5 mr-1" />Thêm CK
                   </Button>
                 )}
-                {entityType === 'lead' && products.length > 0 && (
-                  <CreateOrderDialog customerId={data.customerId ? String(data.customerId) : ''} leadId={entityId || undefined} products={products} paymentTypes={paymentTypes} />
+                {entityType === 'lead' && (
+                  <CreateOrderDialog customerId={data.customerId ? String(data.customerId) : ''} leadId={entityId || undefined} products={[]} paymentTypes={[]} />
                 )}
               </div>
 

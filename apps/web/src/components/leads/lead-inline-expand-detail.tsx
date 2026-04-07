@@ -59,8 +59,6 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
   const [pmtAmount, setPmtAmount] = useState('');
   const [pmtContent, setPmtContent] = useState('');
   const [pmtSaving, setPmtSaving] = useState(false);
-  const [products, setProducts] = useState<any[]>([]);
-  const [orderPaymentTypes, setOrderPaymentTypes] = useState<any[]>([]);
 
   useEffect(() => {
     const cacheKey = `${entityType}:${entityId}`;
@@ -185,18 +183,6 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
       writeCache('_all_labels', r.data || [], []);
     }).catch(() => {});
   }, [labelPickerOpen, allLabels.length]);
-
-  // Lazy-load products + payment types for order creation
-  useEffect(() => {
-    if (!data || products.length > 0 || entityType !== 'lead') return;
-    Promise.all([
-      api.get<{ data: any[] }>('/products').catch(() => ({ data: [] })),
-      api.get<{ data: any[] }>('/payment-types').catch(() => ({ data: [] })),
-    ]).then(([prodRes, ptRes]) => {
-      setProducts((prodRes.data || []).map((p: any) => ({ ...p, id: String(p.id) })));
-      setOrderPaymentTypes((ptRes.data || []).map((pt: any) => ({ ...pt, id: String(pt.id) })));
-    });
-  }, [data, entityType, products.length]);
 
   if (loading) {
     return (
@@ -328,8 +314,8 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                   <CreditCard className="h-3.5 w-3.5 mr-1" />Thêm CK
                 </Button>
               )}
-              {entityType === 'lead' && products.length > 0 && (
-                <CreateOrderDialog customerId={data.customerId ? String(data.customerId) : ''} leadId={entityId} products={products} paymentTypes={orderPaymentTypes} />
+              {entityType === 'lead' && (
+                <CreateOrderDialog customerId={data.customerId ? String(data.customerId) : ''} leadId={entityId} products={[]} paymentTypes={[]} />
               )}
               <Link href={entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`}>
                 <Button size="sm" variant="ghost"><ExternalLink className="h-3.5 w-3.5 mr-1" />Chi tiết</Button>

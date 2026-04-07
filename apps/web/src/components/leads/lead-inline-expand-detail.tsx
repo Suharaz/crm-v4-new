@@ -309,9 +309,9 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                   <ArrowRightLeft className="h-3.5 w-3.5 mr-1" />Chuyển
                 </Button>
               )}
-              {entityType === 'lead' && hasOrder && (
+              {entityType === 'lead' && (
                 <Button size="sm" variant={paymentOpen ? 'default' : 'outline'} onClick={() => { setPaymentOpen(!paymentOpen); setNoteOpen(false); setLabelPickerOpen(false); setTransferOpen(false); }}>
-                  <CreditCard className="h-3.5 w-3.5 mr-1" />Thêm CK
+                  <CreditCard className="h-3.5 w-3.5 mr-1" />Thêm giao dịch
                 </Button>
               )}
               {entityType === 'lead' && (
@@ -366,7 +366,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
             )}
 
             {/* Inline payment form */}
-            {paymentOpen && hasOrder && (
+            {paymentOpen && (
               <div className="space-y-2">
                 {pendingOrders.length > 1 ? (
                   <div className="space-y-1">
@@ -391,7 +391,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button size="sm" variant="ghost" onClick={() => setPaymentOpen(false)}>Hủy</Button>
-                  <Button size="sm" onClick={submitPayment} disabled={pmtSaving || !pmtAmount.trim() || !pmtOrderId}>{pmtSaving ? 'Lưu...' : 'Thêm CK'}</Button>
+                  <Button size="sm" onClick={submitPayment} disabled={pmtSaving || !pmtAmount.trim() || !pmtOrderId}>{pmtSaving ? 'Lưu...' : 'Thêm giao dịch'}</Button>
                 </div>
               </div>
             )}

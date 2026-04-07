@@ -319,31 +319,37 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
               {/* Inline payment form */}
               {paymentOpen && (
                 <div className="space-y-2">
-                  {pendingOrders.length > 1 ? (
-                    <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Chọn đơn hàng:</p>
-                      {pendingOrders.map((o: any) => (
-                        <label key={o.id} className={`flex items-center gap-2 rounded border px-2 py-1.5 cursor-pointer text-xs ${
-                          pmtOrderId === String(o.id) ? 'border-sky-400 bg-sky-50' : 'border-gray-200'}`}>
-                          <input type="radio" name="pmtOrder" checked={pmtOrderId === String(o.id)} onChange={() => setPmtOrderId(String(o.id))} />
-                          <span>#{o.id} — {o.product?.name || 'N/A'} — {formatVND(Number(o.totalAmount))}</span>
-                          <StatusBadge status={o.status} />
-                        </label>
-                      ))}
-                    </div>
+                  {pendingOrders.length === 0 ? (
+                    <p className="text-xs text-gray-400">Chưa có đơn hàng — hãy tạo đơn hàng trước</p>
                   ) : (
-                    <AutoSelectOrder orderId={String(pendingOrders[0].id)} onSelect={setPmtOrderId}>
-                      Đơn #{pendingOrders[0].id} — {pendingOrders[0].product?.name} — {formatVND(Number(pendingOrders[0].totalAmount))}
-                    </AutoSelectOrder>
+                    <>
+                      {pendingOrders.length > 1 ? (
+                        <div className="space-y-1">
+                          <p className="text-xs text-gray-500">Chọn đơn hàng:</p>
+                          {pendingOrders.map((o: any) => (
+                            <label key={o.id} className={`flex items-center gap-2 rounded border px-2 py-1.5 cursor-pointer text-xs ${
+                              pmtOrderId === String(o.id) ? 'border-sky-400 bg-sky-50' : 'border-gray-200'}`}>
+                              <input type="radio" name="pmtOrder" checked={pmtOrderId === String(o.id)} onChange={() => setPmtOrderId(String(o.id))} />
+                              <span>#{o.id} — {o.product?.name || 'N/A'} — {formatVND(Number(o.totalAmount))}</span>
+                              <StatusBadge status={o.status} />
+                            </label>
+                          ))}
+                        </div>
+                      ) : (
+                        <AutoSelectOrder orderId={String(pendingOrders[0].id)} onSelect={setPmtOrderId}>
+                          Đơn #{pendingOrders[0].id} — {pendingOrders[0].product?.name} — {formatVND(Number(pendingOrders[0].totalAmount))}
+                        </AutoSelectOrder>
+                      )}
+                      <div className="flex gap-2">
+                        <Input type="number" value={pmtAmount} onChange={e => setPmtAmount(e.target.value)} placeholder="Số tiền (VNĐ)" className="text-sm" autoFocus />
+                        <Input value={pmtContent} onChange={e => setPmtContent(e.target.value)} placeholder="Nội dung CK" className="text-sm" />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => setPaymentOpen(false)}>Hủy</Button>
+                        <Button size="sm" onClick={submitPayment} disabled={pmtSaving || !pmtAmount.trim() || !pmtOrderId}>{pmtSaving ? 'Lưu...' : 'Thêm giao dịch'}</Button>
+                      </div>
+                    </>
                   )}
-                  <div className="flex gap-2">
-                    <Input type="number" value={pmtAmount} onChange={e => setPmtAmount(e.target.value)} placeholder="Số tiền (VNĐ)" className="text-sm" autoFocus />
-                    <Input value={pmtContent} onChange={e => setPmtContent(e.target.value)} placeholder="Nội dung CK" className="text-sm" />
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button size="sm" variant="ghost" onClick={() => setPaymentOpen(false)}>Hủy</Button>
-                    <Button size="sm" onClick={submitPayment} disabled={pmtSaving || !pmtAmount.trim() || !pmtOrderId}>{pmtSaving ? 'Lưu...' : 'Thêm giao dịch'}</Button>
-                  </div>
                 </div>
               )}
             </div>

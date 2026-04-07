@@ -10,6 +10,10 @@ class ProductListQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @IsOptional()
+  @IsString()
+  includeInactive?: string;
 }
 
 @Controller('products')

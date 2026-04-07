@@ -28,8 +28,8 @@ export function useFormAction(options: UseFormActionOptions = {}) {
         ? await api.delete<T>(endpoint)
         : await api[method]<T>(endpoint, body);
       toast.success(options.successMessage || 'Thành công');
-      router.refresh();
       options.onSuccess?.(result);
+      router.refresh();
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Có lỗi xảy ra';

@@ -35,8 +35,18 @@ export function ProductListClient({ products, categories }: ProductListClientPro
   const [form, setForm] = useState({ name: '', price: '', description: '', categoryId: '', vatRate: '0' });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const { execute, isLoading } = useFormAction({ successMessage: 'Đã lưu sản phẩm' });
-  const deleteAction = useFormAction({ successMessage: 'Đã xóa sản phẩm' });
+  const invalidateAndReload = () => {
+    try { localStorage.removeItem('crm_order_products'); } catch { /* */ }
+    setTimeout(() => window.location.reload(), 300);
+  };
+  const { execute, isLoading } = useFormAction({
+    successMessage: 'Đã lưu sản phẩm',
+    onSuccess: invalidateAndReload,
+  });
+  const deleteAction = useFormAction({
+    successMessage: 'Đã xóa sản phẩm',
+    onSuccess: invalidateAndReload,
+  });
   const [toggling, setToggling] = useState<string | null>(null);
 
   async function toggleActive(p: any) {
@@ -91,11 +101,7 @@ export function ProductListClient({ products, categories }: ProductListClientPro
       ? await execute('patch', `/products/${editingProduct.id}`, body)
       : await execute('post', '/products', body);
 
-    if (result) {
-      setDialogOpen(false);
-      // Invalidate order dialog cache so new products show up
-      try { localStorage.removeItem('crm_order_products'); } catch { /* */ }
-    }
+    if (result) setDialogOpen(false);
   }
 
   return (

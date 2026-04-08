@@ -2,18 +2,28 @@ import { serverFetch } from '@/lib/auth';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import { CsvExportButton } from '@/components/shared/csv-export-button';
 import { OrderListWithInlineExpand } from '@/components/orders/order-list-with-inline-expand';
+import { OrderListAdvancedFilterBar } from '@/components/orders/order-list-advanced-filter-bar';
 
-/** Orders list page — inline expand detail, role-filtered on backend. */
+/** Orders list page with advanced filters — inline expand detail, role-filtered on backend. */
 export default async function OrdersPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const params = await searchParams;
   const query = new URLSearchParams(params).toString();
 
   let data: any[] = [];
   let nextCursor: string | undefined;
+  let products: any[] = [];
+  let users: any[] = [];
+
   try {
-    const result = await serverFetch<{ data: any[]; nextCursor?: string }>(`/orders?${query}`);
+    const [result, productsRes, usersRes] = await Promise.all([
+      serverFetch<{ data: any[]; meta?: { nextCursor?: string } }>(`/orders?${query}`),
+      serverFetch<{ data: any[] }>('/products?includeInactive=false').catch(() => ({ data: [] })),
+      serverFetch<{ data: any[] }>('/users').catch(() => ({ data: [] })),
+    ]);
     data = result.data;
-    nextCursor = result.nextCursor;
+    nextCursor = result.meta?.nextCursor;
+    products = (productsRes.data || []).map((p: any) => ({ id: String(p.id), name: p.name }));
+    users = (usersRes.data || []).map((u: any) => ({ id: String(u.id), name: u.name }));
   } catch { /* empty */ }
 
   return (
@@ -24,6 +34,10 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           <p className="text-sm text-gray-500">Quản lý đơn hàng và thanh toán</p>
         </div>
         <CsvExportButton exportPath="/exports/orders" />
+      </div>
+
+      <div className="mt-4">
+        <OrderListAdvancedFilterBar products={products} users={users} />
       </div>
 
       <div className="mt-4">

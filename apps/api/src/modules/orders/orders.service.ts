@@ -36,14 +36,35 @@ const ORDER_SELECT = {
 export class OrdersService {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async list(query: PaginationQueryDto & { status?: OrderStatus; customerId?: string; leadId?: string; createdByFilter?: bigint }) {
+  async list(query: PaginationQueryDto & {
+    status?: OrderStatus; customerId?: string; leadId?: string; createdByFilter?: bigint;
+    search?: string; productId?: string; format?: string; groupType?: string;
+    dateFrom?: string; dateTo?: string;
+  }) {
     const limit = query.limit ?? 20;
     const where: Prisma.OrderWhereInput = { deletedAt: null };
     if (query.status) where.status = query.status;
     if (query.customerId) where.customerId = BigInt(query.customerId);
     if (query.leadId) where.leadId = BigInt(query.leadId);
-    // Role-based: USER only sees own orders
     if (query.createdByFilter) where.createdBy = query.createdByFilter;
+    if (query.productId) where.productId = BigInt(query.productId);
+    if (query.format) where.format = query.format;
+    if (query.groupType) where.groupType = query.groupType;
+    if (query.search) {
+      where.OR = [
+        { customerName: { contains: query.search, mode: 'insensitive' } },
+        { customerPhone: { contains: query.search } },
+        { courseCode: { contains: query.search, mode: 'insensitive' } },
+        { customer: { name: { contains: query.search, mode: 'insensitive' } } },
+        { customer: { phone: { contains: query.search } } },
+      ];
+    }
+    if (query.dateFrom || query.dateTo) {
+      where.createdAt = {
+        ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
+        ...(query.dateTo ? { lte: new Date(query.dateTo + 'T23:59:59.999Z') } : {}),
+      };
+    }
 
     const orders = await this.prisma.order.findMany({
       where, select: ORDER_SELECT, orderBy: { id: 'desc' },

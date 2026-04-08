@@ -19,6 +19,34 @@ class OrderListQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   leadId?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsString()
+  productId?: string;
+
+  @IsOptional()
+  @IsString()
+  createdBy?: string;
+
+  @IsOptional()
+  @IsString()
+  format?: string;
+
+  @IsOptional()
+  @IsString()
+  groupType?: string;
+
+  @IsOptional()
+  @IsString()
+  dateFrom?: string;
+
+  @IsOptional()
+  @IsString()
+  dateTo?: string;
 }
 
 @Controller('orders')
@@ -27,8 +55,8 @@ export class OrdersController {
 
   @Get()
   async list(@Query() query: OrderListQueryDto, @CurrentUser() user: any) {
-    // USER role: only see own orders
-    const createdByFilter = user.role === UserRole.USER ? BigInt(user.id) : undefined;
+    // USER role: only see own orders (override createdBy filter)
+    const createdByFilter = user.role === UserRole.USER ? BigInt(user.id) : (query.createdBy ? BigInt(query.createdBy) : undefined);
     return this.service.list({ ...query, createdByFilter });
   }
 

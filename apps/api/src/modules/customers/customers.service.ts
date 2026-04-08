@@ -51,6 +51,15 @@ export class CustomersService {
         { email: { contains: query.search, mode: 'insensitive' } },
       ];
     }
+    if (query.labelId) {
+      where.labels = { some: { labelId: BigInt(query.labelId) } };
+    }
+    if (query.dateFrom || query.dateTo) {
+      where.createdAt = {
+        ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
+        ...(query.dateTo ? { lte: new Date(query.dateTo + 'T23:59:59.999Z') } : {}),
+      };
+    }
 
     const customers = await this.prisma.customer.findMany({
       where,

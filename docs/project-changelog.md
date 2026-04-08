@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Advanced Filter Bars — Customers & Orders (2026-04-08)
+- **Customers filter:** Status, phòng ban, nhân viên, nhãn, khoảng ngày. Search tên/SĐT/email
+- **Orders filter:** Status, sản phẩm, người tạo, hình thức, nhóm, khoảng ngày. Search tên KH/SĐT/mã khoá
+- URL-based state (shareable links), localStorage persistence, badge count active filters
+- Backend DTOs expanded: `labelId`/`dateFrom`/`dateTo` (customers), `search`/`productId`/`createdBy`/`format`/`groupType`/`dateFrom`/`dateTo` (orders)
+
 ### Lead Distribution Monitoring + Customer Schema Update (2026-04-08)
 - **Distribution monitoring:** Kho Mới page now shows recently distributed leads (72h) alongside unassigned leads. Columns: "Phân cho" (user + relative time), "Tương tác" (color-coded activity count). Auto-refresh 30s
 - **Recall:** Single/bulk recall leads back to Kho Mới. New endpoints `POST /leads/:id/recall` and `POST /leads/bulk-recall`

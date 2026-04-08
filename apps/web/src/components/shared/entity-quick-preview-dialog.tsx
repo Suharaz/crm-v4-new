@@ -154,7 +154,6 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
   }
 
   const pendingOrders = (data?.orders || []).filter((o: any) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'REFUNDED');
-  const hasOrder = pendingOrders.length > 0;
 
   // Fetch labels list (cached in localStorage 24h)
   useEffect(() => {

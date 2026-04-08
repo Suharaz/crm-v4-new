@@ -34,7 +34,7 @@ export class CreateLeadDto {
 
   @IsOptional()
   @IsString()
-  zaloPhone?: string;
+  zaloUrl?: string;
 
   @IsOptional()
   @IsString()

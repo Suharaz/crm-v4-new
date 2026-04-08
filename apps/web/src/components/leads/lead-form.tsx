@@ -38,7 +38,7 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
     companyName: lead?.companyName || '',
     facebookUrl: lead?.facebookUrl || '',
     instagramUrl: lead?.instagramUrl || '',
-    zaloPhone: lead?.zaloPhone || '',
+    zaloUrl: lead?.zaloUrl || '',
     linkedinUrl: lead?.linkedinUrl || '',
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -97,7 +97,7 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
     if (form.companyName) body.companyName = form.companyName;
     if (form.facebookUrl) body.facebookUrl = form.facebookUrl;
     if (form.instagramUrl) body.instagramUrl = form.instagramUrl;
-    if (form.zaloPhone) body.zaloPhone = form.zaloPhone;
+    if (form.zaloUrl) body.zaloUrl = form.zaloUrl;
     if (form.linkedinUrl) body.linkedinUrl = form.linkedinUrl;
     // Metadata from key-value rows
     const meta: Record<string, string> = {};
@@ -176,8 +176,8 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
           <FormField label="Instagram" error={fieldErrors.instagramUrl}>
             <Input value={form.instagramUrl} onChange={e => update('instagramUrl', e.target.value)} placeholder="https://instagram.com/..." />
           </FormField>
-          <FormField label="Zalo" error={fieldErrors.zaloPhone}>
-            <Input value={form.zaloPhone} onChange={e => update('zaloPhone', e.target.value)} placeholder="0912345678" />
+          <FormField label="Zalo" error={fieldErrors.zaloUrl}>
+            <Input value={form.zaloUrl} onChange={e => update('zaloUrl', e.target.value)} placeholder="https://zalo.me/..." />
           </FormField>
           <FormField label="LinkedIn" error={fieldErrors.linkedinUrl}>
             <Input value={form.linkedinUrl} onChange={e => update('linkedinUrl', e.target.value)} placeholder="https://linkedin.com/in/..." />

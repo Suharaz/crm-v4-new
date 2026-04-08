@@ -17,7 +17,7 @@ const ALLOWED_TRANSITIONS: Record<LeadStatus, LeadStatus[]> = {
 
 const LEAD_SELECT = {
   id: true, phone: true, name: true, email: true, status: true,
-  companyName: true, facebookUrl: true, instagramUrl: true, zaloPhone: true, linkedinUrl: true,
+  companyName: true, facebookUrl: true, instagramUrl: true, zaloUrl: true, linkedinUrl: true,
   customerId: true, productId: true, sourceId: true,
   assignedUserId: true, departmentId: true,
   metadata: true, createdAt: true, updatedAt: true,
@@ -223,7 +223,7 @@ export class LeadsService {
         data: {
           phone, name: dto.name || phone, email: dto.email,
           companyName: dto.companyName, facebookUrl: dto.facebookUrl,
-          instagramUrl: dto.instagramUrl, zaloPhone: dto.zaloPhone, linkedinUrl: dto.linkedinUrl,
+          instagramUrl: dto.instagramUrl, zaloUrl: dto.zaloUrl, linkedinUrl: dto.linkedinUrl,
         },
         include: { labels: { select: { labelId: true } } },
       });
@@ -244,7 +244,7 @@ export class LeadsService {
       data: {
         phone, name: dto.name || phone, email: dto.email,
         companyName: dto.companyName, facebookUrl: dto.facebookUrl,
-        instagramUrl: dto.instagramUrl, zaloPhone: dto.zaloPhone, linkedinUrl: dto.linkedinUrl,
+        instagramUrl: dto.instagramUrl, zaloUrl: dto.zaloUrl, linkedinUrl: dto.linkedinUrl,
         status: skipPool ? 'ZOOM' : 'POOL',
         customer: { connect: { id: customer.id } },
         ...(dto.sourceId ? { source: { connect: { id: BigInt(dto.sourceId) } } } : {}),
@@ -294,7 +294,7 @@ export class LeadsService {
     if (data.companyName !== undefined) updateData.companyName = data.companyName as string | null;
     if (data.facebookUrl !== undefined) updateData.facebookUrl = data.facebookUrl as string | null;
     if (data.instagramUrl !== undefined) updateData.instagramUrl = data.instagramUrl as string | null;
-    if (data.zaloPhone !== undefined) updateData.zaloPhone = data.zaloPhone as string | null;
+    if (data.zaloUrl !== undefined) updateData.zaloUrl = data.zaloUrl as string | null;
     if (data.linkedinUrl !== undefined) updateData.linkedinUrl = data.linkedinUrl as string | null;
 
     return this.prisma.lead.update({ where: { id }, data: updateData, select: LEAD_SELECT });
@@ -555,7 +555,7 @@ export class LeadsService {
             assignedDepartmentId: lead.departmentId,
             status: 'ACTIVE',
             companyName: lead.companyName, facebookUrl: lead.facebookUrl,
-            instagramUrl: lead.instagramUrl, zaloPhone: lead.zaloPhone, linkedinUrl: lead.linkedinUrl,
+            instagramUrl: lead.instagramUrl, zaloUrl: lead.zaloUrl, linkedinUrl: lead.linkedinUrl,
           },
         });
       } else {
@@ -563,7 +563,7 @@ export class LeadsService {
           data: {
             phone: lead.phone, name: lead.name, email: lead.email,
             companyName: lead.companyName, facebookUrl: lead.facebookUrl,
-            instagramUrl: lead.instagramUrl, zaloPhone: lead.zaloPhone, linkedinUrl: lead.linkedinUrl,
+            instagramUrl: lead.instagramUrl, zaloUrl: lead.zaloUrl, linkedinUrl: lead.linkedinUrl,
             assignedUserId: lead.assignedUserId,
             assignedDepartmentId: lead.departmentId,
           },

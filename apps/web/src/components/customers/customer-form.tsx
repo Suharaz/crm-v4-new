@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { invalidatePreviewCache } from '@/components/shared/entity-quick-preview-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FormField } from '@/components/shared/form-field';
 import { useFormAction } from '@/hooks/use-form-action';
@@ -35,8 +36,10 @@ export function CustomerForm({ customer, departments, users }: CustomerFormProps
     companyName: customer?.companyName || '',
     facebookUrl: customer?.facebookUrl || '',
     instagramUrl: customer?.instagramUrl || '',
-    zaloPhone: customer?.zaloPhone || '',
+    zaloUrl: customer?.zaloUrl || '',
     linkedinUrl: customer?.linkedinUrl || '',
+    shortDescription: customer?.shortDescription || '',
+    description: customer?.description || '',
     assignedUserId: customer?.assignedUserId || '',
     assignedDepartmentId: customer?.assignedDepartmentId || '',
   });
@@ -63,8 +66,10 @@ export function CustomerForm({ customer, departments, users }: CustomerFormProps
     if (form.companyName) body.companyName = form.companyName;
     if (form.facebookUrl) body.facebookUrl = form.facebookUrl;
     if (form.instagramUrl) body.instagramUrl = form.instagramUrl;
-    if (form.zaloPhone) body.zaloPhone = form.zaloPhone;
+    if (form.zaloUrl) body.zaloUrl = form.zaloUrl;
     if (form.linkedinUrl) body.linkedinUrl = form.linkedinUrl;
+    if (form.shortDescription) body.shortDescription = form.shortDescription;
+    if (form.description) body.description = form.description;
     if (form.assignedUserId) body.assignedUserId = form.assignedUserId;
     if (form.assignedDepartmentId) body.assignedDepartmentId = form.assignedDepartmentId;
     const meta: Record<string, string> = {};
@@ -118,6 +123,19 @@ export function CustomerForm({ customer, departments, users }: CustomerFormProps
         </FormField>
       </div>
 
+      {/* Description */}
+      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
+        <h3 className="font-semibold text-gray-900">Mô tả</h3>
+
+        <FormField label="Mô tả ngắn" error={fieldErrors.shortDescription}>
+          <Input value={form.shortDescription} onChange={e => update('shortDescription', e.target.value)} placeholder="VD: Khách hàng tiềm năng mảng bất động sản" />
+        </FormField>
+
+        <FormField label="Mô tả chi tiết" error={fieldErrors.description}>
+          <Textarea value={form.description} onChange={e => update('description', e.target.value)} placeholder="Ghi chú chi tiết về khách hàng..." rows={4} />
+        </FormField>
+      </div>
+
       {/* Company + Social links */}
       <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
         <h3 className="font-semibold text-gray-900">Công ty & Mạng xã hội</h3>
@@ -133,8 +151,8 @@ export function CustomerForm({ customer, departments, users }: CustomerFormProps
           <FormField label="Instagram" error={fieldErrors.instagramUrl}>
             <Input value={form.instagramUrl} onChange={e => update('instagramUrl', e.target.value)} placeholder="https://instagram.com/..." />
           </FormField>
-          <FormField label="Zalo" error={fieldErrors.zaloPhone}>
-            <Input value={form.zaloPhone} onChange={e => update('zaloPhone', e.target.value)} placeholder="0912345678" />
+          <FormField label="Zalo" error={fieldErrors.zaloUrl}>
+            <Input value={form.zaloUrl} onChange={e => update('zaloUrl', e.target.value)} placeholder="https://zalo.me/..." />
           </FormField>
           <FormField label="LinkedIn" error={fieldErrors.linkedinUrl}>
             <Input value={form.linkedinUrl} onChange={e => update('linkedinUrl', e.target.value)} placeholder="https://linkedin.com/in/..." />

@@ -12,8 +12,10 @@ const CUSTOMER_SELECT = {
   companyName: true,
   facebookUrl: true,
   instagramUrl: true,
-  zaloPhone: true,
+  zaloUrl: true,
   linkedinUrl: true,
+  shortDescription: true,
+  description: true,
   assignedUserId: true,
   assignedDepartmentId: true,
   status: true,
@@ -106,8 +108,10 @@ export class CustomersService {
         companyName: dto.companyName,
         facebookUrl: dto.facebookUrl,
         instagramUrl: dto.instagramUrl,
-        zaloPhone: dto.zaloPhone,
+        zaloUrl: dto.zaloUrl,
         linkedinUrl: dto.linkedinUrl,
+        shortDescription: dto.shortDescription,
+        description: dto.description,
         ...(dto.assignedUserId ? { assignedUser: { connect: { id: BigInt(dto.assignedUserId) } } } : {}),
         ...(dto.assignedDepartmentId ? { assignedDepartment: { connect: { id: BigInt(dto.assignedDepartmentId) } } } : {}),
       },
@@ -139,8 +143,10 @@ export class CustomersService {
     if (data.companyName !== undefined) updateData.companyName = data.companyName as string | null;
     if (data.facebookUrl !== undefined) updateData.facebookUrl = data.facebookUrl as string | null;
     if (data.instagramUrl !== undefined) updateData.instagramUrl = data.instagramUrl as string | null;
-    if (data.zaloPhone !== undefined) updateData.zaloPhone = data.zaloPhone as string | null;
+    if (data.zaloUrl !== undefined) updateData.zaloUrl = data.zaloUrl as string | null;
     if (data.linkedinUrl !== undefined) updateData.linkedinUrl = data.linkedinUrl as string | null;
+    if (data.shortDescription !== undefined) updateData.shortDescription = data.shortDescription as string | null;
+    if (data.description !== undefined) updateData.description = data.description as string | null;
 
     return this.prisma.customer.update({ where: { id }, data: updateData, select: CUSTOMER_SELECT });
   }

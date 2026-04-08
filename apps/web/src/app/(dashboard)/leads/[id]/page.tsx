@@ -96,8 +96,8 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                 <a href={lead.instagramUrl} target="_blank" rel="noopener noreferrer"
                   className="px-2 py-0.5 rounded bg-pink-50 text-pink-600 text-xs font-medium hover:bg-pink-100">Instagram</a>
               )}
-              {lead.zaloPhone && (
-                <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs font-medium">Zalo: {lead.zaloPhone}</span>
+              {lead.zaloUrl && (
+                <a href={lead.zaloUrl} target="_blank" rel="noopener noreferrer" className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs font-medium hover:bg-blue-100">Zalo</a>
               )}
               {lead.linkedinUrl && (
                 <a href={lead.linkedinUrl} target="_blank" rel="noopener noreferrer"

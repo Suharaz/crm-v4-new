@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { api } from '@/lib/api-client';
 import { cn, formatDate, formatVND } from '@/lib/utils';
-import { ExternalLink, Phone, Mail, User, Building, Tag, Calendar, Package, Loader2, MessageSquarePlus, Tags, ArrowRightLeft, CreditCard } from 'lucide-react';
+import { ExternalLink, Building, Loader2, MessageSquarePlus, Tags, ArrowRightLeft, CreditCard } from 'lucide-react';
 import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
 
 const CACHE_PREFIX = 'crm_preview_';
@@ -161,7 +161,6 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
   }
 
   const pendingOrders = (data?.orders || []).filter((o: any) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'REFUNDED');
-  const hasOrder = pendingOrders.length > 0;
 
   // Fetch depts on transfer open
   useEffect(() => {

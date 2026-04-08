@@ -76,8 +76,21 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             </dl>
           </div>
 
+          {/* Description */}
+          {(customer.shortDescription || customer.description) && (
+            <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <h3 className="mb-3 font-semibold text-gray-900">Mô tả</h3>
+              {customer.shortDescription && (
+                <p className="text-sm text-gray-700 font-medium">{customer.shortDescription}</p>
+              )}
+              {customer.description && (
+                <p className="mt-2 text-sm text-gray-600 whitespace-pre-line">{customer.description}</p>
+              )}
+            </div>
+          )}
+
           {/* Social links */}
-          {(customer.facebookUrl || customer.instagramUrl || customer.zaloPhone || customer.linkedinUrl) && (
+          {(customer.facebookUrl || customer.instagramUrl || customer.zaloUrl || customer.linkedinUrl) && (
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="mb-3 font-semibold text-gray-900">Mạng xã hội</h3>
               <dl className="space-y-2 text-sm">
@@ -87,8 +100,8 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                 {customer.instagramUrl && (
                   <div className="flex justify-between"><dt className="text-gray-500">Instagram</dt><dd><a href={customer.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Xem</a></dd></div>
                 )}
-                {customer.zaloPhone && (
-                  <div className="flex justify-between"><dt className="text-gray-500">Zalo</dt><dd className="text-gray-700">{customer.zaloPhone}</dd></div>
+                {customer.zaloUrl && (
+                  <div className="flex justify-between"><dt className="text-gray-500">Zalo</dt><dd><a href={customer.zaloUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Xem</a></dd></div>
                 )}
                 {customer.linkedinUrl && (
                   <div className="flex justify-between"><dt className="text-gray-500">LinkedIn</dt><dd><a href={customer.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Xem</a></dd></div>

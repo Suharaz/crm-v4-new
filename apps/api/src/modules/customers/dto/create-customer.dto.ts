@@ -25,11 +25,19 @@ export class CreateCustomerDto {
 
   @IsOptional()
   @IsString()
-  zaloPhone?: string;
+  zaloUrl?: string;
 
   @IsOptional()
   @IsString()
   linkedinUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  shortDescription?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 
   @IsOptional()
   @IsString()

@@ -23,7 +23,7 @@ export const leadSchema = z.object({
   companyName: z.string().max(200).optional(),
   facebookUrl: urlOptional,
   instagramUrl: urlOptional,
-  zaloPhone: z.string().optional(),
+  zaloUrl: urlOptional,
   linkedinUrl: urlOptional,
 });
 
@@ -37,8 +37,10 @@ export const customerSchema = z.object({
   companyName: z.string().max(200).optional(),
   facebookUrl: urlOptional,
   instagramUrl: urlOptional,
-  zaloPhone: z.string().optional(),
+  zaloUrl: urlOptional,
   linkedinUrl: urlOptional,
+  shortDescription: z.string().max(500, 'Mô tả ngắn không quá 500 ký tự').optional(),
+  description: z.string().optional(),
   assignedUserId: z.string().optional(),
   assignedDepartmentId: z.string().optional(),
 });

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Lead Distribution Monitoring + Customer Schema Update (2026-04-08)
+- **Distribution monitoring:** Kho Mới page now shows recently distributed leads (72h) alongside unassigned leads. Columns: "Phân cho" (user + relative time), "Tương tác" (color-coded activity count). Auto-refresh 30s
+- **Recall:** Single/bulk recall leads back to Kho Mới. New endpoints `POST /leads/:id/recall` and `POST /leads/bulk-recall`
+- **Customer schema:** Renamed `zaloPhone` → `zaloUrl` (both Customer & Lead). Added `shortDescription` and `description` fields to Customer
+- **Bug fixes:** Removed unused imports causing build failures (`lead-inline-expand-detail`, `entity-quick-preview-dialog`, `create-order-dialog`)
+
 ### Access Control + Dashboard Redesign (2026-04-02)
 - **Leads RBAC:** USER sees only assigned leads. New `/my-dept-pool` endpoint. User sidebar: My Lead, Kho phòng ban, Thả nổi
 - **Orders RBAC:** USER sees only own orders. Inline expandable row replaces link-to-detail

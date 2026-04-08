@@ -148,16 +148,69 @@ export class LeadsService {
   }
 
   async poolNewFiltered(limit: number, cursor?: string) {
-    // Kho Mới: POOL + dept=null
-    const take = (limit ?? 20) + 1;
-    const leads = await this.prisma.lead.findMany({
+    // 1. Kho Mới: POOL + dept=null (chưa phân)
+    const poolLeads = await this.prisma.lead.findMany({
       where: { status: 'POOL', departmentId: null, deletedAt: null },
-      select: LEAD_SELECT, orderBy: { id: 'desc' }, take,
-      ...(cursor ? { skip: 1, cursor: { id: BigInt(cursor) } } : {}),
+      select: LEAD_SELECT, orderBy: { id: 'desc' },
+      take: 200, // cap to prevent overload
     });
-    const hasMore = leads.length > (limit ?? 20);
-    const data = hasMore ? leads.slice(0, limit ?? 20) : leads;
-    return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
+
+    // 2. Recently distributed leads (phân từ kho mới trong 72h gần đây)
+    const since72h = new Date(Date.now() - 72 * 60 * 60 * 1000);
+    const recentAssignments = await this.prisma.assignmentHistory.findMany({
+      where: {
+        entityType: 'LEAD',
+        fromDepartmentId: null, // was in kho mới (dept=null before)
+        createdAt: { gte: since72h },
+      },
+      select: { entityId: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      distinct: ['entityId'],
+    });
+
+    const distributedLeadIds = recentAssignments.map(a => a.entityId);
+    // Exclude leads already in pool (avoid duplicates)
+    const poolIds = new Set(poolLeads.map(l => l.id.toString()));
+    const filteredIds = distributedLeadIds.filter(id => !poolIds.has(id.toString()));
+
+    let enrichedDistributed: any[] = [];
+    if (filteredIds.length > 0) {
+      const distributedLeads = await this.prisma.lead.findMany({
+        where: { id: { in: filteredIds }, status: { in: ['IN_PROGRESS', 'ASSIGNED'] }, deletedAt: null },
+        select: LEAD_SELECT,
+      });
+
+      // Count user interactions (exclude ASSIGNMENT/SYSTEM) per lead
+      const activityCounts = await this.prisma.activity.groupBy({
+        by: ['entityId'],
+        where: {
+          entityType: 'LEAD',
+          entityId: { in: filteredIds },
+          type: { in: ['NOTE', 'CALL', 'STATUS_CHANGE', 'LABEL_CHANGE'] },
+          deletedAt: null,
+        },
+        _count: true,
+      });
+
+      const countMap = new Map(activityCounts.map(a => [a.entityId.toString(), a._count]));
+      const assignMap = new Map(recentAssignments.map(a => [a.entityId.toString(), a.createdAt]));
+
+      enrichedDistributed = distributedLeads.map(lead => ({
+        ...lead,
+        assignedAt: assignMap.get(lead.id.toString()) || null,
+        activityCount: countMap.get(lead.id.toString()) || 0,
+      }));
+    }
+
+    const enrichedPool = poolLeads.map(lead => ({
+      ...lead,
+      assignedAt: null,
+      activityCount: 0,
+    }));
+
+    // Pool leads first, then distributed (sorted by assignedAt desc)
+    enrichedDistributed.sort((a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime());
+    return { data: [...enrichedPool, ...enrichedDistributed] };
   }
 
   async poolZoom(limit: number, cursor?: string) {
@@ -416,6 +469,71 @@ export class LeadsService {
     });
 
     return { data: { assigned: leads.length, skipped: leadIds.length - leads.length, targetUser: { id: targetUser.id.toString(), name: targetUser.name } } };
+  }
+
+  // ── Recall (thu hồi lead về kho mới) ─────────────────────────────────
+  async recall(id: bigint, user: CurrentUser) {
+    const lead = await this.findById(id);
+    if (!lead.assignedUserId) throw new BadRequestException('Lead chưa được phân phối');
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.lead.update({
+        where: { id },
+        data: { assignedUserId: null, departmentId: null, status: 'POOL' },
+      });
+
+      await tx.assignmentHistory.create({
+        data: {
+          entityType: 'LEAD', entityId: id,
+          fromUserId: lead.assignedUserId, fromDepartmentId: lead.departmentId,
+          assignedBy: user.id, reason: 'Thu hồi về kho mới',
+        },
+      });
+
+      await tx.activity.create({
+        data: {
+          entityType: 'LEAD', entityId: id, userId: user.id,
+          type: 'ASSIGNMENT', content: 'Thu hồi về Kho Mới',
+          metadata: { recall: true, fromUserId: lead.assignedUserId?.toString() },
+        },
+      });
+    });
+
+    return this.findById(id);
+  }
+
+  async bulkRecall(leadIds: bigint[], user: CurrentUser) {
+    const leads = await this.prisma.lead.findMany({
+      where: { id: { in: leadIds }, assignedUserId: { not: null }, deletedAt: null },
+      select: { id: true, assignedUserId: true, departmentId: true },
+    });
+
+    if (leads.length === 0) throw new BadRequestException('Không có lead nào để thu hồi');
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.lead.updateMany({
+        where: { id: { in: leads.map(l => l.id) } },
+        data: { assignedUserId: null, departmentId: null, status: 'POOL' },
+      });
+
+      await tx.assignmentHistory.createMany({
+        data: leads.map(l => ({
+          entityType: 'LEAD' as const, entityId: l.id,
+          fromUserId: l.assignedUserId, fromDepartmentId: l.departmentId,
+          assignedBy: user.id, reason: 'Thu hồi hàng loạt về kho mới',
+        })),
+      });
+
+      await tx.activity.createMany({
+        data: leads.map(l => ({
+          entityType: 'LEAD' as const, entityId: l.id, userId: user.id,
+          type: 'ASSIGNMENT' as const, content: 'Thu hồi hàng loạt về Kho Mới',
+          metadata: { recall: true, bulk: true, fromUserId: l.assignedUserId?.toString() },
+        })),
+      });
+    });
+
+    return { data: { recalled: leads.length, total: leadIds.length } };
   }
 
   // ── Claim ───────────────────────────────────────────────────────────────

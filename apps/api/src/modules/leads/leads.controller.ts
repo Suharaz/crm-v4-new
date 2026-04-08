@@ -107,6 +107,28 @@ export class LeadsController {
     return { data };
   }
 
+  @Post(':id/recall')
+  @HttpCode(200)
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async recall(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
+    const data = await this.leadsService.recall(id, user);
+    return { data };
+  }
+
+  @Post('bulk-recall')
+  @HttpCode(200)
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async bulkRecall(
+    @Body() body: { leadIds: string[] },
+    @CurrentUser() user: any,
+  ) {
+    if (!body.leadIds?.length) throw new BadRequestException('leadIds là bắt buộc');
+    return this.leadsService.bulkRecall(
+      body.leadIds.map(id => BigInt(id)),
+      user,
+    );
+  }
+
   @Post(':id/claim')
   @HttpCode(200)
   async claim(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {

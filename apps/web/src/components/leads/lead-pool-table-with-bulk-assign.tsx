@@ -43,7 +43,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [bulkUserId, setBulkUserId] = useState('');
   const [bulkAssigning, setBulkAssigning] = useState(false);
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   // Template state
   const [templates, setTemplates] = useState<{ id: string; name: string; members: { user: { name: string } }[] }[]>([]);
@@ -76,8 +76,8 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [poolMode, fetchLeads]);
 
-  // Sync with SSR data on initial render
-  useEffect(() => { setLeads(initialLeads); }, [initialLeads]);
+  // Sync with SSR data on initial render + set client-only timestamp
+  useEffect(() => { setLeads(initialLeads); setLastRefresh(new Date()); }, [initialLeads]);
 
   const allSelected = leads.length > 0 && selected.size === leads.length;
   const someSelected = selected.size > 0;
@@ -221,7 +221,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
       {isNewPool && (
         <div className="mb-2 flex items-center justify-end gap-2 text-xs text-gray-400">
           <RefreshCw className="h-3 w-3" />
-          <span>Tự động cập nhật · {lastRefresh.toLocaleTimeString('vi-VN')}</span>
+          <span>Tự động cập nhật{lastRefresh ? ` · ${lastRefresh.toLocaleTimeString('vi-VN')}` : ''}</span>
           <button type="button" onClick={fetchLeads} className="text-sky-500 hover:underline">Làm mới</button>
         </div>
       )}

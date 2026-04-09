@@ -60,13 +60,31 @@ export class AiSummaryService {
     }
   }
 
-  /** Analyze a single call log. Save result to callLog.analysis. */
+  /** Analyze a single call log. Save JSON {tags, detail} to callLog.analysis. */
   async analyzeCall(callLogId: bigint, content: string): Promise<string | null> {
     const userPrompt = await this.settings.get(SETTING_KEYS.AI_CALL_ANALYSIS_PROMPT) || DEFAULT_CALL_PROMPT;
 
-    const prompt = `${userPrompt}\n\nNội dung cuộc gọi:\n${content}`;
-    const result = await this.callAI(prompt);
-    if (!result) return null;
+    const wrapper = `\n\nQUAN TRỌNG: Trả lời ĐÚNG format JSON sau (không markdown, không backtick):
+{"tags":["tag ngắn 1","tag ngắn 2","tag ngắn 3"],"detail":"phân tích chi tiết dạng markdown"}
+Trong đó tags là mảng 2-5 nhãn ngắn (3-6 từ) tóm tắt nội dung cuộc gọi, detail là phân tích chi tiết.`;
+
+    const prompt = `${userPrompt}\n\nNội dung cuộc gọi:\n${content}${wrapper}`;
+    const raw = await this.callAI(prompt);
+    if (!raw) return null;
+
+    // Validate JSON, fallback to plain text wrapped in JSON
+    let result: string;
+    try {
+      const cleaned = raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      if (parsed.tags && parsed.detail) {
+        result = JSON.stringify(parsed);
+      } else {
+        result = JSON.stringify({ tags: [], detail: raw });
+      }
+    } catch {
+      result = JSON.stringify({ tags: [], detail: raw });
+    }
 
     await this.prisma.callLog.update({
       where: { id: callLogId },

@@ -24,6 +24,7 @@ export function AiPromptSettings({ initialSettings }: Props) {
   const [model, setModel] = useState(initialSettings.ai_model || 'google/gemini-2.0-flash-exp:free');
   const [callPrompt, setCallPrompt] = useState(initialSettings.ai_call_analysis_prompt || '');
   const [customerPrompt, setCustomerPrompt] = useState(initialSettings.ai_customer_analysis_prompt || '');
+  const [summaryPrompt, setSummaryPrompt] = useState(initialSettings.ai_call_summary_prompt || '');
   const [saving, setSaving] = useState<string | null>(null);
 
   // Model search state
@@ -217,6 +218,28 @@ export function AiPromptSettings({ initialSettings }: Props) {
           onClick={() => save('ai_customer_analysis_prompt', customerPrompt, 'prompt khách hàng')}
         >
           {saving === 'ai_customer_analysis_prompt' ? 'Đang lưu...' : 'Lưu'}
+        </Button>
+      </div>
+
+      {/* Call summary prompt */}
+      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
+        <h3 className="font-semibold text-gray-900">Prompt tóm tắt cuộc gọi theo ngày</h3>
+        <p className="text-xs text-gray-500">
+          Gửi khi bấm &quot;Tóm tắt AI&quot; trong trang Cuộc gọi.
+          Đánh giá điểm mạnh, điểm yếu của nhân viên dựa trên phân tích các cuộc gọi trong khoảng thời gian.
+        </p>
+        <Textarea
+          value={summaryPrompt}
+          onChange={e => setSummaryPrompt(e.target.value)}
+          rows={4}
+          placeholder="VD: Tóm tắt tổng quan các cuộc gọi, đưa ra điểm mạnh và điểm yếu của nhân viên..."
+        />
+        <Button
+          size="sm"
+          disabled={saving === 'ai_call_summary_prompt'}
+          onClick={() => save('ai_call_summary_prompt', summaryPrompt, 'prompt tóm tắt')}
+        >
+          {saving === 'ai_call_summary_prompt' ? 'Đang lưu...' : 'Lưu'}
         </Button>
       </div>
     </div>

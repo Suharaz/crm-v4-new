@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import ReactMarkdown from 'react-markdown';
 
 interface Props {
   customerId: string;
@@ -59,7 +60,12 @@ export function CustomerAnalysisCard({ customerId, shortDescription, description
           {description && (
             <>
               {expanded && (
-                <p className="mt-2 text-sm text-gray-600 whitespace-pre-line">{description}</p>
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <h4 className="text-sm font-bold text-gray-800 mb-2">Phân tích chi tiết chân dung khách hàng</h4>
+                  <div className="prose prose-sm prose-gray max-w-none text-sm text-gray-600 [&_strong]:text-gray-800 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_p]:my-1 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_h1]:font-bold [&_h2]:font-semibold [&_h3]:font-medium">
+                    <ReactMarkdown>{description}</ReactMarkdown>
+                  </div>
+                </div>
               )}
               <Button
                 variant="ghost"

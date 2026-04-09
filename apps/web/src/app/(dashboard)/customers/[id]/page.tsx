@@ -87,7 +87,6 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{customer.name}</h1>
-          <p className="text-gray-500">{customer.phone}</p>
         </div>
         <div className="flex items-center gap-3">
           <StatusBadge status={customer.status} />
@@ -106,21 +105,33 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Left column: Info + Analysis */}
         <div className="space-y-4 lg:col-span-1">
-          {/* Info card with social icons */}
+          {/* Info card with labels + social icons */}
           <div className="rounded-xl border border-gray-200 bg-white p-5">
             <h3 className="mb-3 font-semibold text-gray-900">Thông tin</h3>
             <dl className="space-y-2 text-sm">
+              <div className="flex justify-between"><dt className="text-gray-500">SĐT</dt><dd className="text-gray-700">{customer.phone}</dd></div>
               <div className="flex justify-between"><dt className="text-gray-500">Email</dt><dd className="text-gray-700">{customer.email || '—'}</dd></div>
-              <div className="flex justify-between"><dt className="text-gray-500">Nhân viên</dt><dd className="text-gray-700">{customer.assignedUser?.name || '—'}</dd></div>
-              <div className="flex justify-between"><dt className="text-gray-500">Phòng ban</dt><dd className="text-gray-700">{customer.assignedDepartment?.name || '—'}</dd></div>
-              <div className="flex justify-between"><dt className="text-gray-500">Ngày tạo</dt><dd className="text-gray-700">{formatDate(customer.createdAt)}</dd></div>
               {customer.companyName && (
                 <div className="flex justify-between"><dt className="text-gray-500">Công ty</dt><dd className="text-gray-700">{customer.companyName}</dd></div>
               )}
+              <div className="flex justify-between"><dt className="text-gray-500">Ngày tạo</dt><dd className="text-gray-700">{formatDate(customer.createdAt)}</dd></div>
             </dl>
 
+            {/* Labels */}
+            {customer.labels?.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <div className="flex flex-wrap gap-1.5">
+                  {customer.labels.map((cl: any) => (
+                    <span key={cl.label.id} className="rounded-full px-2.5 py-0.5 text-xs font-medium text-white" style={{ backgroundColor: cl.label.color }}>
+                      {cl.label.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Social icons row */}
-            <div className="mt-4 pt-3 border-t border-gray-100">
+            <div className="mt-3 pt-3 border-t border-gray-100">
               <div className="flex items-center gap-3">
                 {socialLinks.map(({ key, url, Icon, label }) =>
                   url ? (
@@ -143,20 +154,6 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             shortDescription={customer.shortDescription}
             description={customer.description}
           />
-
-          {/* Labels */}
-          {customer.labels?.length > 0 && (
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="mb-3 font-semibold text-gray-900">Nhãn</h3>
-              <div className="flex flex-wrap gap-1.5">
-                {customer.labels.map((cl: any) => (
-                  <span key={cl.label.id} className="rounded-full px-2.5 py-0.5 text-xs font-medium text-white" style={{ backgroundColor: cl.label.color }}>
-                    {cl.label.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Leads */}
           {customer.leads?.length > 0 && (

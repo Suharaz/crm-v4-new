@@ -23,12 +23,33 @@ export class ActivitiesService {
     }
   }
 
-  /** Get paginated timeline for an entity. */
+  /** Get paginated timeline for an entity. For CUSTOMER: aggregates from customer + all its leads. */
   async getTimeline(entityType: EntityType, entityId: bigint, limit = 20, cursor?: string) {
     await this.validateEntityExists(entityType, entityId);
     const take = limit + 1;
+
+    // Build where clause — for customers, include activities from all related leads
+    let where: Prisma.ActivityWhereInput;
+    if (entityType === 'CUSTOMER') {
+      const leads = await this.prisma.lead.findMany({
+        where: { customerId: entityId, deletedAt: null },
+        select: { id: true },
+      });
+      const leadIds = leads.map(l => l.id);
+
+      where = {
+        deletedAt: null,
+        OR: [
+          { entityType: 'CUSTOMER', entityId },
+          ...(leadIds.length > 0 ? [{ entityType: 'LEAD' as EntityType, entityId: { in: leadIds } }] : []),
+        ],
+      };
+    } else {
+      where = { entityType, entityId, deletedAt: null };
+    }
+
     const activities = await this.prisma.activity.findMany({
-      where: { entityType, entityId, deletedAt: null },
+      where,
       select: ACTIVITY_SELECT,
       orderBy: { createdAt: 'desc' },
       take,

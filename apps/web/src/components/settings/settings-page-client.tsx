@@ -9,6 +9,7 @@ import { BankAccountSettings } from '@/components/settings/bank-account-settings
 import { LabelSettings } from '@/components/settings/label-settings';
 import { TeamManagementWithLeaderSelect } from '@/components/settings/team-management-with-leader-select';
 import { ApiKeySettings } from '@/components/settings/api-key-settings';
+import { AiPromptSettings } from '@/components/settings/ai-prompt-settings';
 import { useAuth } from '@/providers/auth-provider';
 
 interface SettingsPageClientProps {
@@ -20,9 +21,10 @@ interface SettingsPageClientProps {
   labels: any[];
   users: any[];
   apiKeys: any[];
+  aiSettings: Record<string, string>;
 }
 
-export function SettingsPageClient({ departments, levels, sources, paymentTypes, bankAccounts, labels, users, apiKeys }: SettingsPageClientProps) {
+export function SettingsPageClient({ departments, levels, sources, paymentTypes, bankAccounts, labels, users, apiKeys, aiSettings }: SettingsPageClientProps) {
   const { user } = useAuth();
   const canEdit = user?.role === 'SUPER_ADMIN';
   const canEditLabels = user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER';
@@ -38,6 +40,7 @@ export function SettingsPageClient({ departments, levels, sources, paymentTypes,
         <TabsTrigger value="labels">Nhãn</TabsTrigger>
         <TabsTrigger value="teams">Teams</TabsTrigger>
         {canEdit && <TabsTrigger value="api-keys">API Keys</TabsTrigger>}
+        {canEdit && <TabsTrigger value="ai">AI</TabsTrigger>}
       </TabsList>
 
       <TabsContent value="departments">
@@ -64,6 +67,14 @@ export function SettingsPageClient({ departments, levels, sources, paymentTypes,
       {canEdit && (
         <TabsContent value="api-keys">
           <ApiKeySettings apiKeys={apiKeys} />
+        </TabsContent>
+      )}
+      {canEdit && (
+        <TabsContent value="ai">
+          <AiPromptSettings
+            initialCallPrompt={aiSettings?.ai_call_analysis_prompt || ''}
+            initialCustomerPrompt={aiSettings?.ai_customer_analysis_prompt || ''}
+          />
         </TabsContent>
       )}
     </Tabs>

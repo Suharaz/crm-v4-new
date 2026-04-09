@@ -11,6 +11,7 @@ export default async function SettingsPage() {
   let bankAccounts: any[] = [];
   let users: any[] = [];
   let apiKeys: any[] = [];
+  let aiSettings: Record<string, string> = {};
 
   try {
     [departments, levels, sources, labels, paymentTypes, bankAccounts, users, apiKeys] = await Promise.all([
@@ -24,6 +25,10 @@ export default async function SettingsPage() {
       serverFetch<{ data: any[] }>('/api-keys').then(r => r.data).catch(() => []),
     ]);
   } catch { /* partial data ok */ }
+
+  try {
+    aiSettings = await serverFetch<{ data: Record<string, string> }>('/system-settings').then(r => r.data);
+  } catch { /* may fail for non-admin */ }
 
   return (
     <div>
@@ -39,6 +44,7 @@ export default async function SettingsPage() {
         labels={labels}
         users={users}
         apiKeys={apiKeys}
+        aiSettings={aiSettings}
       />
     </div>
   );

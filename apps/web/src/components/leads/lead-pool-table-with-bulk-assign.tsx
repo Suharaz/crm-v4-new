@@ -269,7 +269,6 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                         className="font-medium text-sky-600 hover:underline text-left">
                         {lead.name}
                       </button>
-                      {lead.customerId && <span className="ml-1 rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">KH</span>}
                       {lead.orders && lead.orders.length > 0 && (
                         <span className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Đã mua</span>
                       )}

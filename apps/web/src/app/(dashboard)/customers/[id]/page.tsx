@@ -130,9 +130,27 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
               <h3 className="mb-3 font-semibold text-gray-900">Leads ({customer.leads.length})</h3>
               <div className="space-y-2">
                 {customer.leads.map((l: any) => (
-                  <Link key={l.id} href={`/leads/${l.id}`} className="flex items-center justify-between rounded-lg p-2 hover:bg-gray-50">
-                    <StatusBadge status={l.status} />
-                    <span className="text-xs text-gray-400">{formatDate(l.createdAt)}</span>
+                  <Link key={l.id} href={`/leads/${l.id}`} className="flex items-center justify-between rounded-lg border border-gray-100 p-3 hover:bg-gray-50">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={l.status} />
+                        {l.product && (
+                          <span className="text-xs text-gray-600">
+                            Sản phẩm: <span className="font-medium text-gray-800">{l.product.name}</span>
+                          </span>
+                        )}
+                      </div>
+                      {l.labels?.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {l.labels.map((ll: any) => (
+                            <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: ll.label.color }}>
+                              {ll.label.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-400 shrink-0">{formatDate(l.createdAt)}</span>
                   </Link>
                 ))}
               </div>

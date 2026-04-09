@@ -89,7 +89,15 @@ export class CustomersService {
       where: { id, deletedAt: null },
       select: {
         ...CUSTOMER_SELECT,
-        leads: { where: { deletedAt: null }, select: { id: true, status: true, productId: true, sourceId: true, createdAt: true }, take: 50 },
+        leads: {
+          where: { deletedAt: null },
+          select: {
+            id: true, status: true, createdAt: true,
+            product: { select: { id: true, name: true } },
+            labels: { include: { label: true } },
+          },
+          take: 50,
+        },
         orders: { where: { deletedAt: null }, select: { id: true, status: true, totalAmount: true, createdAt: true }, take: 50 },
       },
     });

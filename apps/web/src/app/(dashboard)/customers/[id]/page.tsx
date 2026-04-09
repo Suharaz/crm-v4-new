@@ -3,12 +3,46 @@ import { StatusBadge } from '@/components/shared/status-badge';
 import { ActivityTimelineWithFilterTabs } from '@/components/shared/activity-timeline-with-filter-tabs';
 import { CustomerActions } from '@/components/customers/customer-actions';
 import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
-import { MetadataKeyValueEditor } from '@/components/shared/metadata-key-value-editor';
-import { formatDate, formatVND } from '@/lib/utils';
+import { CustomerAnalysisCard } from '@/components/customers/customer-analysis-card';
+import { CustomerOrderList } from '@/components/customers/customer-order-list';
+import { formatDate } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
+
+/* Social icon SVGs — Zalo has no lucide icon so we use inline SVG */
+function FacebookIcon({ active }: { active: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className={`h-5 w-5 ${active ? 'text-blue-600' : 'text-gray-300'}`} fill="currentColor">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+    </svg>
+  );
+}
+
+function InstagramIcon({ active }: { active: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className={`h-5 w-5 ${active ? 'text-pink-500' : 'text-gray-300'}`} fill="currentColor">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+    </svg>
+  );
+}
+
+function ZaloIcon({ active }: { active: boolean }) {
+  return (
+    <svg viewBox="0 0 48 48" className={`h-5 w-5 ${active ? 'text-blue-500' : 'text-gray-300'}`} fill="currentColor">
+      <path d="M24 4C12.954 4 4 12.954 4 24s8.954 20 20 20 20-8.954 20-20S35.046 4 24 4zm-3.2 28.8h-2.4l6.4-9.6h-4.8v-2.4h7.2v2.4l-6.4 9.6zm10.4 0h-2.4v-12h2.4v12zm-5.6-14.4c-.88 0-1.6-.72-1.6-1.6s.72-1.6 1.6-1.6 1.6.72 1.6 1.6-.72 1.6-1.6 1.6z" />
+    </svg>
+  );
+}
+
+function LinkedInIcon({ active }: { active: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className={`h-5 w-5 ${active ? 'text-blue-700' : 'text-gray-300'}`} fill="currentColor">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    </svg>
+  );
+}
 
 /** Customer detail: info + actions + leads + orders + timeline. */
 export default async function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -38,6 +72,13 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
     ]);
   } catch { /* partial ok */ }
 
+  const socialLinks = [
+    { key: 'facebook', url: customer.facebookUrl, Icon: FacebookIcon, label: 'Facebook' },
+    { key: 'instagram', url: customer.instagramUrl, Icon: InstagramIcon, label: 'Instagram' },
+    { key: 'zalo', url: customer.zaloUrl, Icon: ZaloIcon, label: 'Zalo' },
+    { key: 'linkedin', url: customer.linkedinUrl, Icon: LinkedInIcon, label: 'LinkedIn' },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -61,8 +102,9 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Info */}
+        {/* Left column: Info + Analysis */}
         <div className="space-y-4 lg:col-span-1">
+          {/* Info card with social icons */}
           <div className="rounded-xl border border-gray-200 bg-white p-5">
             <h3 className="mb-3 font-semibold text-gray-900">Thông tin</h3>
             <dl className="space-y-2 text-sm">
@@ -74,41 +116,31 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                 <div className="flex justify-between"><dt className="text-gray-500">Công ty</dt><dd className="text-gray-700">{customer.companyName}</dd></div>
               )}
             </dl>
+
+            {/* Social icons row */}
+            <div className="mt-4 pt-3 border-t border-gray-100">
+              <div className="flex items-center gap-3">
+                {socialLinks.map(({ key, url, Icon, label }) =>
+                  url ? (
+                    <a key={key} href={url} target="_blank" rel="noopener noreferrer" title={label} className="hover:opacity-80 transition-opacity">
+                      <Icon active />
+                    </a>
+                  ) : (
+                    <span key={key} title={`${label} — chưa có`} className="cursor-default">
+                      <Icon active={false} />
+                    </span>
+                  )
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Description */}
-          {(customer.shortDescription || customer.description) && (
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="mb-3 font-semibold text-gray-900">Mô tả</h3>
-              {customer.shortDescription && (
-                <p className="text-sm text-gray-700 font-medium">{customer.shortDescription}</p>
-              )}
-              {customer.description && (
-                <p className="mt-2 text-sm text-gray-600 whitespace-pre-line">{customer.description}</p>
-              )}
-            </div>
-          )}
-
-          {/* Social links */}
-          {(customer.facebookUrl || customer.instagramUrl || customer.zaloUrl || customer.linkedinUrl) && (
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="mb-3 font-semibold text-gray-900">Mạng xã hội</h3>
-              <dl className="space-y-2 text-sm">
-                {customer.facebookUrl && (
-                  <div className="flex justify-between"><dt className="text-gray-500">Facebook</dt><dd><a href={customer.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Xem</a></dd></div>
-                )}
-                {customer.instagramUrl && (
-                  <div className="flex justify-between"><dt className="text-gray-500">Instagram</dt><dd><a href={customer.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Xem</a></dd></div>
-                )}
-                {customer.zaloUrl && (
-                  <div className="flex justify-between"><dt className="text-gray-500">Zalo</dt><dd><a href={customer.zaloUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Xem</a></dd></div>
-                )}
-                {customer.linkedinUrl && (
-                  <div className="flex justify-between"><dt className="text-gray-500">LinkedIn</dt><dd><a href={customer.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Xem</a></dd></div>
-                )}
-              </dl>
-            </div>
-          )}
+          {/* Customer analysis card */}
+          <CustomerAnalysisCard
+            customerId={id}
+            shortDescription={customer.shortDescription}
+            description={customer.description}
+          />
 
           {/* Labels */}
           {customer.labels?.length > 0 && (
@@ -156,28 +188,12 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
               </div>
             </div>
           )}
-
-          {/* Metadata */}
-          <MetadataKeyValueEditor entityType="customers" entityId={id} metadata={customer.metadata} />
         </div>
 
-        {/* Orders + Timeline */}
+        {/* Right column: Orders + Timeline */}
         <div className="space-y-6 lg:col-span-2">
           {customer.orders?.length > 0 && (
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="mb-3 font-semibold text-gray-900">Đơn hàng ({customer.orders.length})</h3>
-              <div className="space-y-2">
-                {customer.orders.map((o: any) => (
-                  <Link key={o.id} href={`/orders/${o.id}`} className="flex items-center justify-between rounded-lg border border-gray-100 p-3 hover:bg-gray-50">
-                    <div>
-                      <StatusBadge status={o.status} />
-                      <span className="ml-2 text-sm text-gray-600">{formatVND(Number(o.totalAmount))}</span>
-                    </div>
-                    <span className="text-xs text-gray-400">{formatDate(o.createdAt)}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
+            <CustomerOrderList orders={customer.orders} />
           )}
 
           <ActivityTimelineWithFilterTabs activities={activities} />

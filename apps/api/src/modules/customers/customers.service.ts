@@ -98,7 +98,15 @@ export class CustomersService {
           },
           take: 50,
         },
-        orders: { where: { deletedAt: null }, select: { id: true, status: true, totalAmount: true, createdAt: true }, take: 50 },
+        orders: {
+          where: { deletedAt: null },
+          select: {
+            id: true, status: true, totalAmount: true, createdAt: true,
+            product: { select: { id: true, name: true } },
+          },
+          take: 50,
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
     if (!customer) throw new NotFoundException('Không tìm thấy khách hàng');

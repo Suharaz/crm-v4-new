@@ -76,6 +76,32 @@ export class AiSummaryService {
     return result;
   }
 
+  /** Summarize multiple call analyses for a date range. Returns markdown string. */
+  async summarizeCalls(dateFrom: string, dateTo: string): Promise<string | null> {
+    const calls = await this.prisma.callLog.findMany({
+      where: {
+        deletedAt: null,
+        callTime: { gte: new Date(dateFrom), lte: new Date(dateTo + 'T23:59:59.999Z') },
+        analysis: { not: null },
+      },
+      select: { phoneNumber: true, callType: true, duration: true, analysis: true, callTime: true },
+      orderBy: { callTime: 'asc' },
+      take: 50,
+    });
+
+    if (calls.length === 0) return null;
+
+    const context = calls.map((c, i) =>
+      `${i + 1}. [${c.callType}] ${c.phoneNumber} (${c.duration}s): ${c.analysis}`
+    ).join('\n');
+
+    const userPrompt = await this.settings.get(SETTING_KEYS.AI_CALL_SUMMARY_PROMPT)
+      || 'Tóm tắt tổng quan các cuộc gọi, đưa ra điểm mạnh và điểm yếu của nhân viên. Trả lời bằng tiếng Việt, dùng markdown.';
+
+    const prompt = `${userPrompt}\n\nDữ liệu ${calls.length} cuộc gọi (${dateFrom} → ${dateTo}):\n${context}`;
+    return this.callAI(prompt);
+  }
+
   /** Analyze customer: gather all data, generate short + detail descriptions. */
   async analyzeCustomer(customerId: bigint): Promise<{ short: string; detail: string } | null> {
     const customer = await this.prisma.customer.findFirst({

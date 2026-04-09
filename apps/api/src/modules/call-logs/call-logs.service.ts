@@ -18,12 +18,17 @@ export class CallLogsService {
     private readonly aiSummary: AiSummaryService,
   ) {}
 
-  async list(query: PaginationQueryDto & { matchStatus?: string; matchedUserFilter?: bigint }) {
+  async list(query: PaginationQueryDto & { matchStatus?: string; matchedUserFilter?: bigint; dateFrom?: string; dateTo?: string }) {
     const limit = query.limit ?? 20;
     const where: Prisma.CallLogWhereInput = { deletedAt: null };
     if (query.matchStatus) where.matchStatus = query.matchStatus as any;
-    // Role-based: USER only sees own matched calls
     if (query.matchedUserFilter) where.matchedUserId = query.matchedUserFilter;
+    // Date range filter
+    if (query.dateFrom || query.dateTo) {
+      where.callTime = {};
+      if (query.dateFrom) where.callTime.gte = new Date(query.dateFrom);
+      if (query.dateTo) where.callTime.lte = new Date(query.dateTo + 'T23:59:59.999Z');
+    }
 
     const logs = await this.prisma.callLog.findMany({
       where, select: CALL_LOG_SELECT, orderBy: { callTime: 'desc' },

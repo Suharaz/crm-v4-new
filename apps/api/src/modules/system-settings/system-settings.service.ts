@@ -7,6 +7,7 @@ export const SETTING_KEYS = {
   AI_MODEL: 'ai_model',
   AI_CALL_ANALYSIS_PROMPT: 'ai_call_analysis_prompt',
   AI_CUSTOMER_ANALYSIS_PROMPT: 'ai_customer_analysis_prompt',
+  AI_CALL_SUMMARY_PROMPT: 'ai_call_summary_prompt',
 } as const;
 
 @Injectable()

@@ -7,12 +7,14 @@ import { Roles } from '../auth/decorators/roles-required.decorator';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
 import { LabelsService } from '../labels/labels.service';
+import { AiSummaryService } from '../ai-summary/ai-summary.service';
 
 @Controller('customers')
 export class CustomersController {
   constructor(
     private readonly customersService: CustomersService,
     private readonly labelsService: LabelsService,
+    private readonly aiSummary: AiSummaryService,
   ) {}
 
   @Get()
@@ -99,5 +101,14 @@ export class CustomersController {
   ) {
     await this.labelsService.detachFromCustomer(id, labelId);
     return { data: { message: 'Đã gỡ nhãn' } };
+  }
+
+  /** Trigger AI analysis for customer on demand. */
+  @Post(':id/analyze')
+  @HttpCode(200)
+  async analyze(@Param('id', ParseBigIntPipe) id: bigint) {
+    const result = await this.aiSummary.analyzeCustomer(id);
+    if (!result) return { data: { message: 'Không thể phân tích (thiếu AI_API_KEY hoặc dữ liệu)' } };
+    return { data: result };
   }
 }

@@ -574,6 +574,7 @@ model CallLog {
   callTime          DateTime    @map("call_time")
   duration          Int         @default(0)
   content           String?
+  analysis          String?     @map("analysis")
   matchedEntityType EntityType? @map("matched_entity_type")
   matchedEntityId   BigInt?     @map("matched_entity_id")
   matchedUserId     BigInt?     @map("matched_user_id")
@@ -774,4 +775,14 @@ model ImportJob {
   user User @relation(fields: [createdBy], references: [id])
 
   @@map("import_jobs")
+}
+
+// ─── SYSTEM SETTINGS ────────────────────────────────────────────────────────
+
+model SystemSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
 }

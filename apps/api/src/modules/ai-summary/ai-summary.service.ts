@@ -1,6 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
+import { SystemSettingsService, SETTING_KEYS } from '../system-settings/system-settings.service';
+
+const DEFAULT_CALL_PROMPT = `Bạn là trợ lý CRM phân tích cuộc gọi. Hãy tóm tắt nội dung cuộc gọi bằng tiếng Việt: điểm chính, nhu cầu khách hàng, hành động tiếp theo.`;
+
+const DEFAULT_CUSTOMER_PROMPT = `Bạn là trợ lý CRM phân tích khách hàng. Dựa trên dữ liệu, hãy đánh giá mức độ tiềm năng, hành vi mua, rủi ro mất KH, và đề xuất hành động tiếp theo.`;
+
+/** Fixed wrapper to always extract shortDescription + description from AI output. */
+const CUSTOMER_OUTPUT_WRAPPER = `
+
+QUAN TRỌNG: Trả lời ĐÚNG format JSON sau (không markdown, không backtick):
+{"short":"tóm tắt 1 câu ngắn gọn","detail":"phân tích chi tiết 3-5 câu"}`;
 
 @Injectable()
 export class AiSummaryService {
@@ -9,171 +20,171 @@ export class AiSummaryService {
   constructor(
     private readonly prisma: PrismaClient,
     private readonly config: ConfigService,
+    private readonly settings: SystemSettingsService,
   ) {}
 
-  /** Trigger summary chain after a qualifying call. Fire-and-forget. */
-  async triggerFromCall(callLog: { matchedEntityType: string | null; matchedEntityId: bigint | null; content: string | null; duration: number | null }) {
-    if (!callLog.matchedEntityId || !callLog.matchedEntityType) return;
-    if (!callLog.duration || callLog.duration < this.getMinDuration()) return;
-
+  /** Trigger after call ingest. Analyzes call if >60s, then customer if >120s. */
+  async triggerFromCall(callLogId: bigint, callLog: {
+    matchedEntityType: string | null;
+    matchedEntityId: bigint | null;
+    content: string | null;
+    duration: number | null;
+  }) {
     try {
-      if (callLog.matchedEntityType === 'LEAD') {
-        await this.generateLeadSummary(callLog.matchedEntityId);
-      } else if (callLog.matchedEntityType === 'CUSTOMER') {
-        await this.generateCustomerSummaries(callLog.matchedEntityId);
+      // Step 1: Analyze the call itself if duration > 60s
+      if (callLog.duration && callLog.duration >= 60 && callLog.content) {
+        await this.analyzeCall(callLogId, callLog.content);
+      }
+
+      // Step 2: Analyze customer if duration > 120s and matched
+      if (
+        callLog.duration && callLog.duration >= 120 &&
+        callLog.matchedEntityId && callLog.matchedEntityType
+      ) {
+        let customerId: bigint | null = null;
+        if (callLog.matchedEntityType === 'CUSTOMER') {
+          customerId = callLog.matchedEntityId;
+        } else if (callLog.matchedEntityType === 'LEAD') {
+          const lead = await this.prisma.lead.findFirst({
+            where: { id: callLog.matchedEntityId },
+            select: { customerId: true },
+          });
+          customerId = lead?.customerId ?? null;
+        }
+        if (customerId) {
+          await this.analyzeCustomer(customerId);
+        }
       }
     } catch (err) {
-      this.logger.error('AI summary failed', err);
+      this.logger.error('AI trigger failed', err);
     }
   }
 
-  /** Generate lead summary from all activities + call content */
-  async generateLeadSummary(leadId: bigint) {
-    const lead = await this.prisma.lead.findFirst({
-      where: { id: leadId },
-      select: {
-        id: true, name: true, phone: true, status: true, metadata: true,
-        product: { select: { name: true } },
-        source: { select: { name: true } },
-        customer: { select: { id: true, name: true } },
-      },
-    });
-    if (!lead) return;
+  /** Analyze a single call log. Save result to callLog.analysis. */
+  async analyzeCall(callLogId: bigint, content: string): Promise<string | null> {
+    const userPrompt = await this.settings.get(SETTING_KEYS.AI_CALL_ANALYSIS_PROMPT) || DEFAULT_CALL_PROMPT;
 
-    const activities = await this.prisma.activity.findMany({
-      where: { entityType: 'LEAD', entityId: leadId, deletedAt: null },
-      select: { type: true, content: true, createdAt: true },
-      orderBy: { createdAt: 'desc' },
-      take: 10,
+    const prompt = `${userPrompt}\n\nNội dung cuộc gọi:\n${content}`;
+    const result = await this.callAI(prompt);
+    if (!result) return null;
+
+    await this.prisma.callLog.update({
+      where: { id: callLogId },
+      data: { analysis: result },
     });
 
-    const orders = await this.prisma.order.findMany({
-      where: { leadId, deletedAt: null },
-      select: { status: true, totalAmount: true, product: { select: { name: true } } },
-    });
-
-    const prompt = `Bạn là trợ lý CRM chuyên đánh giá lead. Trả lời bằng JSON (không markdown):
-{"summary":"tóm tắt 2 câu tiếng Việt","score":7,"level":"HOT","reason":"lý do ngắn"}
-
-Quy tắc score: 1-3=COLD (ít tiềm năng), 4-6=WARM (trung bình), 7-10=HOT (tiềm năng cao)
-Xét: số hoạt động, có đơn hàng chưa, sản phẩm quan tâm, tần suất tương tác.
-
-Lead: ${lead.name} (${lead.phone}) — Trạng thái: ${lead.status}
-Sản phẩm: ${lead.product?.name || 'chưa rõ'}
-Nguồn: ${lead.source?.name || 'chưa rõ'}
-Hoạt động (${activities.length}):
-${activities.map(a => `- [${a.type}] ${a.content || '—'}`).join('\n')}
-Đơn hàng (${orders.length}):
-${orders.map(o => `- ${o.product?.name}: ${o.status} — ${o.totalAmount}`).join('\n') || 'Chưa có'}`;
-
-    const raw = await this.callAI(prompt);
-    if (!raw) return;
-
-    // Parse JSON response, fallback to raw text
-    let summary = raw;
-    let score: number | null = null;
-    let level: string | null = null;
-    let reason: string | null = null;
-    try {
-      const json = JSON.parse(raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
-      summary = json.summary || raw;
-      score = Number(json.score) || null;
-      level = json.level || null;
-      reason = json.reason || null;
-    } catch { /* use raw text as summary */ }
-
-    const existingMeta = (lead.metadata as Record<string, unknown>) || {};
-    await this.prisma.lead.update({
-      where: { id: leadId },
-      data: {
-        metadata: {
-          ...existingMeta,
-          aiSummary: summary,
-          aiScore: score,
-          aiLevel: level,
-          aiScoreReason: reason,
-          aiSummaryAt: new Date().toISOString(),
-        },
-      },
-    });
-
-    // Chain: if lead has customer, generate customer summaries too
-    if (lead.customer?.id) {
-      await this.generateCustomerSummaries(lead.customer.id);
-    }
+    return result;
   }
 
-  /** Generate customer short + detail summaries */
-  async generateCustomerSummaries(customerId: bigint) {
+  /** Analyze customer: gather all data, generate short + detail descriptions. */
+  async analyzeCustomer(customerId: bigint): Promise<{ short: string; detail: string } | null> {
     const customer = await this.prisma.customer.findFirst({
-      where: { id: customerId },
-      select: { id: true, name: true, phone: true, status: true, metadata: true },
+      where: { id: customerId, deletedAt: null },
+      select: { id: true, name: true, phone: true, status: true },
     });
-    if (!customer) return;
+    if (!customer) return null;
 
+    // Gather leads
     const leads = await this.prisma.lead.findMany({
       where: { customerId, deletedAt: null },
-      select: { name: true, status: true, metadata: true, product: { select: { name: true } }, source: { select: { name: true } } },
+      select: { id: true, name: true, status: true, product: { select: { name: true } } },
+    });
+    const leadIds = leads.map(l => l.id);
+
+    // Gather notes (activities from customer + leads)
+    const activities = await this.prisma.activity.findMany({
+      where: {
+        deletedAt: null,
+        OR: [
+          { entityType: 'CUSTOMER', entityId: customerId },
+          ...(leadIds.length > 0 ? [{ entityType: 'LEAD' as const, entityId: { in: leadIds } }] : []),
+        ],
+      },
+      select: { type: true, content: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: 15,
     });
 
+    // Gather payments
     const orders = await this.prisma.order.findMany({
       where: { customerId, deletedAt: null },
-      select: { status: true, totalAmount: true, product: { select: { name: true } } },
+      select: {
+        status: true, totalAmount: true,
+        product: { select: { name: true } },
+        payments: { select: { amount: true, status: true, createdAt: true } },
+      },
     });
 
-    const activities = await this.prisma.activity.findMany({
-      where: { entityType: 'CUSTOMER', entityId: customerId, deletedAt: null },
-      select: { type: true, content: true },
-      orderBy: { createdAt: 'desc' },
+    // Gather call analyses
+    const callLogs = await this.prisma.callLog.findMany({
+      where: {
+        deletedAt: null,
+        analysis: { not: null },
+        OR: [
+          { matchedEntityType: 'CUSTOMER', matchedEntityId: customerId },
+          ...(leadIds.length > 0 ? [{ matchedEntityType: 'LEAD' as const, matchedEntityId: { in: leadIds } }] : []),
+        ],
+      },
+      select: { analysis: true, callTime: true, duration: true },
+      orderBy: { callTime: 'desc' },
       take: 10,
     });
 
-    const existingMeta = (customer.metadata as Record<string, unknown>) || {};
-    const prevShort = existingMeta.aiSummaryShort || '';
-    const prevDetail = existingMeta.aiSummaryDetail || '';
+    // Build context
+    const context = [
+      `Khách hàng: ${customer.name} (${customer.phone}) — ${customer.status}`,
+      `Leads (${leads.length}): ${leads.map(l => `${l.name} [${l.status}] SP:${l.product?.name || '?'}`).join(' | ') || 'Chưa có'}`,
+      `Đơn hàng (${orders.length}): ${orders.map(o => `${o.product?.name}: ${o.status} ${o.totalAmount} — ${o.payments.length} thanh toán`).join(' | ') || 'Chưa có'}`,
+      `Ghi chú (${activities.length}): ${activities.map(a => `[${a.type}] ${a.content || ''}`).join(' | ') || 'Chưa có'}`,
+      `Phân tích cuộc gọi (${callLogs.length}): ${callLogs.map(c => c.analysis).join(' | ') || 'Chưa có'}`,
+    ].join('\n');
 
-    const context = `Khách hàng: ${customer.name} (${customer.phone}) — ${customer.status}
-Leads (${leads.length}): ${leads.map(l => `${l.name} [${l.status}] SP:${l.product?.name || '?'} ${(l.metadata as any)?.aiSummary || ''}`).join(' | ')}
-Đơn hàng (${orders.length}): ${orders.map(o => `${o.product?.name}: ${o.status} ${o.totalAmount}`).join(' | ') || 'Chưa có'}
-Hoạt động: ${activities.map(a => `[${a.type}] ${a.content || ''}`).join(' | ')}
-Summary trước đó (nếu có): ${prevShort}`;
+    const userPrompt = await this.settings.get(SETTING_KEYS.AI_CUSTOMER_ANALYSIS_PROMPT) || DEFAULT_CUSTOMER_PROMPT;
+    const prompt = `${userPrompt}\n\n${context}${CUSTOMER_OUTPUT_WRAPPER}`;
+    const raw = await this.callAI(prompt);
+    if (!raw) return null;
 
-    // Short summary
-    const shortPrompt = `Tóm tắt khách hàng CRM này bằng tiếng Việt, tối đa 1 câu, vài keyword chính:\n\n${context}\n\nTóm tắt ngắn:`;
-    const shortSummary = await this.callAI(shortPrompt);
+    // Parse JSON — always extract short + detail
+    let short = '';
+    let detail = '';
+    try {
+      const cleaned = raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+      const json = JSON.parse(cleaned);
+      short = json.short || '';
+      detail = json.detail || '';
+    } catch {
+      // Fallback: use full text as detail, first sentence as short
+      const sentences = raw.split(/[.。!！\n]/).filter(Boolean);
+      short = (sentences[0] || raw).trim().slice(0, 200);
+      detail = raw.trim();
+    }
 
-    // Detail summary
-    const detailPrompt = `Phân tích chuyên sâu khách hàng CRM này bằng tiếng Việt (3-5 câu). Đánh giá: mức độ tiềm năng, hành vi mua, rủi ro mất KH, đề xuất hành động tiếp theo:\n\n${context}\nSummary chi tiết trước (cập nhật nếu có): ${prevDetail}\n\nPhân tích:`;
-    const detailSummary = await this.callAI(detailPrompt);
-
-    await this.prisma.customer.update({
-      where: { id: customerId },
-      data: {
-        metadata: {
-          ...existingMeta,
-          ...(shortSummary ? { aiSummaryShort: shortSummary } : {}),
-          ...(detailSummary ? { aiSummaryDetail: detailSummary } : {}),
-          aiSummaryAt: new Date().toISOString(),
+    if (short || detail) {
+      await this.prisma.customer.update({
+        where: { id: customerId },
+        data: {
+          ...(short ? { shortDescription: short } : {}),
+          ...(detail ? { description: detail } : {}),
         },
-      },
-    });
+      });
+    }
+
+    return { short, detail };
   }
 
-  /** Call AI provider (Gemini default, fallback OpenAI-compatible) */
+  /** Call AI provider (OpenRouter default, Gemini option). */
   private async callAI(prompt: string): Promise<string | null> {
     const apiKey = this.config.get('AI_API_KEY') || this.config.get('GEMINI_API_KEY');
     if (!apiKey) {
-      this.logger.warn('AI_API_KEY not set, skipping summary');
+      this.logger.warn('AI_API_KEY not set, skipping');
       return null;
     }
 
     const provider = this.config.get('AI_PROVIDER') || 'openrouter';
-
     try {
       if (provider === 'gemini') {
         return await this.callGemini(apiKey, prompt);
       }
-      // OpenRouter / OpenAI-compatible
       return await this.callOpenAICompatible(apiKey, prompt);
     } catch (err) {
       this.logger.error(`AI call failed (${provider})`, err);
@@ -200,15 +211,10 @@ Summary trước đó (nếu có): ${prevShort}`;
     const res = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], max_tokens: 300 }),
+      body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], max_tokens: 500 }),
     });
     if (!res.ok) return null;
     const data: any = await res.json();
     return data.choices?.[0]?.message?.content?.trim() || null;
-  }
-
-  /** Get min call duration from config (default 120s = 2 min) */
-  private getMinDuration(): number {
-    return parseInt(this.config.get('AI_SUMMARY_MIN_DURATION') || '120', 10);
   }
 }

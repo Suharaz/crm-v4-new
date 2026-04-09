@@ -6,7 +6,7 @@ import { AiSummaryService } from '../ai-summary/ai-summary.service';
 
 const CALL_LOG_SELECT = {
   id: true, externalId: true, phoneNumber: true, callType: true,
-  callTime: true, duration: true, content: true,
+  callTime: true, duration: true, content: true, analysis: true,
   matchedEntityType: true, matchedEntityId: true, matchedUserId: true,
   matchStatus: true, createdAt: true,
 } satisfies Prisma.CallLogSelect;
@@ -133,8 +133,8 @@ export class CallLogsService {
       }
     }
 
-    // Fire-and-forget: AI summary if call is long enough
-    this.aiSummary.triggerFromCall({
+    // Fire-and-forget: AI call analysis (>60s) + customer analysis (>120s)
+    this.aiSummary.triggerFromCall(callLog.id, {
       matchedEntityType, matchedEntityId,
       content: data.content || null,
       duration: data.duration || null,

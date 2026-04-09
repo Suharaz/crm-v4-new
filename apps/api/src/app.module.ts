@@ -37,6 +37,7 @@ import { RecallConfigModule } from './modules/recall-config/recall-config.module
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { PrismaClient } from '@prisma/client';
 import { ApiKeysModule } from './modules/api-keys/api-keys.module';
+import { SystemSettingsModule } from './modules/system-settings/system-settings.module';
 import { ApiKeyAuthGuard } from './modules/auth/guards/api-key-auth.guard';
 import { BullModule } from '@nestjs/bullmq';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -101,6 +102,7 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     RecallConfigModule,
     DashboardModule,
     ApiKeysModule,
+    SystemSettingsModule,
   ],
   controllers: [AppController],
   providers: [

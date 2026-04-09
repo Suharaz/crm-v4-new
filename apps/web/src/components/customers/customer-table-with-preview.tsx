@@ -1,7 +1,4 @@
-'use client';
-
-import { useState } from 'react';
-import { EntityQuickPreviewDialog } from '@/components/shared/entity-quick-preview-dialog';
+import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 
 interface Customer {
@@ -11,16 +8,13 @@ interface Customer {
   createdAt: string;
 }
 
-/** Customer list table with quick-preview popup on name click. */
+/** Customer list table — click name navigates to detail page. */
 export function CustomerTableWithPreview({ customers }: { customers: Customer[] }) {
-  const [previewId, setPreviewId] = useState<string | null>(null);
-
   if (customers.length === 0) {
     return <div className="p-8 text-center text-gray-400">Không có khách hàng nào</div>;
   }
 
   return (
-    <>
       <table className="w-full text-sm">
         <thead className="border-b border-gray-200 bg-gray-50">
           <tr>
@@ -35,10 +29,10 @@ export function CustomerTableWithPreview({ customers }: { customers: Customer[] 
           {customers.map((c) => (
             <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50 last:border-0">
               <td className="px-4 py-3">
-                <button type="button" onClick={() => setPreviewId(c.id)}
-                  className="font-medium text-sky-600 hover:underline text-left">
+                <Link href={`/customers/${c.id}`}
+                  className="font-medium text-sky-600 hover:underline">
                   {c.name}
-                </button>
+                </Link>
               </td>
               <td className="px-4 py-3 text-gray-600">{c.phone}</td>
               <td className="hidden md:table-cell px-4 py-3 text-gray-500 text-xs max-w-xs truncate">
@@ -62,13 +56,5 @@ export function CustomerTableWithPreview({ customers }: { customers: Customer[] 
           ))}
         </tbody>
       </table>
-
-      <EntityQuickPreviewDialog
-        open={!!previewId}
-        onOpenChange={(open) => { if (!open) setPreviewId(null); }}
-        entityType="customer"
-        entityId={previewId}
-      />
-    </>
-  );
+    );
 }

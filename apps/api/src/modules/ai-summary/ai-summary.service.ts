@@ -172,49 +172,32 @@ export class AiSummaryService {
     return { short, detail };
   }
 
-  /** Call AI provider (OpenRouter default, Gemini option). */
+  /** Call AI via OpenRouter (settings first, env fallback). */
   private async callAI(prompt: string): Promise<string | null> {
-    const apiKey = this.config.get('AI_API_KEY') || this.config.get('GEMINI_API_KEY');
+    const apiKey = await this.settings.get(SETTING_KEYS.AI_API_KEY) || this.config.get('AI_API_KEY');
     if (!apiKey) {
-      this.logger.warn('AI_API_KEY not set, skipping');
+      this.logger.warn('AI API key not configured (Settings > AI hoặc env AI_API_KEY)');
       return null;
     }
 
-    const provider = this.config.get('AI_PROVIDER') || 'openrouter';
-    try {
-      if (provider === 'gemini') {
-        return await this.callGemini(apiKey, prompt);
-      }
-      return await this.callOpenAICompatible(apiKey, prompt);
-    } catch (err) {
-      this.logger.error(`AI call failed (${provider})`, err);
-      return null;
-    }
-  }
-
-  private async callGemini(apiKey: string, prompt: string): Promise<string | null> {
-    const model = this.config.get('GEMINI_MODEL') || 'gemini-2.0-flash';
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-    });
-    if (!res.ok) return null;
-    const data: any = await res.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
-  }
-
-  private async callOpenAICompatible(apiKey: string, prompt: string): Promise<string | null> {
+    const model = await this.settings.get(SETTING_KEYS.AI_MODEL) || this.config.get('AI_MODEL') || 'google/gemini-2.0-flash-exp:free';
     const baseUrl = this.config.get('AI_BASE_URL') || 'https://openrouter.ai/api/v1';
-    const model = this.config.get('AI_MODEL') || 'google/gemini-2.0-flash-exp:free';
-    const res = await fetch(`${baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], max_tokens: 500 }),
-    });
-    if (!res.ok) return null;
-    const data: any = await res.json();
-    return data.choices?.[0]?.message?.content?.trim() || null;
+
+    try {
+      const res = await fetch(`${baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], max_tokens: 1000 }),
+      });
+      if (!res.ok) {
+        this.logger.error(`AI call failed: ${res.status} ${res.statusText}`);
+        return null;
+      }
+      const data: any = await res.json();
+      return data.choices?.[0]?.message?.content?.trim() || null;
+    } catch (err) {
+      this.logger.error('AI call failed', err);
+      return null;
+    }
   }
 }

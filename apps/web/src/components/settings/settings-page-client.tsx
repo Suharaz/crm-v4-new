@@ -71,10 +71,7 @@ export function SettingsPageClient({ departments, levels, sources, paymentTypes,
       )}
       {canEdit && (
         <TabsContent value="ai">
-          <AiPromptSettings
-            initialCallPrompt={aiSettings?.ai_call_analysis_prompt || ''}
-            initialCustomerPrompt={aiSettings?.ai_customer_analysis_prompt || ''}
-          />
+          <AiPromptSettings initialSettings={aiSettings || {}} />
         </TabsContent>
       )}
     </Tabs>

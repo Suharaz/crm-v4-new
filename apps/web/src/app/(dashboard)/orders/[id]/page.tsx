@@ -4,6 +4,7 @@ import { OrderActions } from '@/components/orders/order-actions';
 import { PaymentActions } from '@/components/payments/payment-actions';
 import { formatDate, formatVND } from '@/lib/utils';
 import { notFound } from 'next/navigation';
+import { BackButton } from '@/components/shared/back-button';
 
 /** Order detail: info + actions + payments with CRUD. */
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -22,6 +23,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   return (
     <div className="space-y-6">
+      <BackButton />
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Đơn hàng #{order.id}</h1>

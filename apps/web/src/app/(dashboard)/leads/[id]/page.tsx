@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Pencil, Phone, Mail, Building, Tag, User, Calendar, Package, ExternalLink } from 'lucide-react';
+import { BackButton } from '@/components/shared/back-button';
 
 /** Lead detail page: profile header + sidebar + orders + timeline. */
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -52,6 +53,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="space-y-5">
+      <BackButton />
       {/* ─── Profile Header Card ─────────────────────────────── */}
       <div className="rounded-xl border border-gray-200 bg-white p-5">
         <div className="flex items-start gap-4">

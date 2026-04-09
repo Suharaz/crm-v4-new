@@ -1,5 +1,6 @@
 import { serverFetch } from '@/lib/auth';
 import { CustomerForm } from '@/components/customers/customer-form';
+import { BackButton } from '@/components/shared/back-button';
 
 /** Create new customer page. */
 export default async function CreateCustomerPage() {
@@ -15,7 +16,8 @@ export default async function CreateCustomerPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Tạo khách hàng mới</h1>
+      <BackButton />
+      <h1 className="text-2xl font-bold text-gray-900 mb-6 mt-2">Tạo khách hàng mới</h1>
       <CustomerForm departments={departments} users={users} />
     </div>
   );

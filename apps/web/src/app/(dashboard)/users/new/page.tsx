@@ -1,5 +1,6 @@
 import { serverFetch } from '@/lib/auth';
 import { UserForm } from '@/components/users/user-form';
+import { BackButton } from '@/components/shared/back-button';
 
 /** Create new user page. */
 export default async function CreateUserPage() {
@@ -15,7 +16,8 @@ export default async function CreateUserPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Tạo nhân viên mới</h1>
+      <BackButton />
+      <h1 className="text-2xl font-bold text-gray-900 mb-6 mt-2">Tạo nhân viên mới</h1>
       <UserForm departments={departments} levels={levels} />
     </div>
   );

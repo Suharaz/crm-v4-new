@@ -1,5 +1,6 @@
 import { serverFetch } from '@/lib/auth';
 import { UserForm } from '@/components/users/user-form';
+import { BackButton } from '@/components/shared/back-button';
 import { notFound } from 'next/navigation';
 
 /** Edit user page. */
@@ -21,7 +22,8 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Sửa nhân viên: {user.name}</h1>
+      <BackButton />
+      <h1 className="text-2xl font-bold text-gray-900 mb-6 mt-2">Sửa nhân viên: {user.name}</h1>
       <UserForm user={user} departments={departments} levels={levels} />
     </div>
   );

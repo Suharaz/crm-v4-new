@@ -1,5 +1,6 @@
 import { serverFetch } from '@/lib/auth';
 import { CustomerForm } from '@/components/customers/customer-form';
+import { BackButton } from '@/components/shared/back-button';
 import { notFound } from 'next/navigation';
 
 /** Edit customer page. */
@@ -21,7 +22,8 @@ export default async function EditCustomerPage({ params }: { params: Promise<{ i
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Sửa khách hàng: {customer.name}</h1>
+      <BackButton />
+      <h1 className="text-2xl font-bold text-gray-900 mb-6 mt-2">Sửa khách hàng: {customer.name}</h1>
       <CustomerForm customer={customer} departments={departments} users={users} />
     </div>
   );

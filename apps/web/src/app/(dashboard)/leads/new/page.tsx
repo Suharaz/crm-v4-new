@@ -1,5 +1,6 @@
 import { serverFetch } from '@/lib/auth';
 import { LeadForm } from '@/components/leads/lead-form';
+import { BackButton } from '@/components/shared/back-button';
 
 /** Create new lead page. */
 export default async function CreateLeadPage() {
@@ -15,7 +16,8 @@ export default async function CreateLeadPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Tạo lead mới</h1>
+      <BackButton />
+      <h1 className="text-2xl font-bold text-gray-900 mb-6 mt-2">Tạo lead mới</h1>
       <LeadForm sources={sources} products={products} />
     </div>
   );

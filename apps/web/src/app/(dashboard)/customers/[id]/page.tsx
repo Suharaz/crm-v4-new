@@ -10,6 +10,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
+import { BackButton } from '@/components/shared/back-button';
 
 /* Social icon SVGs — Zalo has no lucide icon so we use inline SVG */
 function FacebookIcon({ active }: { active: boolean }) {
@@ -81,6 +82,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
 
   return (
     <div className="space-y-6">
+      <BackButton />
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

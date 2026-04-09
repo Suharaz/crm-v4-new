@@ -1,5 +1,6 @@
 import { serverFetch } from '@/lib/auth';
 import { LeadForm } from '@/components/leads/lead-form';
+import { BackButton } from '@/components/shared/back-button';
 import { notFound } from 'next/navigation';
 
 /** Edit lead page. */
@@ -21,7 +22,8 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Sửa lead: {lead.name}</h1>
+      <BackButton />
+      <h1 className="text-2xl font-bold text-gray-900 mb-6 mt-2">Sửa lead: {lead.name}</h1>
       <LeadForm lead={lead} sources={sources} products={products} />
     </div>
   );

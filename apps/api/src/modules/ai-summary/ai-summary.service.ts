@@ -7,11 +7,11 @@ const DEFAULT_CALL_PROMPT = `Bạn là trợ lý CRM phân tích cuộc gọi. H
 
 const DEFAULT_CUSTOMER_PROMPT = `Bạn là trợ lý CRM phân tích khách hàng. Dựa trên dữ liệu, hãy đánh giá mức độ tiềm năng, hành vi mua, rủi ro mất KH, và đề xuất hành động tiếp theo.`;
 
-/** Fixed wrapper to always extract shortDescription + description from AI output. */
+/** Fixed wrapper to always extract short + detail from AI output. Length depends on admin prompt. */
 const CUSTOMER_OUTPUT_WRAPPER = `
 
 QUAN TRỌNG: Trả lời ĐÚNG format JSON sau (không markdown, không backtick):
-{"short":"tóm tắt 1 câu ngắn gọn","detail":"phân tích chi tiết 3-5 câu"}`;
+{"short":"tóm tắt ngắn","detail":"phân tích chi tiết"}`;
 
 @Injectable()
 export class AiSummaryService {

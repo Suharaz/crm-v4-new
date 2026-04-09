@@ -56,7 +56,7 @@ export function AiPromptSettings({ initialCallPrompt, initialCustomerPrompt }: P
         <p className="text-xs text-gray-500">
           Prompt này được gửi khi phân tích tổng quan khách hàng (cuộc gọi dài hơn 2 phút hoặc bấm nút phân tích).
           Dữ liệu ghi chú, thanh toán, phân tích cuộc gọi sẽ được đính kèm tự động.
-          Kết quả luôn trả về gồm mô tả ngắn + phân tích chi tiết.
+          Kết quả trả về gồm &quot;short&quot; (tóm tắt) + &quot;detail&quot; (chi tiết) — độ dài tùy bạn mô tả trong prompt.
         </p>
         <Textarea
           value={customerPrompt}

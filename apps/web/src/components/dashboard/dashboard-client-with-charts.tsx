@@ -8,6 +8,27 @@ import {
   PieChart, Pie, Cell, CartesianGrid, Area, AreaChart,
   Legend,
 } from 'recharts';
+/** Dashboard stats shape returned by /dashboard/stats — typed explicitly to avoid index-signature unknown. */
+interface DashboardStatsData {
+  newLeads?: number | null;
+  inProgress?: number | null;
+  converted?: number | null;
+  revenue: number;
+  newCustomers?: number | null;
+  totalOrders?: number | null;
+  pendingPayments?: number | null;
+  overdueTask?: number | null;
+}
+
+// ── Chart data shapes ─────────────────────────────────────────────────────
+interface FunnelItem { status: string; count: number }
+interface RevenueDayItem { day: string; revenue: number }
+interface AgingItem { bucket: string; count: number }
+interface PerformerItem { userId: string; name: string; converted: number; revenue: number }
+interface SourceItem { source: string; total: number; converted: number; rate: number }
+interface ConvTrendItem { day: string; newLeads: number; converted: number }
+interface DeptItem { deptId: string; name: string; leads: number; converted: number; revenue: number }
+interface TeamItem { teamId: string; name: string; dept: string; members: number; leads: number; converted: number; revenue: number }
 
 // ── Time range presets ────────────────────────────────────────────────────
 type RangeKey = 'today' | 'week' | 'month' | 'quarter' | 'year';
@@ -57,12 +78,18 @@ function fmtNum(v: number | null | undefined) { return v != null ? new Intl.Numb
 function fmtShort(v: number) { return v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : String(v); }
 
 // ── Custom Tooltip ────────────────────────────────────────────────────────
-function ChartTooltip({ active, payload, label, valueFormatter }: any) {
+interface ChartTooltipPayloadItem { name: string; value: number; color: string }
+function ChartTooltip({ active, payload, label, valueFormatter }: {
+  active?: boolean;
+  payload?: ChartTooltipPayloadItem[];
+  label?: string;
+  valueFormatter?: (v: number) => string;
+}) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border border-gray-200 bg-white/95 backdrop-blur-sm px-3 py-2 shadow-lg">
       <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
-      {payload.map((p: any) => (
+      {payload.map((p) => (
         <p key={p.name} className="text-sm font-semibold" style={{ color: p.color }}>
           {p.name}: {valueFormatter ? valueFormatter(p.value) : fmtNum(p.value)}
         </p>
@@ -102,47 +129,45 @@ export function DashboardClientWithCharts() {
   const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER';
 
   const [range, setRange] = useState<RangeKey>('month');
-  const [stats, setStats] = useState<any>(null);
-  const [funnel, setFunnel] = useState<any[]>([]);
-  const [revenue, setRevenue] = useState<any[]>([]);
-  const [performers, setPerformers] = useState<any[]>([]);
-  const [sourceData, setSourceData] = useState<any[]>([]);
-  const [convTrend, setConvTrend] = useState<any[]>([]);
-  const [aging, setAging] = useState<any[]>([]);
-  const [depts, setDepts] = useState<any[]>([]);
-  const [teams, setTeams] = useState<any[]>([]);
+  const [stats, setStats] = useState<DashboardStatsData | null>(null);
+  const [funnel, setFunnel] = useState<FunnelItem[]>([]);
+  const [revenue, setRevenue] = useState<RevenueDayItem[]>([]);
+  const [performers, setPerformers] = useState<PerformerItem[]>([]);
+  const [sourceData, setSourceData] = useState<SourceItem[]>([]);
+  const [convTrend, setConvTrend] = useState<ConvTrendItem[]>([]);
+  const [aging, setAging] = useState<AgingItem[]>([]);
+  const [depts, setDepts] = useState<DeptItem[]>([]);
+  const [teams, setTeams] = useState<TeamItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     const { from, to } = getDateRange(range);
-    const fmtDay = (d: any) => new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+    const fmtDay = (d: string) => new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
     try {
-      const promises: Promise<any>[] = [
-        api.get<{ data: any }>(`/dashboard/stats?from=${from}&to=${to}`),
-        api.get<{ data: any[] }>('/dashboard/lead-funnel'),
-        api.get<{ data: any[] }>(`/dashboard/revenue-trend?from=${from}&to=${to}`),
-        api.get<{ data: any[] }>('/dashboard/lead-aging'),
-      ];
-      if (isAdmin) {
-        promises.push(
-          api.get<{ data: any[] }>(`/dashboard/top-performers?from=${from}&to=${to}`),
-          api.get<{ data: any[] }>(`/dashboard/leads-by-source?from=${from}&to=${to}`),
-          api.get<{ data: any[] }>(`/dashboard/conversion-trend?from=${from}&to=${to}`),
-          api.get<{ data: any[] }>(`/dashboard/dept-performance?from=${from}&to=${to}`),
-          api.get<{ data: any[] }>(`/dashboard/team-performance?from=${from}&to=${to}`),
-        );
-      }
-      const results = await Promise.all(promises);
+      const basePromises = [
+        api.get<{ data: DashboardStatsData }>(`/dashboard/stats?from=${from}&to=${to}`),
+        api.get<{ data: FunnelItem[] }>('/dashboard/lead-funnel'),
+        api.get<{ data: (RevenueDayItem & { day: string })[] }>(`/dashboard/revenue-trend?from=${from}&to=${to}`),
+        api.get<{ data: AgingItem[] }>('/dashboard/lead-aging'),
+      ] as const;
+      const adminPromises = isAdmin ? [
+        api.get<{ data: PerformerItem[] }>(`/dashboard/top-performers?from=${from}&to=${to}`),
+        api.get<{ data: SourceItem[] }>(`/dashboard/leads-by-source?from=${from}&to=${to}`),
+        api.get<{ data: (ConvTrendItem & { day: string })[] }>(`/dashboard/conversion-trend?from=${from}&to=${to}`),
+        api.get<{ data: DeptItem[] }>(`/dashboard/dept-performance?from=${from}&to=${to}`),
+        api.get<{ data: TeamItem[] }>(`/dashboard/team-performance?from=${from}&to=${to}`),
+      ] as const : [];
+      const results = await Promise.all([...basePromises, ...adminPromises]);
       setStats(results[0].data);
       setFunnel(results[1].data);
-      setRevenue(results[2].data.map((r: any) => ({ ...r, day: fmtDay(r.day) })));
+      setRevenue(results[2].data.map((r) => ({ ...r, day: fmtDay(r.day) })));
       setAging(results[3].data || []);
-      if (isAdmin && results[4]) setPerformers(results[4].data || []);
-      if (isAdmin && results[5]) setSourceData(results[5].data || []);
-      if (isAdmin && results[6]) setConvTrend(results[6].data.map((r: any) => ({ ...r, day: fmtDay(r.day) })));
-      if (isAdmin && results[7]) setDepts(results[7].data || []);
-      if (isAdmin && results[8]) setTeams(results[8].data || []);
+      if (isAdmin && results[4]) setPerformers((results[4] as { data: PerformerItem[] }).data || []);
+      if (isAdmin && results[5]) setSourceData((results[5] as { data: SourceItem[] }).data || []);
+      if (isAdmin && results[6]) setConvTrend((results[6] as { data: (ConvTrendItem & { day: string })[] }).data.map((r) => ({ ...r, day: fmtDay(r.day) })));
+      if (isAdmin && results[7]) setDepts((results[7] as { data: DeptItem[] }).data || []);
+      if (isAdmin && results[8]) setTeams((results[8] as { data: TeamItem[] }).data || []);
     } catch { /* empty */ }
     setLoading(false);
   }, [range, isAdmin]);
@@ -255,7 +280,7 @@ export function DashboardClientWithCharts() {
       {aging.length > 0 && (
         <ChartCard title="Lead chưa tương tác — cảnh báo bỏ quên">
           <div className="grid grid-cols-2 gap-x-8 gap-y-2 sm:grid-cols-4">
-            {aging.map((a: any) => {
+            {aging.map((a) => {
               const isDanger = a.bucket.includes('7+');
               const isWarn = a.bucket.includes('3-7');
               const color = isDanger ? COLORS.danger : isWarn ? COLORS.warning : COLORS.success;
@@ -307,7 +332,7 @@ export function DashboardClientWithCharts() {
           {sourceData.length > 0 && (
             <ChartCard title="Chất lượng nguồn lead — Tỷ lệ chuyển đổi">
               <div className="space-y-3">
-                {sourceData.map((s: any) => (
+                {sourceData.map((s) => (
                   <div key={s.source} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-gray-700">{s.source}</span>
@@ -326,7 +351,7 @@ export function DashboardClientWithCharts() {
           {performers.length > 0 && (
             <ChartCard title="Top nhân viên trong kỳ">
               <div className="space-y-2.5">
-                {performers.map((p: any, i: number) => {
+                {performers.map((p, i) => {
                   const maxRev = performers[0]?.revenue || 1;
                   const barWidth = Math.max(p.revenue / maxRev * 100, 8);
                   return (
@@ -361,8 +386,8 @@ export function DashboardClientWithCharts() {
           {depts.length > 0 && (
             <ChartCard title="Doanh số theo phòng ban">
               <div className="space-y-3">
-                {depts.map((d: any) => {
-                  const maxRev = Math.max(...depts.map((x: any) => x.revenue), 1);
+                {depts.map((d) => {
+                  const maxRev = Math.max(...depts.map((x) => x.revenue), 1);
                   const barW = Math.max(d.revenue / maxRev * 100, 4);
                   return (
                     <div key={d.deptId} className="space-y-1">
@@ -391,8 +416,8 @@ export function DashboardClientWithCharts() {
           {teams.length > 0 && (
             <ChartCard title="Doanh số theo team">
               <div className="space-y-3">
-                {teams.map((t: any) => {
-                  const maxRev = Math.max(...teams.map((x: any) => x.revenue), 1);
+                {teams.map((t) => {
+                  const maxRev = Math.max(...teams.map((x) => x.revenue), 1);
                   const barW = Math.max(t.revenue / maxRev * 100, 4);
                   return (
                     <div key={t.teamId} className="space-y-1">

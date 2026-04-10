@@ -1,16 +1,17 @@
 import { serverFetch } from '@/lib/auth';
 import { LeadForm } from '@/components/leads/lead-form';
 import { BackButton } from '@/components/shared/back-button';
+import type { NamedEntity } from '@/types/entities';
 
 /** Create new lead page. */
 export default async function CreateLeadPage() {
-  let sources: any[] = [];
-  let products: any[] = [];
+  let sources: NamedEntity[] = [];
+  let products: NamedEntity[] = [];
 
   try {
     [sources, products] = await Promise.all([
-      serverFetch<{ data: any[] }>('/lead-sources').then(r => r.data),
-      serverFetch<{ data: any[] }>('/products').then(r => r.data),
+      serverFetch<{ data: NamedEntity[] }>('/lead-sources').then(r => r.data),
+      serverFetch<{ data: NamedEntity[] }>('/products').then(r => r.data),
     ]);
   } catch { /* empty */ }
 

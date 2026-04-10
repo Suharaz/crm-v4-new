@@ -1,4 +1,5 @@
 import { serverFetch } from '@/lib/auth';
+import type { OrderRecord, NamedEntity } from '@/types/entities';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { OrderActions } from '@/components/orders/order-actions';
 import { PaymentActions } from '@/components/payments/payment-actions';
@@ -9,17 +10,19 @@ import { BackButton } from '@/components/shared/back-button';
 /** Order detail: info + actions + payments with CRUD. */
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  let order: any;
-  let paymentTypes: any[] = [];
+  let orderData: OrderRecord | undefined;
+  let paymentTypes: NamedEntity[] = [];
 
   try {
-    [order, paymentTypes] = await Promise.all([
-      serverFetch<{ data: any }>(`/orders/${id}`).then(r => r.data),
-      serverFetch<{ data: any[] }>('/payment-types').then(r => r.data).catch(() => []),
+    [orderData, paymentTypes] = await Promise.all([
+      serverFetch<{ data: OrderRecord }>(`/orders/${id}`).then(r => r.data),
+      serverFetch<{ data: NamedEntity[] }>('/payment-types').then(r => r.data).catch(() => []),
     ]);
   } catch {
     notFound();
   }
+
+  const order = orderData as OrderRecord;
 
   return (
     <div className="space-y-6">
@@ -33,7 +36,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       </div>
 
       {/* Actions */}
-      <OrderActions order={order} />
+      <OrderActions order={order!} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Order Details */}

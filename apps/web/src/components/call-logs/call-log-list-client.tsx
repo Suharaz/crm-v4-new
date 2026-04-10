@@ -10,6 +10,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import ReactMarkdown from 'react-markdown';
 
+/** Raw call log shape as returned from API (analysis is a raw JSON string, not yet parsed). */
+interface RawCallLog {
+  id: string;
+  phoneNumber: string;
+  callType: string;
+  callTime: string;
+  duration?: number | null;
+  content?: string | null;
+  analysis?: string | null;
+  matchStatus: string;
+  matchedEntityType?: string | null;
+  matchedEntityId?: string | null;
+}
+
 const CALL_TYPE_CONFIG: Record<string, { label: string; icon: typeof PhoneIncoming; color: string }> = {
   INCOMING: { label: 'Gọi đến', icon: PhoneIncoming, color: 'text-emerald-600' },
   OUTGOING: { label: 'Gọi đi', icon: PhoneOutgoing, color: 'text-sky-600' },
@@ -35,7 +49,7 @@ function hashTagColor(tag: string): string {
 }
 
 /** Parse analysis JSON. Handles both new JSON format and legacy plain text. */
-function parseAnalysis(raw: string | null): { tags: string[]; detail: string } | null {
+function parseAnalysis(raw: string | null | undefined): { tags: string[]; detail: string } | null {
   if (!raw || !raw.trim()) return null;
   try {
     const parsed = JSON.parse(raw);
@@ -45,7 +59,7 @@ function parseAnalysis(raw: string | null): { tags: string[]; detail: string } |
   }
 }
 
-function formatDuration(seconds: number | null): string {
+function formatDuration(seconds: number | null | undefined): string {
   if (!seconds) return '—';
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
@@ -67,8 +81,8 @@ function CollapsibleSection({ title, titleClass, children }: { title: string; ti
 }
 
 /** Call log list with date filter, tags, analysis, and AI summary. */
-export function CallLogListClient({ callLogs: initialLogs }: { callLogs: any[] }) {
-  const [callLogs, setCallLogs] = useState(initialLogs);
+export function CallLogListClient({ callLogs: initialLogs }: { callLogs: RawCallLog[] }) {
+  const [callLogs, setCallLogs] = useState<RawCallLog[]>(initialLogs);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -82,11 +96,11 @@ export function CallLogListClient({ callLogs: initialLogs }: { callLogs: any[] }
       const params = new URLSearchParams({ limit: '100' });
       if (dateFrom) params.set('dateFrom', dateFrom);
       if (dateTo) params.set('dateTo', dateTo);
-      const res = await api.get<{ data: any[] }>(`/call-logs?${params}`);
+      const res = await api.get<{ data: RawCallLog[] }>(`/call-logs?${params}`);
       setCallLogs(res.data);
       setSummary(null);
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi tải dữ liệu');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi tải dữ liệu');
     } finally {
       setLoading(false);
     }
@@ -98,8 +112,8 @@ export function CallLogListClient({ callLogs: initialLogs }: { callLogs: any[] }
     try {
       const res = await api.post<{ data: string }>('/call-logs/summarize', { dateFrom, dateTo });
       setSummary(res.data);
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi tóm tắt');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi tóm tắt');
     } finally {
       setSummarizing(false);
     }
@@ -156,7 +170,7 @@ export function CallLogListClient({ callLogs: initialLogs }: { callLogs: any[] }
         <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có cuộc gọi nào</div>
       ) : (
         <div className="space-y-1.5">
-          {callLogs.map((c: any) => {
+          {callLogs.map((c) => {
             const id = String(c.id);
             const isExpanded = expandedId === id;
             const config = CALL_TYPE_CONFIG[c.callType] || CALL_TYPE_CONFIG.OUTGOING;

@@ -8,9 +8,10 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useFormAction } from '@/hooks/use-form-action';
 import { useAuth } from '@/providers/auth-provider';
 import { Trash2 } from 'lucide-react';
+import type { OrderRecord } from '@/types/entities';
 
 interface OrderActionsProps {
-  order: any;
+  order: OrderRecord;
 }
 
 /** Action bar for order detail: change status, delete. */

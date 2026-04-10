@@ -13,6 +13,50 @@ import { ExternalLink, Phone, Mail, User, Building, Tag, Calendar, Package, Load
 import { Input } from '@/components/ui/input';
 import { formatVND } from '@/lib/utils';
 import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
+import type { LabelEntity } from '@/types/entities';
+
+/** Minimal activity shape used for preview. */
+interface PreviewActivity {
+  id: string;
+  type: string;
+  content?: string | null;
+  user?: { name: string } | null;
+  createdAt: string;
+}
+
+/** Nested label as returned by API (ll.label or ll itself). */
+interface NestedOrFlatLabel {
+  label?: LabelEntity;
+  id?: string;
+  name?: string;
+  color?: string;
+}
+
+/** Minimal order shape for the payment quick-action. */
+interface PreviewOrder {
+  id: string;
+  status: string;
+  totalAmount: number;
+  product?: { name?: string } | null;
+}
+
+/** Entity data returned by GET /leads/:id or /customers/:id. */
+interface PreviewEntityData {
+  name: string;
+  phone?: string | null;
+  email?: string | null;
+  status: string;
+  source?: { name: string } | null;
+  product?: { name: string } | null;
+  assignedUser?: { name: string } | null;
+  department?: { name: string } | null;
+  labels?: NestedOrFlatLabel[];
+  leadLabels?: NestedOrFlatLabel[];
+  customerLabels?: NestedOrFlatLabel[];
+  orders?: PreviewOrder[];
+  customerId?: string | null;
+  createdAt: string;
+}
 
 interface PreviewDialogProps {
   open: boolean;
@@ -35,8 +79,8 @@ function readCache(key: string) {
   } catch { return null; }
 }
 
-/** Write to localStorage with timestamp. */
-function writeCache(key: string, data: any, activities: any[]) {
+/** Write to localStorage with timestamp. data/activities can be any serializable value. */
+function writeCache(key: string, data: unknown, activities: unknown[]) {
   try { localStorage.setItem(CACHE_PREFIX + key, JSON.stringify({ data, activities, ts: Date.now() })); } catch { /* quota */ }
 }
 
@@ -48,15 +92,15 @@ export function invalidatePreviewCache(entityType: string, entityId: string) {
 /** Quick preview dialog for lead/customer — shows key info + quick actions. */
 export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entityId }: PreviewDialogProps) {
   const router = useRouter();
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<PreviewEntityData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [activities, setActivities] = useState<any[]>([]);
+  const [activities, setActivities] = useState<PreviewActivity[]>([]);
   // Quick action states
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [noteSaving, setNoteSaving] = useState(false);
   const [labelPickerOpen, setLabelPickerOpen] = useState(false);
-  const [allLabels, setAllLabels] = useState<any[]>([]);
+  const [allLabels, setAllLabels] = useState<LabelEntity[]>([]);
   const [labelSaving, setLabelSaving] = useState(false);
   // Payment quick action
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -83,8 +127,8 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
     const activitiesEndpoint = `/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`;
 
     Promise.all([
-      api.get<{ data: any }>(endpoint),
-      api.get<{ data: any[] }>(activitiesEndpoint).catch(() => ({ data: [] })),
+      api.get<{ data: PreviewEntityData }>(endpoint),
+      api.get<{ data: PreviewActivity[] }>(activitiesEndpoint).catch(() => ({ data: [] as PreviewActivity[] })),
     ])
       .then(([entityRes, actRes]) => {
         const d = entityRes.data;
@@ -98,8 +142,8 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
   }, [open, entityId, entityType]);
 
   const detailUrl = entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`;
-  const labels = data?.labels || data?.leadLabels || data?.customerLabels || [];
-  const currentLabelIds = new Set(labels.map((ll: any) => String((ll.label || ll).id)));
+  const labels: NestedOrFlatLabel[] = data?.labels || data?.leadLabels || data?.customerLabels || [];
+  const currentLabelIds = new Set(labels.map((ll) => String((ll.label || ll).id)));
 
   // Quick note submit
   async function submitNote() {
@@ -111,7 +155,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
       setNoteOpen(false);
       invalidatePreviewCache(entityType, entityId);
       // Refresh activities in-place
-      const actRes = await api.get<{ data: any[] }>(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`).catch(() => ({ data: [] }));
+      const actRes = await api.get<{ data: PreviewActivity[] }>(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`).catch(() => ({ data: [] as PreviewActivity[] }));
       setActivities(actRes.data || []);
       router.refresh();
     } catch { /* */ }
@@ -130,7 +174,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
       }
       invalidatePreviewCache(entityType, entityId);
       // Refresh entity data + server page
-      const res = await api.get<{ data: any }>(entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`);
+      const res = await api.get<{ data: PreviewEntityData }>(entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`);
       setData(res.data);
       router.refresh();
     } catch { /* */ }
@@ -146,21 +190,21 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
       setPmtAmount(''); setPmtContent(''); setPmtOrderId(''); setPaymentOpen(false);
       if (entityId) invalidatePreviewCache(entityType, entityId);
       // Refresh entity data
-      const res = await api.get<{ data: any }>(entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`);
+      const res = await api.get<{ data: PreviewEntityData }>(entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`);
       setData(res.data);
       router.refresh();
     } catch { /* */ }
     setPmtSaving(false);
   }
 
-  const pendingOrders = (data?.orders || []).filter((o: any) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'REFUNDED');
+  const pendingOrders = (data?.orders || []).filter((o) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'REFUNDED');
 
   // Fetch labels list (cached in localStorage 24h)
   useEffect(() => {
     if (!labelPickerOpen || allLabels.length > 0) return;
     const cached = readCache('_all_labels');
     if (cached?.data) { setAllLabels(cached.data); return; }
-    api.get<{ data: any[] }>('/labels').then(r => {
+    api.get<{ data: LabelEntity[] }>('/labels').then(r => {
       setAllLabels(r.data || []);
       writeCache('_all_labels', r.data || [], []);
     }).catch(() => {});
@@ -219,8 +263,8 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                 <div>
                   <span className="text-xs font-medium text-gray-500 uppercase">Nhãn</span>
                   <div className="flex flex-wrap gap-1.5 mt-1">
-                    {labels.map((ll: any) => {
-                      const label = ll.label || ll;
+                    {labels.map((ll) => {
+                      const label = (ll.label || ll) as LabelEntity;
                       return (
                         <span
                           key={label.id}
@@ -242,7 +286,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                     Ghi chú & Hoạt động ({activities.length})
                   </span>
                   <div className="mt-1.5 space-y-1.5 max-h-40 overflow-y-auto">
-                    {activities.slice(0, 5).map((a: any) => (
+                    {activities.slice(0, 5).map((a) => (
                       <div key={a.id} className="text-xs bg-gray-50 rounded-md px-2.5 py-2 border border-gray-100">
                         <div className="flex items-center gap-1.5 mb-0.5">
                           <span className="font-medium text-gray-700">{a.user?.name || '—'}</span>
@@ -252,7 +296,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                           <span className="text-gray-400">{formatDate(a.createdAt)}</span>
                         </div>
                         <p className="text-gray-600 whitespace-pre-line">
-                          {a.content?.substring(0, 120)}{a.content?.length > 120 ? '...' : ''}
+                          {a.content?.substring(0, 120)}{(a.content?.length ?? 0) > 120 ? '...' : ''}
                         </p>
                       </div>
                     ))}
@@ -297,7 +341,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
               {labelPickerOpen && (
                 <div className="flex flex-wrap gap-1.5">
                   {allLabels.length === 0 && <span className="text-xs text-gray-400">Đang tải...</span>}
-                  {allLabels.map((l: any) => (
+                  {allLabels.map((l) => (
                     <button
                       key={l.id}
                       onClick={() => toggleLabel(String(l.id))}
@@ -325,7 +369,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                       {pendingOrders.length > 1 ? (
                         <div className="space-y-1">
                           <p className="text-xs text-gray-500">Chọn đơn hàng:</p>
-                          {pendingOrders.map((o: any) => (
+                          {pendingOrders.map((o) => (
                             <label key={o.id} className={`flex items-center gap-2 rounded border px-2 py-1.5 cursor-pointer text-xs ${
                               pmtOrderId === String(o.id) ? 'border-sky-400 bg-sky-50' : 'border-gray-200'}`}>
                               <input type="radio" name="pmtOrder" checked={pmtOrderId === String(o.id)} onChange={() => setPmtOrderId(String(o.id))} />

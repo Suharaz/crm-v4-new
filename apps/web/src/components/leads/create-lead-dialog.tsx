@@ -10,6 +10,7 @@ import { FormField } from '@/components/shared/form-field';
 import { api } from '@/lib/api-client';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import type { NamedEntity } from '@/types/entities';
 
 interface CreateLeadDialogProps {
   sources?: { id: string; name: string }[];
@@ -29,10 +30,10 @@ export function CreateLeadDialog({ sources: initialSources, products: initialPro
   useEffect(() => {
     if (!open) return;
     if (sources.length === 0) {
-      api.get<{ data: any[] }>('/lead-sources').then(r => setSources((r.data || []).map((s: any) => ({ id: String(s.id), name: s.name })))).catch(() => {});
+      api.get<{ data: NamedEntity[] }>('/lead-sources').then(r => setSources((r.data || []).map((s) => ({ id: String(s.id), name: s.name })))).catch(() => {});
     }
     if (products.length === 0) {
-      api.get<{ data: any[] }>('/products').then(r => setProducts((r.data || []).map((p: any) => ({ id: String(p.id), name: p.name })))).catch(() => {});
+      api.get<{ data: NamedEntity[] }>('/products').then(r => setProducts((r.data || []).map((p) => ({ id: String(p.id), name: p.name })))).catch(() => {});
     }
   }, [open, sources.length, products.length]);
 
@@ -45,7 +46,7 @@ export function CreateLeadDialog({ sources: initialSources, products: initialPro
     if (form.phone.length < 10) { setPhoneDuplicate(null); return; }
     const timer = setTimeout(async () => {
       try {
-        const res = await api.get<{ data: any[] }>(`/customers/search?phone=${form.phone}`);
+        const res = await api.get<{ data: { name: string; phone: string; email?: string }[] }>(`/customers/search?phone=${form.phone}`);
         const match = res.data?.[0];
         if (match) {
           setForm(prev => ({ ...prev, name: prev.name || match.name || '', email: prev.email || match.email || '' }));
@@ -89,8 +90,8 @@ export function CreateLeadDialog({ sources: initialSources, products: initialPro
       toast.success('Đã tạo lead');
       resetAndClose();
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi tạo lead');
+    } catch (err: unknown) {
+      toast.error((err as { message?: string }).message || 'Lỗi tạo lead');
     } finally {
       setSubmitting(false);
     }

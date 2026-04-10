@@ -11,16 +11,17 @@ import { TeamManagementWithLeaderSelect } from '@/components/settings/team-manag
 import { ApiKeySettings } from '@/components/settings/api-key-settings';
 import { AiPromptSettings } from '@/components/settings/ai-prompt-settings';
 import { useAuth } from '@/providers/auth-provider';
+import type { SettingsItem, LabelEntity, UserRecord } from '@/types/entities';
 
 interface SettingsPageClientProps {
-  departments: any[];
-  levels: any[];
-  sources: any[];
-  paymentTypes: any[];
-  bankAccounts: any[];
-  labels: any[];
-  users: any[];
-  apiKeys: any[];
+  departments: SettingsItem[];
+  levels: SettingsItem[];
+  sources: SettingsItem[];
+  paymentTypes: SettingsItem[];
+  bankAccounts: SettingsItem[];
+  labels: LabelEntity[];
+  users: UserRecord[];
+  apiKeys: SettingsItem[];
   aiSettings: Record<string, string>;
 }
 
@@ -59,14 +60,17 @@ export function SettingsPageClient({ departments, levels, sources, paymentTypes,
         <BankAccountSettings data={bankAccounts} canEdit={canEdit} />
       </TabsContent>
       <TabsContent value="labels">
-        <LabelSettings data={labels} canEdit={canEditLabels} />
+        <LabelSettings data={labels as unknown as SettingsItem[]} canEdit={canEditLabels} />
       </TabsContent>
       <TabsContent value="teams">
-        <TeamManagementWithLeaderSelect departments={departments} users={users} canEdit={canEdit} />
+        {/* UserRecord.departmentId is string|null|undefined; local User expects string|undefined — safe cast */}
+        <TeamManagementWithLeaderSelect departments={departments} users={users as { id: string; name: string; departmentId?: string }[]} canEdit={canEdit} />
       </TabsContent>
       {canEdit && (
         <TabsContent value="api-keys">
-          <ApiKeySettings apiKeys={apiKeys} />
+          {/* ApiKeySettings has its own local ApiKeyItem type; passing as unknown[] is safe here */}
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          <ApiKeySettings apiKeys={apiKeys as any[]} />
         </TabsContent>
       )}
       {canEdit && (

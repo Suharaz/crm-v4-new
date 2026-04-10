@@ -1,4 +1,5 @@
 import { serverFetch } from '@/lib/auth';
+import type { OrderRecord, NamedEntity, ApiListResponse } from '@/types/entities';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import { CsvExportButton } from '@/components/shared/csv-export-button';
 import { OrderListWithInlineExpand } from '@/components/orders/order-list-with-inline-expand';
@@ -9,21 +10,21 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const params = await searchParams;
   const query = new URLSearchParams(params).toString();
 
-  let data: any[] = [];
+  let data: OrderRecord[] = [];
   let nextCursor: string | undefined;
-  let products: any[] = [];
-  let users: any[] = [];
+  let products: NamedEntity[] = [];
+  let users: NamedEntity[] = [];
 
   try {
     const [result, productsRes, usersRes] = await Promise.all([
-      serverFetch<{ data: any[]; meta?: { nextCursor?: string } }>(`/orders?${query}`),
-      serverFetch<{ data: any[] }>('/products?includeInactive=false').catch(() => ({ data: [] })),
-      serverFetch<{ data: any[] }>('/users').catch(() => ({ data: [] })),
+      serverFetch<ApiListResponse<OrderRecord>>(`/orders?${query}`),
+      serverFetch<{ data: NamedEntity[] }>('/products?includeInactive=false').catch(() => ({ data: [] })),
+      serverFetch<{ data: NamedEntity[] }>('/users').catch(() => ({ data: [] })),
     ]);
     data = result.data;
     nextCursor = result.meta?.nextCursor;
-    products = (productsRes.data || []).map((p: any) => ({ id: String(p.id), name: p.name }));
-    users = (usersRes.data || []).map((u: any) => ({ id: String(u.id), name: u.name }));
+    products = (productsRes.data || []).map((p: NamedEntity) => ({ id: String(p.id), name: p.name }));
+    users = (usersRes.data || []).map((u: NamedEntity) => ({ id: String(u.id), name: u.name }));
   } catch { /* empty */ }
 
   return (

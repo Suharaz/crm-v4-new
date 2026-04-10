@@ -12,12 +12,23 @@ import { formatDate } from '@/lib/utils';
 import { Plus, Copy, Trash2, ToggleLeft, ToggleRight, Key, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
+interface ApiKeyItem {
+  id: string;
+  name: string;
+  keyPrefix?: string;
+  isActive: boolean;
+  createdAt?: string;
+  lastUsedAt?: string | null;
+  creator?: { name: string } | null;
+  key?: string;
+}
+
 interface ApiKeySettingsProps {
-  apiKeys: any[];
+  apiKeys: ApiKeyItem[];
 }
 
 export function ApiKeySettings({ apiKeys: initialKeys }: ApiKeySettingsProps) {
-  const [keys, setKeys] = useState(initialKeys);
+  const [keys, setKeys] = useState<ApiKeyItem[]>(initialKeys);
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('');
   const [creating, setCreating] = useState(false);
@@ -29,13 +40,13 @@ export function ApiKeySettings({ apiKeys: initialKeys }: ApiKeySettingsProps) {
     if (!name.trim()) return;
     setCreating(true);
     try {
-      const res = await api.post<{ data: any }>('/api-keys', { name: name.trim() });
-      setNewKey(res.data.key);
+      const res = await api.post<{ data: ApiKeyItem }>('/api-keys', { name: name.trim() });
+      setNewKey(res.data.key ?? null);
       setKeys(prev => [res.data, ...prev]);
       setName('');
       toast.success('Đã tạo API key');
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi tạo API key');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi tạo API key');
     }
     setCreating(false);
   }
@@ -78,7 +89,7 @@ export function ApiKeySettings({ apiKeys: initialKeys }: ApiKeySettingsProps) {
         <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Chưa có API key nào</div>
       ) : (
         <div className="space-y-2">
-          {keys.map((k: any) => (
+          {keys.map((k) => (
             <div key={k.id} className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
               <Key className="h-4 w-4 text-gray-400 shrink-0" />
               <div className="flex-1 min-w-0">
@@ -88,7 +99,7 @@ export function ApiKeySettings({ apiKeys: initialKeys }: ApiKeySettingsProps) {
                   {!k.isActive && <span className="text-xs text-red-500 font-medium">Vô hiệu</span>}
                 </div>
                 <div className="text-xs text-gray-400 mt-0.5">
-                  Tạo {formatDate(k.createdAt)}
+                  Tạo {k.createdAt ? formatDate(k.createdAt) : '—'}
                   {k.lastUsedAt && <> · Dùng lần cuối {formatDate(k.lastUsedAt)}</>}
                   {k.creator?.name && <> · bởi {k.creator.name}</>}
                 </div>

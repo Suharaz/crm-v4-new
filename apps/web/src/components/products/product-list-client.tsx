@@ -17,10 +17,11 @@ import { productSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas
 import { Plus, Pencil, Trash2, Power } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
+import type { ProductRecord, NamedEntity, SettingsItem } from '@/types/entities';
 
 interface ProductListClientProps {
-  products: any[];
-  categories: any[];
+  products: ProductRecord[];
+  categories: NamedEntity[];
 }
 
 /** Products & categories page with tabs. */
@@ -30,8 +31,8 @@ export function ProductListClient({ products, categories }: ProductListClientPro
   const isAdmin = user?.role === 'SUPER_ADMIN';
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any | null>(null);
-  const [viewingProduct, setViewingProduct] = useState<any | null>(null);
+  const [editingProduct, setEditingProduct] = useState<ProductRecord | null>(null);
+  const [viewingProduct, setViewingProduct] = useState<ProductRecord | null>(null);
   const [form, setForm] = useState({ name: '', price: '', description: '', categoryId: '', vatRate: '0' });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -49,7 +50,7 @@ export function ProductListClient({ products, categories }: ProductListClientPro
   });
   const [toggling, setToggling] = useState<string | null>(null);
 
-  async function toggleActive(p: any) {
+  async function toggleActive(p: ProductRecord) {
     setToggling(p.id);
     try {
       await api.patch(`/products/${p.id}`, { isActive: !p.isActive });
@@ -72,7 +73,7 @@ export function ProductListClient({ products, categories }: ProductListClientPro
     setDialogOpen(true);
   }
 
-  function openEdit(p: any) {
+  function openEdit(p: ProductRecord) {
     setEditingProduct(p);
     setForm({
       name: p.name || '',
@@ -92,7 +93,7 @@ export function ProductListClient({ products, categories }: ProductListClientPro
       return;
     }
     setFieldErrors({});
-    const body: Record<string, any> = { name: form.name, price: Number(form.price) };
+    const body: Record<string, unknown> = { name: form.name, price: Number(form.price) };
     if (form.description) body.description = form.description;
     if (form.categoryId) body.categoryId = form.categoryId;
     body.vatRate = Number(form.vatRate) || 0;
@@ -128,7 +129,7 @@ export function ProductListClient({ products, categories }: ProductListClientPro
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {products.length === 0 ? (
               <div className="col-span-full rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có sản phẩm nào</div>
-            ) : products.map((p: any) => (
+            ) : products.map((p) => (
               <div key={p.id} className={`rounded-xl border p-5 cursor-pointer hover:shadow-sm transition-all ${p.isActive ? 'border-gray-200 bg-white hover:border-sky-200' : 'border-gray-100 bg-gray-50 opacity-60'}`} onClick={() => setViewingProduct(p)}>
                 <div className="flex items-start justify-between">
                   <div>
@@ -176,7 +177,7 @@ export function ProductListClient({ products, categories }: ProductListClientPro
         {/* ── Tab: Danh mục ── */}
         <TabsContent value="categories">
           <SettingsCrudList
-            data={categories}
+            data={categories as SettingsItem[]}
             endpoint="/product-categories"
             entityName="Danh mục sản phẩm"
             fields={[{ key: 'name', label: 'Tên danh mục', required: true, placeholder: 'VD: Khóa học, Tư vấn...' }]}

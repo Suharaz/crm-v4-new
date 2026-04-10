@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useFormAction } from '@/hooks/use-form-action';
 import { Pencil, UserX } from 'lucide-react';
+import type { UserRecord } from '@/types/entities';
 
 const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: 'Super Admin',
@@ -14,7 +15,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 interface UserTableProps {
-  users: any[];
+  users: UserRecord[];
 }
 
 export function UserTable({ users }: UserTableProps) {
@@ -37,7 +38,7 @@ export function UserTable({ users }: UserTableProps) {
         <tbody>
           {users.length === 0 ? (
             <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Không có nhân viên nào</td></tr>
-          ) : users.map((u: any) => (
+          ) : users.map((u) => (
             <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50">
               <td className="px-4 py-3 font-medium text-gray-900">{u.name}</td>
               <td className="hidden md:table-cell px-4 py-3 text-gray-600">{u.email}</td>

@@ -44,7 +44,7 @@ export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
 
   // Apply state
   const [applyId, setApplyId] = useState<string | null>(null);
-  const [poolLeads, setPoolLeads] = useState<any[]>([]);
+  const [poolLeads, setPoolLeads] = useState<{ id: string }[]>([]);
   const [applying, setApplying] = useState(false);
 
   useEffect(() => {
@@ -93,8 +93,8 @@ export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
       }
       toast.success('Đã lưu template');
       setDialogOpen(false);
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi lưu template');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi lưu template');
     } finally {
       setSaving(false);
     }
@@ -105,15 +105,15 @@ export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
       await api.delete(`/assignment-templates/${id}`);
       setTemplates(prev => prev.filter(t => t.id !== id));
       toast.success('Đã xóa template');
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi xóa');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi xóa');
     }
   }
 
   async function openApply(templateId: string) {
     setApplyId(templateId);
     try {
-      const res = await api.get<{ data: any[] }>('/leads/pool/new?limit=100');
+      const res = await api.get<{ data: { id: string }[] }>('/leads/pool/new?limit=100');
       setPoolLeads(res.data || []);
     } catch {
       setPoolLeads([]);
@@ -131,8 +131,8 @@ export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
       toast.success(`Đã phân phối ${res.data?.assigned ?? 0} leads theo template`);
       setApplyId(null);
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi phân phối');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi phân phối');
     } finally {
       setApplying(false);
     }

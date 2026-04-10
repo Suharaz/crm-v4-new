@@ -1,9 +1,10 @@
 'use client';
 
 import { SettingsCrudList } from '@/components/settings/settings-crud-list';
+import type { SettingsItem } from '@/types/entities';
 
 interface LabelSettingsProps {
-  data: any[];
+  data: SettingsItem[];
   canEdit: boolean;
 }
 
@@ -21,9 +22,9 @@ export function LabelSettings({ data, canEdit }: LabelSettingsProps) {
       ]}
       renderItem={(item) => (
         <div className="flex items-center gap-2">
-          <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
+          <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: item.color as string | undefined }} />
           <span className="text-sm text-gray-700">{item.name}</span>
-          {item.category && <span className="text-xs text-gray-400">{item.category}</span>}
+          {Boolean(item.category) && <span className="text-xs text-gray-400">{String(item.category)}</span>}
         </div>
       )}
     />

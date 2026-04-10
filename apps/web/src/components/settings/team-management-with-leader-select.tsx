@@ -71,21 +71,21 @@ export function TeamManagementWithLeaderSelect({ departments, users, canEdit }: 
     setSaving(true);
     try {
       if (editingId) {
-        const body: any = { name: name.trim() };
+        const body: Record<string, unknown> = { name: name.trim() };
         if (leaderId) body.leaderId = leaderId;
         const res = await api.patch<{ data: Team }>(`/teams/${editingId}`, body);
         setTeams(prev => prev.map(t => t.id === editingId ? res.data : t));
       } else {
         if (!deptId) { toast.error('Chọn phòng ban'); setSaving(false); return; }
-        const body: any = { name: name.trim(), departmentId: deptId };
+        const body: Record<string, unknown> = { name: name.trim(), departmentId: deptId };
         if (leaderId) body.leaderId = leaderId;
         const res = await api.post<{ data: Team }>('/teams', body);
         setTeams(prev => [...prev, res.data]);
       }
       toast.success('Đã lưu team');
       setDialogOpen(false);
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi');
     } finally {
       setSaving(false);
     }
@@ -96,8 +96,8 @@ export function TeamManagementWithLeaderSelect({ departments, users, canEdit }: 
       await api.delete(`/teams/${id}`);
       setTeams(prev => prev.filter(t => t.id !== id));
       toast.success('Đã xóa team');
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi xóa');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi xóa');
     }
   }
 

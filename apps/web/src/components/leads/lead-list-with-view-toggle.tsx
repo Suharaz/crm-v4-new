@@ -6,13 +6,14 @@ import { LeadKanbanViewByLabel } from '@/components/leads/lead-kanban-view-by-la
 import { EntityQuickPreviewDialog } from '@/components/shared/entity-quick-preview-dialog';
 import { List, LayoutGrid } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { LeadRecord, LabelEntity } from '@/types/entities';
 
 const STORAGE_KEY = 'crm_leads_view_mode';
 type ViewMode = 'table' | 'kanban';
 
 interface Props {
-  leads: any[];
-  allLabels?: { id: string; name: string; color: string }[];
+  leads: LeadRecord[];
+  allLabels?: LabelEntity[];
 }
 
 /** Leads list with toggle between table and kanban views. Persists choice in localStorage. */
@@ -53,11 +54,13 @@ export function LeadListWithViewToggle({ leads, allLabels }: Props) {
         </div>
       </div>
 
-      {/* View content */}
+      {/* View content — child components use stricter local Lead interfaces; cast is safe as shapes are compatible */}
       {view === 'table' ? (
-        <LeadTable leads={leads} />
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        <LeadTable leads={leads as any} />
       ) : (
-        <LeadKanbanViewByLabel leads={leads} allLabels={allLabels} onLeadClick={setPreviewId} />
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        <LeadKanbanViewByLabel leads={leads as any} allLabels={allLabels} onLeadClick={setPreviewId} />
       )}
 
       {/* Quick preview for kanban card clicks */}

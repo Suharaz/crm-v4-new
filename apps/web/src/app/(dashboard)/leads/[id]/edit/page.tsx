@@ -2,23 +2,26 @@ import { serverFetch } from '@/lib/auth';
 import { LeadForm } from '@/components/leads/lead-form';
 import { BackButton } from '@/components/shared/back-button';
 import { notFound } from 'next/navigation';
+import type { LeadRecord, NamedEntity } from '@/types/entities';
 
 /** Edit lead page. */
 export default async function EditLeadPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  let lead: any;
-  let sources: any[] = [];
-  let products: any[] = [];
+  let leadData: LeadRecord | undefined;
+  let sources: NamedEntity[] = [];
+  let products: NamedEntity[] = [];
 
   try {
-    [lead, sources, products] = await Promise.all([
-      serverFetch<{ data: any }>(`/leads/${id}`).then(r => r.data),
-      serverFetch<{ data: any[] }>('/lead-sources').then(r => r.data),
-      serverFetch<{ data: any[] }>('/products').then(r => r.data),
+    [leadData, sources, products] = await Promise.all([
+      serverFetch<{ data: LeadRecord }>(`/leads/${id}`).then(r => r.data),
+      serverFetch<{ data: NamedEntity[] }>('/lead-sources').then(r => r.data),
+      serverFetch<{ data: NamedEntity[] }>('/products').then(r => r.data),
     ]);
   } catch {
     notFound();
   }
+
+  const lead = leadData as LeadRecord;
 
   return (
     <div>

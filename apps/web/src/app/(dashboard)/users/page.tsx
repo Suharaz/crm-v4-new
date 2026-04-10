@@ -1,4 +1,5 @@
 import { serverFetch } from '@/lib/auth';
+import type { UserRecord } from '@/types/entities';
 import { UserTable } from '@/components/users/user-table';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import Link from 'next/link';
@@ -10,10 +11,10 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
   const params = await searchParams;
   const query = new URLSearchParams(params).toString();
 
-  let users: any[] = [];
+  let users: UserRecord[] = [];
   let nextCursor: string | undefined;
   try {
-    const result = await serverFetch<{ data: any[]; nextCursor?: string }>(`/users?${query}`);
+    const result = await serverFetch<{ data: UserRecord[]; nextCursor?: string }>(`/users?${query}`);
     users = result.data;
     nextCursor = result.nextCursor;
   } catch { /* empty */ }

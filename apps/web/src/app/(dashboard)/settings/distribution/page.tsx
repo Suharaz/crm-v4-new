@@ -1,18 +1,19 @@
 import { serverFetch } from '@/lib/auth';
+import type { NamedEntity } from '@/types/entities';
 import { DistributionAiWeightConfigClient } from '@/components/settings/distribution-ai-weight-config-client';
 import { AssignmentTemplateCrudWithApply } from '@/components/settings/assignment-template-crud-with-apply';
 
 /** Distribution config page — AI weights + manual assignment templates. */
 export default async function DistributionSettingsPage() {
   let departments: { id: string; name: string }[] = [];
-  let users: { id: string; name: string }[] = [];
+  let users: { id: string; name: string; departmentId?: string }[] = [];
   try {
     const [deptRes, usersRes] = await Promise.all([
-      serverFetch<{ data: { id: string; name: string }[] }>('/departments'),
-      serverFetch<{ data: any[] }>('/users').catch(() => ({ data: [] })),
+      serverFetch<{ data: NamedEntity[] }>('/departments'),
+      serverFetch<{ data: NamedEntity[] }>('/users').catch(() => ({ data: [] })),
     ]);
     departments = deptRes.data;
-    users = (usersRes.data || []).map((u: any) => ({ id: String(u.id), name: u.name, departmentId: u.departmentId ? String(u.departmentId) : undefined }));
+    users = (usersRes.data || []).map((u: NamedEntity & { departmentId?: string }) => ({ id: String(u.id), name: u.name, departmentId: u.departmentId ? String(u.departmentId) : undefined }));
   } catch { /* empty */ }
 
   return (

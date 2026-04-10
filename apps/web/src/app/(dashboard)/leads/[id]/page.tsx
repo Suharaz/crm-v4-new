@@ -1,4 +1,5 @@
 import { serverFetch } from '@/lib/auth';
+import type { LeadRecord, NamedEntity, LabelEntity, ActivityRecord, OrderRecord, ProductRecord } from '@/types/entities';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { ActivityTimelineWithFilterTabs } from '@/components/shared/activity-timeline-with-filter-tabs';
 import { LeadActions } from '@/components/leads/lead-actions';
@@ -13,34 +14,37 @@ import { BackButton } from '@/components/shared/back-button';
 /** Lead detail page: profile header + sidebar + orders + timeline. */
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  let lead: any;
+  let leadData: LeadRecord | undefined;
 
   try {
-    const result = await serverFetch<{ data: any }>(`/leads/${id}`);
-    lead = result.data;
+    const result = await serverFetch<{ data: LeadRecord }>(`/leads/${id}`);
+    leadData = result.data;
   } catch {
     notFound();
   }
 
-  let activities: any[] = [];
-  let users: any[] = [];
-  let departments: any[] = [];
-  let labels: any[] = [];
-  let products: any[] = [];
-  let paymentTypes: any[] = [];
+  // notFound() throws, so leadData is always defined here
+  const lead = leadData as LeadRecord;
+
+  let activities: ActivityRecord[] = [];
+  let users: NamedEntity[] = [];
+  let departments: NamedEntity[] = [];
+  let labels: LabelEntity[] = [];
+  let products: ProductRecord[] = [];
+  let paymentTypes: NamedEntity[] = [];
 
   try {
     [activities, users, departments, labels, products, paymentTypes] = await Promise.all([
-      serverFetch<{ data: any[] }>(`/leads/${id}/activities`).then(r => r.data).catch(() => []),
-      serverFetch<{ data: any[] }>('/users').then(r => r.data).catch(() => []),
-      serverFetch<{ data: any[] }>('/departments').then(r => r.data).catch(() => []),
-      serverFetch<{ data: any[] }>('/labels').then(r => r.data).catch(() => []),
-      serverFetch<{ data: any[] }>('/products').then(r => r.data).catch(() => []),
-      serverFetch<{ data: any[] }>('/payment-types').then(r => r.data).catch(() => []),
+      serverFetch<{ data: ActivityRecord[] }>(`/leads/${id}/activities`).then(r => r.data).catch(() => []),
+      serverFetch<{ data: NamedEntity[] }>('/users').then(r => r.data).catch(() => []),
+      serverFetch<{ data: NamedEntity[] }>('/departments').then(r => r.data).catch(() => []),
+      serverFetch<{ data: LabelEntity[] }>('/labels').then(r => r.data).catch(() => []),
+      serverFetch<{ data: ProductRecord[] }>('/products').then(r => r.data).catch(() => []),
+      serverFetch<{ data: NamedEntity[] }>('/payment-types').then(r => r.data).catch(() => []),
     ]);
   } catch { /* partial ok */ }
 
-  const meta = lead.metadata as any;
+  const meta = lead.metadata;
   const aiScore = meta?.aiScore;
   const aiLevel = meta?.aiLevel;
   const aiSummary = meta?.aiSummary;
@@ -108,9 +112,9 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             </div>
 
             {/* Row 4: Labels */}
-            {lead.labels?.length > 0 && (
+            {(lead.labels?.length ?? 0) > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2.5">
-                {lead.labels.map((ll: any) => (
+                {lead.labels!.map((ll) => (
                   <span key={ll.label.id} className="rounded-full px-2.5 py-0.5 text-xs font-medium text-white" style={{ backgroundColor: ll.label.color }}>
                     {ll.label.name}
                   </span>
@@ -137,7 +141,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-gray-100">
           <LeadActions lead={lead} users={users} departments={departments} labels={labels} />
           {['IN_PROGRESS', 'CONVERTED'].includes(lead.status) && (
-            <CreateOrderDialog customerId={lead.customerId} leadId={lead.id} products={products} paymentTypes={paymentTypes} />
+            <CreateOrderDialog customerId={lead.customerId ?? ''} leadId={lead.id} products={products} paymentTypes={paymentTypes} />
           )}
         </div>
       </div>
@@ -158,7 +162,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                 <div className="flex items-center gap-2">
                   <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
                   <span className="text-gray-500">Khách hàng</span>
-                  <Link href={`/customers/${lead.customerId}`} className="ml-auto text-sky-600 hover:underline text-sm">
+                  <Link href={`/customers/${lead.customerId ?? ''}`} className="ml-auto text-sky-600 hover:underline text-sm">
                     {lead.customer.name}
                   </Link>
                 </div>
@@ -189,7 +193,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="mb-3 font-semibold text-gray-900 text-sm">Đơn hàng ({orders.length})</h3>
               <div className="space-y-2.5">
-                {orders.map((o: any) => (
+                {(orders as OrderRecord[]).map((o) => (
                   <div key={o.id} className="rounded-lg border border-gray-100 bg-gray-50/50">
                     <div className="flex items-center justify-between px-3 py-2">
                       <div className="flex items-center gap-2">
@@ -201,9 +205,9 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                         <StatusBadge status={o.status} />
                       </div>
                     </div>
-                    {o.payments?.length > 0 && (
+                    {(o.payments?.length ?? 0) > 0 && (
                       <div className="border-t border-gray-100 px-3 py-1.5 space-y-1">
-                        {o.payments.map((p: any) => (
+                        {o.payments!.map((p) => (
                           <div key={p.id} className="flex items-center justify-between text-xs text-gray-500">
                             <span>{p.paymentType?.name || 'CK'} {p.transferContent ? `— ${p.transferContent}` : ''}</span>
                             <div className="flex items-center gap-1.5">
@@ -221,7 +225,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
           )}
 
           {/* Activity timeline */}
-          <ActivityTimelineWithFilterTabs activities={activities} />
+          <ActivityTimelineWithFilterTabs activities={activities as unknown as Parameters<typeof ActivityTimelineWithFilterTabs>[0]['activities']} />
         </div>
       </div>
     </div>

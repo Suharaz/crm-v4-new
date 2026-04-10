@@ -27,8 +27,8 @@ export function CustomerAnalysisCard({ customerId, shortDescription, description
       await api.post(`/customers/${customerId}/analyze`, {});
       toast.success('Phân tích hoàn tất');
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi phân tích');
+    } catch (err: unknown) {
+      toast.error((err as { message?: string }).message || 'Lỗi phân tích');
     } finally {
       setAnalyzing(false);
     }

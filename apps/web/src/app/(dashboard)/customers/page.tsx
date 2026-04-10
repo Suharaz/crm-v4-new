@@ -1,4 +1,5 @@
 import { serverFetch, getCurrentUser } from '@/lib/auth';
+import type { CustomerRecord, NamedEntity, LabelEntity, ApiListResponse } from '@/types/entities';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import { CustomerTableWithPreview } from '@/components/customers/customer-table-with-preview';
 import { CustomerListAdvancedFilterBar } from '@/components/customers/customer-list-advanced-filter-bar';
@@ -15,24 +16,24 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const currentUser = await getCurrentUser();
   const isManager = ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
 
-  let data: any[] = [];
+  let data: CustomerRecord[] = [];
   let nextCursor: string | undefined;
-  let departments: any[] = [];
-  let users: any[] = [];
-  let labels: any[] = [];
+  let departments: NamedEntity[] = [];
+  let users: NamedEntity[] = [];
+  let labels: LabelEntity[] = [];
 
   try {
     const [result, deptRes, usersRes, labelsRes] = await Promise.all([
-      serverFetch<{ data: any[]; meta?: { nextCursor?: string } }>(`/customers?${query}`),
-      serverFetch<{ data: any[] }>('/departments').catch(() => ({ data: [] })),
-      serverFetch<{ data: any[] }>('/users').catch(() => ({ data: [] })),
-      serverFetch<{ data: any[] }>('/labels').catch(() => ({ data: [] })),
+      serverFetch<ApiListResponse<CustomerRecord>>(`/customers?${query}`),
+      serverFetch<{ data: NamedEntity[] }>('/departments').catch(() => ({ data: [] })),
+      serverFetch<{ data: NamedEntity[] }>('/users').catch(() => ({ data: [] })),
+      serverFetch<{ data: LabelEntity[] }>('/labels').catch(() => ({ data: [] })),
     ]);
     data = result.data;
     nextCursor = result.meta?.nextCursor;
-    departments = (deptRes.data || []).map((d: any) => ({ id: String(d.id), name: d.name }));
-    users = (usersRes.data || []).map((u: any) => ({ id: String(u.id), name: u.name }));
-    labels = (labelsRes.data || []).map((l: any) => ({ id: String(l.id), name: l.name, color: l.color || '#6b7280' }));
+    departments = (deptRes.data || []).map((d: NamedEntity) => ({ id: String(d.id), name: d.name }));
+    users = (usersRes.data || []).map((u: NamedEntity) => ({ id: String(u.id), name: u.name }));
+    labels = (labelsRes.data || []).map((l: LabelEntity) => ({ id: String(l.id), name: l.name, color: l.color || '#6b7280' }));
   } catch { /* empty */ }
 
   return (
@@ -57,7 +58,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
       </div>
 
       <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 bg-white">
-        <CustomerTableWithPreview customers={data} />
+        <CustomerTableWithPreview customers={data as unknown as Parameters<typeof CustomerTableWithPreview>[0]['customers']} />
       </div>
       <PaginationControls nextCursor={nextCursor} />
     </div>

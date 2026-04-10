@@ -11,11 +11,12 @@ import { useFormAction } from '@/hooks/use-form-action';
 import { leadSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/providers/auth-provider';
+import type { LeadRecord, NamedEntity } from '@/types/entities';
 
 interface LeadFormProps {
-  lead?: any;
-  sources: any[];
-  products: any[];
+  lead?: LeadRecord;
+  sources: NamedEntity[];
+  products: NamedEntity[];
 }
 
 /** Create/edit form for leads. */
@@ -52,7 +53,7 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
     if (isEdit || form.phone.length < 10) { setPhoneDuplicate(null); return; }
     const timer = setTimeout(async () => {
       try {
-        const res = await api.get<{ data: any[] }>(`/customers/search?phone=${form.phone}`);
+        const res = await api.get<{ data: { name: string; phone: string; email?: string }[] }>(`/customers/search?phone=${form.phone}`);
         const match = res.data?.[0];
         if (match) {
           // Auto-fill empty fields from customer data
@@ -87,7 +88,7 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
       return;
     }
     setFieldErrors({});
-    const body: Record<string, any> = {
+    const body: Record<string, unknown> = {
       phone: form.phone,
       name: form.name,
     };

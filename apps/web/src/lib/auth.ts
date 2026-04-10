@@ -1,6 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import type { UserRecord } from '@/types/entities';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/api/v1';
 
@@ -34,7 +35,7 @@ export async function serverFetch<T>(path: string, options: RequestInit = {}): P
 /** Get current user info (server-side). */
 export async function getCurrentUser() {
   try {
-    const result = await serverFetch<{ data: any }>('/auth/me');
+    const result = await serverFetch<{ data: UserRecord }>('/auth/me');
     return result.data;
   } catch {
     return null;

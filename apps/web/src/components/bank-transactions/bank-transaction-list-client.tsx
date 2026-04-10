@@ -9,10 +9,11 @@ import { formatDate, formatVND } from '@/lib/utils';
 import { Link2, CheckCircle, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import type { BankTransactionRecord, PaymentRecord } from '@/types/entities';
 
 interface Props {
-  transactions: any[];
-  pendingPayments: any[];
+  transactions: BankTransactionRecord[];
+  pendingPayments: PaymentRecord[];
 }
 
 export function BankTransactionListClient({ transactions, pendingPayments }: Props) {
@@ -33,8 +34,8 @@ export function BankTransactionListClient({ transactions, pendingPayments }: Pro
       setExpandedId(null);
       setSelectedPayment('');
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi match');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi match');
     }
     setMatching(false);
   }
@@ -72,7 +73,7 @@ export function BankTransactionListClient({ transactions, pendingPayments }: Pro
               </tr>
             </thead>
             <tbody>
-              {filtered.map((tx: any) => {
+              {filtered.map((tx) => {
                 const isExpanded = expandedId === String(tx.id);
                 const isUnmatched = tx.matchStatus === 'UNMATCHED';
                 return (
@@ -91,8 +92,8 @@ export function BankTransactionListClient({ transactions, pendingPayments }: Pro
 }
 
 function TxRow({ tx, isExpanded, isUnmatched, onToggle, pendingPayments, selectedPayment, onSelectPayment, onMatch, matching }: {
-  tx: any; isExpanded: boolean; isUnmatched: boolean; onToggle: () => void;
-  pendingPayments: any[]; selectedPayment: string; onSelectPayment: (v: string) => void;
+  tx: BankTransactionRecord; isExpanded: boolean; isUnmatched: boolean; onToggle: () => void;
+  pendingPayments: PaymentRecord[]; selectedPayment: string; onSelectPayment: (v: string) => void;
   onMatch: () => void; matching: boolean;
 }) {
   return (
@@ -127,7 +128,7 @@ function TxRow({ tx, isExpanded, isUnmatched, onToggle, pendingPayments, selecte
                     <Select value={selectedPayment} onValueChange={onSelectPayment}>
                       <SelectTrigger><SelectValue placeholder="Chọn thanh toán..." /></SelectTrigger>
                       <SelectContent>
-                        {pendingPayments.map((p: any) => (
+                        {pendingPayments.map((p) => (
                           <SelectItem key={p.id} value={String(p.id)}>
                             #{p.id} — {formatVND(Number(p.amount))} {p.transferContent ? `— ${p.transferContent}` : ''}
                           </SelectItem>

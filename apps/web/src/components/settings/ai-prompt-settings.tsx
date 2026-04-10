@@ -83,8 +83,8 @@ export function AiPromptSettings({ initialSettings }: Props) {
     try {
       await api.put(`/system-settings/${key}`, { value });
       toast.success(`Đã lưu ${label}`);
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi lưu');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi lưu');
     } finally {
       setSaving(null);
     }

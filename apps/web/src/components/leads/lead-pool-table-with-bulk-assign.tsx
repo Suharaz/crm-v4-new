@@ -56,7 +56,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
 
   useEffect(() => {
     if (!isManager) return;
-    api.get<{ data: any[] }>('/assignment-templates').then(res => setTemplates(res.data || [])).catch(() => {});
+    api.get<{ data: typeof templates }>('/assignment-templates').then(res => setTemplates(res.data || [])).catch(() => {});
   }, [isManager]);
 
   // Auto-refresh polling (30s) — only for poolMode 'new'
@@ -112,8 +112,8 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
       const { assigned, skipped } = res.data;
       toast.success(`Đã phân ${assigned} leads thành công${skipped > 0 ? ` (${skipped} bỏ qua)` : ''}`);
       await fetchLeads();
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi phân phối hàng loạt');
+    } catch (err: unknown) {
+      toast.error((err as { message?: string }).message || 'Lỗi phân phối hàng loạt');
     }
     setBulkAssigning(false);
     setBulkDialogOpen(false);
@@ -131,8 +131,8 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
       );
       toast.success(`Đã phân phối ${res.data?.assigned ?? 0} leads theo template`);
       await fetchLeads();
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi phân phối theo template');
+    } catch (err: unknown) {
+      toast.error((err as { message?: string }).message || 'Lỗi phân phối theo template');
     }
     setTemplateApplying(false);
     setTemplateDialogOpen(false);
@@ -145,8 +145,8 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
       await api.post(`/leads/${leadId}/recall`);
       toast.success('Đã thu hồi lead về Kho Mới');
       await fetchLeads();
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi thu hồi');
+    } catch (err: unknown) {
+      toast.error((err as { message?: string }).message || 'Lỗi thu hồi');
     }
   }
 
@@ -161,8 +161,8 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
       toast.success(`Đã thu hồi ${res.data?.recalled ?? 0} leads`);
       await fetchLeads();
       setSelected(new Set());
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi thu hồi hàng loạt');
+    } catch (err: unknown) {
+      toast.error((err as { message?: string }).message || 'Lỗi thu hồi hàng loạt');
     }
     setRecalling(false);
   }

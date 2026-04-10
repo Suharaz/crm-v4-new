@@ -9,11 +9,12 @@ import { formatDate, formatVND } from '@/lib/utils';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import type { PaymentRecord, BankTransactionRecord } from '@/types/entities';
 
 interface Props {
-  pendingPayments: any[];
-  unmatchedTx: any[];
-  verifiedPayments: any[];
+  pendingPayments: PaymentRecord[];
+  unmatchedTx: BankTransactionRecord[];
+  verifiedPayments: PaymentRecord[];
 }
 
 export function PaymentReconciliationClient({ pendingPayments: initPending, unmatchedTx: initTx, verifiedPayments }: Props) {
@@ -38,7 +39,7 @@ export function PaymentReconciliationClient({ pendingPayments: initPending, unma
       setSelectedRight(null);
       toast.success('Đã xác minh thành công');
       router.refresh();
-    } catch (err: any) { toast.error(err.message || 'Lỗi xác minh'); }
+    } catch (err: unknown) { toast.error(err instanceof Error ? err.message : 'Lỗi xác minh'); }
     setProcessing(false);
   }
 
@@ -52,7 +53,7 @@ export function PaymentReconciliationClient({ pendingPayments: initPending, unma
       setSelectedLeft(null);
       toast.success('Đã xác nhận');
       router.refresh();
-    } catch (err: any) { toast.error(err.message || 'Lỗi'); }
+    } catch (err: unknown) { toast.error(err instanceof Error ? err.message : 'Lỗi'); }
     setProcessing(false);
   }
 
@@ -66,7 +67,7 @@ export function PaymentReconciliationClient({ pendingPayments: initPending, unma
       setSelectedLeft(null);
       toast.success('Đã từ chối');
       router.refresh();
-    } catch (err: any) { toast.error(err.message || 'Lỗi'); }
+    } catch (err: unknown) { toast.error(err instanceof Error ? err.message : 'Lỗi'); }
     setProcessing(false);
   }
 
@@ -115,7 +116,7 @@ export function PaymentReconciliationClient({ pendingPayments: initPending, unma
                 <div className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-400">Không có</div>
               ) : (
                 <div className="space-y-1.5 max-h-[60vh] overflow-y-auto">
-                  {pending.map((p: any) => {
+                  {pending.map((p) => {
                     const id = String(p.id);
                     const selected = selectedLeft === id;
                     return (
@@ -149,7 +150,7 @@ export function PaymentReconciliationClient({ pendingPayments: initPending, unma
                 <div className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-400">Tất cả đã match</div>
               ) : (
                 <div className="space-y-1.5 max-h-[60vh] overflow-y-auto">
-                  {unmatched.map((tx: any) => {
+                  {unmatched.map((tx) => {
                     const id = String(tx.id);
                     const selected = selectedRight === id;
                     return (
@@ -192,7 +193,7 @@ export function PaymentReconciliationClient({ pendingPayments: initPending, unma
                   </tr>
                 </thead>
                 <tbody>
-                  {verifiedPayments.map((p: any) => (
+                  {verifiedPayments.map((p) => (
                     <tr key={p.id} className="border-b border-gray-100 last:border-0">
                       <td className="px-4 py-3 text-gray-500">#{p.id}</td>
                       <td className="px-4 py-3 text-right font-semibold text-gray-900">{formatVND(Number(p.amount))}</td>
@@ -203,7 +204,7 @@ export function PaymentReconciliationClient({ pendingPayments: initPending, unma
                           {p.verifiedSource === 'AUTO' ? 'Auto' : 'Thủ công'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-400">{formatDate(p.verifiedAt)} {p.verifier?.name && `· ${p.verifier.name}`}</td>
+                      <td className="px-4 py-3 text-xs text-gray-400">{p.verifiedAt ? formatDate(p.verifiedAt) : '—'} {p.verifier?.name && `· ${p.verifier.name}`}</td>
                     </tr>
                   ))}
                 </tbody>

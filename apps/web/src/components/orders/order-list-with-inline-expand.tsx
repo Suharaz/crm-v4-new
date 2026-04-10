@@ -5,9 +5,10 @@ import { StatusBadge } from '@/components/shared/status-badge';
 import { formatDate, formatVND } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { OrderRecord } from '@/types/entities';
 
 interface OrderListWithInlineExpandProps {
-  orders: any[];
+  orders: OrderRecord[];
 }
 
 /** Orders table with inline expandable detail row showing payments + notes. */
@@ -37,7 +38,7 @@ export function OrderListWithInlineExpand({ orders }: OrderListWithInlineExpandP
           </tr>
         </thead>
         <tbody>
-          {orders.map((o: any) => {
+          {orders.map((o) => {
             const isExpanded = expandedId === String(o.id);
             return (
               <OrderRow key={o.id} order={o} isExpanded={isExpanded} onToggle={() => toggle(String(o.id))} />
@@ -49,7 +50,7 @@ export function OrderListWithInlineExpand({ orders }: OrderListWithInlineExpandP
   );
 }
 
-function OrderRow({ order: o, isExpanded, onToggle }: { order: any; isExpanded: boolean; onToggle: () => void }) {
+function OrderRow({ order: o, isExpanded, onToggle }: { order: OrderRecord; isExpanded: boolean; onToggle: () => void }) {
   return (
     <>
       <tr
@@ -77,7 +78,7 @@ function OrderRow({ order: o, isExpanded, onToggle }: { order: any; isExpanded: 
   );
 }
 
-function OrderExpandedDetail({ order: o }: { order: any }) {
+function OrderExpandedDetail({ order: o }: { order: OrderRecord }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
       {/* Left: order info */}
@@ -101,7 +102,7 @@ function OrderExpandedDetail({ order: o }: { order: any }) {
           <p className="text-gray-400">Chưa có thanh toán</p>
         ) : (
           <div className="space-y-2">
-            {o.payments.map((p: any) => (
+            {o.payments.map((p) => (
               <div key={p.id} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2">
                 <div>
                   <span className="font-medium">{p.paymentType?.name}</span>

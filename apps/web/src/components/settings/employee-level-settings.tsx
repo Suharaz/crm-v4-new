@@ -1,9 +1,10 @@
 'use client';
 
 import { SettingsCrudList } from '@/components/settings/settings-crud-list';
+import type { SettingsItem } from '@/types/entities';
 
 interface EmployeeLevelSettingsProps {
-  data: any[];
+  data: SettingsItem[];
   canEdit: boolean;
 }
 
@@ -22,8 +23,8 @@ export function EmployeeLevelSettings({ data, canEdit }: EmployeeLevelSettingsPr
       renderItem={(item) => (
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-700">{item.name}</span>
-          <span className="text-xs text-gray-400">Rank: {item.rank}</span>
-          {item.maxLeads && <span className="text-xs bg-amber-100 text-amber-700 rounded px-1.5 py-0.5">Max: {item.maxLeads}</span>}
+          <span className="text-xs text-gray-400">Rank: {String(item.rank ?? '')}</span>
+          {Boolean(item.maxLeads) && <span className="text-xs bg-amber-100 text-amber-700 rounded px-1.5 py-0.5">Max: {String(item.maxLeads)}</span>}
         </div>
       )}
     />

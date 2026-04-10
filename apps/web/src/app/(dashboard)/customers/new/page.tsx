@@ -1,16 +1,17 @@
 import { serverFetch } from '@/lib/auth';
 import { CustomerForm } from '@/components/customers/customer-form';
 import { BackButton } from '@/components/shared/back-button';
+import type { NamedEntity } from '@/types/entities';
 
 /** Create new customer page. */
 export default async function CreateCustomerPage() {
-  let departments: any[] = [];
-  let users: any[] = [];
+  let departments: NamedEntity[] = [];
+  let users: NamedEntity[] = [];
 
   try {
     [departments, users] = await Promise.all([
-      serverFetch<{ data: any[] }>('/departments').then(r => r.data),
-      serverFetch<{ data: any[] }>('/users').then(r => r.data),
+      serverFetch<{ data: NamedEntity[] }>('/departments').then(r => r.data),
+      serverFetch<{ data: NamedEntity[] }>('/users').then(r => r.data),
     ]);
   } catch { /* empty */ }
 

@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { serverFetch, getCurrentUser } from '@/lib/auth';
+import type { LeadRecord, NamedEntity, LabelEntity, ApiListResponse } from '@/types/entities';
 import { LeadListAdvancedFilterBar } from '@/components/leads/lead-list-advanced-filter-bar';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import { LeadListWithViewToggle } from '@/components/leads/lead-list-with-view-toggle';
@@ -14,30 +15,30 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   const currentUser = await getCurrentUser();
   const isManager = ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
 
-  let data: any[] = [];
+  let data: LeadRecord[] = [];
   let nextCursor: string | undefined;
-  let sources: any[] = [];
-  let products: any[] = [];
-  let users: any[] = [];
-  let departments: any[] = [];
-  let labels: any[] = [];
+  let sources: NamedEntity[] = [];
+  let products: NamedEntity[] = [];
+  let users: NamedEntity[] = [];
+  let departments: NamedEntity[] = [];
+  let labels: LabelEntity[] = [];
 
   try {
     const [leadsRes, srcRes, prodRes, usrRes, deptRes, lblRes] = await Promise.all([
-      serverFetch<{ data: any[]; meta?: any }>(`/leads?${query}`),
-      serverFetch<{ data: any[] }>('/lead-sources').catch(() => ({ data: [] })),
-      serverFetch<{ data: any[] }>('/products').catch(() => ({ data: [] })),
-      serverFetch<{ data: any[] }>('/users').catch(() => ({ data: [] })),
-      serverFetch<{ data: any[] }>('/departments').catch(() => ({ data: [] })),
-      serverFetch<{ data: any[] }>('/labels').catch(() => ({ data: [] })),
+      serverFetch<ApiListResponse<LeadRecord>>(`/leads?${query}`),
+      serverFetch<{ data: NamedEntity[] }>('/lead-sources').catch(() => ({ data: [] })),
+      serverFetch<{ data: NamedEntity[] }>('/products').catch(() => ({ data: [] })),
+      serverFetch<{ data: NamedEntity[] }>('/users').catch(() => ({ data: [] })),
+      serverFetch<{ data: NamedEntity[] }>('/departments').catch(() => ({ data: [] })),
+      serverFetch<{ data: LabelEntity[] }>('/labels').catch(() => ({ data: [] })),
     ]);
     data = leadsRes.data;
     nextCursor = leadsRes.meta?.nextCursor;
-    sources = (srcRes.data || []).map((s: any) => ({ id: String(s.id), name: s.name }));
-    products = (prodRes.data || []).map((p: any) => ({ id: String(p.id), name: p.name }));
-    users = (usrRes.data || []).map((u: any) => ({ id: String(u.id), name: u.name }));
-    departments = (deptRes.data || []).map((d: any) => ({ id: String(d.id), name: d.name }));
-    labels = (lblRes.data || []).map((l: any) => ({ id: String(l.id), name: l.name, color: l.color }));
+    sources = (srcRes.data || []).map((s: NamedEntity) => ({ id: String(s.id), name: s.name }));
+    products = (prodRes.data || []).map((p: NamedEntity) => ({ id: String(p.id), name: p.name }));
+    users = (usrRes.data || []).map((u: NamedEntity) => ({ id: String(u.id), name: u.name }));
+    departments = (deptRes.data || []).map((d: NamedEntity) => ({ id: String(d.id), name: d.name }));
+    labels = (lblRes.data || []).map((l: LabelEntity) => ({ id: String(l.id), name: l.name, color: l.color }));
   } catch { /* empty */ }
 
   return (
@@ -45,7 +46,6 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Leads</h1>
-          <p className="text-sm text-gray-500">Quản lý leads và phân phối</p>
         </div>
         <div className="flex gap-2">
           <CsvExportButton exportPath="/exports/leads" />

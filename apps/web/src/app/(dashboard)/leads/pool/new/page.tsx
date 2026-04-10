@@ -1,21 +1,22 @@
 import { serverFetch, getCurrentUser } from '@/lib/auth';
 import { LeadPoolTableWithBulkAssign } from '@/components/leads/lead-pool-table-with-bulk-assign';
 import { CreateLeadDialog } from '@/components/leads/create-lead-dialog';
+import type { LeadRecord, NamedEntity } from '@/types/entities';
 
 /** Kho Mới: POOL leads with no department (manager+ only). */
 export default async function PoolNewPage() {
   const currentUser = await getCurrentUser();
   const isManager = ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
 
-  let data: any[] = [];
-  let users: any[] = [];
+  let data: LeadRecord[] = [];
+  let users: NamedEntity[] = [];
   try {
     const [leadsResult, usersResult] = await Promise.all([
-      serverFetch<{ data: any[] }>('/leads/pool/new'),
-      serverFetch<{ data: any[] }>('/users'),
+      serverFetch<{ data: LeadRecord[] }>('/leads/pool/new'),
+      serverFetch<{ data: NamedEntity[] }>('/users'),
     ]);
     data = leadsResult.data;
-    users = (usersResult.data || []).map((u: any) => ({ id: String(u.id), name: u.name }));
+    users = (usersResult.data || []).map((u: NamedEntity) => ({ id: String(u.id), name: u.name }));
   } catch { /* empty */ }
 
   return (
@@ -28,7 +29,7 @@ export default async function PoolNewPage() {
         {isManager && <CreateLeadDialog />}
       </div>
       <div className="mt-4">
-        <LeadPoolTableWithBulkAssign leads={data} users={users} poolMode="new" />
+        <LeadPoolTableWithBulkAssign leads={data as unknown as Parameters<typeof LeadPoolTableWithBulkAssign>[0]['leads']} users={users} poolMode="new" />
       </div>
     </div>
   );

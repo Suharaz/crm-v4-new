@@ -7,9 +7,10 @@ import { api } from '@/lib/api-client';
 import { formatDate, formatVND } from '@/lib/utils';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import type { PaymentRecord } from '@/types/entities';
 
 interface Props {
-  payments: any[];
+  payments: PaymentRecord[];
 }
 
 /** Manager payment approval list — verify or reject pending payments in bulk. */
@@ -25,7 +26,7 @@ export function PaymentApprovalClient({ payments: initial }: Props) {
       setPayments(prev => prev.filter(p => String(p.id) !== id));
       toast.success('Đã xác nhận');
       router.refresh();
-    } catch (err: any) { toast.error(err.message || 'Lỗi'); }
+    } catch (err: unknown) { toast.error(err instanceof Error ? err.message : 'Lỗi'); }
     setProcessing(null);
   }
 
@@ -36,7 +37,7 @@ export function PaymentApprovalClient({ payments: initial }: Props) {
       setPayments(prev => prev.filter(p => String(p.id) !== id));
       toast.success('Đã từ chối');
       router.refresh();
-    } catch (err: any) { toast.error(err.message || 'Lỗi'); }
+    } catch (err: unknown) { toast.error(err instanceof Error ? err.message : 'Lỗi'); }
     setProcessing(null);
   }
 
@@ -47,7 +48,7 @@ export function PaymentApprovalClient({ payments: initial }: Props) {
   return (
     <div className="space-y-3">
       <p className="text-sm text-gray-500">{payments.length} khoản chờ duyệt</p>
-      {payments.map((p: any) => {
+      {payments.map((p) => {
         const isProcessing = processing === String(p.id);
         return (
           <div key={p.id} className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4">

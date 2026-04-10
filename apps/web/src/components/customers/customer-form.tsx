@@ -11,11 +11,12 @@ import { FormField } from '@/components/shared/form-field';
 import { useFormAction } from '@/hooks/use-form-action';
 import { customerSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
 import { useAuth } from '@/providers/auth-provider';
+import type { CustomerRecord, NamedEntity } from '@/types/entities';
 
 interface CustomerFormProps {
-  customer?: any;
-  departments: any[];
-  users: any[];
+  customer?: CustomerRecord;
+  departments: NamedEntity[];
+  users: NamedEntity[];
 }
 
 /** Create/edit form for customers. */
@@ -61,7 +62,7 @@ export function CustomerForm({ customer, departments, users }: CustomerFormProps
       return;
     }
     setFieldErrors({});
-    const body: Record<string, any> = { phone: form.phone, name: form.name };
+    const body: Record<string, unknown> = { phone: form.phone, name: form.name };
     if (form.email) body.email = form.email;
     if (form.companyName) body.companyName = form.companyName;
     if (form.facebookUrl) body.facebookUrl = form.facebookUrl;

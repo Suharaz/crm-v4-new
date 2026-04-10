@@ -8,11 +8,12 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useFormAction } from '@/hooks/use-form-action';
 import { useAuth } from '@/providers/auth-provider';
 import { UserPlus, ArrowRightLeft, RotateCcw, Trash2, Tag } from 'lucide-react';
+import type { CustomerRecord, NamedEntity, LabelEntity } from '@/types/entities';
 
 interface CustomerActionsProps {
-  customer: any;
-  departments: any[];
-  labels: any[];
+  customer: CustomerRecord;
+  departments: NamedEntity[];
+  labels: LabelEntity[];
 }
 
 /** Action bar for customer detail page. */
@@ -79,7 +80,7 @@ export function CustomerActions({ customer, departments, labels }: CustomerActio
             <Button
               disabled={!transferType || transferAction.isLoading}
               onClick={async () => {
-                const body: any = { targetType: transferType };
+                const body: Record<string, string> = { targetType: transferType };
                 if (transferType === 'DEPARTMENT') body.targetDeptId = transferDeptId;
                 const r = await transferAction.execute('post', `/customers/${customer.id}/transfer`, body);
                 if (r) setTransferOpen(false);

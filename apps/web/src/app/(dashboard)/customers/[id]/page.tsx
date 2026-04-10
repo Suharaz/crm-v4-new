@@ -1,4 +1,5 @@
 import { serverFetch } from '@/lib/auth';
+import type { CustomerRecord, NamedEntity, LabelEntity, ActivityRecord, ProductRecord } from '@/types/entities';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { ActivityTimelineWithFilterTabs } from '@/components/shared/activity-timeline-with-filter-tabs';
 import { CustomerActions } from '@/components/customers/customer-actions';
@@ -48,28 +49,31 @@ function LinkedInIcon({ active }: { active: boolean }) {
 /** Customer detail: info + actions + leads + orders + timeline. */
 export default async function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  let customer: any;
+  let customerData: CustomerRecord | undefined;
 
   try {
-    const result = await serverFetch<{ data: any }>(`/customers/${id}`);
-    customer = result.data;
+    const result = await serverFetch<{ data: CustomerRecord }>(`/customers/${id}`);
+    customerData = result.data;
   } catch {
     notFound();
   }
 
-  let activities: any[] = [];
-  let departments: any[] = [];
-  let labels: any[] = [];
-  let products: any[] = [];
-  let paymentTypes: any[] = [];
+  // notFound() throws, so customerData is always defined here
+  const customer = customerData as CustomerRecord;
+
+  let activities: ActivityRecord[] = [];
+  let departments: NamedEntity[] = [];
+  let labels: LabelEntity[] = [];
+  let products: ProductRecord[] = [];
+  let paymentTypes: NamedEntity[] = [];
 
   try {
     [activities, departments, labels, products, paymentTypes] = await Promise.all([
-      serverFetch<{ data: any[] }>(`/customers/${id}/activities`).then(r => r.data).catch(() => []),
-      serverFetch<{ data: any[] }>('/departments').then(r => r.data).catch(() => []),
-      serverFetch<{ data: any[] }>('/labels').then(r => r.data).catch(() => []),
-      serverFetch<{ data: any[] }>('/products').then(r => r.data).catch(() => []),
-      serverFetch<{ data: any[] }>('/payment-types').then(r => r.data).catch(() => []),
+      serverFetch<{ data: ActivityRecord[] }>(`/customers/${id}/activities`).then(r => r.data).catch(() => []),
+      serverFetch<{ data: NamedEntity[] }>('/departments').then(r => r.data).catch(() => []),
+      serverFetch<{ data: LabelEntity[] }>('/labels').then(r => r.data).catch(() => []),
+      serverFetch<{ data: ProductRecord[] }>('/products').then(r => r.data).catch(() => []),
+      serverFetch<{ data: NamedEntity[] }>('/payment-types').then(r => r.data).catch(() => []),
     ]);
   } catch { /* partial ok */ }
 
@@ -118,10 +122,10 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             </dl>
 
             {/* Labels */}
-            {customer.labels?.length > 0 && (
+            {(customer.labels?.length ?? 0) > 0 && (
               <div className="mt-3 pt-3 border-t border-gray-100">
                 <div className="flex flex-wrap gap-1.5">
-                  {customer.labels.map((cl: any) => (
+                  {customer.labels!.map((cl) => (
                     <span key={cl.label.id} className="rounded-full px-2.5 py-0.5 text-xs font-medium text-white" style={{ backgroundColor: cl.label.color }}>
                       {cl.label.name}
                     </span>
@@ -156,11 +160,11 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           />
 
           {/* Leads */}
-          {customer.leads?.length > 0 && (
+          {(customer.leads?.length ?? 0) > 0 && (
             <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="mb-3 font-semibold text-gray-900">Leads ({customer.leads.length})</h3>
+              <h3 className="mb-3 font-semibold text-gray-900">Leads ({customer.leads!.length})</h3>
               <div className="space-y-2">
-                {customer.leads.map((l: any) => (
+                {customer.leads!.map((l) => (
                   <Link key={l.id} href={`/leads/${l.id}`} className="flex items-center justify-between rounded-lg border border-gray-100 p-3 hover:bg-gray-50">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -171,9 +175,9 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                           </span>
                         )}
                       </div>
-                      {l.labels?.length > 0 && (
+                      {(l.labels?.length ?? 0) > 0 && (
                         <div className="flex flex-wrap gap-1">
-                          {l.labels.map((ll: any) => (
+                          {l.labels!.map((ll) => (
                             <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: ll.label.color }}>
                               {ll.label.name}
                             </span>
@@ -191,11 +195,11 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
 
         {/* Right column: Orders + Timeline */}
         <div className="space-y-6 lg:col-span-2">
-          {customer.orders?.length > 0 && (
-            <CustomerOrderList orders={customer.orders} />
+          {(customer.orders?.length ?? 0) > 0 && (
+            <CustomerOrderList orders={customer.orders as unknown as Parameters<typeof CustomerOrderList>[0]['orders']} />
           )}
 
-          <ActivityTimelineWithFilterTabs activities={activities} />
+          <ActivityTimelineWithFilterTabs activities={activities as unknown as Parameters<typeof ActivityTimelineWithFilterTabs>[0]['activities']} />
         </div>
       </div>
     </div>

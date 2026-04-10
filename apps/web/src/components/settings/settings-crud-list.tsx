@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useFormAction } from '@/hooks/use-form-action';
 import { settingsNameSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
 import { Pencil, Trash2, Plus } from 'lucide-react';
+import type { SettingsItem } from '@/types/entities';
 
 interface FieldConfig {
   key: string;
@@ -18,36 +19,36 @@ interface FieldConfig {
 }
 
 interface SettingsCrudListProps {
-  data: any[];
+  data: SettingsItem[];
   endpoint: string;
   entityName: string;
   fields: FieldConfig[];
   canEdit: boolean;
-  renderItem?: (item: any) => React.ReactNode;
+  renderItem?: (item: SettingsItem) => React.ReactNode;
   onMutate?: () => void;
 }
 
 /** Generic CRUD list for settings entities with dialog-based create/edit/delete. */
 export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, renderItem, onMutate }: SettingsCrudListProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any | null>(null);
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [editingItem, setEditingItem] = useState<SettingsItem | null>(null);
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const { execute, isLoading } = useFormAction({ successMessage: `${entityName} đã được lưu` });
   const deleteAction = useFormAction({ successMessage: `Đã xóa ${entityName.toLowerCase()}` });
 
   function openCreate() {
     setEditingItem(null);
-    const defaults: Record<string, any> = {};
+    const defaults: Record<string, unknown> = {};
     fields.forEach(f => { defaults[f.key] = f.type === 'checkbox' ? false : f.type === 'number' ? '' : (f.type === 'color' ? '#6b7280' : ''); });
     setFormData(defaults);
     setFieldErrors({});
     setDialogOpen(true);
   }
 
-  function openEdit(item: any) {
+  function openEdit(item: SettingsItem) {
     setEditingItem(item);
-    const values: Record<string, any> = {};
+    const values: Record<string, unknown> = {};
     fields.forEach(f => { values[f.key] = item[f.key] ?? ''; });
     setFormData(values);
     setFieldErrors({});
@@ -65,7 +66,7 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
       }
     }
     setFieldErrors({});
-    const body: Record<string, any> = {};
+    const body: Record<string, unknown> = {};
     fields.forEach(f => {
       const val = formData[f.key];
       if (f.type === 'checkbox') {
@@ -103,7 +104,7 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
         <p className="text-sm text-gray-400">Chưa có dữ liệu</p>
       ) : (
         <div className="space-y-1">
-          {data.map((item: any) => (
+          {data.map((item) => (
             <div key={item.id} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-gray-50">
               <div className="flex-1">
                 {renderItem ? renderItem(item) : (
@@ -160,7 +161,7 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
                   <Input
                     type={f.type === 'color' ? 'color' : f.type === 'number' ? 'number' : 'text'}
                     placeholder={f.placeholder}
-                    value={formData[f.key] ?? ''}
+                    value={(formData[f.key] as string | number | undefined) ?? ''}
                     onChange={e => {
                       setFormData(prev => ({ ...prev, [f.key]: e.target.value }));
                       if (fieldErrors[f.key]) setFieldErrors(prev => ({ ...prev, [f.key]: '' }));

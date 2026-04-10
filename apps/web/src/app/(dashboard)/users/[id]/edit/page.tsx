@@ -2,23 +2,26 @@ import { serverFetch } from '@/lib/auth';
 import { UserForm } from '@/components/users/user-form';
 import { BackButton } from '@/components/shared/back-button';
 import { notFound } from 'next/navigation';
+import type { UserRecord, NamedEntity } from '@/types/entities';
 
 /** Edit user page. */
 export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  let user: any;
-  let departments: any[] = [];
-  let levels: any[] = [];
+  let userData: UserRecord | undefined;
+  let departments: NamedEntity[] = [];
+  let levels: NamedEntity[] = [];
 
   try {
-    [user, departments, levels] = await Promise.all([
-      serverFetch<{ data: any }>(`/users/${id}`).then(r => r.data),
-      serverFetch<{ data: any[] }>('/departments').then(r => r.data),
-      serverFetch<{ data: any[] }>('/employee-levels').then(r => r.data),
+    [userData, departments, levels] = await Promise.all([
+      serverFetch<{ data: UserRecord }>(`/users/${id}`).then(r => r.data),
+      serverFetch<{ data: NamedEntity[] }>('/departments').then(r => r.data),
+      serverFetch<{ data: NamedEntity[] }>('/employee-levels').then(r => r.data),
     ]);
   } catch {
     notFound();
   }
+
+  const user = userData as UserRecord;
 
   return (
     <div>

@@ -49,8 +49,8 @@ function UploadZone({ label, endpoint, onJobCreated }: UploadZoneProps) {
       const job = await res.json();
       onJobCreated(job);
       toast.success(`Đã upload ${file.name}, đang xử lý...`);
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi upload file');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi upload file');
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';

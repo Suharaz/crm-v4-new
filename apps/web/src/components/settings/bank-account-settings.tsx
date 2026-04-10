@@ -2,9 +2,10 @@
 
 import { SettingsCrudList } from '@/components/settings/settings-crud-list';
 import { invalidateOrderCaches } from '@/components/orders/create-order-dialog';
+import type { SettingsItem } from '@/types/entities';
 
 interface BankAccountSettingsProps {
-  data: any[];
+  data: SettingsItem[];
   canEdit: boolean;
 }
 

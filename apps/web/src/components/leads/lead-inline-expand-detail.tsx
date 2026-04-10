@@ -11,6 +11,13 @@ import { api } from '@/lib/api-client';
 import { cn, formatDate, formatVND } from '@/lib/utils';
 import { ExternalLink, Building, Loader2, MessageSquarePlus, Tags, ArrowRightLeft, CreditCard } from 'lucide-react';
 import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
+import type { LeadRecord, LabelEntity, NamedEntity, ActivityRecord, OrderRecord } from '@/types/entities';
+
+/** Extended lead/customer detail as returned by the detail API endpoint (includes full order data). */
+interface DetailRecord extends Omit<LeadRecord, 'orders'> {
+  orders?: OrderRecord[];
+  customerId?: string | null;
+}
 
 const CACHE_PREFIX = 'crm_preview_';
 const CACHE_TTL = 24 * 60 * 60 * 1000;
@@ -24,7 +31,7 @@ function readCache(key: string) {
     return parsed;
   } catch { return null; }
 }
-function writeCache(key: string, data: any, activities: any[]) {
+function writeCache(key: string, data: DetailRecord | NamedEntity[] | LabelEntity[] | null, activities: ActivityRecord[]) {
   try { localStorage.setItem(CACHE_PREFIX + key, JSON.stringify({ data, activities, ts: Date.now() })); } catch { /* */ }
 }
 function invalidateCache(entityType: string, entityId: string) {
@@ -40,19 +47,19 @@ interface Props {
 /** Inline expandable detail row for lead/customer — replaces popup dialog. */
 export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props) {
   const router = useRouter();
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<DetailRecord | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activities, setActivities] = useState<any[]>([]);
+  const [activities, setActivities] = useState<ActivityRecord[]>([]);
 
   // Quick actions
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [noteSaving, setNoteSaving] = useState(false);
   const [labelPickerOpen, setLabelPickerOpen] = useState(false);
-  const [allLabels, setAllLabels] = useState<any[]>([]);
+  const [allLabels, setAllLabels] = useState<LabelEntity[]>([]);
   const [labelSaving, setLabelSaving] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
-  const [allDepts, setAllDepts] = useState<any[]>([]);
+  const [allDepts, setAllDepts] = useState<NamedEntity[]>([]);
   const [transferring, setTransferring] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [pmtOrderId, setPmtOrderId] = useState('');
@@ -74,17 +81,17 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     const actEndpoint = `/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`;
 
     Promise.all([
-      api.get<{ data: any }>(endpoint),
-      api.get<{ data: any[] }>(actEndpoint).catch(() => ({ data: [] })),
+      api.get<{ data: DetailRecord }>(endpoint),
+      api.get<{ data: ActivityRecord[] }>(actEndpoint).catch(() => ({ data: [] as ActivityRecord[] })),
     ]).then(async ([entityRes, actRes]) => {
       setData(entityRes.data);
-      let allActs = (actRes.data || []).map((a: any) => ({ ...a, _source: 'lead' }));
+      let allActs: ActivityRecord[] = (actRes.data || []).map((a) => ({ ...a, _source: 'lead' }));
       // Merge customer activities if lead has customerId — dedupe by id (same activity may appear in both endpoints)
       if (entityType === 'lead' && entityRes.data?.customerId) {
         try {
-          const custActs = await api.get<{ data: any[] }>(`/customers/${entityRes.data.customerId}/activities`);
-          const custItems = (custActs.data || []).map((a: any) => ({ ...a, _source: 'customer' }));
-          const merged = new Map<string, any>();
+          const custActs = await api.get<{ data: ActivityRecord[] }>(`/customers/${entityRes.data.customerId}/activities`);
+          const custItems = (custActs.data || []).map((a) => ({ ...a, _source: 'customer' }));
+          const merged = new Map<string, ActivityRecord>();
           for (const a of [...allActs, ...custItems]) {
             const k = String(a.id);
             if (!merged.has(k)) merged.set(k, a);
@@ -99,7 +106,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
   }, [entityType, entityId]);
 
   const labels = data?.labels || [];
-  const currentLabelIds = new Set(labels.map((ll: any) => String((ll.label || ll).id)));
+  const currentLabelIds = new Set(labels.map((ll) => String(('label' in ll ? ll.label : ll).id)));
 
   async function submitNote() {
     if (!noteText.trim()) return;
@@ -108,7 +115,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
       await api.post(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`, { type: 'NOTE', content: noteText.trim() });
       setNoteText(''); setNoteOpen(false);
       invalidateCache(entityType, entityId);
-      const actRes = await api.get<{ data: any[] }>(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`).catch(() => ({ data: [] }));
+      const actRes = await api.get<{ data: ActivityRecord[] }>(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`).catch(() => ({ data: [] as ActivityRecord[] }));
       setActivities(actRes.data || []);
       router.refresh();
     } catch { /* */ }
@@ -124,7 +131,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
         await api.post(`/${entityType}s/${entityId}/labels`, { labelIds: [labelId] });
       }
       invalidateCache(entityType, entityId);
-      const res = await api.get<{ data: any }>(entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`);
+      const res = await api.get<{ data: DetailRecord }>(entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`);
       setData(res.data);
     } catch { /* */ }
     setLabelSaving(false);
@@ -165,14 +172,14 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     setPmtSaving(false);
   }
 
-  const pendingOrders = (data?.orders || []).filter((o: any) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'REFUNDED');
+  const pendingOrders = (data?.orders || []).filter((o) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'REFUNDED');
 
   // Fetch depts on transfer open
   useEffect(() => {
     if (!transferOpen || allDepts.length > 0) return;
     const cached = readCache('_all_depts');
     if (cached?.data) { setAllDepts(cached.data); return; }
-    api.get<{ data: any[] }>('/departments').then(r => {
+    api.get<{ data: NamedEntity[] }>('/departments').then(r => {
       setAllDepts(r.data || []);
       writeCache('_all_depts', r.data || [], []);
     }).catch(() => {});
@@ -182,7 +189,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     if (!labelPickerOpen || allLabels.length > 0) return;
     const cached = readCache('_all_labels');
     if (cached?.data) { setAllLabels(cached.data); return; }
-    api.get<{ data: any[] }>('/labels').then(r => {
+    api.get<{ data: LabelEntity[] }>('/labels').then(r => {
       setAllLabels(r.data || []);
       writeCache('_all_labels', r.data || [], []);
     }).catch(() => {});
@@ -215,7 +222,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
               <div>
                 <h4 className="font-semibold text-gray-700 text-xs uppercase mb-1">Đơn hàng ({data.orders.length})</h4>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {data.orders.map((o: any) => (
+                  {data.orders.map((o) => (
                     <div key={o.id} className="rounded-md border border-gray-100 bg-white text-xs">
                       <div className="flex items-center justify-between px-2.5 py-1.5">
                         <div>
@@ -229,7 +236,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                       </div>
                       {o.payments && o.payments.length > 0 && (
                         <div className="border-t border-gray-50 px-2.5 py-1 space-y-0.5">
-                          {o.payments.map((p: any) => (
+                          {o.payments.map((p) => (
                             <div key={p.id} className="flex items-center justify-between text-[11px] text-gray-500">
                               <span>{p.paymentType?.name || 'CK'} {p.transferContent ? `— ${p.transferContent}` : ''}</span>
                               <div className="flex items-center gap-1.5">
@@ -248,12 +255,12 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
 
             {/* Cuộc gọi */}
             {(() => {
-              const calls = activities.filter((a: any) => a.type === 'CALL');
+              const calls = activities.filter((a) => a.type === 'CALL');
               return calls.length > 0 ? (
                 <div>
                   <h4 className="font-semibold text-gray-700 text-xs uppercase mb-1">Cuộc gọi ({calls.length})</h4>
                   <div className="space-y-1 max-h-32 overflow-y-auto">
-                    {calls.slice(0, 5).map((a: any) => (
+                    {calls.slice(0, 5).map((a) => (
                       <div key={a.id} className="text-xs bg-white rounded-md px-2.5 py-1.5 border border-gray-100">
                         <div className="flex items-center gap-1.5">
                           <span className="font-medium text-gray-700">{a.user?.name || '—'}</span>
@@ -272,7 +279,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
 
             {/* Ghi chú */}
             {(() => {
-              const notes = activities.filter((a: any) => a.type === 'NOTE');
+              const notes = activities.filter((a) => a.type === 'NOTE');
               return (
                 <div>
                   <h4 className="font-semibold text-gray-700 text-xs uppercase mb-1">Ghi chú ({notes.length})</h4>
@@ -280,7 +287,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                     <p className="text-xs text-gray-400">Chưa có ghi chú</p>
                   ) : (
                     <div className="space-y-1 max-h-32 overflow-y-auto">
-                      {notes.slice(0, 5).map((a: any) => (
+                      {notes.slice(0, 5).map((a) => (
                         <div key={a.id} className="text-xs bg-white rounded-md px-2.5 py-1.5 border border-gray-100">
                           <div className="flex items-center gap-1.5">
                             <span className="font-medium text-gray-700">{a.user?.name || '—'}</span>
@@ -341,7 +348,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
             {labelPickerOpen && (
               <div className="flex flex-wrap gap-1.5">
                 {allLabels.length === 0 && <span className="text-xs text-gray-400">Đang tải...</span>}
-                {allLabels.map((l: any) => (
+                {allLabels.map((l) => (
                   <button key={l.id} onClick={() => toggleLabel(String(l.id))} disabled={labelSaving}
                     className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all ${currentLabelIds.has(String(l.id)) ? 'text-white ring-2 ring-offset-1 ring-gray-400' : 'text-white opacity-50 hover:opacity-80'}`}
                     style={{ backgroundColor: l.color || '#6b7280' }}
@@ -355,8 +362,8 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
               <div className="space-y-2">
                 <p className="text-xs text-gray-500">Chọn phòng ban hoặc thả nổi:</p>
                 <div className="flex flex-wrap gap-2">
-                  {allDepts.map((d: any) => (
-                    <Button key={d.id} size="sm" variant="outline" disabled={transferring || String(d.id) === String(data?.departmentId)}
+                  {allDepts.map((d) => (
+                    <Button key={d.id} size="sm" variant="outline" disabled={transferring || String(d.id) === String(data?.department?.id)}
                       onClick={() => transferToDept(String(d.id))}
                     >
                       <Building className="h-3.5 w-3.5 mr-1" />{d.name}
@@ -379,7 +386,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                     {pendingOrders.length > 1 ? (
                       <div className="space-y-1">
                         <p className="text-xs text-gray-500">Chọn đơn hàng:</p>
-                        {pendingOrders.map((o: any) => (
+                        {pendingOrders.map((o) => (
                           <label key={o.id} className={cn('flex items-center gap-2 rounded border px-2 py-1.5 cursor-pointer text-xs',
                             pmtOrderId === String(o.id) ? 'border-sky-400 bg-sky-50' : 'border-gray-200')}>
                             <input type="radio" name="pmtOrder" checked={pmtOrderId === String(o.id)} onChange={() => setPmtOrderId(String(o.id))} />

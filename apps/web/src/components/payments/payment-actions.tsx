@@ -10,11 +10,12 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useFormAction } from '@/hooks/use-form-action';
 import { useAuth } from '@/providers/auth-provider';
 import { Plus, CheckCircle, XCircle } from 'lucide-react';
+import type { PaymentRecord, NamedEntity } from '@/types/entities';
 
 interface PaymentActionsProps {
   orderId: string;
-  payments: any[];
-  paymentTypes: any[];
+  payments: PaymentRecord[];
+  paymentTypes: NamedEntity[];
 }
 
 /** Payment section with create, verify, reject actions. */
@@ -34,7 +35,7 @@ export function PaymentActions({ orderId, payments, paymentTypes }: PaymentActio
   }
 
   async function handleCreate() {
-    const body: Record<string, any> = {
+    const body: Record<string, unknown> = {
       orderId,
       amount: Number(form.amount),
     };
@@ -60,7 +61,7 @@ export function PaymentActions({ orderId, payments, paymentTypes }: PaymentActio
         <p className="text-sm text-gray-400">Chưa có thanh toán</p>
       ) : (
         <div className="space-y-3">
-          {payments.map((p: any) => (
+          {payments.map((p) => (
             <div key={p.id} className="flex items-center justify-between rounded-lg border border-gray-100 p-3">
               <div>
                 <div className="flex items-center gap-2">

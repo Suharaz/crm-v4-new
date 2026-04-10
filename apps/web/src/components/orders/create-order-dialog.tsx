@@ -12,12 +12,13 @@ import { api } from '@/lib/api-client';
 import { formatVND } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import type { NamedEntity, ProductRecord } from '@/types/entities';
 
 interface CreateOrderDialogProps {
   customerId: string;
   leadId?: string;
-  products: any[];
-  paymentTypes?: any[];
+  products: ProductRecord[];
+  paymentTypes?: NamedEntity[];
 }
 
 /** Single-step dialog: create order + payment together. */
@@ -44,7 +45,7 @@ function readOrderCache(key: string) {
     return parsed.data;
   } catch { return null; }
 }
-function writeOrderCache(key: string, data: any[]) {
+function writeOrderCache(key: string, data: (ProductRecord | NamedEntity)[]) {
   try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch { /* */ }
 }
 
@@ -54,9 +55,9 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
   const [submitting, setSubmitting] = useState(false);
 
   // Self-loading data with cache (merge with props if provided)
-  const [loadedProducts, setLoadedProducts] = useState<any[]>(propProducts);
-  const [loadedPaymentTypes, setLoadedPaymentTypes] = useState<any[]>(propPaymentTypes);
-  const [bankAccounts, setBankAccounts] = useState<any[]>([]);
+  const [loadedProducts, setLoadedProducts] = useState<ProductRecord[]>(propProducts);
+  const [loadedPaymentTypes, setLoadedPaymentTypes] = useState<NamedEntity[]>(propPaymentTypes);
+  const [bankAccounts, setBankAccounts] = useState<NamedEntity[]>([]);
 
   useEffect(() => {
     if (!open) return;
@@ -65,8 +66,8 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
       const cached = readOrderCache(CACHE_KEY_PRODUCTS);
       if (cached) { setLoadedProducts(cached); }
       else {
-        api.get<{ data: any[] }>('/products').then(r => {
-          const mapped = (r.data || []).map((p: any) => ({ ...p, id: String(p.id) }));
+        api.get<{ data: ProductRecord[] }>('/products').then(r => {
+          const mapped = (r.data || []).map((p) => ({ ...p, id: String(p.id) }));
           setLoadedProducts(mapped);
           writeOrderCache(CACHE_KEY_PRODUCTS, mapped);
         }).catch(() => {});
@@ -77,8 +78,8 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
       const cached = readOrderCache(CACHE_KEY_PT);
       if (cached) { setLoadedPaymentTypes(cached); }
       else {
-        api.get<{ data: any[] }>('/payment-types').then(r => {
-          const mapped = (r.data || []).map((pt: any) => ({ ...pt, id: String(pt.id) }));
+        api.get<{ data: NamedEntity[] }>('/payment-types').then(r => {
+          const mapped = (r.data || []).map((pt) => ({ ...pt, id: String(pt.id) }));
           setLoadedPaymentTypes(mapped);
           writeOrderCache(CACHE_KEY_PT, mapped);
         }).catch(() => {});
@@ -89,8 +90,8 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
       const cached = readOrderCache(CACHE_KEY_BA);
       if (cached) { setBankAccounts(cached); }
       else {
-        api.get<{ data: any[] }>('/bank-accounts').then(r => {
-          const mapped = (r.data || []).map((ba: any) => ({ id: String(ba.id), name: ba.name }));
+        api.get<{ data: NamedEntity[] }>('/bank-accounts').then(r => {
+          const mapped = (r.data || []).map((ba) => ({ id: String(ba.id), name: ba.name }));
           setBankAccounts(mapped);
           writeOrderCache(CACHE_KEY_BA, mapped);
         }).catch(() => {});
@@ -140,7 +141,7 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
     setSubmitting(true);
     try {
       // Step 1: Create order
-      const orderBody: Record<string, any> = { productId, amount: price };
+      const orderBody: Record<string, unknown> = { productId, amount: price };
       if (customerId) orderBody.customerId = customerId;
       if (leadId) orderBody.leadId = leadId;
       if (notes) orderBody.notes = notes;
@@ -155,12 +156,12 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
       if (customerPhone) orderBody.customerPhone = customerPhone;
       if (address) orderBody.address = address;
 
-      const orderRes = await api.post<{ data: any }>('/orders', orderBody);
+      const orderRes = await api.post<{ data: { id: string; totalAmount: number } }>('/orders', orderBody);
       const order = orderRes.data;
 
       // Step 2: Create payment
       const pmtAmount = Number(paymentAmount) || Number(order.totalAmount || totalAmount);
-      const pmtBody: Record<string, any> = { orderId: order.id, amount: pmtAmount };
+      const pmtBody: Record<string, unknown> = { orderId: order.id, amount: pmtAmount };
       if (paymentTypeId) pmtBody.paymentTypeId = paymentTypeId;
       if (bankAccountId) pmtBody.bankAccountId = bankAccountId;
       if (transferContent) pmtBody.transferContent = transferContent;
@@ -170,8 +171,8 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
       toast.success('Đã tạo đơn hàng + thanh toán');
       resetAndClose();
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi tạo đơn hàng');
+    } catch (err: unknown) {
+      toast.error((err as { message?: string }).message || 'Lỗi tạo đơn hàng');
     } finally {
       setSubmitting(false);
     }

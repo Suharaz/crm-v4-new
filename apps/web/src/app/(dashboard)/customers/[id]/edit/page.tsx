@@ -2,23 +2,26 @@ import { serverFetch } from '@/lib/auth';
 import { CustomerForm } from '@/components/customers/customer-form';
 import { BackButton } from '@/components/shared/back-button';
 import { notFound } from 'next/navigation';
+import type { CustomerRecord, NamedEntity } from '@/types/entities';
 
 /** Edit customer page. */
 export default async function EditCustomerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  let customer: any;
-  let departments: any[] = [];
-  let users: any[] = [];
+  let customerData: CustomerRecord | undefined;
+  let departments: NamedEntity[] = [];
+  let users: NamedEntity[] = [];
 
   try {
-    [customer, departments, users] = await Promise.all([
-      serverFetch<{ data: any }>(`/customers/${id}`).then(r => r.data),
-      serverFetch<{ data: any[] }>('/departments').then(r => r.data),
-      serverFetch<{ data: any[] }>('/users').then(r => r.data),
+    [customerData, departments, users] = await Promise.all([
+      serverFetch<{ data: CustomerRecord }>(`/customers/${id}`).then(r => r.data),
+      serverFetch<{ data: NamedEntity[] }>('/departments').then(r => r.data),
+      serverFetch<{ data: NamedEntity[] }>('/users').then(r => r.data),
     ]);
   } catch {
     notFound();
   }
+
+  const customer = customerData as CustomerRecord;
 
   return (
     <div>

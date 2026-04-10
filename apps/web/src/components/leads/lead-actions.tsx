@@ -10,12 +10,13 @@ import { useFormAction } from '@/hooks/use-form-action';
 import { useAuth } from '@/providers/auth-provider';
 import { api } from '@/lib/api-client';
 import { UserPlus, ArrowRightLeft, Trash2, Tag, MessageSquarePlus } from 'lucide-react';
+import type { LeadRecord, NamedEntity, LabelEntity } from '@/types/entities';
 
 interface LeadActionsProps {
-  lead: any;
-  users: any[];
-  departments: any[];
-  labels: any[];
+  lead: LeadRecord;
+  users: NamedEntity[];
+  departments: NamedEntity[];
+  labels: LabelEntity[];
 }
 
 /** Action bar for lead detail page — assign, claim, transfer, convert, status, labels, notes. */
@@ -108,7 +109,7 @@ export function LeadActions({ lead, users, departments, labels }: LeadActionsPro
               <SelectContent>
                 <SelectItem value="DEPARTMENT">Về phòng ban</SelectItem>
                 <SelectItem value="FLOATING">Thả nổi</SelectItem>
-                <SelectItem value="UNASSIGN">Bỏ phân</SelectItem>
+              
               </SelectContent>
             </Select>
             {transferType === 'DEPARTMENT' && (
@@ -125,7 +126,7 @@ export function LeadActions({ lead, users, departments, labels }: LeadActionsPro
             <Button
               disabled={!transferType || transferAction.isLoading}
               onClick={async () => {
-                const body: any = { targetType: transferType };
+                const body: Record<string, string> = { targetType: transferType };
                 if (transferType === 'DEPARTMENT') body.targetDeptId = transferDeptId;
                 const r = await transferAction.execute('post', `/leads/${lead.id}/transfer`, body);
                 if (r) setTransferOpen(false);

@@ -41,7 +41,7 @@ const NAV_ITEMS: NavItem[] = [
       ],
       USER: [
         { label: 'My Lead', href: '/leads', icon: User },
-        { label: 'Kho phòng ban', href: '/leads/dept', icon: Building2 },
+        { label: 'Kho phân loại', href: '/leads/dept', icon: Building2 },
         { label: 'Thả nổi', href: '/floating', icon: Waves },
       ],
     },
@@ -49,7 +49,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Khách hàng', href: '/customers', icon: UserCheck },
   { label: 'Đơn hàng', href: '/orders', icon: ShoppingCart },
   { label: 'Sản phẩm', href: '/products', icon: Package },
-  { label: 'Cuộc gọi', href: '/call-logs', icon: Phone },
+  { label: 'Phân tích cuộc gọi', href: '/call-logs', icon: Phone },
   { label: 'Công việc', href: '/tasks', icon: CheckSquare },
   { label: 'Nhập dữ liệu', href: '/import', icon: Upload, roles: ['SUPER_ADMIN', 'MANAGER'] },
   { label: 'Quản lý NV', href: '/users', icon: UserCog, roles: ['SUPER_ADMIN'] },

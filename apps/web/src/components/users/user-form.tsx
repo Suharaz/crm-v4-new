@@ -9,11 +9,12 @@ import { FormField } from '@/components/shared/form-field';
 import { useFormAction } from '@/hooks/use-form-action';
 import { api } from '@/lib/api-client';
 import { userCreateSchema, userEditSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
+import type { UserRecord, NamedEntity } from '@/types/entities';
 
 interface UserFormProps {
-  user?: any;
-  departments: any[];
-  levels: any[];
+  user?: UserRecord;
+  departments: NamedEntity[];
+  levels: NamedEntity[];
 }
 
 /** Shared create/edit form for users. */
@@ -39,11 +40,11 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
   });
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [teams, setTeams] = useState<any[]>([]);
+  const [teams, setTeams] = useState<NamedEntity[]>([]);
 
   useEffect(() => {
     if (form.departmentId) {
-      api.get<{ data: any[] }>(`/teams?departmentId=${form.departmentId}`)
+      api.get<{ data: NamedEntity[] }>(`/teams?departmentId=${form.departmentId}`)
         .then(r => setTeams(r.data))
         .catch(() => setTeams([]));
     } else {
@@ -66,7 +67,7 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
       return;
     }
     setFieldErrors({});
-    const body: Record<string, any> = {};
+    const body: Record<string, unknown> = {};
 
     if (isEdit) {
       if (form.name) body.name = form.name;

@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 interface Props {
   entityType: 'leads' | 'customers';
   entityId: string;
-  metadata: Record<string, any> | null;
+  metadata: Record<string, unknown> | null;
   canEdit?: boolean;
 }
 
@@ -25,14 +25,14 @@ export function MetadataKeyValueEditor({ entityType, entityId, metadata, canEdit
   const [editValue, setEditValue] = useState('');
   const [saving, setSaving] = useState(false);
 
-  async function saveMetadata(updated: Record<string, any>) {
+  async function saveMetadata(updated: Record<string, unknown>) {
     setSaving(true);
     try {
       await api.patch(`/${entityType}/${entityId}`, { metadata: updated });
       toast.success('Đã lưu thông tin');
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi lưu');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi lưu');
     } finally {
       setSaving(false);
     }

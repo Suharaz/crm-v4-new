@@ -114,9 +114,9 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
   const [usersList, setUsersList] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
-    api.get<{ data: any[] }>('/users').then(res => {
-      const list = Array.isArray(res) ? res : (res as any).data ?? [];
-      setUsersList(list.map((u: any) => ({ id: String(u.id), name: u.name })));
+    api.get<{ data: { id: string; name: string }[] }>('/users').then(res => {
+      const list: { id: string; name: string }[] = Array.isArray(res) ? (res as { id: string; name: string }[]) : (res as { data: { id: string; name: string }[] }).data ?? [];
+      setUsersList(list.map((u) => ({ id: String(u.id), name: u.name })));
     }).catch(() => {});
   }, []);
 
@@ -158,8 +158,8 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
       setQuickTitle('');
       setQuickPreset('');
       toast.success('Đã tạo công việc');
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi tạo công việc');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi tạo công việc');
     } finally {
       setQuickSubmitting(false);
     }
@@ -191,8 +191,8 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
         toast.success('Đã tạo công việc');
       }
       setDialogOpen(false);
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi lưu công việc');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi lưu công việc');
     } finally {
       setSubmitting(false);
     }
@@ -204,8 +204,8 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
       setTasks(prev => prev.map(t => t.id === id ? { ...t, status: 'COMPLETED' } : t));
       toast.success('Đã hoàn thành công việc');
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi cập nhật');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi cập nhật');
     }
   }
 
@@ -215,8 +215,8 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
       setTasks(prev => prev.map(t => t.id === id ? { ...t, status: 'CANCELLED' } : t));
       toast.success('Đã hủy công việc');
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi hủy công việc');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi hủy công việc');
     }
   }
 
@@ -225,8 +225,8 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
       await api.delete(`/tasks/${id}`);
       setTasks(prev => prev.filter(t => t.id !== id));
       toast.success('Đã xóa công việc');
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi xóa công việc');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi xóa công việc');
     }
   }
 

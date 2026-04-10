@@ -10,7 +10,7 @@ interface ActivityItem {
   content?: string;
   user?: { name: string };
   createdAt: string;
-  metadata?: any;
+  metadata?: { type?: string; duration?: number; [key: string]: unknown } | null;
 }
 
 const TABS = [
@@ -30,7 +30,7 @@ const PAYMENT_META_TYPES = ['ORDER_CREATED', 'PAYMENT_CREATED', 'PAYMENT_VERIFIE
 
 /** Check if a NOTE activity is actually a payment/order activity via metadata */
 function isPaymentActivity(a: ActivityItem): boolean {
-  return PAYMENT_META_TYPES.includes(a.metadata?.type);
+  return !!a.metadata?.type && PAYMENT_META_TYPES.includes(a.metadata.type);
 }
 
 /** Get effective display type — resolves NOTE+metadata into ORDER/PAYMENT */

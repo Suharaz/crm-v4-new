@@ -210,7 +210,16 @@ export class LeadsService {
 
     // Pool leads first, then distributed (sorted by assignedAt desc)
     enrichedDistributed.sort((a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime());
-    return { data: [...enrichedPool, ...enrichedDistributed] };
+
+    // Final dedup by id to prevent race-condition duplicates between queries
+    const seen = new Set<string>();
+    const merged = [...enrichedPool, ...enrichedDistributed].filter(l => {
+      const key = l.id.toString();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    return { data: merged };
   }
 
   async poolZoom(limit: number, cursor?: string) {

@@ -27,8 +27,10 @@ WORKDIR /app
 COPY --from=build /app/apps/api/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/packages/database/dist ./packages/database/dist
+COPY --from=build /app/packages/database/prisma ./packages/database/prisma
 COPY --from=build /app/packages/types/dist ./packages/types/dist
 COPY --from=build /app/packages/utils/dist ./packages/utils/dist
+RUN mkdir -p /app/uploads
 
 ENV NODE_ENV=production
 EXPOSE 3010

@@ -22,6 +22,17 @@ interface DetailRecord extends Omit<LeadRecord, 'orders'> {
 const CACHE_PREFIX = 'crm_preview_';
 const CACHE_TTL = 24 * 60 * 60 * 1000;
 
+/** Deduplicate array by id (prevents React duplicate key warnings from stale cache or race conditions). */
+function dedupeById<T extends { id: string | number }>(arr: T[]): T[] {
+  const seen = new Set<string>();
+  return arr.filter(item => {
+    const k = String(item.id);
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
 function readCache(key: string) {
   try {
     const raw = localStorage.getItem(CACHE_PREFIX + key);
@@ -72,7 +83,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     const cached = readCache(cacheKey);
     if (cached) {
       setData(cached.data);
-      setActivities(cached.activities);
+      setActivities(dedupeById(cached.activities || []));
       setLoading(false);
       return;
     }
@@ -99,8 +110,8 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
           allActs = Array.from(merged.values()).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         } catch { /* ok */ }
       }
-      setActivities(allActs);
-      writeCache(cacheKey, entityRes.data, allActs);
+      setActivities(dedupeById(allActs));
+      writeCache(cacheKey, entityRes.data, dedupeById(allActs));
     }).catch(() => setData(null))
       .finally(() => setLoading(false));
   }, [entityType, entityId]);
@@ -116,7 +127,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
       setNoteText(''); setNoteOpen(false);
       invalidateCache(entityType, entityId);
       const actRes = await api.get<{ data: ActivityRecord[] }>(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`).catch(() => ({ data: [] as ActivityRecord[] }));
-      setActivities(actRes.data || []);
+      setActivities(dedupeById(actRes.data || []));
       router.refresh();
     } catch { /* */ }
     setNoteSaving(false);
@@ -172,7 +183,8 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     setPmtSaving(false);
   }
 
-  const pendingOrders = (data?.orders || []).filter((o) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'REFUNDED');
+  const uniqueOrders = dedupeById(data?.orders || []);
+  const pendingOrders = uniqueOrders.filter((o) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'REFUNDED');
 
   // Fetch depts on transfer open
   useEffect(() => {
@@ -218,11 +230,11 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
           {/* Col 1: Calls + Notes + Orders */}
           <div className="space-y-2">
             {/* Orders section */}
-            {data.orders && data.orders.length > 0 && (
+            {uniqueOrders.length > 0 && (
               <div>
-                <h4 className="font-semibold text-gray-700 text-xs uppercase mb-1">Đơn hàng ({data.orders.length})</h4>
+                <h4 className="font-semibold text-gray-700 text-xs uppercase mb-1">Đơn hàng ({uniqueOrders.length})</h4>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {data.orders.map((o) => (
+                  {uniqueOrders.map((o) => (
                     <div key={o.id} className="rounded-md border border-gray-100 bg-white text-xs">
                       <div className="flex items-center justify-between px-2.5 py-1.5">
                         <div>

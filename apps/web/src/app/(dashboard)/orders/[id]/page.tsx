@@ -12,11 +12,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const { id } = await params;
   let orderData: OrderRecord | undefined;
   let paymentTypes: NamedEntity[] = [];
+  let paymentInstallments: NamedEntity[] = [];
 
   try {
-    [orderData, paymentTypes] = await Promise.all([
+    [orderData, paymentTypes, paymentInstallments] = await Promise.all([
       serverFetch<{ data: OrderRecord }>(`/orders/${id}`).then(r => r.data),
       serverFetch<{ data: NamedEntity[] }>('/payment-types').then(r => r.data).catch(() => []),
+      serverFetch<{ data: NamedEntity[] }>('/payment-installments').then(r => r.data).catch(() => []),
     ]);
   } catch {
     notFound();
@@ -47,6 +49,15 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <div className="flex justify-between"><dt className="text-gray-500">Giá</dt><dd className="text-gray-700">{formatVND(Number(order.amount))}</dd></div>
             <div className="flex justify-between"><dt className="text-gray-500">VAT ({order.vatRate}%)</dt><dd className="text-gray-700">{formatVND(Number(order.vatAmount))}</dd></div>
             <div className="flex justify-between border-t border-gray-100 pt-2"><dt className="font-medium text-gray-700">Tổng</dt><dd className="font-bold text-gray-900">{formatVND(Number(order.totalAmount))}</dd></div>
+            {order.orderFormat && (
+              <div className="flex justify-between"><dt className="text-gray-500">Hình thức</dt><dd className="text-gray-700">{order.orderFormat.name}</dd></div>
+            )}
+            {order.productGroup && (
+              <div className="flex justify-between"><dt className="text-gray-500">Nhóm sản phẩm</dt><dd className="text-gray-700">{order.productGroup.name}</dd></div>
+            )}
+            {order.vatEmail && (
+              <div className="flex justify-between"><dt className="text-gray-500">Mail nhận VAT</dt><dd className="text-gray-700">{order.vatEmail}</dd></div>
+            )}
             <div className="flex justify-between"><dt className="text-gray-500">Người tạo</dt><dd className="text-gray-700">{order.creator?.name}</dd></div>
             <div className="flex justify-between"><dt className="text-gray-500">Ngày tạo</dt><dd className="text-gray-700">{formatDate(order.createdAt)}</dd></div>
             {order.notes && (
@@ -64,6 +75,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             orderId={order.id}
             payments={order.payments || []}
             paymentTypes={paymentTypes}
+            paymentInstallments={paymentInstallments}
+            vatRate={order.vatRate}
           />
         </div>
       </div>

@@ -25,6 +25,9 @@ interface CreateOrderDialogProps {
 const CACHE_KEY_PRODUCTS = 'crm_order_products';
 const CACHE_KEY_PT = 'crm_order_payment_types';
 const CACHE_KEY_BA = 'crm_order_bank_accounts';
+const CACHE_KEY_FORMATS = 'crm_order_formats';
+const CACHE_KEY_GROUPS = 'crm_order_product_groups';
+const CACHE_KEY_INSTALLMENTS = 'crm_order_installments';
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
 
 /** Invalidate order dialog caches — call after adding/editing products, payment types, bank accounts */
@@ -33,6 +36,9 @@ export function invalidateOrderCaches() {
     localStorage.removeItem(CACHE_KEY_PRODUCTS);
     localStorage.removeItem(CACHE_KEY_PT);
     localStorage.removeItem(CACHE_KEY_BA);
+    localStorage.removeItem(CACHE_KEY_FORMATS);
+    localStorage.removeItem(CACHE_KEY_GROUPS);
+    localStorage.removeItem(CACHE_KEY_INSTALLMENTS);
   } catch { /* */ }
 }
 
@@ -58,6 +64,9 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
   const [loadedProducts, setLoadedProducts] = useState<ProductRecord[]>(propProducts);
   const [loadedPaymentTypes, setLoadedPaymentTypes] = useState<NamedEntity[]>(propPaymentTypes);
   const [bankAccounts, setBankAccounts] = useState<NamedEntity[]>([]);
+  const [orderFormats, setOrderFormats] = useState<NamedEntity[]>([]);
+  const [productGroups, setProductGroups] = useState<NamedEntity[]>([]);
+  const [paymentInstallments, setPaymentInstallments] = useState<NamedEntity[]>([]);
 
   useEffect(() => {
     if (!open) return;
@@ -97,13 +106,49 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
         }).catch(() => {});
       }
     }
-  }, [open]); // eslint-disable-line
+    // Order formats
+    if (orderFormats.length === 0) {
+      const cached = readOrderCache(CACHE_KEY_FORMATS);
+      if (cached) { setOrderFormats(cached); }
+      else {
+        api.get<{ data: NamedEntity[] }>('/order-formats').then(r => {
+          const mapped = (r.data || []).map((f) => ({ id: String(f.id), name: f.name }));
+          setOrderFormats(mapped);
+          writeOrderCache(CACHE_KEY_FORMATS, mapped);
+        }).catch(() => {});
+      }
+    }
+    // Product groups
+    if (productGroups.length === 0) {
+      const cached = readOrderCache(CACHE_KEY_GROUPS);
+      if (cached) { setProductGroups(cached); }
+      else {
+        api.get<{ data: NamedEntity[] }>('/product-groups').then(r => {
+          const mapped = (r.data || []).map((g) => ({ id: String(g.id), name: g.name }));
+          setProductGroups(mapped);
+          writeOrderCache(CACHE_KEY_GROUPS, mapped);
+        }).catch(() => {});
+      }
+    }
+    // Payment installments
+    if (paymentInstallments.length === 0) {
+      const cached = readOrderCache(CACHE_KEY_INSTALLMENTS);
+      if (cached) { setPaymentInstallments(cached); }
+      else {
+        api.get<{ data: NamedEntity[] }>('/payment-installments').then(r => {
+          const mapped = (r.data || []).map((i) => ({ id: String(i.id), name: i.name }));
+          setPaymentInstallments(mapped);
+          writeOrderCache(CACHE_KEY_INSTALLMENTS, mapped);
+        }).catch(() => {});
+      }
+    }
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Order fields
   const [productId, setProductId] = useState('');
   const [notes, setNotes] = useState('');
-  const [format, setFormat] = useState('');
-  const [groupType, setGroupType] = useState('');
+  const [formatId, setFormatId] = useState('');
+  const [productGroupId, setProductGroupId] = useState('');
   const [stt, setStt] = useState('');
   const [courseCode, setCourseCode] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -112,12 +157,15 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [vatEmail, setVatEmail] = useState('');
 
   // Payment fields
   const [paymentTypeId, setPaymentTypeId] = useState('');
   const [bankAccountId, setBankAccountId] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
   const [transferContent, setTransferContent] = useState('');
+  const [transferDate, setTransferDate] = useState('');
+  const [installmentId, setInstallmentId] = useState('');
 
   const products = loadedProducts;
   const paymentTypes = loadedPaymentTypes;
@@ -127,13 +175,18 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
   const vatAmount = Math.round(price * vatRate / 100);
   const totalAmount = price + vatAmount;
 
+  // VAT extracted from payment amount: vatAmount = amount * vatRate / (100 + vatRate)
+  const pmtAmountNum = Number(paymentAmount) || totalAmount;
+  const pmtVatAmount = vatRate > 0 ? Math.round(pmtAmountNum * vatRate / (100 + vatRate)) : 0;
+
   function resetAndClose() {
     setOpen(false);
-    setProductId(''); setNotes(''); setFormat(''); setGroupType('');
+    setProductId(''); setNotes(''); setFormatId(''); setProductGroupId('');
     setStt(''); setCourseCode('');
     setCompanyName(''); setTaxCode(''); setContactPerson('');
-    setCustomerName(''); setCustomerPhone(''); setAddress('');
-    setPaymentTypeId(''); setBankAccountId(''); setPaymentAmount(''); setTransferContent('');
+    setCustomerName(''); setCustomerPhone(''); setAddress(''); setVatEmail('');
+    setPaymentTypeId(''); setBankAccountId(''); setPaymentAmount('');
+    setTransferContent(''); setTransferDate(''); setInstallmentId('');
   }
 
   async function handleSubmit() {
@@ -145,8 +198,8 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
       if (customerId) orderBody.customerId = customerId;
       if (leadId) orderBody.leadId = leadId;
       if (notes) orderBody.notes = notes;
-      if (format) orderBody.format = format;
-      if (groupType) orderBody.groupType = groupType;
+      if (formatId) orderBody.formatId = formatId;
+      if (productGroupId) orderBody.productGroupId = productGroupId;
       if (stt) orderBody.stt = stt;
       if (courseCode) orderBody.courseCode = courseCode;
       if (companyName) orderBody.companyName = companyName;
@@ -155,6 +208,7 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
       if (customerName) orderBody.customerName = customerName;
       if (customerPhone) orderBody.customerPhone = customerPhone;
       if (address) orderBody.address = address;
+      if (vatEmail) orderBody.vatEmail = vatEmail;
 
       const orderRes = await api.post<{ data: { id: string; totalAmount: number } }>('/orders', orderBody);
       const order = orderRes.data;
@@ -165,6 +219,9 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
       if (paymentTypeId) pmtBody.paymentTypeId = paymentTypeId;
       if (bankAccountId) pmtBody.bankAccountId = bankAccountId;
       if (transferContent) pmtBody.transferContent = transferContent;
+      if (transferDate) pmtBody.transferDate = transferDate;
+      if (installmentId) pmtBody.installmentId = installmentId;
+      if (vatRate > 0) pmtBody.vatAmount = pmtVatAmount;
 
       await api.post('/payments', pmtBody);
 
@@ -230,6 +287,9 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
                 <FormField label="Địa chỉ">
                   <Input value={address} onChange={e => setAddress(e.target.value)} placeholder="Địa chỉ" />
                 </FormField>
+                <FormField label="Mail nhận VAT" className="col-span-2">
+                  <Input value={vatEmail} onChange={e => setVatEmail(e.target.value)} placeholder="email@example.com" type="email" />
+                </FormField>
               </div>
             </div>
 
@@ -238,22 +298,22 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
               <p className="text-sm font-semibold text-gray-700 mb-3">Chi tiết đơn hàng</p>
               <div className="grid grid-cols-2 gap-3">
                 <FormField label="Hình thức">
-                  <Select value={format} onValueChange={setFormat}>
+                  <Select value={formatId} onValueChange={setFormatId}>
                     <SelectTrigger><SelectValue placeholder="Chọn" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ZOOM_REPLAY">Zoom phát lại</SelectItem>
-                      <SelectItem value="ZOOM_LIVE">Zoom trực tiếp</SelectItem>
-                      <SelectItem value="ZOOM_OLD_CUSTOMER">Zoom khách cũ</SelectItem>
+                      {orderFormats.map(f => (
+                        <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </FormField>
-                <FormField label="Nhóm">
-                  <Select value={groupType} onValueChange={setGroupType}>
+                <FormField label="Nhóm sản phẩm">
+                  <Select value={productGroupId} onValueChange={setProductGroupId}>
                     <SelectTrigger><SelectValue placeholder="Chọn" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ONLINE">Online</SelectItem>
-                      <SelectItem value="TOOL">Tool</SelectItem>
-                      <SelectItem value="OFFLINE">Offline</SelectItem>
+                      {productGroups.map(g => (
+                        <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </FormField>
@@ -290,10 +350,28 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
                     </Select>
                   </FormField>
                 )}
+                {paymentInstallments.length > 0 && (
+                  <FormField label="Đợt thanh toán">
+                    <Select value={installmentId} onValueChange={setInstallmentId}>
+                      <SelectTrigger><SelectValue placeholder="Chọn đợt" /></SelectTrigger>
+                      <SelectContent>
+                        {paymentInstallments.map(i => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                )}
                 <FormField label="Số tiền CK">
                   <Input type="number" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)}
                     placeholder={totalAmount > 0 ? `Mặc định: ${formatVND(totalAmount)}` : 'Số tiền'} />
                 </FormField>
+                <FormField label="Ngày chuyển khoản">
+                  <Input type="date" value={transferDate} onChange={e => setTransferDate(e.target.value)} />
+                </FormField>
+                {vatRate > 0 && pmtAmountNum > 0 && (
+                  <FormField label="Tiền VAT (tính từ số CK)">
+                    <Input value={formatVND(pmtVatAmount)} readOnly className="bg-gray-50 text-gray-600" />
+                  </FormField>
+                )}
               </div>
               <FormField label="Nội dung CK" className="mt-3">
                 <Input value={transferContent} onChange={e => setTransferContent(e.target.value)} placeholder="VD: CK LAN 1 KHOA HOC DM" />

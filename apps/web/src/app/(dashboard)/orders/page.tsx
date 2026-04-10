@@ -14,17 +14,23 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   let nextCursor: string | undefined;
   let products: NamedEntity[] = [];
   let users: NamedEntity[] = [];
+  let orderFormats: NamedEntity[] = [];
+  let productGroups: NamedEntity[] = [];
 
   try {
-    const [result, productsRes, usersRes] = await Promise.all([
+    const [result, productsRes, usersRes, formatsRes, groupsRes] = await Promise.all([
       serverFetch<ApiListResponse<OrderRecord>>(`/orders?${query}`),
       serverFetch<{ data: NamedEntity[] }>('/products?includeInactive=false').catch(() => ({ data: [] })),
       serverFetch<{ data: NamedEntity[] }>('/users').catch(() => ({ data: [] })),
+      serverFetch<{ data: NamedEntity[] }>('/order-formats').catch(() => ({ data: [] })),
+      serverFetch<{ data: NamedEntity[] }>('/product-groups').catch(() => ({ data: [] })),
     ]);
     data = result.data;
     nextCursor = result.meta?.nextCursor;
     products = (productsRes.data || []).map((p: NamedEntity) => ({ id: String(p.id), name: p.name }));
     users = (usersRes.data || []).map((u: NamedEntity) => ({ id: String(u.id), name: u.name }));
+    orderFormats = (formatsRes.data || []).map((f: NamedEntity) => ({ id: String(f.id), name: f.name }));
+    productGroups = (groupsRes.data || []).map((g: NamedEntity) => ({ id: String(g.id), name: g.name }));
   } catch { /* empty */ }
 
   return (
@@ -38,7 +44,12 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       </div>
 
       <div className="mt-4">
-        <OrderListAdvancedFilterBar products={products} users={users} />
+        <OrderListAdvancedFilterBar
+          products={products}
+          users={users}
+          orderFormats={orderFormats}
+          productGroups={productGroups}
+        />
       </div>
 
       <div className="mt-4">

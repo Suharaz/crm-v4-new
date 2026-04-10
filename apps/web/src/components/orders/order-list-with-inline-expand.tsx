@@ -90,6 +90,13 @@ function OrderExpandedDetail({ order: o }: { order: OrderRecord }) {
           <span>Giá:</span><span>{formatVND(Number(o.amount))}</span>
           {Number(o.vatRate) > 0 && <><span>VAT ({o.vatRate}%):</span><span>{formatVND(Number(o.vatAmount))}</span></>}
           <span>Tổng:</span><span className="font-bold text-sky-600">{formatVND(Number(o.totalAmount))}</span>
+          {(o.orderFormat || o.productGroup) && (
+            <>
+              {o.orderFormat && <><span>Hình thức:</span><span>{o.orderFormat.name}</span></>}
+              {o.productGroup && <><span>Nhóm sản phẩm:</span><span>{o.productGroup.name}</span></>}
+            </>
+          )}
+          {o.vatEmail && <><span>Mail VAT:</span><span>{o.vatEmail}</span></>}
           <span>Người tạo:</span><span>{o.creator?.name || '—'}</span>
           {o.notes && <><span>Ghi chú:</span><span>{o.notes}</span></>}
         </div>
@@ -103,15 +110,24 @@ function OrderExpandedDetail({ order: o }: { order: OrderRecord }) {
         ) : (
           <div className="space-y-2">
             {o.payments.map((p) => (
-              <div key={p.id} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2">
-                <div>
-                  <span className="font-medium">{p.paymentType?.name}</span>
-                  {p.transferContent && <span className="ml-2 text-xs text-gray-400">{p.transferContent}</span>}
+              <div key={p.id} className="rounded-lg border border-gray-200 bg-white px-3 py-2 space-y-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-medium">{p.paymentType?.name}</span>
+                    {p.installment && <span className="ml-2 text-xs text-gray-500">{p.installment.name}</span>}
+                    {p.transferContent && <span className="ml-2 text-xs text-gray-400">{p.transferContent}</span>}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{formatVND(Number(p.amount))}</span>
+                    <StatusBadge status={p.status} />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{formatVND(Number(p.amount))}</span>
-                  <StatusBadge status={p.status} />
-                </div>
+                {(p.transferDate || p.vatAmount) && (
+                  <div className="flex gap-4 text-xs text-gray-400">
+                    {p.transferDate && <span>Ngày CK: {formatDate(p.transferDate)}</span>}
+                    {p.vatAmount && Number(p.vatAmount) > 0 && <span>VAT: {formatVND(Number(p.vatAmount))}</span>}
+                  </div>
+                )}
               </div>
             ))}
           </div>

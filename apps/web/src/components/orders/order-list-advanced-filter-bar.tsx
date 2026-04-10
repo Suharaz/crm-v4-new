@@ -14,27 +14,17 @@ const STATUSES = [
   { value: 'REFUNDED', label: 'Hoàn tiền' },
 ];
 
-const FORMATS = [
-  { value: 'ZOOM_REPLAY', label: 'Zoom Replay' },
-  { value: 'ZOOM_LIVE', label: 'Zoom Live' },
-  { value: 'ZOOM_OLD_CUSTOMER', label: 'Zoom KH cũ' },
-];
-
-const GROUP_TYPES = [
-  { value: 'ONLINE', label: 'Online' },
-  { value: 'TOOL', label: 'Tool' },
-  { value: 'OFFLINE', label: 'Offline' },
-];
-
 interface FilterBarProps {
   products: { id: string; name: string }[];
   users: { id: string; name: string }[];
+  orderFormats: { id: string; name: string }[];
+  productGroups: { id: string; name: string }[];
 }
 
 const STORAGE_KEY = 'crm_order_filters';
 
 /** Advanced filter bar for orders list — URL-based state (shareable). */
-export function OrderListAdvancedFilterBar({ products, users }: FilterBarProps) {
+export function OrderListAdvancedFilterBar({ products, users, orderFormats, productGroups }: FilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -56,12 +46,15 @@ export function OrderListAdvancedFilterBar({ products, users }: FilterBarProps) 
   const currentStatus = searchParams.get('status') || '';
   const currentProductId = searchParams.get('productId') || '';
   const currentCreatedBy = searchParams.get('createdBy') || '';
-  const currentFormat = searchParams.get('format') || '';
-  const currentGroupType = searchParams.get('groupType') || '';
+  const currentFormatId = searchParams.get('formatId') || '';
+  const currentProductGroupId = searchParams.get('productGroupId') || '';
   const currentDateFrom = searchParams.get('dateFrom') || '';
   const currentDateTo = searchParams.get('dateTo') || '';
 
-  const activeFilterCount = [currentStatus, currentProductId, currentCreatedBy, currentFormat, currentGroupType, currentDateFrom, currentDateTo].filter(Boolean).length;
+  const activeFilterCount = [
+    currentStatus, currentProductId, currentCreatedBy,
+    currentFormatId, currentProductGroupId, currentDateFrom, currentDateTo,
+  ].filter(Boolean).length;
 
   function updateFilter(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -140,22 +133,22 @@ export function OrderListAdvancedFilterBar({ products, users }: FilterBarProps) 
 
           <div>
             <label className="text-xs font-medium text-gray-500 mb-1 block">Hình thức</label>
-            <Select value={currentFormat} onValueChange={v => updateFilter('format', v === 'all' ? '' : v)}>
+            <Select value={currentFormatId} onValueChange={v => updateFilter('formatId', v === 'all' ? '' : v)}>
               <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Tất cả" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tất cả</SelectItem>
-                {FORMATS.map(f => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+                {orderFormats.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Nhóm</label>
-            <Select value={currentGroupType} onValueChange={v => updateFilter('groupType', v === 'all' ? '' : v)}>
+            <label className="text-xs font-medium text-gray-500 mb-1 block">Nhóm sản phẩm</label>
+            <Select value={currentProductGroupId} onValueChange={v => updateFilter('productGroupId', v === 'all' ? '' : v)}>
               <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Tất cả" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tất cả</SelectItem>
-                {GROUP_TYPES.map(g => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}
+                {productGroups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

@@ -110,6 +110,11 @@ export interface OrderRecord {
   vatRate?: number;
   vatAmount?: number;
   notes?: string | null;
+  vatEmail?: string | null;
+  formatId?: string | null;
+  productGroupId?: string | null;
+  orderFormat?: NamedEntity | null;
+  productGroup?: NamedEntity | null;
   customer?: { name: string; phone?: string | null };
   product?: NamedEntity | null;
   creator?: NamedEntity | null;
@@ -126,6 +131,10 @@ export interface PaymentRecord {
   orderId?: string;
   paymentType?: NamedEntity | null;
   transferContent?: string | null;
+  transferDate?: string | null;
+  vatAmount?: number | null;
+  installmentId?: string | null;
+  installment?: NamedEntity | null;
   verifiedSource?: string | null;
   verifier?: NamedEntity | null;
   verifiedAt?: string | null;

@@ -1,408 +1,296 @@
-# VPS Deployment Guide — Multi-Project Setup
+# VPS Deployment Guide — PM2 + Docker Hybrid
 
-## Tổng quan kiến trúc
+## Kiến trúc
 
 ```
-Cloudflare (DNS + SSL + CDN)
+Cloudflare (DNS + SSL)
     ↓
 VPS :80/:443 → Nginx Proxy Manager (route theo domain)
-    ├── crm.domain.com      → crm-web:3011 + crm-api:3010
-    ├── app.domain.com      → app-web:3021 + app-api:3020
-    └── admin.domain.com    → admin-web:3031
-```
+    ├── crm.domain.com  → localhost:3011 (PM2 crm-web)
+    │                      localhost:3010 (PM2 crm-api)
+    ├── app.domain.com  → localhost:3021 (PM2 app-web)
+    └── ...
 
-Mỗi project có Docker compose riêng, share chung `proxy-network`.
+Docker: PostgreSQL + Redis (infrastructure)
+PM2: API + Web apps (fast restart, easy debug)
+```
 
 ---
 
 ## Phần 1: Setup VPS lần đầu
 
-### 1.1 Yêu cầu VPS
-
-- OS: Ubuntu 22.04 / Debian 12
-- RAM: 2GB+ (mỗi project thêm ~512MB)
-- Disk: 20GB+ SSD
-- Đã có IP public
-
-### 1.2 SSH vào VPS
+### 1.1 SSH key (máy local)
 
 ```bash
-# Từ máy local — tạo SSH key (nếu chưa có)
+# Tạo SSH key
 ssh-keygen -t ed25519 -C "deploy-key"
-# Enter → Enter → Enter (không cần passphrase)
 
-# Copy public key lên VPS
+# Copy lên VPS
 ssh-copy-id root@YOUR_VPS_IP
 
-# Test — không cần nhập password
+# Test (không cần password)
 ssh root@YOUR_VPS_IP
 ```
 
-### 1.3 Cài đặt trên VPS
+### 1.2 Chạy setup script trên VPS
 
 ```bash
-# Update system
-apt update && apt upgrade -y
+ssh root@YOUR_VPS_IP
 
-# Install Docker
-curl -fsSL https://get.docker.com | sh
-
-# Install Git
-apt install -y git
-
-# Tạo SSH key trên VPS (để pull code từ GitHub)
-ssh-keygen -t ed25519 -C "vps-github"
-cat ~/.ssh/id_ed25519.pub
-# → Copy output → GitHub.com → Settings → SSH and GPG keys → New SSH key → Paste
-```
-
-### 1.4 Test GitHub SSH
-
-```bash
-ssh -T git@github.com
-# Output: "Hi username! You've successfully authenticated..."
-```
-
-### 1.5 Setup Nginx Proxy Manager (1 lần duy nhất)
-
-```bash
-# Tạo shared proxy network
-docker network create proxy-network
-
-# Tạo proxy directory
-mkdir -p /opt/proxy
-cat > /opt/proxy/docker-compose.yml <<'EOF'
-services:
-  nginx-proxy:
-    image: jc21/nginx-proxy-manager:latest
-    container_name: nginx-proxy-manager
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "81:81"
-    volumes:
-      - npm-data:/data
-      - npm-letsencrypt:/etc/letsencrypt
-    networks:
-      - proxy-network
-
-volumes:
-  npm-data:
-  npm-letsencrypt:
-
-networks:
-  proxy-network:
-    external: true
-EOF
-
-cd /opt/proxy && docker compose up -d
-```
-
-### 1.6 Cấu hình Nginx Proxy Manager
-
-1. Truy cập `http://YOUR_VPS_IP:81`
-2. Login: `admin@example.com` / `changeme`
-3. Đổi email + password ngay lập tức
-4. (Optional) Sau khi setup xong, block port 81 từ bên ngoài bằng firewall:
-   ```bash
-   ufw allow 80
-   ufw allow 443
-   ufw allow 22
-   ufw enable
-   # Port 81 chỉ truy cập qua SSH tunnel: ssh -L 81:localhost:81 root@VPS_IP
-   ```
-
----
-
-## Phần 2: Deploy dự án CRM
-
-### 2.1 Clone + config
-
-```bash
+# Clone repo trước (hoặc copy script lên)
 cd /opt
 git clone git@github.com:YOUR_ORG/crm-v4.git
 cd crm-v4
 
-# Tạo env production
+# Chạy setup — cài Docker, Node.js 20, pnpm, PM2, Nginx Proxy Manager
+chmod +x scripts/*.sh
+./scripts/setup-vps.sh
+```
+
+Script tự cài: Docker, Node.js 20, pnpm, PM2 (auto-start), Nginx Proxy Manager, firewall.
+
+### 1.3 GitHub SSH key trên VPS
+
+```bash
+ssh-keygen -t ed25519 -C "vps-github"
+cat ~/.ssh/id_ed25519.pub
+# → Copy → GitHub.com → Settings → SSH and GPG keys → New SSH key
+
+# Test
+ssh -T git@github.com
+```
+
+### 1.4 Cấu hình Nginx Proxy Manager
+
+```bash
+# Truy cập qua SSH tunnel (port 81 blocked bởi firewall)
+# Từ máy local:
+ssh -L 81:localhost:81 root@YOUR_VPS_IP
+# → Mở browser: http://localhost:81
+```
+
+Login: `admin@example.com` / `changeme` → đổi password ngay.
+
+---
+
+## Phần 2: Deploy CRM
+
+### 2.1 Config
+
+```bash
+cd /opt/crm-v4
 cp .env.production.example .env.production
 nano .env.production
 ```
 
-### 2.2 Sửa `.env.production`
-
+Sửa các giá trị:
 ```env
-DB_USER=crm
-DB_PASSWORD=THAY_MAT_KHAU_MANH
-DB_NAME=crm_v4
-JWT_SECRET=THAY_RANDOM_32_KY_TU
-JWT_REFRESH_SECRET=THAY_RANDOM_32_KY_TU_KHAC
-REDIS_PASSWORD=THAY_MAT_KHAU_REDIS
+DB_PASSWORD=mat_khau_manh_123
+DATABASE_URL=postgresql://crm:mat_khau_manh_123@localhost:5433/crm_v4
+REDIS_PASSWORD=redis_manh_456
+REDIS_URL=redis://:redis_manh_456@localhost:6380
+JWT_SECRET=<openssl rand -hex 32>
+JWT_REFRESH_SECRET=<openssl rand -hex 32>
 FRONTEND_URL=https://crm.yourdomain.com
+NEXT_PUBLIC_API_URL=http://localhost:3010/api/v1
 ```
 
-Tạo random secret:
-```bash
-openssl rand -hex 32
-```
-
-### 2.3 Deploy
+### 2.2 Deploy
 
 ```bash
-chmod +x scripts/*.sh
 ./scripts/deploy.sh
 ```
 
-### 2.4 Cấu hình domain trong Nginx Proxy Manager
+Flow: `git pull → docker up (PG+Redis) → pnpm install → build → pm2 start`
 
-1. Truy cập NPM UI (`:81`)
-2. **Proxy Hosts → Add Proxy Host**
-3. Tab **Details**:
-   - Domain: `crm.yourdomain.com`
-   - Forward Hostname: `crm-web`
-   - Forward Port: `3011`
-   - Block Common Exploits: ✅
-4. Tab **Advanced** — paste nội dung file `nginx/proxy-host.conf`:
-   ```nginx
-   client_max_body_size 10M;
+### 2.3 Seed dữ liệu (lần đầu)
 
-   location /api/ {
-       proxy_pass http://crm-api:3010;
-       proxy_set_header Host $host;
-       proxy_set_header X-Real-IP $remote_addr;
-       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-       proxy_set_header X-Forwarded-Proto $scheme;
-   }
+```bash
+cd /opt/crm-v4
+source .env.production
+pnpm db:seed
+```
 
-   location /files/ {
-       proxy_pass http://crm-api:3010;
-       proxy_set_header Host $host;
-   }
+### 2.4 Nginx Proxy Manager — Add domain
 
-   location /health {
-       proxy_pass http://crm-api:3010/api/v1/health;
-   }
-   ```
-5. **Save**
+SSH tunnel → `http://localhost:81` → **Proxy Hosts → Add**:
+
+**Tab Details:**
+- Domain: `crm.yourdomain.com`
+- Forward Hostname: `127.0.0.1`
+- Forward Port: `3011`
+- Block Common Exploits: ✅
+
+**Tab Advanced** — paste:
+```nginx
+client_max_body_size 10M;
+
+location /api/ {
+    proxy_pass http://127.0.0.1:3010;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+location /files/ {
+    proxy_pass http://127.0.0.1:3010;
+    proxy_set_header Host $host;
+}
+
+location /health {
+    proxy_pass http://127.0.0.1:3010/api/v1/health;
+}
+```
 
 ### 2.5 Cloudflare DNS
-
-1. Vào Cloudflare → DNS
-2. Thêm record:
 
 | Type | Name | Content | Proxy |
 |------|------|---------|-------|
 | A | crm | `YOUR_VPS_IP` | Proxied ☁️ |
 
-3. SSL/TLS → mode: **Full**
+SSL/TLS mode: **Full**
 
 ### 2.6 Kiểm tra
 
 ```bash
-curl https://crm.yourdomain.com/health
+pm2 status                                    # apps running
+curl http://localhost:3010/api/v1/health       # API health
+curl https://crm.yourdomain.com               # public access
 ```
 
 ---
 
-## Phần 3: Seed dữ liệu ban đầu
+## Phần 3: Cập nhật code hàng ngày
 
 ```bash
-cd /opt/crm-v4
-
-# Chạy seed script trong container
-docker compose -f docker-compose.prod.yml --env-file .env.production \
-  run --rm api sh -c "npx prisma db seed"
+# Từ local: code → commit → push → deploy
+git push && ssh root@VPS_IP "cd /opt/crm-v4 && ./scripts/deploy.sh"
 ```
 
----
-
-## Phần 4: Cập nhật code
-
-### Từ local
-
+Hoặc SSH vào VPS:
 ```bash
-# Code + commit + push
-git add . && git commit -m "feat: ..." && git push
-
-# Deploy lên VPS (1 lệnh)
-ssh root@VPS_IP "cd /opt/crm-v4 && ./scripts/deploy.sh"
-```
-
-### Trực tiếp trên VPS
-
-```bash
-ssh root@VPS_IP
 cd /opt/crm-v4
 ./scripts/deploy.sh
 ```
 
 ---
 
-## Phần 5: Thêm dự án mới
+## Phần 4: Thêm dự án mới
 
-### 5.1 Quy tắc port
+### 4.1 Quy tắc port
 
-Mỗi project dùng 1 dải port riêng để tránh xung đột:
+| Project | API Port | Web Port | DB Port | Redis Port |
+|---------|----------|----------|---------|------------|
+| CRM V4 | 3010 | 3011 | 5433 | 6380 |
+| Project B | 3020 | 3021 | 5434 | 6381 |
+| Project C | 3030 | 3031 | 5435 | 6382 |
 
-| Project | Web Port | API Port | DB Port (internal) |
-|---------|----------|----------|-------------------|
-| CRM V4 | 3011 | 3010 | 5432 |
-| Project B | 3021 | 3020 | 5432 |
-| Project C | 3031 | 3030 | 5432 |
+**Quy ước:** Project thứ N dùng `30N0`/`30N1` (app), `543N+2`/`638N` (infra).
 
-**Quy ước:** Project thứ N dùng port `30N0` (API) và `30N1` (Web).
-
-### 5.2 Kiểm tra port đã dùng
+### 4.2 Kiểm tra port đang dùng
 
 ```bash
-# Xem tất cả container đang chạy + port
+# PM2 apps
+pm2 status
+
+# Docker infra
 docker ps --format "table {{.Names}}\t{{.Ports}}"
 
-# Xem port nào đang listen
-ss -tlnp | grep -E '30[0-9]{2}'
+# Tất cả ports
+ss -tlnp | grep LISTEN
 ```
 
-### 5.3 Context cho AI Agent khi tạo project mới
+### 4.3 Context cho AI Agent
 
-Khi nhờ AI Agent tạo deployment cho project mới, cung cấp context sau:
+Khi nhờ AI tạo deployment cho project mới, cung cấp:
 
 ```
-## Deployment Context
+## VPS Deployment Context
 
-- VPS đã setup Nginx Proxy Manager tại /opt/proxy
-- Shared Docker network: proxy-network (external: true)
-- Port convention: API=30N0, Web=30N1 (N = project number)
-- Ports đã dùng: 3010-3011 (CRM)
-- Domain: [domain cho project mới]
-- Container naming: [project]-api, [project]-web, [project]-postgres, [project]-redis
+Kiến trúc: PM2 (apps) + Docker (PG/Redis) + Nginx Proxy Manager
+VPS đã có: Node.js 20, pnpm, PM2, Docker, NPM proxy
 
-## Docker compose yêu cầu:
-- KHÔNG có nginx service (dùng NPM chung)
-- api + web containers join `proxy-network` (external: true)
-- postgres + redis chỉ join internal network
-- Container name phải unique (prefix bằng tên project)
-- Volumes prefix bằng tên project để tránh xung đột
+### Port convention
+- App ports: API=30N0, Web=30N1 (N=project number)
+- Infra ports: PG=543(N+2), Redis=638N
+- Ports đã dùng: [liệt kê từ `pm2 status` + `docker ps`]
 
-## Sau khi deploy:
-- Vào NPM UI :81 → Add Proxy Host cho domain mới
-- Forward đến [project]-web:[port]
-- Advanced tab: thêm location /api/ proxy_pass đến [project]-api:[port]
-- Cloudflare: thêm A record cho domain mới
+### Files cần tạo cho project mới
+1. docker-compose.prod.yml — chỉ PG + Redis (ports unique)
+2. ecosystem.config.cjs — PM2 config (ports unique, logs dir)
+3. scripts/deploy.sh — git pull → docker up → pnpm install → build → pm2 reload
+4. .env.production.example — template env vars
+5. nginx/proxy-host.conf — NPM advanced config
+
+### Quy tắc
+- Container names prefix bằng tên project (crm-postgres, appb-postgres)
+- PM2 app names prefix bằng tên project (crm-api, appb-api)
+- Mỗi project có docker-compose + ecosystem config riêng
+- Nginx Proxy Manager route domain → localhost:port
+- Domain config: 1 lần trong NPM UI, không cần sửa lại khi deploy
+
+### Sau deploy
+1. Vào NPM UI → Add Proxy Host cho domain mới
+2. Cloudflare → Add A record
 ```
 
-### 5.4 Ví dụ docker-compose cho project mới
+### 4.4 Ví dụ cấu trúc project mới
 
-```yaml
-# /opt/project-b/docker-compose.prod.yml
-services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: projectb-postgres    # ← unique name
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    volumes:
-      - projectb-pg-data:/var/lib/postgresql/data   # ← unique volume
-    networks:
-      - projectb-internal
-
-  api:
-    build: ...
-    container_name: projectb-api         # ← unique name
-    expose:
-      - "3020"                           # ← unique port
-    networks:
-      - projectb-internal
-      - proxy-network                    # ← shared
-
-  web:
-    build: ...
-    container_name: projectb-web         # ← unique name
-    expose:
-      - "3021"                           # ← unique port
-    networks:
-      - projectb-internal
-      - proxy-network                    # ← shared
-
-volumes:
-  projectb-pg-data:
-
-networks:
-  projectb-internal:
-    driver: bridge
-  proxy-network:
-    external: true                       # ← shared
+```
+/opt/project-b/
+├── docker-compose.prod.yml    # PG:5434 + Redis:6381
+├── ecosystem.config.cjs       # api:3020 + web:3021
+├── scripts/deploy.sh
+├── .env.production
+├── nginx/proxy-host.conf
+└── apps/...
 ```
 
 ---
 
-## Phần 6: Backup
+## Phần 5: Quản lý hàng ngày
 
-### Database backup script
+### PM2 commands
 
 ```bash
-# /opt/scripts/backup-all.sh
-#!/bin/bash
-BACKUP_DIR="/opt/backups/$(date +%Y%m%d)"
-mkdir -p "$BACKUP_DIR"
-
-# CRM
-docker exec crm-postgres pg_dump -U crm crm_v4 | gzip > "$BACKUP_DIR/crm_v4.sql.gz"
-
-# Project B (khi có)
-# docker exec projectb-postgres pg_dump -U user db | gzip > "$BACKUP_DIR/projectb.sql.gz"
-
-# Giữ 7 ngày gần nhất
-find /opt/backups -maxdepth 1 -type d -mtime +7 -exec rm -rf {} \;
-
-echo "Backup done: $BACKUP_DIR"
+pm2 status                    # Xem trạng thái
+pm2 logs crm-api              # Xem logs API
+pm2 logs crm-web              # Xem logs Web
+pm2 restart crm-api           # Restart API
+pm2 reload ecosystem.config.cjs  # Zero-downtime reload
+pm2 monit                     # Monitor realtime
 ```
 
-### Auto backup (cron)
+### Docker commands
 
 ```bash
+docker ps                     # PG + Redis status
+docker logs crm-postgres      # PG logs
+docker exec -it crm-postgres psql -U crm crm_v4   # Vào DB
+```
+
+### Backup
+
+```bash
+# Database backup
+docker exec crm-postgres pg_dump -U crm crm_v4 | gzip > backup_$(date +%Y%m%d).sql.gz
+
+# Restore
+gunzip -c backup_20260410.sql.gz | docker exec -i crm-postgres psql -U crm crm_v4
+
+# Auto backup (cron)
 crontab -e
-# Thêm dòng: backup lúc 3h sáng mỗi ngày
-0 3 * * * /opt/scripts/backup-all.sh >> /var/log/backup.log 2>&1
+0 3 * * * docker exec crm-postgres pg_dump -U crm crm_v4 | gzip > /opt/backups/crm_$(date +\%Y\%m\%d).sql.gz
 ```
 
-### Restore
+### Monitoring
 
 ```bash
-gunzip -c /opt/backups/20260410/crm_v4.sql.gz | docker exec -i crm-postgres psql -U crm crm_v4
-```
-
----
-
-## Phần 7: Monitoring
-
-### Kiểm tra nhanh
-
-```bash
-# Tất cả container
-docker ps
-
-# Logs CRM
-docker logs crm-api --tail 50
-docker logs crm-web --tail 50
-
-# Health check
-curl http://localhost:3010/api/v1/health
-
-# Disk usage
-df -h
-docker system df
-```
-
-### Cleanup Docker
-
-```bash
-# Xóa images/containers không dùng
-docker system prune -af
-
-# Xóa volumes không dùng (CẨN THẬN — chỉ khi biết chắc)
-docker volume prune
+pm2 status                    # App health
+curl localhost:3010/api/v1/health   # API health
+df -h                         # Disk
+free -h                       # RAM
 ```
 
 ---
@@ -411,12 +299,12 @@ docker volume prune
 
 | Việc | Command |
 |------|---------|
-| Setup VPS lần đầu | `./scripts/setup-proxy.sh` |
-| Deploy CRM | `./scripts/deploy.sh` |
+| Setup VPS | `./scripts/setup-vps.sh` |
+| Deploy | `./scripts/deploy.sh` |
 | Deploy từ local | `ssh root@VPS "cd /opt/crm-v4 && ./scripts/deploy.sh"` |
-| Xem logs | `docker logs crm-api --tail 50 -f` |
+| Xem logs | `pm2 logs crm-api` |
+| Restart app | `pm2 restart crm-api` |
 | Vào DB | `docker exec -it crm-postgres psql -U crm crm_v4` |
-| Backup | `/opt/scripts/backup-all.sh` |
-| Xem port đang dùng | `docker ps --format "table {{.Names}}\t{{.Ports}}"` |
-| Restart 1 service | `docker restart crm-api` |
-| NPM UI | `http://VPS_IP:81` hoặc `ssh -L 81:localhost:81 root@VPS` |
+| NPM UI | `ssh -L 81:localhost:81 root@VPS` → `localhost:81` |
+| Xem port | `pm2 status && docker ps` |
+| Backup DB | `docker exec crm-postgres pg_dump -U crm crm_v4 \| gzip > backup.sql.gz` |

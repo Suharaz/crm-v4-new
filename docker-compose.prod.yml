@@ -1,16 +1,17 @@
+# Infrastructure only — Apps run via PM2
 services:
   postgres:
     image: postgres:16-alpine
     container_name: crm-postgres
     restart: unless-stopped
+    ports:
+      - "${DB_PORT:-5433}:5432"
     environment:
       POSTGRES_USER: ${DB_USER:-crm}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME:-crm_v4}
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    networks:
-      - crm-internal
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-crm}"]
       interval: 10s
@@ -21,65 +22,17 @@ services:
     image: redis:7-alpine
     container_name: crm-redis
     restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-crm_redis}
     volumes:
       - redis-data:/data
-    networks:
-      - crm-internal
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-crm_redis}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    container_name: crm-api
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql://${DB_USER:-crm}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-crm_v4}
-      REDIS_URL: redis://:${REDIS_PASSWORD:-crm_redis}@redis:6379
-      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Set JWT_REFRESH_SECRET}
-      API_PORT: 3010
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
-      UPLOAD_DIR: /app/uploads
-      NODE_ENV: production
-    volumes:
-      - uploads-data:/app/uploads
-    networks:
-      - crm-internal
-      - proxy-network
-
-  web:
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
-    container_name: crm-web
-    restart: unless-stopped
-    depends_on:
-      - api
-    environment:
-      NEXT_PUBLIC_API_URL: http://crm-api:3010/api/v1
-      NODE_ENV: production
-    networks:
-      - crm-internal
-      - proxy-network
-
 volumes:
   postgres-data:
   redis-data:
-  uploads-data:
-
-networks:
-  crm-internal:
-    driver: bridge
-  proxy-network:
-    external: true

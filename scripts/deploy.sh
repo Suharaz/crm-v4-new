@@ -19,6 +19,10 @@ fi
 # Load env vars for build
 set -a; source "$ENV_FILE"; set +a
 
+# Copy .env.production → .env for Prisma CLI (package.json uses `dotenv -e ../../.env`)
+# Safe: .env is gitignored, won't affect repo state
+cp .env.production .env
+
 # Pull latest code
 echo ">>> git pull..."
 git pull origin master

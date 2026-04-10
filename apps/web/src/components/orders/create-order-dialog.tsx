@@ -175,9 +175,9 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
   const vatAmount = Math.round(price * vatRate / 100);
   const totalAmount = price + vatAmount;
 
-  // VAT extracted from payment amount: vatAmount = amount * vatRate / (100 + vatRate)
+  // VAT on payment amount: vatAmount = amount * vatRate / 100
   const pmtAmountNum = Number(paymentAmount) || totalAmount;
-  const pmtVatAmount = vatRate > 0 ? Math.round(pmtAmountNum * vatRate / (100 + vatRate)) : 0;
+  const pmtVatAmount = vatRate > 0 ? Math.round(pmtAmountNum * vatRate / 100) : 0;
 
   function resetAndClose() {
     setOpen(false);

@@ -63,7 +63,7 @@ export function PaymentActions({
   // Auto-calculate VAT extracted from gross payment amount
   const pmtAmountNum = Number(form.amount);
   const pmtVatAmount = vatRate > 0 && pmtAmountNum > 0
-    ? Math.round(pmtAmountNum * vatRate / (100 + vatRate))
+    ? Math.round(pmtAmountNum * vatRate / 100)
     : 0;
 
   async function handleCreate() {

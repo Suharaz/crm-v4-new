@@ -27,9 +27,10 @@ git pull origin master
 echo ">>> Starting infrastructure..."
 docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d
 
-# Install dependencies
-echo ">>> pnpm install..."
-pnpm install --frozen-lockfile
+# Install dependencies (include devDeps: turbo, tsc, prisma CLI cần cho build)
+# --prod=false override NODE_ENV=production để lấy đủ tools
+echo ">>> pnpm install (with devDeps for build)..."
+pnpm install --frozen-lockfile --prod=false
 
 # Generate Prisma client + push schema
 echo ">>> Database migration..."

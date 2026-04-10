@@ -3,12 +3,29 @@ import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
+// Seed password strategy:
+// - DEV: defaults to "changeme" (xem docs/demo-accounts.md)
+// - PROD: REQUIRES env SEED_PASSWORD (fail fast để tránh leak credentials)
+const SEED_PASSWORD = (() => {
+  const envPassword = process.env.SEED_PASSWORD;
+  if (envPassword && envPassword.length >= 8) return envPassword;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'SEED_PASSWORD env var required in production (min 8 chars). ' +
+      'Set it in .env.production before running pnpm db:seed. ' +
+      'Ex: SEED_PASSWORD=$(openssl rand -base64 16) pnpm db:seed',
+    );
+  }
+  return 'changeme'; // dev only
+})();
+
 async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);
 }
 
 async function main() {
   console.log('Seeding database...');
+  console.log(`  Using SEED_PASSWORD from ${process.env.SEED_PASSWORD ? 'env' : 'default (dev)'}`);
 
   // ── Cleanup existing data (order matters for FK constraints) ──────────
   console.log('  Cleaning up existing data...');
@@ -65,7 +82,7 @@ async function main() {
   const admin = await prisma.user.create({
     data: {
       email: 'admin@crm.local',
-      passwordHash: await hashPassword('changeme'),
+      passwordHash: await hashPassword(SEED_PASSWORD),
       name: 'Super Admin',
       phone: '0901234567',
       role: UserRole.SUPER_ADMIN,
@@ -77,7 +94,7 @@ async function main() {
   const managerSales = await prisma.user.create({
     data: {
       email: 'manager.sales@crm.local',
-      passwordHash: await hashPassword('changeme'),
+      passwordHash: await hashPassword(SEED_PASSWORD),
       name: 'Nguyễn Văn Quản Lý',
       phone: '0901234568',
       role: UserRole.MANAGER,
@@ -89,7 +106,7 @@ async function main() {
   const managerSupport = await prisma.user.create({
     data: {
       email: 'manager.support@crm.local',
-      passwordHash: await hashPassword('changeme'),
+      passwordHash: await hashPassword(SEED_PASSWORD),
       name: 'Trần Thị Quản Lý',
       phone: '0901234569',
       role: UserRole.MANAGER,
@@ -101,7 +118,7 @@ async function main() {
   const user1 = await prisma.user.create({
     data: {
       email: 'sale1@crm.local',
-      passwordHash: await hashPassword('changeme'),
+      passwordHash: await hashPassword(SEED_PASSWORD),
       name: 'Lê Văn Sale',
       phone: '0911111111',
       role: UserRole.USER,
@@ -113,7 +130,7 @@ async function main() {
   const user2 = await prisma.user.create({
     data: {
       email: 'sale2@crm.local',
-      passwordHash: await hashPassword('changeme'),
+      passwordHash: await hashPassword(SEED_PASSWORD),
       name: 'Phạm Thị Sale',
       phone: '0922222222',
       role: UserRole.USER,
@@ -125,7 +142,7 @@ async function main() {
   const user3 = await prisma.user.create({
     data: {
       email: 'support1@crm.local',
-      passwordHash: await hashPassword('changeme'),
+      passwordHash: await hashPassword(SEED_PASSWORD),
       name: 'Hoàng Văn Support',
       phone: '0933333333',
       role: UserRole.USER,

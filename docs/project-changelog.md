@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Security: SEED_PASSWORD env var (2026-04-10)
+- **Repo flip private → public:** `gh repo edit Suharaz/crm-v4-new --visibility public`. Pre-flight scan: `.env*` trong gitignore, không có hardcoded secrets trong source.
+- **Seed credential leak fix:** `packages/database/prisma/seed.ts` cũ hardcode `changeme` cho 6 accounts bao gồm SUPER_ADMIN → repo public sẽ leak credentials. Refactor:
+  - Dev: default `changeme` (backward compat)
+  - Production: **bắt buộc** env `SEED_PASSWORD` (min 8 chars) — throw error nếu thiếu để tránh leak
+- **`.env.production.example`:** thêm `SEED_PASSWORD`, `NODE_ENV=production`, sửa comment `NEXT_PUBLIC_API_URL` phải dùng HTTPS public URL (không localhost)
+- **`docs/demo-accounts.md`:** thêm warning DEV ONLY, phân biệt rõ dev password vs production SEED_PASSWORD
+
 ### aaPanel Deployment Guide (2026-04-10)
 - **New doc:** `docs/aapanel-deployment-guide.md` — multi-project VPS deployment playbook với aaPanel 7.x
 - **Research:** `plans/reports/research-260410-1114-aapanel-facts.md` — verified facts từ aapanel.com docs + forum + GitHub source code

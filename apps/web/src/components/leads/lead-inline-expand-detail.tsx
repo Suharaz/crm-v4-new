@@ -79,12 +79,17 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     ]).then(async ([entityRes, actRes]) => {
       setData(entityRes.data);
       let allActs = (actRes.data || []).map((a: any) => ({ ...a, _source: 'lead' }));
-      // Merge customer activities if lead has customerId
+      // Merge customer activities if lead has customerId — dedupe by id (same activity may appear in both endpoints)
       if (entityType === 'lead' && entityRes.data?.customerId) {
         try {
           const custActs = await api.get<{ data: any[] }>(`/customers/${entityRes.data.customerId}/activities`);
           const custItems = (custActs.data || []).map((a: any) => ({ ...a, _source: 'customer' }));
-          allActs = [...allActs, ...custItems].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          const merged = new Map<string, any>();
+          for (const a of [...allActs, ...custItems]) {
+            const k = String(a.id);
+            if (!merged.has(k)) merged.set(k, a);
+          }
+          allActs = Array.from(merged.values()).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         } catch { /* ok */ }
       }
       setActivities(allActs);

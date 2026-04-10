@@ -5,11 +5,13 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### aaPanel Deployment Guide (2026-04-10)
-- **New doc:** `docs/aapanel-deployment-guide.md` — multi-project VPS deployment playbook với aaPanel
-- **Kiến trúc:** aaPanel Website (Nginx reverse proxy) + PM2 apps + Docker infra (PG/Redis) + Cloudflare Full(Strict) + Let's Encrypt
+- **New doc:** `docs/aapanel-deployment-guide.md` — multi-project VPS deployment playbook với aaPanel 7.x
+- **Research:** `plans/reports/research-260410-1114-aapanel-facts.md` — verified facts từ aapanel.com docs + forum + GitHub source code
+- **Kiến trúc:** aaPanel 7 **Proxy Project** site type + **Customized Configuration Files** (persistent custom nginx) + PM2 Manager plugin + Docker Manager plugin + Cloudflare Full(Strict) + Let's Encrypt **DNS-01 via CF API**
+- **Hardening checklist:** bt 8 (đổi port), bt 14 (Security Entrance), 2FA, IP whitelist, BasicAuth, panel SSL — mandatory trước production
 - **Auto-deploy:** GitHub Actions → SSH → `scripts/deploy.sh` (tái sử dụng từ commit 16bb453)
 - **Playbook thêm project mới:** Port convention (API=30N0, Web=30N1, PG=543(N+2), Redis=638N), 13-step checklist, template files cho docker-compose + PM2 + deploy script
-- **Troubleshooting:** 502, LE cert fail, SSH secrets, PM2 auto-start, port conflict, build OOM
+- **Gotchas documented:** vhost regeneration wipes raw edits, Repair button drops reverse proxy, firewall ufw desync, HTTP-01 fail với CF proxied, phpMyAdmin 888 no-SSL, Node Project vs PM2 Manager dual systems, CVE-2022-28117 (aaPanel ≤6.6.6)
 
 ### Customer Detail Redesign (2026-04-09)
 - **Remove "Thông tin thêm":** Metadata section removed from detail view (already in edit form)

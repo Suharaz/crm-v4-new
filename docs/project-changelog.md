@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### aaPanel Deployment Guide (2026-04-10)
+- **New doc:** `docs/aapanel-deployment-guide.md` — multi-project VPS deployment playbook với aaPanel
+- **Kiến trúc:** aaPanel Website (Nginx reverse proxy) + PM2 apps + Docker infra (PG/Redis) + Cloudflare Full(Strict) + Let's Encrypt
+- **Auto-deploy:** GitHub Actions → SSH → `scripts/deploy.sh` (tái sử dụng từ commit 16bb453)
+- **Playbook thêm project mới:** Port convention (API=30N0, Web=30N1, PG=543(N+2), Redis=638N), 13-step checklist, template files cho docker-compose + PM2 + deploy script
+- **Troubleshooting:** 502, LE cert fail, SSH secrets, PM2 auto-start, port conflict, build OOM
+
+### Customer Detail Redesign (2026-04-09)
+- **Remove "Thông tin thêm":** Metadata section removed from detail view (already in edit form)
+- **Social icons in info card:** Facebook, Instagram, Zalo, LinkedIn shown as icons — colored+clickable if link exists, grey if not. Opens in new tab
+- **"Phân tích khách hàng" card:** Shows short description with expandable full description. CTA to edit page if no analysis exists
+- **Expandable orders:** Click order row to expand inline payment history (fetched on-demand from `/orders/:id`). No more navigation to order page
+- **Backend:** Customer detail orders now include product name, sorted by date desc
+- **Fix: Customer timeline:** Now aggregates activities from customer + all related leads (was only showing direct customer activities)
+- **Customer list:** Click name navigates directly to detail page (removed popup preview dialog)
+- **Back button:** All detail, edit, and create pages now have "Quay lại" button (9 pages: customers, leads, orders, users)
+- **Customer info card:** Removed nhân viên/phòng ban fields, added SĐT, labels inline, company if available. No separate labels section
+
+### AI Analysis System Rewrite (2026-04-09)
+- **Schema:** `CallLog.analysis` field for call analysis results. `SystemSetting` key-value table for admin config
+- **Call analysis:** Auto-triggered when call duration > 60s. Prompt configurable by super admin in Settings > AI tab
+- **Customer analysis:** Auto-triggered when call > 120s, or manual via "Phân tích ngay" button on customer detail
+- **Customer analysis input:** Notes, payment history, call analyses — merged from customer + all related leads
+- **Customer analysis output:** Saves to `shortDescription` (tóm tắt) + `description` (chi tiết) fields. Fixed JSON output wrapper ensures structured extraction regardless of prompt
+- **Settings > AI tab:** Super admin configures call analysis prompt and customer analysis prompt
+- **Removed:** `aiSummaryShort` / `aiSummaryDetail` metadata approach (replaced by direct field writes)
+- **API:** `POST /customers/:id/analyze` for on-demand AI analysis. `GET/PUT /system-settings` for admin config
+- **AI config UI:** API key + model stored in DB via Settings > AI tab. Model selector fetches OpenRouter model list with search, free models first. No more env var dependency for AI
+- **Customer analysis markdown:** Detail renders as rich markdown (bold, lists, headings). Added "Phân tích chi tiết chân dung khách hàng" heading above content
+- **Call logs page overhaul:** Date range filter (dateFrom/dateTo), AI analysis shown per call (markdown), sparkle icon for analyzed calls. "Tóm tắt AI" button summarizes filtered calls with strengths/weaknesses
+- **Call summary prompt:** New setting in Settings > AI for daily call summary prompt
+- **API:** `POST /call-logs/summarize` for date-range call summary, `GET /call-logs?dateFrom=&dateTo=` date filter
+- **Call analysis tags:** AI outputs structured JSON `{tags:[], detail:""}`. Tags shown as hash-colored pastel badges on call rows (8-color palette). Content + analysis sections collapsible with "Xem thêm"
+- **Call summary refactor:** "Tóm tắt AI" now sends only tag frequency table (max 150 calls) with fixed prompt. Returns: tổng quan, điểm mạnh, điểm yếu, đề xuất. No configurable prompt needed
+
 ### Advanced Filter Bars — Customers & Orders (2026-04-08)
 - **Customers filter:** Status, phòng ban, nhân viên, nhãn, khoảng ngày. Search tên/SĐT/email
 - **Orders filter:** Status, sản phẩm, người tạo, hình thức, nhóm, khoảng ngày. Search tên KH/SĐT/mã khoá

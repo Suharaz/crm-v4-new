@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Dynamic Order/Payment Lookup Tables + New Payment Fields (2026-04-11)
+- **Schema:** 3 new lookup tables — `OrderFormat` (Hình thức), `ProductGroup` (Nhóm sản phẩm), `PaymentInstallment` (Lần CK)
+- **Schema:** Order: added `vatEmail`, `formatId`, `productGroupId` foreign keys (legacy string fields kept)
+- **Schema:** Payment: added `transferDate`, `vatAmount`, `installmentId`
+- **API:** 3 new CRUD modules (GET/POST/PATCH/DELETE) with SUPER_ADMIN guards
+- **API:** Orders accept `formatId`, `productGroupId`, `vatEmail` in create/list
+- **API:** Payments accept `transferDate`, `vatAmount`, `installmentId` in create
+- **Settings:** SuperAdmin can CRUD all 3 lookup tables in Settings page (3 new tabs)
+- **Order creation:** Dynamic format/group selects from API, `vatEmail` field, payment VAT auto-calc
+- **Payment creation:** `transferDate` input, installment select, VAT auto-calculated from product rate
+- **Order filters:** Dynamic format/group from API instead of hardcoded arrays
+- **Order detail:** Shows `orderFormat`, `productGroup`, `vatEmail`, payment installment info
+- **Seeded defaults:** Zoom Replay/Live/Khách cũ, Online/Tool/Offline, CK lần 1-4/Full
+
+### Type Safety Cleanup (2026-04-10)
+- **65 files fixed:** Eliminated all `@typescript-eslint/no-explicit-any` warnings across frontend
+- **New types:** `apps/web/src/types/entities.ts` — 15 entity interfaces (LeadRecord, CustomerRecord, OrderRecord, etc.)
+- **Pattern:** `Record<string, unknown>` replaces `Record<string, any>`, `err: unknown` replaces `err: any`
+
+### Bug Fixes (2026-04-10)
+- **Duplicate key fix:** Dedup merged pool+distributed leads in `poolNewFiltered` API (race condition)
+- **Duplicate key fix:** Dedup orders/activities in `LeadInlineExpandDetail` (stale cache + API aggregation)
+
 ### Security: SEED_PASSWORD env var (2026-04-10)
 - **Repo flip private → public:** `gh repo edit Suharaz/crm-v4-new --visibility public`. Pre-flight scan: `.env*` trong gitignore, không có hardcoded secrets trong source.
 - **Seed credential leak fix:** `packages/database/prisma/seed.ts` cũ hardcode `changeme` cho 6 accounts bao gồm SUPER_ADMIN → repo public sẽ leak credentials. Refactor:

@@ -358,35 +358,40 @@ model Product {
 }
 
 model Order {
-  id          BigInt      @id @default(autoincrement())
-  leadId      BigInt?     @map("lead_id")
-  customerId  BigInt      @map("customer_id")
-  productId   BigInt?     @map("product_id")
-  amount      Decimal     @db.Decimal(12, 2)
-  vatRate     Decimal     @map("vat_rate") @db.Decimal(5, 2)
-  vatAmount   Decimal     @map("vat_amount") @db.Decimal(12, 2)
-  totalAmount Decimal     @map("total_amount") @db.Decimal(12, 2)
-  status      OrderStatus @default(PENDING)
-  companyName    String?     @map("company_name")     /// Tên công ty
-  taxCode        String?     @map("tax_code")         /// Mã số thuế
-  contactPerson  String?     @map("contact_person")   /// Người liên hệ
-  customerName   String?     @map("customer_name")    /// Tên khách
-  customerPhone  String?     @map("customer_phone")   /// SĐT khách
-  address        String?                              /// Địa chỉ
-  format         String?     /// Hình thức: ZOOM_REPLAY, ZOOM_LIVE, ZOOM_OLD_CUSTOMER
-  groupType      String?     @map("group_type")   /// Nhóm: ONLINE, TOOL, OFFLINE
-  stt            String?     /// STT (thay thế buổi)
-  courseCode     String?     @map("course_code")   /// Mã khoá
-  notes          String?
-  createdBy   BigInt      @map("created_by")
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
-  deletedAt   DateTime?   @map("deleted_at")
+  id              BigInt      @id @default(autoincrement())
+  leadId          BigInt?     @map("lead_id")
+  customerId      BigInt      @map("customer_id")
+  productId       BigInt?     @map("product_id")
+  amount          Decimal     @db.Decimal(12, 2)
+  vatRate         Decimal     @map("vat_rate") @db.Decimal(5, 2)
+  vatAmount       Decimal     @map("vat_amount") @db.Decimal(12, 2)
+  totalAmount     Decimal     @map("total_amount") @db.Decimal(12, 2)
+  status          OrderStatus @default(PENDING)
+  companyName     String?     @map("company_name")      /// Tên công ty
+  taxCode         String?     @map("tax_code")          /// Mã số thuế
+  contactPerson   String?     @map("contact_person")    /// Người liên hệ
+  customerName    String?     @map("customer_name")     /// Tên khách
+  customerPhone   String?     @map("customer_phone")    /// SĐT khách
+  address         String?                               /// Địa chỉ
+  vatEmail        String?     @map("vat_email")         /// Mail nhận VAT
+  format          String?     /// Legacy — prefer formatId
+  formatId        BigInt?     @map("format_id")         /// Hình thức (lookup)
+  groupType       String?     @map("group_type")        /// Legacy — prefer productGroupId
+  productGroupId  BigInt?     @map("product_group_id")  /// Nhóm sản phẩm (lookup)
+  stt             String?     /// STT (thay thế buổi)
+  courseCode      String?     @map("course_code")       /// Mã khoá
+  notes           String?
+  createdBy       BigInt      @map("created_by")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  deletedAt       DateTime?   @map("deleted_at")
 
-  lead     Lead?    @relation(fields: [leadId], references: [id])
-  customer Customer @relation(fields: [customerId], references: [id])
-  product  Product? @relation(fields: [productId], references: [id])
-  creator  User     @relation("OrderCreator", fields: [createdBy], references: [id])
+  lead         Lead?         @relation(fields: [leadId], references: [id])
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  product      Product?      @relation(fields: [productId], references: [id])
+  creator      User          @relation("OrderCreator", fields: [createdBy], references: [id])
+  orderFormat  OrderFormat?  @relation(fields: [formatId], references: [id])
+  productGroup ProductGroup? @relation(fields: [productGroupId], references: [id])
 
   payments Payment[]
 
@@ -401,19 +406,23 @@ model Payment {
   orderId                  BigInt         @map("order_id")
   paymentTypeId            BigInt?        @map("payment_type_id")
   bankAccountId            BigInt?        @map("bank_account_id")
+  installmentId            BigInt?        @map("installment_id")
   amount                   Decimal        @db.Decimal(12, 2)
+  vatAmount                Decimal?       @map("vat_amount") @db.Decimal(12, 2)
   status                   PaymentStatus  @default(PENDING)
   transferContent          String?        @map("transfer_content")
+  transferDate             DateTime?      @map("transfer_date")
   verifiedSource           VerifiedSource? @map("verified_source")
   verifiedBy               BigInt?        @map("verified_by")
   verifiedAt               DateTime?      @map("verified_at")
   createdAt                DateTime       @default(now()) @map("created_at")
   updatedAt                DateTime       @updatedAt @map("updated_at")
 
-  order               Order            @relation(fields: [orderId], references: [id])
-  paymentType         PaymentType?     @relation(fields: [paymentTypeId], references: [id])
-  bankAccount         BankAccount?     @relation(fields: [bankAccountId], references: [id])
-  verifier            User?            @relation("PaymentVerifier", fields: [verifiedBy], references: [id])
+  order               Order                @relation(fields: [orderId], references: [id])
+  paymentType         PaymentType?         @relation(fields: [paymentTypeId], references: [id])
+  bankAccount         BankAccount?         @relation(fields: [bankAccountId], references: [id])
+  installment         PaymentInstallment?  @relation(fields: [installmentId], references: [id])
+  verifier            User?                @relation("PaymentVerifier", fields: [verifiedBy], references: [id])
   matchedTransaction  BankTransaction?
 
   @@index([orderId])
@@ -464,6 +473,42 @@ model BankTransaction {
   @@index([matchStatus, createdAt])
   @@index([amount, transactionTime])
   @@map("bank_transactions")
+}
+
+model OrderFormat {
+  id        BigInt   @id @default(autoincrement())
+  name      String   /// VD: Zoom Replay, Zoom Live, Zoom Khách cũ
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  orders Order[]
+
+  @@map("order_formats")
+}
+
+model ProductGroup {
+  id        BigInt   @id @default(autoincrement())
+  name      String   /// Nhóm sản phẩm: Online, Tool, Offline
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  orders Order[]
+
+  @@map("product_groups")
+}
+
+model PaymentInstallment {
+  id        BigInt   @id @default(autoincrement())
+  name      String   /// VD: CK lần 1, CK lần 2, CK Full
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  payments Payment[]
+
+  @@map("payment_installments")
 }
 
 // ─── LABELS ─────────────────────────────────────────────────────────────────

@@ -17,11 +17,14 @@ const ORDER_SELECT = {
   companyName: true, taxCode: true, contactPerson: true,
   customerName: true, customerPhone: true, address: true,
   format: true, groupType: true, stt: true, courseCode: true,
+  vatEmail: true, formatId: true, productGroupId: true,
   createdAt: true, updatedAt: true,
   lead: { select: { id: true, name: true, phone: true, status: true } },
   customer: { select: { id: true, name: true, phone: true } },
   product: { select: { id: true, name: true, price: true } },
   creator: { select: { id: true, name: true } },
+  orderFormat: { select: { id: true, name: true } },
+  productGroup: { select: { id: true, name: true } },
   payments: {
     select: {
       id: true, amount: true, status: true, transferContent: true,
@@ -39,7 +42,7 @@ export class OrdersService {
   async list(query: PaginationQueryDto & {
     status?: OrderStatus; customerId?: string; leadId?: string; createdByFilter?: bigint;
     search?: string; productId?: string; format?: string; groupType?: string;
-    dateFrom?: string; dateTo?: string;
+    dateFrom?: string; dateTo?: string; formatId?: bigint; productGroupId?: bigint;
   }) {
     const limit = query.limit ?? 20;
     const where: Prisma.OrderWhereInput = { deletedAt: null };
@@ -50,6 +53,8 @@ export class OrdersService {
     if (query.productId) where.productId = BigInt(query.productId);
     if (query.format) where.format = query.format;
     if (query.groupType) where.groupType = query.groupType;
+    if (query.formatId) where.formatId = query.formatId;
+    if (query.productGroupId) where.productGroupId = query.productGroupId;
     if (query.search) {
       where.OR = [
         { customerName: { contains: query.search, mode: 'insensitive' } },
@@ -91,6 +96,7 @@ export class OrdersService {
     companyName?: string; taxCode?: string; contactPerson?: string;
     customerName?: string; customerPhone?: string; address?: string;
     format?: string; groupType?: string; stt?: string; courseCode?: string;
+    vatEmail?: string; formatId?: bigint; productGroupId?: bigint;
   }, userId: bigint) {
     // Get product VAT rate if productId provided
     let vatRate = 0;
@@ -147,6 +153,9 @@ export class OrdersService {
         customerPhone: data.customerPhone, address: data.address,
         format: data.format, groupType: data.groupType,
         stt: data.stt, courseCode: data.courseCode,
+        vatEmail: data.vatEmail,
+        ...(data.formatId ? { orderFormat: { connect: { id: data.formatId } } } : {}),
+        ...(data.productGroupId ? { productGroup: { connect: { id: data.productGroupId } } } : {}),
         customer: { connect: { id: customerId } },
         creator: { connect: { id: userId } },
         ...(data.leadId ? { lead: { connect: { id: BigInt(data.leadId) } } } : {}),

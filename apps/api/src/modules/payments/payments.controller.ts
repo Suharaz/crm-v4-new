@@ -39,11 +39,19 @@ export class PaymentsController {
 
   @Post()
   async create(
-    @Body() body: { orderId: string; amount: number; paymentTypeId?: string; transferContent?: string },
+    @Body() body: {
+      orderId: string; amount: number; paymentTypeId?: string; bankAccountId?: string; transferContent?: string;
+      transferDate?: string; vatAmount?: number; installmentId?: string;
+    },
   ) {
     if (!body.orderId) throw new BadRequestException('orderId là bắt buộc');
     if (body.amount === undefined || body.amount === null) throw new BadRequestException('amount là bắt buộc');
-    return { data: await this.service.create(body) };
+    const createData = {
+      ...body,
+      transferDate: body.transferDate ? new Date(body.transferDate) : undefined,
+      installmentId: body.installmentId ? BigInt(body.installmentId) : undefined,
+    };
+    return { data: await this.service.create(createData) };
   }
 
   @Post(':id/verify')

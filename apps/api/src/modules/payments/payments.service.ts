@@ -7,10 +7,12 @@ const PAYMENT_SELECT = {
   id: true, orderId: true, paymentTypeId: true, bankAccountId: true, amount: true,
   status: true, transferContent: true, verifiedSource: true,
   verifiedBy: true, verifiedAt: true, createdAt: true, updatedAt: true,
+  vatAmount: true, transferDate: true, installmentId: true,
   paymentType: { select: { id: true, name: true } },
   bankAccount: { select: { id: true, name: true } },
   verifier: { select: { id: true, name: true } },
   matchedTransaction: { select: { id: true, externalId: true, amount: true, content: true, transactionTime: true } },
+  installment: { select: { id: true, name: true } },
 } satisfies Prisma.PaymentSelect;
 
 @Injectable()
@@ -49,7 +51,10 @@ export class PaymentsService {
     return this.list({ limit, cursor, status: 'PENDING' });
   }
 
-  async create(data: { orderId: string; amount: number; paymentTypeId?: string; bankAccountId?: string; transferContent?: string }) {
+  async create(data: {
+    orderId: string; amount: number; paymentTypeId?: string; bankAccountId?: string; transferContent?: string;
+    transferDate?: Date; vatAmount?: number; installmentId?: bigint;
+  }) {
     const orderId = BigInt(data.orderId);
     const order = await this.prisma.order.findFirst({ where: { id: orderId, deletedAt: null } });
     if (!order) throw new NotFoundException('Đơn hàng không tồn tại');
@@ -69,8 +74,11 @@ export class PaymentsService {
         order: { connect: { id: orderId } },
         amount: data.amount,
         transferContent: data.transferContent,
+        ...(data.transferDate ? { transferDate: data.transferDate } : {}),
+        ...(data.vatAmount !== undefined ? { vatAmount: data.vatAmount } : {}),
         ...(data.paymentTypeId ? { paymentType: { connect: { id: BigInt(data.paymentTypeId) } } } : {}),
         ...(data.bankAccountId ? { bankAccount: { connect: { id: BigInt(data.bankAccountId) } } } : {}),
+        ...(data.installmentId ? { installment: { connect: { id: data.installmentId } } } : {}),
       },
       select: PAYMENT_SELECT,
     });

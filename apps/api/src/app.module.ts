@@ -18,6 +18,9 @@ import { LeadsModule } from './modules/leads/leads.module';
 import { ProductCategoriesModule } from './modules/product-categories/product-categories.module';
 import { ProductsModule } from './modules/products/products.module';
 import { PaymentTypesModule } from './modules/payment-types/payment-types.module';
+import { OrderFormatsModule } from './modules/order-formats/order-formats.module';
+import { ProductGroupsModule } from './modules/product-groups/product-groups.module';
+import { PaymentInstallmentsModule } from './modules/payment-installments/payment-installments.module';
 import { BankAccountsModule } from './modules/bank-accounts/bank-accounts.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsModule } from './modules/payments/payments.module';
@@ -91,6 +94,9 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     ProductCategoriesModule,
     ProductsModule,
     PaymentTypesModule,
+    OrderFormatsModule,
+    ProductGroupsModule,
+    PaymentInstallmentsModule,
     BankAccountsModule,
     OrdersModule,
     PaymentsModule,

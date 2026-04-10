@@ -47,6 +47,14 @@ class OrderListQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   dateTo?: string;
+
+  @IsOptional()
+  @IsString()
+  formatId?: string;
+
+  @IsOptional()
+  @IsString()
+  productGroupId?: string;
 }
 
 @Controller('orders')
@@ -57,7 +65,9 @@ export class OrdersController {
   async list(@Query() query: OrderListQueryDto, @CurrentUser() user: any) {
     // USER role: only see own orders (override createdBy filter)
     const createdByFilter = user.role === UserRole.USER ? BigInt(user.id) : (query.createdBy ? BigInt(query.createdBy) : undefined);
-    return this.service.list({ ...query, createdByFilter });
+    const formatId = query.formatId ? BigInt(query.formatId) : undefined;
+    const productGroupId = query.productGroupId ? BigInt(query.productGroupId) : undefined;
+    return this.service.list({ ...query, createdByFilter, formatId, productGroupId });
   }
 
   @Get(':id')
@@ -67,13 +77,24 @@ export class OrdersController {
 
   @Post()
   async create(
-    @Body() body: { leadId?: string; customerId: string; productId?: string; amount: number; notes?: string },
+    @Body() body: {
+      leadId?: string; customerId: string; productId?: string; amount: number; notes?: string;
+      companyName?: string; taxCode?: string; contactPerson?: string;
+      customerName?: string; customerPhone?: string; address?: string;
+      format?: string; groupType?: string; stt?: string; courseCode?: string;
+      vatEmail?: string; formatId?: string; productGroupId?: string;
+    },
     @CurrentUser() user: any,
   ) {
     if (!body.customerId) throw new BadRequestException('customerId là bắt buộc');
     if (body.amount === undefined || body.amount === null) throw new BadRequestException('amount là bắt buộc');
     if (typeof body.amount !== 'number' || body.amount <= 0) throw new BadRequestException('amount phải là số dương');
-    return { data: await this.service.create(body, user.id) };
+    const createData = {
+      ...body,
+      formatId: body.formatId ? BigInt(body.formatId) : undefined,
+      productGroupId: body.productGroupId ? BigInt(body.productGroupId) : undefined,
+    };
+    return { data: await this.service.create(createData, user.id) };
   }
 
   @Patch(':id/status')

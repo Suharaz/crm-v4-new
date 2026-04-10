@@ -12,10 +12,13 @@ export default async function SettingsPage() {
   let bankAccounts: SettingsItem[] = [];
   let users: UserRecord[] = [];
   let apiKeys: SettingsItem[] = [];
+  let orderFormats: SettingsItem[] = [];
+  let productGroups: SettingsItem[] = [];
+  let paymentInstallments: SettingsItem[] = [];
   let aiSettings: Record<string, string> = {};
 
   try {
-    [departments, levels, sources, labels, paymentTypes, bankAccounts, users, apiKeys] = await Promise.all([
+    [departments, levels, sources, labels, paymentTypes, bankAccounts, users, apiKeys, orderFormats, productGroups, paymentInstallments] = await Promise.all([
       serverFetch<{ data: SettingsItem[] }>('/departments').then(r => r.data),
       serverFetch<{ data: SettingsItem[] }>('/employee-levels').then(r => r.data),
       serverFetch<{ data: SettingsItem[] }>('/lead-sources').then(r => r.data),
@@ -24,6 +27,9 @@ export default async function SettingsPage() {
       serverFetch<{ data: SettingsItem[] }>('/bank-accounts').then(r => r.data).catch(() => []),
       serverFetch<{ data: UserRecord[] }>('/users').then(r => r.data || []).catch(() => []),
       serverFetch<{ data: SettingsItem[] }>('/api-keys').then(r => r.data).catch(() => []),
+      serverFetch<{ data: SettingsItem[] }>('/order-formats').then(r => r.data).catch(() => []),
+      serverFetch<{ data: SettingsItem[] }>('/product-groups').then(r => r.data).catch(() => []),
+      serverFetch<{ data: SettingsItem[] }>('/payment-installments').then(r => r.data).catch(() => []),
     ]);
   } catch { /* partial data ok */ }
 
@@ -42,6 +48,9 @@ export default async function SettingsPage() {
         sources={sources}
         paymentTypes={paymentTypes}
         bankAccounts={bankAccounts}
+        orderFormats={orderFormats}
+        productGroups={productGroups}
+        paymentInstallments={paymentInstallments}
         labels={labels}
         users={users}
         apiKeys={apiKeys}

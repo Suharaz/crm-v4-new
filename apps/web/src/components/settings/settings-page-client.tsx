@@ -6,6 +6,9 @@ import { EmployeeLevelSettings } from '@/components/settings/employee-level-sett
 import { LeadSourceSettings } from '@/components/settings/lead-source-settings';
 import { PaymentTypeSettings } from '@/components/settings/payment-type-settings';
 import { BankAccountSettings } from '@/components/settings/bank-account-settings';
+import { OrderFormatSettings } from '@/components/settings/order-format-settings';
+import { ProductGroupSettings } from '@/components/settings/product-group-settings';
+import { PaymentInstallmentSettings } from '@/components/settings/payment-installment-settings';
 import { LabelSettings } from '@/components/settings/label-settings';
 import { TeamManagementWithLeaderSelect } from '@/components/settings/team-management-with-leader-select';
 import { ApiKeySettings } from '@/components/settings/api-key-settings';
@@ -19,13 +22,16 @@ interface SettingsPageClientProps {
   sources: SettingsItem[];
   paymentTypes: SettingsItem[];
   bankAccounts: SettingsItem[];
+  orderFormats: SettingsItem[];
+  productGroups: SettingsItem[];
+  paymentInstallments: SettingsItem[];
   labels: LabelEntity[];
   users: UserRecord[];
   apiKeys: SettingsItem[];
   aiSettings: Record<string, string>;
 }
 
-export function SettingsPageClient({ departments, levels, sources, paymentTypes, bankAccounts, labels, users, apiKeys, aiSettings }: SettingsPageClientProps) {
+export function SettingsPageClient({ departments, levels, sources, paymentTypes, bankAccounts, orderFormats, productGroups, paymentInstallments, labels, users, apiKeys, aiSettings }: SettingsPageClientProps) {
   const { user } = useAuth();
   const canEdit = user?.role === 'SUPER_ADMIN';
   const canEditLabels = user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER';
@@ -37,6 +43,9 @@ export function SettingsPageClient({ departments, levels, sources, paymentTypes,
         <TabsTrigger value="levels">Cấp bậc</TabsTrigger>
         <TabsTrigger value="sources">Nguồn lead</TabsTrigger>
         <TabsTrigger value="payment-types">Thanh toán</TabsTrigger>
+        <TabsTrigger value="payment-installments">Lần CK</TabsTrigger>
+        <TabsTrigger value="order-formats">Hình thức</TabsTrigger>
+        <TabsTrigger value="product-groups">Nhóm SP</TabsTrigger>
         <TabsTrigger value="bank-accounts">TK Ngân hàng</TabsTrigger>
         <TabsTrigger value="labels">Nhãn</TabsTrigger>
         <TabsTrigger value="teams">Teams</TabsTrigger>
@@ -55,6 +64,15 @@ export function SettingsPageClient({ departments, levels, sources, paymentTypes,
       </TabsContent>
       <TabsContent value="payment-types">
         <PaymentTypeSettings data={paymentTypes} canEdit={canEdit} />
+      </TabsContent>
+      <TabsContent value="payment-installments">
+        <PaymentInstallmentSettings data={paymentInstallments} canEdit={canEdit} />
+      </TabsContent>
+      <TabsContent value="order-formats">
+        <OrderFormatSettings data={orderFormats} canEdit={canEdit} />
+      </TabsContent>
+      <TabsContent value="product-groups">
+        <ProductGroupSettings data={productGroups} canEdit={canEdit} />
       </TabsContent>
       <TabsContent value="bank-accounts">
         <BankAccountSettings data={bankAccounts} canEdit={canEdit} />

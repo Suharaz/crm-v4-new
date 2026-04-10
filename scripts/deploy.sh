@@ -17,6 +17,12 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 1
 fi
 
+# Check proxy network exists
+if ! docker network inspect proxy-network >/dev/null 2>&1; then
+  echo "ERROR: proxy-network not found. Run ./scripts/setup-proxy.sh first."
+  exit 1
+fi
+
 # Pull latest code
 echo ">>> Pulling latest code..."
 cd "$APP_DIR"
@@ -39,4 +45,5 @@ echo ">>> Cleaning up old images..."
 docker image prune -f
 
 echo "=== Deploy complete ==="
-echo "Check health: curl http://localhost/health"
+echo "Containers: crm-api, crm-web, crm-postgres, crm-redis"
+echo "Proxy: configure in Nginx Proxy Manager at :81"

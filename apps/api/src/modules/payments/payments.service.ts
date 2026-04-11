@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaClient, Prisma, PaymentStatus } from '@prisma/client';
+import * as ExcelJS from 'exceljs';
 import { PaymentMatchingService } from './payment-matching.service';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
@@ -16,8 +17,12 @@ const PAYMENT_SELECT = {
   order: {
     select: {
       id: true, status: true, totalAmount: true, vatEmail: true,
+      companyName: true, taxCode: true, contactPerson: true, address: true,
+      format: true, stt: true, courseCode: true, notes: true,
       customer: { select: { id: true, name: true, phone: true } },
       product: { select: { id: true, name: true } },
+      productGroup: { select: { id: true, name: true } },
+      orderFormat: { select: { id: true, name: true } },
       creator: { select: { id: true, name: true } },
       lead: { select: { id: true, name: true } },
     },
@@ -194,5 +199,96 @@ export class PaymentsService {
       data: { status: 'REJECTED', verifiedBy: userId, verifiedAt: new Date(), verifiedSource: 'MANUAL' },
       select: PAYMENT_SELECT,
     });
+  }
+
+  async exportVerified(dateFrom?: string, dateTo?: string): Promise<Buffer> {
+    const where: Prisma.PaymentWhereInput = { status: 'VERIFIED' };
+    if (dateFrom || dateTo) {
+      where.createdAt = {
+        ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+        ...(dateTo ? { lte: new Date(dateTo + 'T23:59:59.999Z') } : {}),
+      };
+    }
+
+    const payments = await this.prisma.payment.findMany({
+      where,
+      select: PAYMENT_SELECT,
+      orderBy: { id: 'desc' },
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Hoá đơn đã xác minh');
+
+    const formatDate = (d: Date | string | null | undefined): string => {
+      if (!d) return '';
+      const dt = new Date(d);
+      const dd = String(dt.getDate()).padStart(2, '0');
+      const mm = String(dt.getMonth() + 1).padStart(2, '0');
+      const yyyy = dt.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    };
+
+    const headers = [
+      '#', 'Số tiền', 'Tiền VAT', 'Loại CK', 'Lần CK', 'Nội dung CK', 'Ngày CK',
+      'Khách hàng', 'SĐT', 'Sản phẩm', 'Tên công ty', 'MST', 'Người liên hệ',
+      'Địa chỉ', 'Mail VAT', 'Hình thức', 'Nhóm SP', 'STT', 'Mã khoá',
+      'Ghi chú', 'Nguồn xác minh', 'Người xác nhận', 'Ngày xác nhận',
+    ];
+
+    sheet.addRow(headers);
+
+    // Style header row
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
+    headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+
+    // Data rows
+    payments.forEach((p, idx) => {
+      const o = p.order;
+      sheet.addRow([
+        idx + 1,
+        Number(p.amount),
+        p.vatAmount != null ? Number(p.vatAmount) : '',
+        p.paymentType?.name ?? '',
+        p.installment?.name ?? '',
+        p.transferContent ?? '',
+        formatDate(p.transferDate),
+        o?.customer?.name ?? '',
+        o?.customer?.phone ?? '',
+        o?.product?.name ?? '',
+        o?.companyName ?? '',
+        o?.taxCode ?? '',
+        o?.contactPerson ?? '',
+        o?.address ?? '',
+        o?.vatEmail ?? '',
+        o?.orderFormat?.name ?? o?.format ?? '',
+        o?.productGroup?.name ?? '',
+        o?.stt ?? '',
+        o?.courseCode ?? '',
+        o?.notes ?? '',
+        p.verifiedSource === 'AUTO' ? 'Auto' : 'Thủ công',
+        p.verifier?.name ?? '',
+        formatDate(p.verifiedAt),
+      ]);
+    });
+
+    // Format amount columns (B = col 2, C = col 3)
+    [2, 3].forEach((col) => {
+      sheet.getColumn(col).numFmt = '#,##0';
+    });
+
+    // Auto column widths
+    sheet.columns.forEach((col) => {
+      let maxLen = 10;
+      col.eachCell?.({ includeEmpty: false }, (cell) => {
+        const len = cell.value != null ? String(cell.value).length : 0;
+        if (len > maxLen) maxLen = len;
+      });
+      col.width = Math.min(maxLen + 2, 40);
+    });
+
+    const arrayBuffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(arrayBuffer);
   }
 }

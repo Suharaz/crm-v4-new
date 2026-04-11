@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Param, Query, HttpCode, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, HttpCode, BadRequestException, Res } from '@nestjs/common';
 import { IsOptional, IsEnum, IsString } from 'class-validator';
 import { UserRole, PaymentStatus } from '@prisma/client';
+import { Response } from 'express';
 import { PaymentsService } from './payments.service';
 import { Roles } from '../auth/decorators/roles-required.decorator';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
@@ -46,6 +47,19 @@ export class PaymentsController {
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
   async listPending(@Query('limit') limit?: number, @Query('cursor') cursor?: string) {
     return this.service.listPending(limit ?? 20, cursor);
+  }
+
+  @Get('export')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async exportExcel(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Res() res?: Response,
+  ) {
+    const buffer = await this.service.exportVerified(dateFrom, dateTo);
+    res!.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res!.setHeader('Content-Disposition', 'attachment; filename=payments-verified.xlsx');
+    res!.send(buffer);
   }
 
   @Get(':id')

@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { api } from '@/lib/api-client';
+import { useAuth } from '@/providers/auth-provider';
 import { formatDate, formatVND, cn } from '@/lib/utils';
-import { CheckCircle, XCircle, Loader2, ChevronDown, ChevronRight, Search, Calendar } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, ChevronDown, ChevronRight, Search, Calendar, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import type { PaymentRecord, BankTransactionRecord, NamedEntity } from '@/types/entities';
 
@@ -145,6 +146,9 @@ export function PaymentReconciliationClient({
   paymentTypes = [],
 }: Props) {
   const router = useRouter();
+  const { user } = useAuth();
+  const isManager = user?.role === 'MANAGER' || user?.role === 'SUPER_ADMIN';
+
   const [pending, setPending] = useState(initPending);
   const [unmatched, setUnmatched] = useState(initTx);
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
@@ -154,6 +158,11 @@ export function PaymentReconciliationClient({
   // Expand state
   const [expandedPending, setExpandedPending] = useState<string | null>(null);
   const [expandedVerified, setExpandedVerified] = useState<string | null>(null);
+
+  // Export state
+  const [exportFrom, setExportFrom] = useState('');
+  const [exportTo, setExportTo] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   // Filters (client-side on pending list)
   const [filterSearch, setFilterSearch] = useState('');
@@ -224,6 +233,23 @@ export function PaymentReconciliationClient({
       router.refresh();
     } catch (err: unknown) { toast.error(err instanceof Error ? err.message : 'Lỗi'); }
     setProcessing(false);
+  }
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (exportFrom) params.set('dateFrom', exportFrom);
+      if (exportTo) params.set('dateTo', exportTo);
+      const qs = params.toString();
+      // Use proxy route so auth cookies are forwarded; browser triggers download from Content-Disposition header
+      window.location.href = `/api/proxy/payments/export${qs ? '?' + qs : ''}`;
+    } catch {
+      toast.error('Lỗi tải xuống Excel');
+    } finally {
+      // Reset after short delay to allow navigation to start
+      setTimeout(() => setExporting(false), 1500);
+    }
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -408,6 +434,39 @@ export function PaymentReconciliationClient({
 
         {/* ── Tab: Đã xác minh ── */}
         <TabsContent value="verified">
+          {isManager && (
+            <div className="flex flex-wrap items-center gap-2 my-3">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                <Input
+                  type="date"
+                  value={exportFrom}
+                  onChange={(e) => setExportFrom(e.target.value)}
+                  className="h-8 text-xs px-2 w-36"
+                  placeholder="Từ ngày"
+                />
+                <span className="text-gray-400 text-xs shrink-0">–</span>
+                <Input
+                  type="date"
+                  value={exportTo}
+                  onChange={(e) => setExportTo(e.target.value)}
+                  className="h-8 text-xs px-2 w-36"
+                  placeholder="Đến ngày"
+                />
+              </div>
+              <Button
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs"
+                onClick={handleExport}
+                disabled={exporting}
+              >
+                {exporting
+                  ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                  : <Download className="h-3.5 w-3.5 mr-1.5" />}
+                Tải Excel
+              </Button>
+            </div>
+          )}
           {verifiedPayments.length === 0 ? (
             <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400 mt-2">Chưa có</div>
           ) : (

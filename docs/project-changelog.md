@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Payment Excel Export/Import + Customer AI Rating + Activity Chart (2026-04-11)
+- **Export Excel:** Manager+ can download verified payments as .xlsx with date range filter (23 columns, Vietnamese headers)
+- **Import Excel:** Upload .xlsx with 20 columns (order + payment data). Auto-maps SĐT→customer, product→order. Creates new customers/orders if needed. Returns summary: created/matched/new customers/errors
+- **AI Rating:** Customer analysis now returns 1-5 star rating. Saved to `aiRating` field, displayed as gold stars on analysis card
+- **Activity by Department:** Horizontal bar chart on customer detail showing interaction count per department (NOTE + CALL). Click to expand inline activity list per dept
+
 ### Payment Reconciliation Redesign (2026-04-11)
 - **Expanded payment data:** API now includes order→customer, product, creator, lead in payment responses
 - **Filter bar:** Search by nội dung CK/customer name, filter by payment type, date range for pending payments

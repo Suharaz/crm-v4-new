@@ -20,7 +20,7 @@ export default async function PoolZoomPage() {
       <h1 className="text-2xl font-bold text-gray-900">Kho Zoom</h1>
       <p className="text-sm text-gray-500">Leads từ nguồn bỏ qua kho mới — cần xử lý riêng</p>
       <div className="mt-4">
-        <LeadPoolTableWithBulkAssign leads={data as unknown as Parameters<typeof LeadPoolTableWithBulkAssign>[0]['leads']} users={users} poolMode="new" />
+        <LeadPoolTableWithBulkAssign leads={data as unknown as Parameters<typeof LeadPoolTableWithBulkAssign>[0]['leads']} users={users} poolMode="department" />
       </div>
     </div>
   );

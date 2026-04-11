@@ -282,12 +282,12 @@ export function PaymentReconciliationClient({
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Select value={filterType} onValueChange={setFilterType}>
+                  <Select value={filterType} onValueChange={(v) => setFilterType(v === '__all__' ? '' : v)}>
                     <SelectTrigger className="h-8 text-xs flex-1">
                       <SelectValue placeholder="Loại thanh toán" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Tất cả loại</SelectItem>
+                      <SelectItem value="__all__">Tất cả loại</SelectItem>
                       {paymentTypes.map(pt => (
                         <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>
                       ))}

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Payment Reconciliation Redesign (2026-04-11)
+- **Expanded payment data:** API now includes order→customer, product, creator, lead in payment responses
+- **Filter bar:** Search by nội dung CK/customer name, filter by payment type, date range for pending payments
+- **Expandable rows:** Click any payment (pending or verified) to see full detail inline: order info, customer, product, lead, VAT, installment, bank match
+- **Verified table:** Added columns: khách hàng, sản phẩm, người tạo, ngày CK
+- **Backend:** Offset pagination + filters (paymentTypeId, search, dateFrom, dateTo) for payments list
+
 ### UX Improvements (2026-04-11)
 - **Lead expand instant actions:** Quick action buttons (note, label, transfer, payment) render immediately on click; data loads async with spinner in data column
 - **Zoom pool fix:** Pool/zoom page no longer triggers auto-refresh of pool/new data (was using wrong poolMode)

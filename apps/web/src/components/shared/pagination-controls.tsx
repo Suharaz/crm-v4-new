@@ -15,12 +15,10 @@ interface Props {
   page?: number;
   limit?: number;
   totalPages?: number;
-  /** Legacy cursor support — renders simple "load more" button */
-  nextCursor?: string | null;
 }
 
 /** Numbered pagination with page size selector (saved to localStorage). */
-export function PaginationControls({ total, page, limit, totalPages, nextCursor }: Props) {
+export function PaginationControls({ total, page, limit, totalPages }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -40,21 +38,6 @@ export function PaginationControls({ total, page, limit, totalPages, nextCursor 
       }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Legacy cursor mode
-  if (nextCursor && !total) {
-    return (
-      <div className="mt-4 flex justify-center">
-        <Button variant="outline" onClick={() => {
-          const params = new URLSearchParams(searchParams.toString());
-          params.set('cursor', nextCursor);
-          router.push(`?${params.toString()}`);
-        }}>
-          Tải thêm
-        </Button>
-      </div>
-    );
-  }
 
   // No pagination needed
   if (!total || !totalPages || totalPages <= 1) return null;

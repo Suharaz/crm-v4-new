@@ -11,7 +11,10 @@ import { CsvExportButton } from '@/components/shared/csv-export-button';
 /** Customer list page with advanced filters. */
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const params = await searchParams;
-  const query = new URLSearchParams(params).toString();
+  const qp = new URLSearchParams(params);
+  qp.delete('cursor');
+  if (!qp.has('page')) qp.set('page', '1');
+  const query = qp.toString();
 
   const currentUser = await getCurrentUser();
   const isManager = ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
@@ -60,7 +63,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
       <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 bg-white">
         <CustomerTableWithPreview customers={data as unknown as Parameters<typeof CustomerTableWithPreview>[0]['customers']} />
       </div>
-      <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} nextCursor={meta?.nextCursor} />
+      <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} />
     </div>
   );
 }

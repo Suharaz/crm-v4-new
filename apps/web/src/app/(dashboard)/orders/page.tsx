@@ -8,7 +8,10 @@ import { OrderListAdvancedFilterBar } from '@/components/orders/order-list-advan
 /** Orders list page with advanced filters — inline expand detail, role-filtered on backend. */
 export default async function OrdersPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const params = await searchParams;
-  const query = new URLSearchParams(params).toString();
+  const qp = new URLSearchParams(params);
+  qp.delete('cursor');
+  if (!qp.has('page')) qp.set('page', '1');
+  const query = qp.toString();
 
   let data: OrderRecord[] = [];
   let meta: ApiListResponse<OrderRecord>['meta'] = {};
@@ -55,7 +58,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       <div className="mt-4">
         <OrderListWithInlineExpand orders={data} />
       </div>
-      <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} nextCursor={meta?.nextCursor} />
+      <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} />
     </div>
   );
 }

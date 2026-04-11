@@ -10,7 +10,10 @@ import { CsvExportButton } from '@/components/shared/csv-export-button';
 /** Lead list page — table or kanban view with deep filters. */
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const params = await searchParams;
-  const query = new URLSearchParams(params).toString();
+  const qp = new URLSearchParams(params);
+  qp.delete('cursor'); // ensure offset-based pagination
+  if (!qp.has('page')) qp.set('page', '1');
+  const query = qp.toString();
 
   const currentUser = await getCurrentUser();
   const isManager = ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
@@ -61,7 +64,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
       </Suspense>
 
       <LeadListWithViewToggle leads={data} allLabels={labels} />
-      <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} nextCursor={meta?.nextCursor} />
+      <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} />
     </div>
   );
 }

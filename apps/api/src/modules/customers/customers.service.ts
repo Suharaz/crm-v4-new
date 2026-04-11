@@ -16,6 +16,7 @@ const CUSTOMER_SELECT = {
   linkedinUrl: true,
   shortDescription: true,
   description: true,
+  aiRating: true,
   assignedUserId: true,
   assignedDepartmentId: true,
   status: true,

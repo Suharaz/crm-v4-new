@@ -157,6 +157,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             customerId={id}
             shortDescription={customer.shortDescription}
             description={customer.description}
+            aiRating={customer.aiRating}
           />
 
           {/* Leads */}

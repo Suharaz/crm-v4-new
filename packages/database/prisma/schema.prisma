@@ -250,6 +250,7 @@ model Customer {
   linkedinUrl          String?        @map("linkedin_url")
   shortDescription     String?        @map("short_description")
   description          String?
+  aiRating             Int?           @map("ai_rating")  /// AI đánh giá 1-5 sao
   assignedUserId       BigInt?        @map("assigned_user_id")
   assignedDepartmentId BigInt?        @map("assigned_department_id")
   status               CustomerStatus @default(ACTIVE)

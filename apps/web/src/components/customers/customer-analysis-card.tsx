@@ -12,10 +12,25 @@ interface Props {
   customerId: string;
   shortDescription?: string | null;
   description?: string | null;
+  aiRating?: number | null;
+}
+
+/** Renders 1-5 star rating using filled/empty unicode stars. */
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <span className="flex items-center gap-0.5">
+      {Array.from({ length: 5 }, (_, i) => (
+        <span key={i} style={{ color: i < rating ? '#d4a73a' : '#d1cbc3', fontSize: '1rem', lineHeight: 1 }}>
+          {i < rating ? '★' : '☆'}
+        </span>
+      ))}
+      <span className="ml-1 text-xs text-gray-500">{rating}/5</span>
+    </span>
+  );
 }
 
 /** Card showing customer AI analysis: short desc + expandable full desc + analyze button. */
-export function CustomerAnalysisCard({ customerId, shortDescription, description }: Props) {
+export function CustomerAnalysisCard({ customerId, shortDescription, description, aiRating }: Props) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -37,7 +52,10 @@ export function CustomerAnalysisCard({ customerId, shortDescription, description
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-gray-900">Phân tích khách hàng</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold text-gray-900">Phân tích khách hàng</h3>
+          {aiRating != null && <StarRating rating={aiRating} />}
+        </div>
         {hasAnalysis && (
           <Button
             variant="ghost"

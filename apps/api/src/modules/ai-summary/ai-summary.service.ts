@@ -7,11 +7,12 @@ const DEFAULT_CALL_PROMPT = `Bạn là trợ lý CRM phân tích cuộc gọi. H
 
 const DEFAULT_CUSTOMER_PROMPT = `Bạn là trợ lý CRM phân tích khách hàng. Dựa trên dữ liệu, hãy đánh giá mức độ tiềm năng, hành vi mua, rủi ro mất KH, và đề xuất hành động tiếp theo.`;
 
-/** Fixed wrapper to always extract short + detail from AI output. Length depends on admin prompt. */
+/** Fixed wrapper to always extract short + detail + rating from AI output. Length depends on admin prompt. */
 const CUSTOMER_OUTPUT_WRAPPER = `
 
 QUAN TRỌNG: Trả lời ĐÚNG format JSON sau (không markdown, không backtick):
-{"short":"tóm tắt ngắn","detail":"phân tích chi tiết"}`;
+{"short":"tóm tắt ngắn","detail":"phân tích chi tiết","rating":3}
+Trong đó rating là số nguyên từ 1-5 đánh giá mức độ tiềm năng tổng thể của khách hàng (1=rất thấp, 5=rất cao).`;
 
 @Injectable()
 export class AiSummaryService {
@@ -144,8 +145,8 @@ ${tagList}`;
     return this.callAI(prompt);
   }
 
-  /** Analyze customer: gather all data, generate short + detail descriptions. */
-  async analyzeCustomer(customerId: bigint): Promise<{ short: string; detail: string } | null> {
+  /** Analyze customer: gather all data, generate short + detail descriptions + rating. */
+  async analyzeCustomer(customerId: bigint): Promise<{ short: string; detail: string; rating: number | null } | null> {
     const customer = await this.prisma.customer.findFirst({
       where: { id: customerId, deletedAt: null },
       select: { id: true, name: true, phone: true, status: true },
@@ -212,14 +213,19 @@ ${tagList}`;
     const raw = await this.callAI(prompt);
     if (!raw) return null;
 
-    // Parse JSON — always extract short + detail
+    // Parse JSON — always extract short + detail + rating
     let short = '';
     let detail = '';
+    let rating: number | null = null;
     try {
       const cleaned = raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
       const json = JSON.parse(cleaned);
       short = json.short || '';
       detail = json.detail || '';
+      const parsedRating = parseInt(json.rating, 10);
+      if (!isNaN(parsedRating) && parsedRating >= 1 && parsedRating <= 5) {
+        rating = parsedRating;
+      }
     } catch {
       // Fallback: use full text as detail, first sentence as short
       const sentences = raw.split(/[.。!！\n]/).filter(Boolean);
@@ -227,17 +233,18 @@ ${tagList}`;
       detail = raw.trim();
     }
 
-    if (short || detail) {
+    if (short || detail || rating !== null) {
       await this.prisma.customer.update({
         where: { id: customerId },
         data: {
           ...(short ? { shortDescription: short } : {}),
           ...(detail ? { description: detail } : {}),
+          ...(rating !== null ? { aiRating: rating } : {}),
         },
       });
     }
 
-    return { short, detail };
+    return { short, detail, rating };
   }
 
   /** Call AI via OpenRouter (settings first, env fallback). */

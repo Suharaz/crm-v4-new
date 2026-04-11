@@ -84,6 +84,7 @@ export interface CustomerRecord {
   status: string;
   shortDescription?: string | null;
   description?: string | null;
+  aiRating?: number | null;
   companyName?: string | null;
   facebookUrl?: string | null;
   instagramUrl?: string | null;

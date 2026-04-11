@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 
 const PAGE_SIZE_KEY = 'crm_page_size';
 const PAGE_SIZES = [10, 50, 100, 500];
-const DEFAULT_PAGE_SIZE = 50;
+const DEFAULT_PAGE_SIZE = 10;
 
 interface Props {
   total?: number;

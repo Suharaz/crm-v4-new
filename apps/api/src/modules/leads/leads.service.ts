@@ -82,58 +82,39 @@ export class LeadsService {
       ];
     }
 
-    const leads = await this.prisma.lead.findMany({
-      where, select: LEAD_SELECT,
-      orderBy: { id: 'desc' },
-      take: limit + 1,
-      ...(query.cursor ? { skip: 1, cursor: { id: BigInt(query.cursor) } } : {}),
-    });
+    // ── Cursor-based (backward compat — kanban, infinite scroll) ────────────
+    if (query.cursor) {
+      const leads = await this.prisma.lead.findMany({
+        where, select: LEAD_SELECT,
+        orderBy: { id: 'desc' },
+        take: limit + 1,
+        skip: 1, cursor: { id: BigInt(query.cursor) },
+      });
 
-    const hasMore = leads.length > limit;
-    const data = hasMore ? leads.slice(0, limit) : leads;
-
-    // Batch-fetch interaction counts + last interaction time
-    if (data.length > 0) {
-      const ids = data.map(l => l.id);
-      const [activityCounts, orderCounts, lastActivities, lastOrders] = await Promise.all([
-        this.prisma.activity.groupBy({
-          by: ['entityId'],
-          where: { entityType: 'LEAD', entityId: { in: ids }, deletedAt: null, type: { in: ['NOTE', 'CALL'] } },
-          _count: true,
-        }),
-        this.prisma.order.groupBy({
-          by: ['leadId'],
-          where: { leadId: { in: ids }, deletedAt: null },
-          _count: true,
-        }),
-        // Last activity date per lead
-        this.prisma.activity.groupBy({
-          by: ['entityId'],
-          where: { entityType: 'LEAD', entityId: { in: ids }, deletedAt: null },
-          _max: { createdAt: true },
-        }),
-        // Last order date per lead
-        this.prisma.order.groupBy({
-          by: ['leadId'],
-          where: { leadId: { in: ids }, deletedAt: null },
-          _max: { createdAt: true },
-        }),
-      ]);
-      const actMap = new Map(activityCounts.map(a => [a.entityId.toString(), a._count]));
-      const ordMap = new Map(orderCounts.map(o => [o.leadId!.toString(), o._count]));
-      const lastActMap = new Map(lastActivities.map(a => [a.entityId.toString(), a._max.createdAt]));
-      const lastOrdMap = new Map(lastOrders.map(o => [o.leadId!.toString(), o._max.createdAt]));
-
-      for (const lead of data) {
-        const id = lead.id.toString();
-        (lead as any).activityCount = (actMap.get(id) || 0) + (ordMap.get(id) || 0);
-        // lastInteractionAt = max of updatedAt, last activity, last order
-        const dates = [lead.updatedAt, lastActMap.get(id), lastOrdMap.get(id)].filter(Boolean) as Date[];
-        (lead as any).lastInteractionAt = dates.length > 0 ? new Date(Math.max(...dates.map(d => new Date(d).getTime()))) : lead.updatedAt;
-      }
+      const hasMore = leads.length > limit;
+      const data = hasMore ? leads.slice(0, limit) : leads;
+      await this.enrichLeads(data);
+      return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
     }
 
-    return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
+    // ── Offset-based with total count ────────────────────────────────────────
+    const page = query.page ?? 1;
+    const [leads, total] = await Promise.all([
+      this.prisma.lead.findMany({
+        where, select: LEAD_SELECT,
+        orderBy: { id: 'desc' },
+        take: limit,
+        skip: (page - 1) * limit,
+      }),
+      this.prisma.lead.count({ where }),
+    ]);
+
+    const data = leads;
+    await this.enrichLeads(data);
+    return {
+      data,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   // ── My department pool (for USER role) ──────────────────────────────────
@@ -360,6 +341,48 @@ export class LeadsService {
     if (data.linkedinUrl !== undefined) updateData.linkedinUrl = data.linkedinUrl as string | null;
 
     return this.prisma.lead.update({ where: { id }, data: updateData, select: LEAD_SELECT });
+  }
+
+  // ── Enrichment helper ────────────────────────────────────────────────────
+  /** Mutates each lead in-place: adds activityCount + lastInteractionAt */
+  private async enrichLeads(data: any[]) {
+    if (data.length === 0) return;
+    const ids = data.map((l: any) => l.id);
+    const [activityCounts, orderCounts, lastActivities, lastOrders] = await Promise.all([
+      this.prisma.activity.groupBy({
+        by: ['entityId'],
+        where: { entityType: 'LEAD', entityId: { in: ids }, deletedAt: null, type: { in: ['NOTE', 'CALL'] } },
+        _count: true,
+      }),
+      this.prisma.order.groupBy({
+        by: ['leadId'],
+        where: { leadId: { in: ids }, deletedAt: null },
+        _count: true,
+      }),
+      this.prisma.activity.groupBy({
+        by: ['entityId'],
+        where: { entityType: 'LEAD', entityId: { in: ids }, deletedAt: null },
+        _max: { createdAt: true },
+      }),
+      this.prisma.order.groupBy({
+        by: ['leadId'],
+        where: { leadId: { in: ids }, deletedAt: null },
+        _max: { createdAt: true },
+      }),
+    ]);
+    const actMap = new Map(activityCounts.map(a => [a.entityId.toString(), a._count]));
+    const ordMap = new Map(orderCounts.map(o => [o.leadId!.toString(), o._count]));
+    const lastActMap = new Map(lastActivities.map(a => [a.entityId.toString(), a._max.createdAt]));
+    const lastOrdMap = new Map(lastOrders.map(o => [o.leadId!.toString(), o._max.createdAt]));
+
+    for (const lead of data) {
+      const id = lead.id.toString();
+      (lead as any).activityCount = (actMap.get(id) || 0) + (ordMap.get(id) || 0);
+      const dates = [lead.updatedAt, lastActMap.get(id), lastOrdMap.get(id)].filter(Boolean) as Date[];
+      (lead as any).lastInteractionAt = dates.length > 0
+        ? new Date(Math.max(...dates.map((d: Date) => new Date(d).getTime())))
+        : lead.updatedAt;
+    }
   }
 
   // ── Assign ──────────────────────────────────────────────────────────────

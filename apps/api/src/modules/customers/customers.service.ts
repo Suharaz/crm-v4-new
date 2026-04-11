@@ -61,17 +61,30 @@ export class CustomersService {
       };
     }
 
-    const customers = await this.prisma.customer.findMany({
-      where,
-      select: CUSTOMER_SELECT,
-      orderBy: { id: 'desc' },
-      take: limit + 1,
-      ...(query.cursor ? { skip: 1, cursor: { id: BigInt(query.cursor) } } : {}),
-    });
+    // ── Cursor-based (backward compat) ───────────────────────────────────────
+    if (query.cursor) {
+      const customers = await this.prisma.customer.findMany({
+        where, select: CUSTOMER_SELECT, orderBy: { id: 'desc' },
+        take: limit + 1, skip: 1, cursor: { id: BigInt(query.cursor) },
+      });
+      const hasMore = customers.length > limit;
+      const data = hasMore ? customers.slice(0, limit) : customers;
+      return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
+    }
 
-    const hasMore = customers.length > limit;
-    const data = hasMore ? customers.slice(0, limit) : customers;
-    return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
+    // ── Offset-based with total count ────────────────────────────────────────
+    const page = query.page ?? 1;
+    const [customers, total] = await Promise.all([
+      this.prisma.customer.findMany({
+        where, select: CUSTOMER_SELECT, orderBy: { id: 'desc' },
+        take: limit, skip: (page - 1) * limit,
+      }),
+      this.prisma.customer.count({ where }),
+    ]);
+    return {
+      data: customers,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async searchByPhone(phone: string) {

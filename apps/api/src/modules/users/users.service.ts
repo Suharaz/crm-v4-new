@@ -33,6 +33,7 @@ export class UsersService {
       where,
       cursor: query.cursor ? BigInt(query.cursor) : undefined,
       limit: query.limit,
+      page: query.page,
     });
   }
 

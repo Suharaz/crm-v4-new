@@ -71,15 +71,30 @@ export class OrdersService {
       };
     }
 
-    const orders = await this.prisma.order.findMany({
-      where, select: ORDER_SELECT, orderBy: { id: 'desc' },
-      take: limit + 1,
-      ...(query.cursor ? { skip: 1, cursor: { id: BigInt(query.cursor) } } : {}),
-    });
+    // ── Cursor-based (backward compat) ───────────────────────────────────────
+    if (query.cursor) {
+      const orders = await this.prisma.order.findMany({
+        where, select: ORDER_SELECT, orderBy: { id: 'desc' },
+        take: limit + 1, skip: 1, cursor: { id: BigInt(query.cursor) },
+      });
+      const hasMore = orders.length > limit;
+      const data = hasMore ? orders.slice(0, limit) : orders;
+      return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
+    }
 
-    const hasMore = orders.length > limit;
-    const data = hasMore ? orders.slice(0, limit) : orders;
-    return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
+    // ── Offset-based with total count ────────────────────────────────────────
+    const page = query.page ?? 1;
+    const [orders, total] = await Promise.all([
+      this.prisma.order.findMany({
+        where, select: ORDER_SELECT, orderBy: { id: 'desc' },
+        take: limit, skip: (page - 1) * limit,
+      }),
+      this.prisma.order.count({ where }),
+    ]);
+    return {
+      data: orders,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async findById(id: bigint) {

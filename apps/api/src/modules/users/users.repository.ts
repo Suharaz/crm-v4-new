@@ -29,23 +29,38 @@ export class UsersRepository {
     where?: Prisma.UserWhereInput;
     cursor?: bigint;
     limit?: number;
+    page?: number;
   }) {
-    const { where = {}, cursor, limit = 20 } = params;
-    const take = limit + 1; // fetch one extra for cursor
+    const { where = {}, cursor, limit = 20, page } = params;
+    const baseWhere = { ...where, deletedAt: null };
 
-    const users = await this.prisma.user.findMany({
-      where: { ...where, deletedAt: null },
-      select: USER_SELECT,
-      orderBy: { id: 'asc' },
-      take,
-      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-    });
+    // ── Cursor-based (backward compat) ───────────────────────────────────────
+    if (cursor) {
+      const take = limit + 1;
+      const users = await this.prisma.user.findMany({
+        where: baseWhere, select: USER_SELECT,
+        orderBy: { id: 'asc' }, take,
+        skip: 1, cursor: { id: cursor },
+      });
+      const hasMore = users.length > limit;
+      const data = hasMore ? users.slice(0, limit) : users;
+      return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
+    }
 
-    const hasMore = users.length > limit;
-    const data = hasMore ? users.slice(0, limit) : users;
-    const nextCursor = hasMore ? data[data.length - 1].id : undefined;
-
-    return { data, meta: { nextCursor: nextCursor?.toString() } };
+    // ── Offset-based with total count ────────────────────────────────────────
+    const currentPage = page ?? 1;
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where: baseWhere, select: USER_SELECT,
+        orderBy: { id: 'asc' },
+        take: limit, skip: (currentPage - 1) * limit,
+      }),
+      this.prisma.user.count({ where: baseWhere }),
+    ]);
+    return {
+      data: users,
+      meta: { total, page: currentPage, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async findById(id: bigint) {

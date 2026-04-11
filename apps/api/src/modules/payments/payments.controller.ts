@@ -15,6 +15,22 @@ class PaymentListQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   orderId?: string;
+
+  @IsOptional()
+  @IsString()
+  paymentTypeId?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsString()
+  dateFrom?: string;
+
+  @IsOptional()
+  @IsString()
+  dateTo?: string;
 }
 
 @Controller('payments')

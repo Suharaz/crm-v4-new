@@ -130,6 +130,7 @@ export interface PaymentRecord {
   status: string;
   orderId?: string;
   paymentType?: NamedEntity | null;
+  bankAccount?: NamedEntity | null;
   transferContent?: string | null;
   transferDate?: string | null;
   vatAmount?: number | null;
@@ -138,7 +139,17 @@ export interface PaymentRecord {
   verifiedSource?: string | null;
   verifier?: NamedEntity | null;
   verifiedAt?: string | null;
-  matchedTransaction?: { amount: number; content: string } | null;
+  matchedTransaction?: { id: string; externalId?: string | null; amount: number; content: string; transactionTime?: string | null } | null;
+  order?: {
+    id: string;
+    status: string;
+    totalAmount: number;
+    vatEmail?: string | null;
+    customer?: { id: string; name: string; phone?: string | null } | null;
+    product?: { id: string; name: string } | null;
+    creator?: { id: string; name: string } | null;
+    lead?: { id: string; name: string } | null;
+  } | null;
   createdAt: string;
 }
 

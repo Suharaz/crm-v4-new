@@ -13,6 +13,15 @@ const PAYMENT_SELECT = {
   verifier: { select: { id: true, name: true } },
   matchedTransaction: { select: { id: true, externalId: true, amount: true, content: true, transactionTime: true } },
   installment: { select: { id: true, name: true } },
+  order: {
+    select: {
+      id: true, status: true, totalAmount: true, vatEmail: true,
+      customer: { select: { id: true, name: true, phone: true } },
+      product: { select: { id: true, name: true } },
+      creator: { select: { id: true, name: true } },
+      lead: { select: { id: true, name: true } },
+    },
+  },
 } satisfies Prisma.PaymentSelect;
 
 @Injectable()
@@ -22,12 +31,41 @@ export class PaymentsService {
     private readonly matchingService: PaymentMatchingService,
   ) {}
 
-  async list(query: PaginationQueryDto & { status?: PaymentStatus; orderId?: string }) {
+  async list(query: PaginationQueryDto & {
+    status?: PaymentStatus; orderId?: string;
+    paymentTypeId?: string; search?: string; dateFrom?: string; dateTo?: string;
+  }) {
     const limit = query.limit ?? 20;
     const where: Prisma.PaymentWhereInput = {};
     if (query.status) where.status = query.status;
     if (query.orderId) where.orderId = BigInt(query.orderId);
+    if (query.paymentTypeId) where.paymentTypeId = BigInt(query.paymentTypeId);
+    if (query.dateFrom || query.dateTo) {
+      where.createdAt = {
+        ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
+        ...(query.dateTo ? { lte: new Date(query.dateTo + 'T23:59:59.999Z') } : {}),
+      };
+    }
+    if (query.search) {
+      const term = query.search.trim();
+      where.OR = [
+        { transferContent: { contains: term, mode: 'insensitive' } },
+        { order: { customer: { name: { contains: term, mode: 'insensitive' } } } },
+      ];
+    }
 
+    // Offset-based pagination when page is provided
+    if (query.page) {
+      const page = query.page;
+      const skip = (page - 1) * limit;
+      const [payments, total] = await Promise.all([
+        this.prisma.payment.findMany({ where, select: PAYMENT_SELECT, orderBy: { id: 'desc' }, skip, take: limit }),
+        this.prisma.payment.count({ where }),
+      ]);
+      return { data: payments, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    }
+
+    // Cursor-based pagination (default)
     const payments = await this.prisma.payment.findMany({
       where, select: PAYMENT_SELECT, orderBy: { id: 'desc' },
       take: limit + 1,

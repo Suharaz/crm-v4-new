@@ -17,7 +17,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const isManager = ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
 
   let data: CustomerRecord[] = [];
-  let nextCursor: string | undefined;
+  let meta: ApiListResponse<CustomerRecord>['meta'] = {};
   let departments: NamedEntity[] = [];
   let users: NamedEntity[] = [];
   let labels: LabelEntity[] = [];
@@ -30,7 +30,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
       serverFetch<{ data: LabelEntity[] }>('/labels').catch(() => ({ data: [] })),
     ]);
     data = result.data;
-    nextCursor = result.meta?.nextCursor;
+    meta = result.meta;
     departments = (deptRes.data || []).map((d: NamedEntity) => ({ id: String(d.id), name: d.name }));
     users = (usersRes.data || []).map((u: NamedEntity) => ({ id: String(u.id), name: u.name }));
     labels = (labelsRes.data || []).map((l: LabelEntity) => ({ id: String(l.id), name: l.name, color: l.color || '#6b7280' }));
@@ -60,7 +60,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
       <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 bg-white">
         <CustomerTableWithPreview customers={data as unknown as Parameters<typeof CustomerTableWithPreview>[0]['customers']} />
       </div>
-      <PaginationControls nextCursor={nextCursor} />
+      <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} nextCursor={meta?.nextCursor} />
     </div>
   );
 }

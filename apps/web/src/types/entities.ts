@@ -222,7 +222,13 @@ export interface SettingsItem {
 
 export interface ApiListResponse<T> {
   data: T[];
-  meta?: { nextCursor?: string };
+  meta?: {
+    nextCursor?: string;
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
+  };
 }
 
 // ─── Dashboard ─────────────────────────────────────────────────────────────

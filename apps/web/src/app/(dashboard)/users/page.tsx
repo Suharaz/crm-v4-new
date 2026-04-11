@@ -1,5 +1,5 @@
 import { serverFetch } from '@/lib/auth';
-import type { UserRecord } from '@/types/entities';
+import type { UserRecord, ApiListResponse } from '@/types/entities';
 import { UserTable } from '@/components/users/user-table';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import Link from 'next/link';
@@ -12,11 +12,11 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
   const query = new URLSearchParams(params).toString();
 
   let users: UserRecord[] = [];
-  let nextCursor: string | undefined;
+  let meta: ApiListResponse<UserRecord>['meta'] = {};
   try {
-    const result = await serverFetch<{ data: UserRecord[]; nextCursor?: string }>(`/users?${query}`);
+    const result = await serverFetch<ApiListResponse<UserRecord>>(`/users?${query}`);
     users = result.data;
-    nextCursor = result.nextCursor;
+    meta = result.meta;
   } catch { /* empty */ }
 
   return (
@@ -36,7 +36,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
       <div className="mt-4">
         <UserTable users={users} />
       </div>
-      <PaginationControls nextCursor={nextCursor} />
+      <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} nextCursor={meta?.nextCursor} />
     </div>
   );
 }

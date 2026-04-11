@@ -16,7 +16,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   const isManager = ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
 
   let data: LeadRecord[] = [];
-  let nextCursor: string | undefined;
+  let meta: ApiListResponse<LeadRecord>['meta'] = {};
   let sources: NamedEntity[] = [];
   let products: NamedEntity[] = [];
   let users: NamedEntity[] = [];
@@ -33,7 +33,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
       serverFetch<{ data: LabelEntity[] }>('/labels').catch(() => ({ data: [] })),
     ]);
     data = leadsRes.data;
-    nextCursor = leadsRes.meta?.nextCursor;
+    meta = leadsRes.meta;
     sources = (srcRes.data || []).map((s: NamedEntity) => ({ id: String(s.id), name: s.name }));
     products = (prodRes.data || []).map((p: NamedEntity) => ({ id: String(p.id), name: p.name }));
     users = (usrRes.data || []).map((u: NamedEntity) => ({ id: String(u.id), name: u.name }));
@@ -61,7 +61,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
       </Suspense>
 
       <LeadListWithViewToggle leads={data} allLabels={labels} />
-      <PaginationControls nextCursor={nextCursor} />
+      <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} nextCursor={meta?.nextCursor} />
     </div>
   );
 }

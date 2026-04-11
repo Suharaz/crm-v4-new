@@ -11,7 +11,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const query = new URLSearchParams(params).toString();
 
   let data: OrderRecord[] = [];
-  let nextCursor: string | undefined;
+  let meta: ApiListResponse<OrderRecord>['meta'] = {};
   let products: NamedEntity[] = [];
   let users: NamedEntity[] = [];
   let orderFormats: NamedEntity[] = [];
@@ -26,7 +26,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       serverFetch<{ data: NamedEntity[] }>('/product-groups').catch(() => ({ data: [] })),
     ]);
     data = result.data;
-    nextCursor = result.meta?.nextCursor;
+    meta = result.meta;
     products = (productsRes.data || []).map((p: NamedEntity) => ({ id: String(p.id), name: p.name }));
     users = (usersRes.data || []).map((u: NamedEntity) => ({ id: String(u.id), name: u.name }));
     orderFormats = (formatsRes.data || []).map((f: NamedEntity) => ({ id: String(f.id), name: f.name }));
@@ -55,7 +55,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       <div className="mt-4">
         <OrderListWithInlineExpand orders={data} />
       </div>
-      <PaginationControls nextCursor={nextCursor} />
+      <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} nextCursor={meta?.nextCursor} />
     </div>
   );
 }

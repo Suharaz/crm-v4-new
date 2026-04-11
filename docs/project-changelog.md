@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### UX Improvements (2026-04-11)
+- **Lead expand instant actions:** Quick action buttons (note, label, transfer, payment) render immediately on click; data loads async with spinner in data column
+- **Zoom pool fix:** Pool/zoom page no longer triggers auto-refresh of pool/new data (was using wrong poolMode)
+- **Numbered pagination:** Replaced "Tải thêm" cursor pagination with numbered pages (1,2...N) + first/prev/next/last buttons + page size selector (10/50/100/500) saved to localStorage. Backend supports offset+total count via `?page=N&limit=M`. All list pages (leads, customers, orders, users) updated
+
 ### Dynamic Order/Payment Lookup Tables + New Payment Fields (2026-04-11)
 - **Schema:** 3 new lookup tables — `OrderFormat` (Hình thức), `ProductGroup` (Nhóm sản phẩm), `PaymentInstallment` (Lần CK)
 - **Schema:** Order: added `vatEmail`, `formatId`, `productGroupId` foreign keys (legacy string fields kept)

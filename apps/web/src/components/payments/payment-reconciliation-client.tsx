@@ -1,17 +1,204 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/providers/auth-provider';
 import { formatDate, formatVND, cn } from '@/lib/utils';
-import { CheckCircle, XCircle, Loader2, ChevronDown, ChevronRight, Search, Calendar, Download } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, ChevronDown, ChevronRight, Search, Calendar, Download, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import type { PaymentRecord, BankTransactionRecord, NamedEntity } from '@/types/entities';
+
+// ─── Import result type ───────────────────────────────────────────────────────
+interface ImportResult {
+  total: number;
+  created: number;
+  matched: number;
+  newCustomers: number;
+  newOrders: number;
+  errors: { row: number; phone: string; reason: string }[];
+}
+
+// ─── Import Excel Dialog ──────────────────────────────────────────────────────
+function ImportExcelDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [result, setResult] = useState<ImportResult | null>(null);
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0] ?? null;
+    if (f && !f.name.match(/\.(xlsx|xls)$/i)) {
+      toast.error('Chỉ chấp nhận file Excel (.xlsx, .xls)');
+      return;
+    }
+    setFile(f);
+    setResult(null);
+  }
+
+  async function handleUpload() {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      // Use fetch directly to handle multipart (api client always sets Content-Type: application/json)
+      const res = await fetch('/api/proxy/payments/import', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Lỗi tải lên' }));
+        throw new Error(err.message || `HTTP ${res.status}`);
+      }
+      const json = await res.json();
+      setResult(json.data as ImportResult);
+      toast.success('Tải lên hoàn tất');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi tải lên');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function handleDownloadTemplate() {
+    window.location.href = '/api/proxy/payments/import-template';
+  }
+
+  function handleClose() {
+    setFile(null);
+    setResult(null);
+    onClose();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Tải lên Excel thanh toán</DialogTitle>
+        </DialogHeader>
+
+        {!result ? (
+          <div className="space-y-4">
+            {/* File picker */}
+            <div
+              className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:border-sky-400 transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              {file ? (
+                <p className="text-sm font-medium text-gray-700">{file.name}</p>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-500">Nhấn để chọn file Excel</p>
+                  <p className="text-xs text-gray-400 mt-1">Hỗ trợ .xlsx, .xls — tối đa 10MB</p>
+                </>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+
+            {/* Template download */}
+            <button
+              type="button"
+              onClick={handleDownloadTemplate}
+              className="text-xs text-sky-600 hover:underline flex items-center gap-1"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Tải file mẫu Excel
+            </button>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={handleClose} disabled={uploading}>
+                Huỷ
+              </Button>
+              <Button
+                className="bg-sky-600 hover:bg-sky-700 text-white"
+                onClick={handleUpload}
+                disabled={!file || uploading}
+              >
+                {uploading ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Upload className="h-4 w-4 mr-1.5" />}
+                Tải lên
+              </Button>
+            </div>
+          </div>
+        ) : (
+          /* Result summary */
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3">
+                <p className="text-xs text-emerald-600 font-medium">Tạo thành công</p>
+                <p className="text-2xl font-bold text-emerald-700">{result.created}</p>
+                <p className="text-xs text-emerald-500">chờ xác minh</p>
+              </div>
+              <div className="rounded-lg bg-sky-50 border border-sky-200 p-3">
+                <p className="text-xs text-sky-600 font-medium">Đã map NH</p>
+                <p className="text-2xl font-bold text-sky-700">{result.matched}</p>
+                <p className="text-xs text-sky-500">giao dịch tự động</p>
+              </div>
+              <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+                <p className="text-xs text-amber-600 font-medium">Khách hàng mới</p>
+                <p className="text-2xl font-bold text-amber-700">{result.newCustomers}</p>
+                <p className="text-xs text-amber-500">được tạo tự động</p>
+              </div>
+              {result.errors.length > 0 && (
+                <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+                  <p className="text-xs text-red-600 font-medium">Lỗi</p>
+                  <p className="text-2xl font-bold text-red-700">{result.errors.length}</p>
+                  <p className="text-xs text-red-500">dòng bị bỏ qua</p>
+                </div>
+              )}
+            </div>
+
+            <p className="text-xs text-gray-500">
+              Tổng cộng {result.total} dòng · {result.newOrders} đơn hàng mới
+            </p>
+
+            {/* Error detail table */}
+            {result.errors.length > 0 && (
+              <div className="max-h-48 overflow-y-auto rounded-lg border border-red-100">
+                <table className="w-full text-xs">
+                  <thead className="bg-red-50 sticky top-0">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium text-red-700">Dòng</th>
+                      <th className="px-3 py-2 text-left font-medium text-red-700">SĐT</th>
+                      <th className="px-3 py-2 text-left font-medium text-red-700">Lý do lỗi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.errors.map((e, i) => (
+                      <tr key={i} className="border-t border-red-100">
+                        <td className="px-3 py-1.5 text-gray-600">{e.row}</td>
+                        <td className="px-3 py-1.5 text-gray-600">{e.phone || '—'}</td>
+                        <td className="px-3 py-1.5 text-red-600">{e.reason}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-2">
+              <Button onClick={handleClose}>Đóng &amp; làm mới</Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // ─── Order status label map ───────────────────────────────────────────────────
 const ORDER_STATUS_LABEL: Record<string, string> = {
@@ -164,6 +351,9 @@ export function PaymentReconciliationClient({
   const [exportTo, setExportTo] = useState('');
   const [exporting, setExporting] = useState(false);
 
+  // Import state
+  const [importOpen, setImportOpen] = useState(false);
+
   // Filters (client-side on pending list)
   const [filterSearch, setFilterSearch] = useState('');
   const [filterType, setFilterType] = useState('');
@@ -255,8 +445,23 @@ export function PaymentReconciliationClient({
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Đối soát thanh toán</h1>
+      <div className="flex items-center justify-between mb-1">
+        <h1 className="text-2xl font-bold text-gray-900">Đối soát thanh toán</h1>
+        {isManager && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-sky-300 text-sky-700 hover:bg-sky-50 h-8 text-xs"
+            onClick={() => setImportOpen(true)}
+          >
+            <Upload className="h-3.5 w-3.5 mr-1.5" />
+            Tải lên Excel
+          </Button>
+        )}
+      </div>
       <p className="text-sm text-gray-500 mb-4">Tick 1 bên trái + 1 bên phải → Xác minh ghép cặp</p>
+
+      <ImportExcelDialog open={importOpen} onClose={() => { setImportOpen(false); router.refresh(); }} />
 
       <Tabs defaultValue="reconcile">
         <TabsList>

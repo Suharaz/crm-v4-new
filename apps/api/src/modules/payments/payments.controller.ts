@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Param, Query, HttpCode, BadRequestException, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, HttpCode, BadRequestException, Res, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { IsOptional, IsEnum, IsString } from 'class-validator';
 import { UserRole, PaymentStatus } from '@prisma/client';
 import { Response } from 'express';
 import { PaymentsService } from './payments.service';
+import { PaymentImportService } from './payment-import.service';
 import { Roles } from '../auth/decorators/roles-required.decorator';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
@@ -36,7 +38,10 @@ class PaymentListQueryDto extends PaginationQueryDto {
 
 @Controller('payments')
 export class PaymentsController {
-  constructor(private readonly service: PaymentsService) {}
+  constructor(
+    private readonly service: PaymentsService,
+    private readonly importService: PaymentImportService,
+  ) {}
 
   @Get()
   async list(@Query() query: PaymentListQueryDto) {
@@ -60,6 +65,32 @@ export class PaymentsController {
     res!.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res!.setHeader('Content-Disposition', 'attachment; filename=payments-verified.xlsx');
     res!.send(buffer);
+  }
+
+  @Get('import-template')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async downloadTemplate(@Res() res: Response) {
+    const buffer = await this.importService.generateTemplate();
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=payment-import-template.xlsx');
+    res.send(buffer);
+  }
+
+  @Post('import')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (_req: any, file: any, cb: any) => {
+      if (!file.originalname.match(/\.(xlsx|xls)$/i)) {
+        return cb(new BadRequestException('Chỉ chấp nhận file Excel (.xlsx, .xls)'), false);
+      }
+      cb(null, true);
+    },
+  }))
+  async importExcel(@UploadedFile() file: Express.Multer.File, @CurrentUser() user: any) {
+    if (!file) throw new BadRequestException('Vui lòng upload file Excel');
+    const result = await this.importService.importFromExcel(file.buffer, user.id);
+    return { data: result };
   }
 
   @Get(':id')

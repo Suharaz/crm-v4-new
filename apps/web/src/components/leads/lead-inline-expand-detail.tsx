@@ -207,17 +207,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     }).catch(() => {});
   }, [labelPickerOpen, allLabels.length]);
 
-  if (loading) {
-    return (
-      <tr className="bg-sky-50/30">
-        <td colSpan={colSpan} className="px-6 py-6 text-center">
-          <Loader2 className="h-5 w-5 animate-spin text-sky-500 mx-auto" />
-        </td>
-      </tr>
-    );
-  }
-
-  if (!data) {
+  if (!loading && !data) {
     return (
       <tr className="bg-gray-50"><td colSpan={colSpan} className="px-6 py-4 text-center text-gray-400">Không tìm thấy</td></tr>
     );
@@ -227,8 +217,15 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     <tr className="bg-sky-50/20">
       <td colSpan={colSpan} className="px-4 py-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          {/* Col 1: Calls + Notes + Orders */}
+          {/* Col 1: Calls + Notes + Orders — shows spinner while loading */}
           <div className="space-y-2">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-sky-500" />
+                <span className="ml-2 text-xs text-gray-400">Đang tải dữ liệu...</span>
+              </div>
+            ) : (
+            <>
             {/* Orders section */}
             {uniqueOrders.length > 0 && (
               <div>
@@ -315,9 +312,11 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                 </div>
               );
             })()}
+            </>
+            )}
           </div>
 
-          {/* Col 3: Quick Actions */}
+          {/* Col 2: Quick Actions — always visible immediately */}
           <div className="space-y-2">
             <h4 className="font-semibold text-gray-700 text-xs uppercase">Thao tác nhanh</h4>
             <div className="flex flex-wrap gap-2">
@@ -338,7 +337,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                 </Button>
               )}
               {entityType === 'lead' && (
-                <CreateOrderDialog customerId={data.customerId ? String(data.customerId) : ''} leadId={entityId} products={[]} paymentTypes={[]} />
+                <CreateOrderDialog customerId={data?.customerId ? String(data.customerId) : ''} leadId={entityId} products={[]} paymentTypes={[]} />
               )}
               <Link href={entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`}>
                 <Button size="sm" variant="ghost"><ExternalLink className="h-3.5 w-3.5 mr-1" />Chi tiết</Button>

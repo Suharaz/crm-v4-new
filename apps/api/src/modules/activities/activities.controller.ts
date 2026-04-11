@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, Inject, forwardRef, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Inject, forwardRef, BadRequestException, ParseEnumPipe } from '@nestjs/common';
 import { EntityType } from '@prisma/client';
 import { ActivitiesService } from './activities.service';
 import { LeadsService } from '../leads/leads.service';
@@ -11,6 +11,17 @@ export class ActivitiesController {
     private readonly service: ActivitiesService,
     @Inject(forwardRef(() => LeadsService)) private readonly leadsService: LeadsService,
   ) {}
+
+  // Dept stats — must be before /:id routes to avoid param clash
+  @Get('activities/stats/by-department')
+  async statsByDepartment(
+    @Query('entityType', new ParseEnumPipe(EntityType)) entityType: EntityType,
+    @Query('entityId') entityIdStr: string,
+  ) {
+    if (!entityIdStr) throw new BadRequestException('entityId là bắt buộc');
+    const entityId = BigInt(entityIdStr);
+    return this.service.getStatsByDepartment(entityType, entityId);
+  }
 
   // Lead activities
   @Get('leads/:id/activities')

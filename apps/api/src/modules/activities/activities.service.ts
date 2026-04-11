@@ -8,6 +8,31 @@ const ACTIVITY_SELECT = {
   attachments: { select: { id: true, fileName: true, fileUrl: true, fileType: true, fileSize: true } },
 } satisfies Prisma.ActivitySelect;
 
+const STATS_ACTIVITY_SELECT = {
+  id: true, type: true, content: true, createdAt: true,
+  user: {
+    select: {
+      id: true, name: true,
+      department: { select: { id: true, name: true } },
+    },
+  },
+} satisfies Prisma.ActivitySelect;
+
+interface DeptActivityItem {
+  id: string;
+  type: string;
+  content: string | null;
+  createdAt: Date;
+  user: { id: string; name: string; departmentName: string | null } | null;
+}
+
+export interface DeptStatGroup {
+  departmentId: string | null;
+  departmentName: string;
+  count: number;
+  activities: DeptActivityItem[];
+}
+
 @Injectable()
 export class ActivitiesService {
   constructor(private readonly prisma: PrismaClient) {}
@@ -68,6 +93,72 @@ export class ActivitiesService {
       data: { entityType, entityId, userId, type: 'NOTE', content },
       select: ACTIVITY_SELECT,
     });
+  }
+
+  /** Get NOTE + CALL activity counts grouped by department for an entity. */
+  async getStatsByDepartment(entityType: EntityType, entityId: bigint): Promise<{ data: DeptStatGroup[] }> {
+    await this.validateEntityExists(entityType, entityId);
+
+    // Build where — same entity expansion as getTimeline for CUSTOMER
+    let where: Prisma.ActivityWhereInput;
+    if (entityType === 'CUSTOMER') {
+      const leads = await this.prisma.lead.findMany({
+        where: { customerId: entityId, deletedAt: null },
+        select: { id: true },
+      });
+      const leadIds = leads.map(l => l.id);
+      where = {
+        deletedAt: null,
+        type: { in: ['NOTE', 'CALL'] as ActivityType[] },
+        OR: [
+          { entityType: 'CUSTOMER', entityId },
+          ...(leadIds.length > 0 ? [{ entityType: 'LEAD' as EntityType, entityId: { in: leadIds } }] : []),
+        ],
+      };
+    } else {
+      where = { entityType, entityId, deletedAt: null, type: { in: ['NOTE', 'CALL'] as ActivityType[] } };
+    }
+
+    const activities = await this.prisma.activity.findMany({
+      where,
+      select: STATS_ACTIVITY_SELECT,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Group by department
+    const groupMap = new Map<string, { departmentId: string | null; departmentName: string; items: typeof activities }>();
+
+    for (const act of activities) {
+      const dept = act.user?.department ?? null;
+      const key = dept ? String(dept.id) : '__unknown__';
+      const deptId = dept ? String(dept.id) : null;
+      const deptName = dept ? dept.name : 'Không rõ PB';
+
+      if (!groupMap.has(key)) {
+        groupMap.set(key, { departmentId: deptId, departmentName: deptName, items: [] });
+      }
+      groupMap.get(key)!.items.push(act);
+    }
+
+    // Shape output — limit 20 activities per dept, sort by count desc
+    const data: DeptStatGroup[] = Array.from(groupMap.values())
+      .map(g => ({
+        departmentId: g.departmentId,
+        departmentName: g.departmentName,
+        count: g.items.length,
+        activities: g.items.slice(0, 20).map(a => ({
+          id: String(a.id),
+          type: a.type,
+          content: a.content,
+          createdAt: a.createdAt,
+          user: a.user
+            ? { id: String(a.user.id), name: a.user.name, departmentName: a.user.department?.name ?? null }
+            : null,
+        })),
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    return { data };
   }
 
   /** System auto-log activity (called by other modules). */

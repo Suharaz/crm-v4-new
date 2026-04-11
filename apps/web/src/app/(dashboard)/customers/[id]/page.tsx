@@ -5,6 +5,7 @@ import { ActivityTimelineWithFilterTabs } from '@/components/shared/activity-tim
 import { CustomerActions } from '@/components/customers/customer-actions';
 import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
 import { CustomerAnalysisCard } from '@/components/customers/customer-analysis-card';
+import { CustomerActivityByDepartment } from '@/components/customers/customer-activity-by-department';
 import { CustomerOrderList } from '@/components/customers/customer-order-list';
 import { formatDate } from '@/lib/utils';
 import { notFound } from 'next/navigation';
@@ -200,6 +201,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             <CustomerOrderList orders={customer.orders as unknown as Parameters<typeof CustomerOrderList>[0]['orders']} />
           )}
 
+          <CustomerActivityByDepartment entityType="CUSTOMER" entityId={id} />
           <ActivityTimelineWithFilterTabs activities={activities as unknown as Parameters<typeof ActivityTimelineWithFilterTabs>[0]['activities']} />
         </div>
       </div>

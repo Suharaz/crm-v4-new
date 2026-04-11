@@ -11,7 +11,6 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
   const params = await searchParams;
   const qp = new URLSearchParams(params);
   qp.delete('cursor');
-  if (!qp.has('page')) qp.set('page', '1');
   const query = qp.toString();
 
   let users: UserRecord[] = [];

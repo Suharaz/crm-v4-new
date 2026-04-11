@@ -13,7 +13,6 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const params = await searchParams;
   const qp = new URLSearchParams(params);
   qp.delete('cursor');
-  if (!qp.has('page')) qp.set('page', '1');
   const query = qp.toString();
 
   const currentUser = await getCurrentUser();

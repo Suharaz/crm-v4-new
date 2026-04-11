@@ -11,8 +11,7 @@ import { CsvExportButton } from '@/components/shared/csv-export-button';
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const params = await searchParams;
   const qp = new URLSearchParams(params);
-  qp.delete('cursor'); // ensure offset-based pagination
-  if (!qp.has('page')) qp.set('page', '1');
+  qp.delete('cursor');
   const query = qp.toString();
 
   const currentUser = await getCurrentUser();

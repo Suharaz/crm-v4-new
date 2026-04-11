@@ -17,38 +17,39 @@ interface Props {
   totalPages?: number;
 }
 
+/** Read saved page size from localStorage (SSR-safe). */
+export function getSavedPageSize(): number {
+  if (typeof window === 'undefined') return DEFAULT_PAGE_SIZE;
+  const saved = localStorage.getItem(PAGE_SIZE_KEY);
+  return saved && PAGE_SIZES.includes(Number(saved)) ? Number(saved) : DEFAULT_PAGE_SIZE;
+}
+
 /** Numbered pagination with page size selector (saved to localStorage). */
 export function PaginationControls({ total, page, limit, totalPages }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Page size from localStorage
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [pageSize, setPageSize] = useState(limit ?? DEFAULT_PAGE_SIZE);
   useEffect(() => {
-    const saved = localStorage.getItem(PAGE_SIZE_KEY);
-    if (saved && PAGE_SIZES.includes(Number(saved))) {
-      setPageSize(Number(saved));
-      // Sync URL if limit differs from saved
-      const urlLimit = searchParams.get('limit');
-      if (!urlLimit || Number(urlLimit) !== Number(saved)) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('limit', saved);
-        params.set('page', '1');
-        router.replace(`?${params.toString()}`);
-      }
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const saved = getSavedPageSize();
+    setPageSize(saved);
+  }, []);
 
-  // No pagination needed
-  if (!total || !totalPages || totalPages <= 1) return null;
+  if (total == null) return null;
 
   const currentPage = page ?? 1;
   const currentLimit = limit ?? pageSize;
+  const actualTotalPages = totalPages ?? Math.max(1, Math.ceil(total / currentLimit));
 
+  /** Navigate to page — only puts `page` in URL if > 1, never puts `limit` in URL. */
   function goToPage(p: number) {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('page', String(p));
-    params.set('limit', String(currentLimit));
+    if (p > 1) {
+      params.set('page', String(p));
+    } else {
+      params.delete('page');
+    }
+    params.delete('limit');
     params.delete('cursor');
     router.push(`?${params.toString()}`);
   }
@@ -57,26 +58,29 @@ export function PaginationControls({ total, page, limit, totalPages }: Props) {
     const num = Number(size);
     setPageSize(num);
     localStorage.setItem(PAGE_SIZE_KEY, size);
+    // Go to page 1 with new size — need to force reload since limit changed
     const params = new URLSearchParams(searchParams.toString());
-    params.set('limit', size);
-    params.set('page', '1');
+    params.delete('page');
+    params.delete('limit');
     params.delete('cursor');
+    // Temporarily set limit in URL to trigger server re-fetch with new size
+    params.set('limit', size);
     router.push(`?${params.toString()}`);
   }
 
   // Generate page numbers with ellipsis
   function getPageNumbers(): (number | '...')[] {
     const pages: (number | '...')[] = [];
-    if (totalPages! <= 7) {
-      for (let i = 1; i <= totalPages!; i++) pages.push(i);
+    if (actualTotalPages <= 7) {
+      for (let i = 1; i <= actualTotalPages; i++) pages.push(i);
     } else {
       pages.push(1);
       if (currentPage > 3) pages.push('...');
       const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages! - 1, currentPage + 1);
+      const end = Math.min(actualTotalPages - 1, currentPage + 1);
       for (let i = start; i <= end; i++) pages.push(i);
-      if (currentPage < totalPages! - 2) pages.push('...');
-      pages.push(totalPages!);
+      if (currentPage < actualTotalPages - 2) pages.push('...');
+      pages.push(actualTotalPages);
     }
     return pages;
   }
@@ -102,7 +106,7 @@ export function PaginationControls({ total, page, limit, totalPages }: Props) {
         </div>
       </div>
 
-      {/* Right: page numbers */}
+      {/* Right: page numbers — always shown even if only 1 page */}
       <div className="flex items-center gap-1">
         <Button variant="ghost" size="icon" className="h-8 w-8" disabled={currentPage <= 1} onClick={() => goToPage(1)}>
           <ChevronsLeft className="h-4 w-4" />
@@ -127,10 +131,10 @@ export function PaginationControls({ total, page, limit, totalPages }: Props) {
           )
         )}
 
-        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={currentPage >= totalPages!} onClick={() => goToPage(currentPage + 1)}>
+        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={currentPage >= actualTotalPages} onClick={() => goToPage(currentPage + 1)}>
           <ChevronRight className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={currentPage >= totalPages!} onClick={() => goToPage(totalPages!)}>
+        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={currentPage >= actualTotalPages} onClick={() => goToPage(actualTotalPages)}>
           <ChevronsRight className="h-4 w-4" />
         </Button>
       </div>

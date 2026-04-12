@@ -14,7 +14,8 @@ All notable changes to this project will be documented in this file.
 - **Auth:** Atmospheric blur orbs, gradient logo mark, enhanced login card shadow
 - **Dashboard:** KPI cards with hover-lift, gradient time range selector, chart color migration
 - **Bulk Migration:** 74 files, 808 line changes — zero remaining sky-* or gray-* references
-- **Landing Page:** New /landing route with 6 components: nav (glass-blur), hero (isometric mockup, gradient headline), features (8 cards), stats (dark gradient), CTA, footer
+- **Landing Page:** Root `/` route (public homepage) with 6 components: nav (glass-blur), hero (isometric mockup, gradient headline), features (8 cards with hover interaction), stats (dark gradient), CTA, footer
+- **Routing:** Landing page at `/` (public), dashboard moved to `/dashboard` (auth required). Middleware updated for public root
 - **Docs:** Updated design-guidelines.md to reflect Corporate Trust tokens
 
 ### Payment Excel Export/Import + Customer AI Rating + Activity Chart (2026-04-11)

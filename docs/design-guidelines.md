@@ -40,7 +40,7 @@ STATUS COLORS
   --success:     #10b981    (emerald-500)  ← VERIFIED, CONVERTED, ACTIVE
   --warning:     #f59e0b    (amber-500)    ← PENDING, IN_PROGRESS
   --danger:      #ef4444    (red-500)      ← REJECTED, LOST
-  --info:        #0ea5e9    (sky-500)      ← POOL, ASSIGNED
+  --info:        #4f46e5    (indigo-600)   ← POOL, ASSIGNED
   --floating:    #8b5cf6    (violet-500)   ← FLOATING, kho thả nổi
   --inactive:    #94a3b8    (gray-400)     ← INACTIVE
 
@@ -80,7 +80,7 @@ DARK MODE
 /* Glass card hover */
 .glass-hover:hover {
   background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 8px 25px rgba(14, 165, 233, 0.1);
+  box-shadow: 0 8px 25px rgba(79, 70, 229, 0.1);
   transition: all 0.2s ease;
 }
 ```

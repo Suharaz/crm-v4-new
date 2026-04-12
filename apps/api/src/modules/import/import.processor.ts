@@ -140,9 +140,15 @@ export class ImportProcessor extends WorkerHost {
     const source = sourceName ? sourceMap.get(sourceName.toLowerCase()) || null : null;
     const sourceId = source?.id || null;
 
-    // Find product by name (preloaded Map — O(1) instead of DB query)
+    // Find product by name (preloaded — substring match to preserve original behavior)
     const productName = row.product || row['Sản phẩm'] || null;
-    const product = productName ? productMap.get(productName.toLowerCase()) || null : null;
+    let product: { id: bigint; name: string } | null = null;
+    if (productName) {
+      const key = productName.toLowerCase();
+      // Try exact match first, then substring match (same as original ILIKE '%name%')
+      product = productMap.get(key) ||
+        [...productMap.values()].find(p => p.name.toLowerCase().includes(key)) || null;
+    }
     const productId = product?.id || null;
 
     // Check dedup for CSV import

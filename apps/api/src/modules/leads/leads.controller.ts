@@ -57,8 +57,8 @@ export class LeadsController {
   }
 
   @Get(':id')
-  async findById(@Param('id', ParseBigIntPipe) id: bigint) {
-    const data = await this.leadsService.findById(id);
+  async findById(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
+    const data = await this.leadsService.findById(id, user);
     return { data };
   }
 

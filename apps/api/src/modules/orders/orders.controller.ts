@@ -71,8 +71,8 @@ export class OrdersController {
   }
 
   @Get(':id')
-  async findById(@Param('id', ParseBigIntPipe) id: bigint) {
-    return { data: await this.service.findById(id) };
+  async findById(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
+    return { data: await this.service.findById(id, user) };
   }
 
   @Post()

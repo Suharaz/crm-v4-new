@@ -241,10 +241,14 @@ export class LeadsService {
   }
 
   // ── Find by ID ──────────────────────────────────────────────────────────
-  async findById(id: bigint) {
+  async findById(id: bigint, user?: CurrentUser) {
+    const where: Prisma.LeadWhereInput = { id, deletedAt: null };
+    // IDOR prevention: USER role can only view their own leads
+    if (user && user.role === UserRole.USER) {
+      where.assignedUserId = user.id;
+    }
     const lead = await this.prisma.lead.findFirst({
-      where: { id, deletedAt: null },
-      select: LEAD_SELECT,
+      where, select: LEAD_SELECT,
     });
     if (!lead) throw new NotFoundException('Không tìm thấy lead');
     return lead;

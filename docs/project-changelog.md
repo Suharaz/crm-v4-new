@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Audit Remediation — 40+ Fixes Across Security, Performance, Database (2026-04-12)
+- **Branch:** `fix/audit-remediation-260412` — 12 commits addressing 40+ audit findings
+- **Security (Critical/High):**
+  - Path traversal in file serving (already patched in prior commit)
+  - Payment matching race condition — optimistic locking with `updateMany` guards
+  - IDOR in `findById` — USER role now scoped to own leads/customers/orders
+  - Helmet security headers (X-Frame-Options, CSP, HSTS, etc.)
+  - Webhook HMAC-SHA256 signature verification (`WEBHOOK_SECRET` env var)
+  - MCP endpoint rate limiting (was @SkipThrottle, now 100 req/min)
+  - File upload magic bytes validation (file-type package)
+  - API key permission scope enforcement
+- **Security (Medium):**
+  - CORS production guard — throws on missing `FRONTEND_URL` in production
+  - `externalId` format validation (max 255, alphanumeric+dash)
+  - Third-party API metadata size limit (10KB max)
+  - Global search scoped by user role (USER sees only own records)
+- **Performance:**
+  - Import processor: streaming CSV + DI PrismaClient (was: readFileSync + new PrismaClient per worker)
+  - Scoring service: 4 batch queries replaces 6000 queries per distribute batch
+  - Assignment template apply: grouped `updateMany` + `createMany` per user
+  - CSV import: preloaded source/product/phone Maps — 1 query/row instead of 4-6
+  - Dashboard `getLeadFunnel`: single `groupBy` replaces 7 COUNT queries
+  - Dashboard `getLeadAging`: LATERAL JOIN replaces correlated subquery
+  - Recall service: chunk processing (500/batch) prevents large IN clauses
+  - Activities stats: bounded to 500 records max
+- **Database:**
+  - 17 new indexes: partial (leads/activities/customers/tasks), pg_trgm (phone/name search), functional (date cast), payment status+amount
+  - Connection pool config documented (`connection_limit=20&pool_timeout=10`)
+  - Notification cleanup cron (delete >90 days, daily at 3 AM)
+- **Still remaining:** Redis caching layer (PERF-M1), streaming CSV export (PERF-M3)
+
 ### Full Codebase Audit — Security, Performance, Query Speed (2026-04-12)
 - **Scope:** 51 findings across 3 categories — Security (15), Performance (15), Database/Query (21)
 - **Critical (7):** Path traversal in file serving, payment matching race condition, missing partial indexes on leads/activities/phone, import processor memory+connection leak, no notification cleanup

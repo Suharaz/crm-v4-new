@@ -7,7 +7,7 @@ Internal CRM system (VeloCRM) for sales team efficiency, customer data managemen
 - **Stack:** NestJS 11 + Next.js 16 + PostgreSQL 16 + Prisma 6 + Turborepo + pnpm
 - **Architecture:** Next.js = pure frontend, NestJS = sole API server, REST only
 - **UI:** shadcn/ui + Tailwind 4 + Plus Jakarta Sans, Vietnamese language only
-- **Design:** Corporate Trust (Indigo #4f46e5 + Violet #7c3aed, colored shadows, gradient text)
+- **Design:** Sky Blue #0ea5e9 + Cyan #06b6d4, colored shadows, gradient text, hover-lift cards
 - **Auth:** JWT + refresh token rotation, httpOnly cookies
 - **Deploy:** VPS + Docker Compose
 

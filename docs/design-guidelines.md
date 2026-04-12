@@ -1,10 +1,11 @@
-# VeloCRM — Design Guidelines (Corporate Trust)
+# VeloCRM — Design Guidelines
 
 ## 1. Design System
 
-**Style:** Corporate Trust — Trustworthy, Vibrant, Polished, Dimensional, Enterprise-Ready
+**Style:** Modern SaaS — Trustworthy, Vibrant, Polished, Dimensional, Enterprise-Ready
 **Font:** Plus Jakarta Sans (400/500/600/700/800)
-**Visual DNA:** Colored shadows, gradient text (indigo→violet), atmospheric blur orbs, hover lift cards
+**Primary:** Sky Blue (#0ea5e9) | **Accent:** Cyan (#06b6d4)
+**Visual DNA:** Sky-blue colored shadows, gradient text (sky→cyan), atmospheric blur orbs, hover lift cards
 
 ### Color Palette
 

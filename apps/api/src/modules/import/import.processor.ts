@@ -37,6 +37,15 @@ export class ImportProcessor extends WorkerHost {
     const errors: { row: number; field: string; message: string }[] = [];
 
     try {
+      // Preload lookup tables to avoid N+1 queries per row (PERF-H4)
+      const [allSources, allProducts] = await Promise.all([
+        this.prisma.leadSource.findMany({ select: { id: true, name: true, skipPool: true } }),
+        this.prisma.product.findMany({ where: { deletedAt: null }, select: { id: true, name: true } }),
+      ]);
+      const sourceMap = new Map(allSources.map(s => [s.name.toLowerCase(), s]));
+      const productMap = new Map(allProducts.map(p => [p.name.toLowerCase(), p]));
+      const phoneCache = new Map<string, { id: bigint }>(); // phone → customer
+
       // Stream CSV instead of loading entire file into memory
       const parser = fs.createReadStream(absolutePath, 'utf-8').pipe(
         parse({ columns: true, skip_empty_lines: true, trim: true, bom: true }),
@@ -48,7 +57,7 @@ export class ImportProcessor extends WorkerHost {
         totalRows++;
         try {
           if (type === 'leads') {
-            await this.processLeadRow(row, rowIndex + 1); // +1 for header
+            await this.processLeadRow(row, rowIndex + 1, sourceMap, productMap, phoneCache);
           } else {
             await this.processCustomerRow(row, rowIndex + 1);
           }
@@ -99,52 +108,51 @@ export class ImportProcessor extends WorkerHost {
     }
   }
 
-  private async processLeadRow(row: Record<string, string>, rowNum: number) {
+  private async processLeadRow(
+    row: Record<string, string>,
+    rowNum: number,
+    sourceMap: Map<string, { id: bigint; name: string; skipPool: boolean }>,
+    productMap: Map<string, { id: bigint; name: string }>,
+    phoneCache: Map<string, { id: bigint }>,
+  ) {
     const phone = normalizePhone(row.phone || row['Số điện thoại'] || '');
     const name = row.name || row['Họ tên'] || phone;
     if (!phone) throw new Error('Thiếu số điện thoại');
     if (!isValidVNPhone(phone)) throw new Error(`SĐT không hợp lệ: ${phone}`);
 
-    // Find or create customer
-    let customer = await this.prisma.customer.findFirst({ where: { phone, deletedAt: null } });
+    // Find or create customer (with in-memory cache)
+    let customer = phoneCache.get(phone) || null;
     if (!customer) {
-      customer = await this.prisma.customer.create({
-        data: { phone, name, email: row.email || null },
-      });
+      const dbCustomer = await this.prisma.customer.findFirst({ where: { phone, deletedAt: null } });
+      if (dbCustomer) {
+        customer = { id: dbCustomer.id };
+      } else {
+        const newCustomer = await this.prisma.customer.create({
+          data: { phone, name, email: row.email || null },
+        });
+        customer = { id: newCustomer.id };
+      }
+      phoneCache.set(phone, customer);
     }
 
-    // Find source by name
+    // Find source by name (preloaded Map — O(1) instead of DB query)
     const sourceName = row.source || row['Nguồn'] || null;
-    let sourceId: bigint | null = null;
-    if (sourceName) {
-      const source = await this.prisma.leadSource.findFirst({ where: { name: sourceName } });
-      if (source) sourceId = source.id;
-    }
+    const source = sourceName ? sourceMap.get(sourceName.toLowerCase()) || null : null;
+    const sourceId = source?.id || null;
 
-    // Dedup: same phone + same source + same product in this import → skip
+    // Find product by name (preloaded Map — O(1) instead of DB query)
     const productName = row.product || row['Sản phẩm'] || null;
-    let productId: bigint | null = null;
-    if (productName) {
-      const product = await this.prisma.product.findFirst({
-        where: { name: { contains: productName, mode: 'insensitive' }, deletedAt: null },
-      });
-      if (product) productId = product.id;
-    }
+    const product = productName ? productMap.get(productName.toLowerCase()) || null : null;
+    const productId = product?.id || null;
 
     // Check dedup for CSV import
     const existingLead = await this.prisma.lead.findFirst({
-      where: {
-        phone, sourceId, productId, deletedAt: null,
-      },
+      where: { phone, sourceId, productId, deletedAt: null },
     });
     if (existingLead) throw new Error(`Trùng lead: SĐT ${phone} + nguồn + sản phẩm`);
 
-    // Check skipPool on source
-    let status: 'POOL' | 'ZOOM' = 'POOL';
-    if (sourceId) {
-      const src = await this.prisma.leadSource.findFirst({ where: { id: sourceId }, select: { skipPool: true } });
-      if (src?.skipPool) status = 'ZOOM';
-    }
+    // Check skipPool on source (already preloaded)
+    const status: 'POOL' | 'ZOOM' = source?.skipPool ? 'ZOOM' : 'POOL';
 
     // Extra columns → metadata JSONB (any column not in known fields)
     const knownKeys = new Set(['phone', 'Số điện thoại', 'name', 'Họ tên', 'email', 'Email', 'source', 'Nguồn', 'product', 'Sản phẩm']);

@@ -106,7 +106,7 @@ export function AppSidebar() {
     )}>
       {/* Logo */}
       <div className="flex h-14 items-center justify-between border-b border-gray-200 px-4">
-        {!collapsed && <span className="text-lg font-bold text-sky-500">CRM V4</span>}
+        {!collapsed && <span className="text-lg font-extrabold text-gradient">VeloCRM</span>}
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"

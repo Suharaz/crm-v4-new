@@ -54,7 +54,7 @@ function LoginForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-2 text-3xl font-bold text-sky-500">CRM V4</div>
+        <div className="mx-auto mb-2 text-3xl font-extrabold text-gradient">VeloCRM</div>
         <CardTitle>Đăng nhập</CardTitle>
       </CardHeader>
       <CardContent>

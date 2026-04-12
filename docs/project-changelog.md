@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### MCP Server + AI Agent REST API (2026-04-12)
+- **MCP Server:** Streamable HTTP transport at `POST /api/v1/mcp` (stateless mode). Read-only tools for AI agents to query CRM data
+- **MCP Tools (10):** `get_schema`, `search_leads`, `get_lead_detail`, `search_customers`, `get_customer_detail`, `search_orders`, `get_order_detail`, `list_products`, `get_stats`, `list_users`
+- **Smart filtering:** All tools enforce `limit` (default 20, max 100), cursor pagination. Never return all data
+- **Auth:** API key via `x-api-key` header with granular `mcp:*` permissions (leads, customers, orders, products, stats, users, schema)
+- **REST fallback:** `/ai-agent/` endpoints reuse same query service for non-MCP AI clients
+- **Frontend:** MCP permission checkboxes in API key creation dialog, MCP connection info (endpoint URL + Claude Desktop config JSON), MCP badge on key list
+
 ### Payment Excel Export/Import + Customer AI Rating + Activity Chart (2026-04-11)
 - **Export Excel:** Manager+ can download verified payments as .xlsx with date range filter (23 columns, Vietnamese headers)
 - **Import Excel:** Upload .xlsx with 20 columns (order + payment data). Auto-maps SĐT→customer, product→order. Creates new customers/orders if needed. Returns summary: created/matched/new customers/errors

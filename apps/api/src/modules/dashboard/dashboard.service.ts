@@ -47,17 +47,20 @@ export class DashboardService {
     };
   }
 
-  /** Lead status breakdown for funnel chart */
+  /** Lead status breakdown for funnel chart — single groupBy instead of 7 COUNTs */
   async getLeadFunnel(userId: bigint, role: string) {
     const isAdmin = role === 'SUPER_ADMIN' || role === 'MANAGER';
     const baseWhere = isAdmin ? { deletedAt: null } : { deletedAt: null, assignedUserId: userId };
 
-    const statuses = ['POOL', 'ZOOM', 'ASSIGNED', 'IN_PROGRESS', 'CONVERTED', 'LOST', 'FLOATING'] as const;
-    const counts = await Promise.all(
-      statuses.map(status => this.prisma.lead.count({ where: { ...baseWhere, status } })),
-    );
+    const groups = await this.prisma.lead.groupBy({
+      by: ['status'],
+      where: baseWhere,
+      _count: true,
+    });
 
-    return statuses.map((status, i) => ({ status, count: counts[i] }));
+    const countMap = new Map(groups.map(g => [g.status, g._count]));
+    const statuses = ['POOL', 'ZOOM', 'ASSIGNED', 'IN_PROGRESS', 'CONVERTED', 'LOST', 'FLOATING'] as const;
+    return statuses.map(status => ({ status, count: countMap.get(status) || 0 }));
   }
 
   /** Daily revenue trend for a date range */
@@ -139,6 +142,7 @@ export class DashboardService {
     const isAdmin = role === 'SUPER_ADMIN' || role === 'MANAGER';
     const userFilter = isAdmin ? Prisma.sql`` : Prisma.sql`AND l.assigned_user_id = ${userId}`;
 
+    // Rewritten: LEFT JOIN + GROUP BY instead of correlated subquery per lead
     const rows = await this.prisma.$queryRaw<{ bucket: string; count: bigint }[]>`
       SELECT
         CASE
@@ -149,11 +153,13 @@ export class DashboardService {
         END as bucket,
         COUNT(*)::bigint as count
       FROM (
-        SELECT EXTRACT(DAY FROM NOW() - GREATEST(
-          l.updated_at,
-          COALESCE((SELECT MAX(a.created_at) FROM activities a WHERE a.entity_type = 'LEAD' AND a.entity_id = l.id), l.updated_at)
-        )) as age
+        SELECT EXTRACT(DAY FROM NOW() - GREATEST(l.updated_at, COALESCE(la.last_activity, l.updated_at))) as age
         FROM leads l
+        LEFT JOIN LATERAL (
+          SELECT MAX(a.created_at) as last_activity
+          FROM activities a
+          WHERE a.entity_type = 'LEAD' AND a.entity_id = l.id AND a.deleted_at IS NULL
+        ) la ON true
         WHERE l.deleted_at IS NULL AND l.status IN ('IN_PROGRESS', 'ASSIGNED')
         ${userFilter}
       ) sub

@@ -123,6 +123,7 @@ export class ActivitiesService {
       where,
       select: STATS_ACTIVITY_SELECT,
       orderBy: { createdAt: 'desc' },
+      take: 500, // bounded to prevent memory issues on busy entities
     });
 
     // Group by department

@@ -91,40 +91,45 @@ export class RecallConfigService {
     config: { id: bigint; maxDaysInPool: number; autoLabelIds: bigint[] },
     cutoffDate: Date,
   ): Promise<number> {
-    // Kho Phòng Ban: status=POOL, departmentId != null, assignedUserId = null
-    const leads = await this.prisma.lead.findMany({
-      where: {
-        status: LeadStatus.POOL,
-        departmentId: { not: null },
-        assignedUserId: null,
-        deletedAt: null,
-        updatedAt: { lt: cutoffDate },
-      },
-      select: { id: true },
-    });
+    // Process in chunks of 500 to avoid large IN clauses
+    const CHUNK_SIZE = 500;
+    let totalRecalled = 0;
 
-    if (leads.length === 0) return 0;
+    while (true) {
+      const leads = await this.prisma.lead.findMany({
+        where: {
+          status: LeadStatus.POOL,
+          departmentId: { not: null },
+          assignedUserId: null,
+          deletedAt: null,
+          updatedAt: { lt: cutoffDate },
+        },
+        select: { id: true },
+        take: CHUNK_SIZE,
+      });
 
-    const leadIds = leads.map((l) => l.id);
+      if (leads.length === 0) break;
 
-    await this.prisma.lead.updateMany({
-      where: { id: { in: leadIds } },
-      data: {
-        status: LeadStatus.FLOATING,
-        departmentId: null,
-        assignedUserId: null,
-      },
-    });
+      const leadIds = leads.map((l) => l.id);
 
-    if (config.autoLabelIds.length > 0) {
-      const labelData = leadIds.flatMap((leadId) =>
-        config.autoLabelIds.map((labelId) => ({ leadId, labelId })),
-      );
-      await this.prisma.leadLabel.createMany({ data: labelData, skipDuplicates: true });
+      await this.prisma.lead.updateMany({
+        where: { id: { in: leadIds } },
+        data: { status: LeadStatus.FLOATING, departmentId: null, assignedUserId: null },
+      });
+
+      if (config.autoLabelIds.length > 0) {
+        const labelData = leadIds.flatMap((leadId) =>
+          config.autoLabelIds.map((labelId) => ({ leadId, labelId })),
+        );
+        await this.prisma.leadLabel.createMany({ data: labelData, skipDuplicates: true });
+      }
+
+      totalRecalled += leads.length;
+      if (leads.length < CHUNK_SIZE) break; // last chunk
     }
 
-    this.logger.log(`Đã thu hồi ${leads.length} leads về kho thả nổi`);
-    return leads.length;
+    if (totalRecalled > 0) this.logger.log(`Đã thu hồi ${totalRecalled} leads về kho thả nổi`);
+    return totalRecalled;
   }
 
   private async _recallCustomers(
@@ -132,38 +137,44 @@ export class RecallConfigService {
     cutoffDate: Date,
   ): Promise<number> {
     // Kho Phòng Ban: status=ACTIVE, assignedUserId = null, assignedDepartmentId != null
-    const customers = await this.prisma.customer.findMany({
-      where: {
-        status: CustomerStatus.ACTIVE,
-        assignedDepartmentId: { not: null },
-        assignedUserId: null,
-        deletedAt: null,
-        updatedAt: { lt: cutoffDate },
-      },
-      select: { id: true },
-    });
+    // Process in chunks of 500
+    const CHUNK_SIZE = 500;
+    let totalRecalled = 0;
 
-    if (customers.length === 0) return 0;
+    while (true) {
+      const customers = await this.prisma.customer.findMany({
+        where: {
+          status: CustomerStatus.ACTIVE,
+          assignedDepartmentId: { not: null },
+          assignedUserId: null,
+          deletedAt: null,
+          updatedAt: { lt: cutoffDate },
+        },
+        select: { id: true },
+        take: CHUNK_SIZE,
+      });
 
-    const customerIds = customers.map((c) => c.id);
+      if (customers.length === 0) break;
 
-    await this.prisma.customer.updateMany({
-      where: { id: { in: customerIds } },
-      data: {
-        status: CustomerStatus.FLOATING,
-        assignedDepartmentId: null,
-        assignedUserId: null,
-      },
-    });
+      const customerIds = customers.map((c) => c.id);
 
-    if (config.autoLabelIds.length > 0) {
-      const labelData = customerIds.flatMap((customerId) =>
-        config.autoLabelIds.map((labelId) => ({ customerId, labelId })),
-      );
-      await this.prisma.customerLabel.createMany({ data: labelData, skipDuplicates: true });
+      await this.prisma.customer.updateMany({
+        where: { id: { in: customerIds } },
+        data: { status: CustomerStatus.FLOATING, assignedDepartmentId: null, assignedUserId: null },
+      });
+
+      if (config.autoLabelIds.length > 0) {
+        const labelData = customerIds.flatMap((customerId) =>
+          config.autoLabelIds.map((labelId) => ({ customerId, labelId })),
+        );
+        await this.prisma.customerLabel.createMany({ data: labelData, skipDuplicates: true });
+      }
+
+      totalRecalled += customers.length;
+      if (customers.length < CHUNK_SIZE) break;
     }
 
-    this.logger.log(`Đã thu hồi ${customers.length} customers về kho thả nổi`);
-    return customers.length;
+    if (totalRecalled > 0) this.logger.log(`Đã thu hồi ${totalRecalled} customers về kho thả nổi`);
+    return totalRecalled;
   }
 }

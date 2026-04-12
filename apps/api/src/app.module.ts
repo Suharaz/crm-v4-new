@@ -47,7 +47,10 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env', '../../.env.production', '../../.env'],
+    }),
     ThrottlerModule.forRoot([
       { name: 'short', ttl: 60000, limit: parseInt(process.env.THROTTLE_LIMIT || '100', 10) },
       { name: 'auth', ttl: 60000, limit: parseInt(process.env.THROTTLE_AUTH_LIMIT || '5', 10) },

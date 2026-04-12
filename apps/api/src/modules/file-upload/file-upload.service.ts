@@ -33,12 +33,20 @@ export class FileUploadService {
     mimetype: string,
     subDir: string = 'attachments',
   ): Promise<{ filePath: string; fileName: string; fileSize: number }> {
-    // Validate
+    // Validate size
     if (buffer.length > MAX_FILE_SIZE) {
       throw new BadRequestException('File vượt quá 10MB');
     }
     if (!ALLOWED_MIME_TYPES.includes(mimetype)) {
       throw new BadRequestException('Loại file không được hỗ trợ');
+    }
+
+    // Validate magic bytes — prevent MIME spoofing (e.g., .php uploaded as image/jpeg)
+    const { fileTypeFromBuffer } = await import('file-type');
+    const detected = await fileTypeFromBuffer(buffer);
+    // CSV/plain text files have no magic bytes — skip for text types
+    if (detected && !ALLOWED_MIME_TYPES.includes(detected.mime)) {
+      throw new BadRequestException(`File thực tế là ${detected.mime}, không được hỗ trợ`);
     }
 
     // Generate safe filename

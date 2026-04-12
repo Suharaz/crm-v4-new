@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
 import { McpAgentController } from './mcp-agent.controller';
 import { AiAgentRestController } from './ai-agent-rest.controller';
 import { McpAgentService } from './mcp-agent.service';
@@ -10,6 +9,6 @@ import { DashboardModule } from '../dashboard/dashboard.module';
 @Module({
   imports: [DashboardModule],
   controllers: [McpAgentController, AiAgentRestController],
-  providers: [McpAgentService, McpAgentQueryService, McpAgentAuthGuard, PrismaClient],
+  providers: [McpAgentService, McpAgentQueryService, McpAgentAuthGuard],
 })
 export class McpAgentModule {}

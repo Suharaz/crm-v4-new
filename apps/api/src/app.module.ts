@@ -38,7 +38,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { AssignmentTemplatesModule } from './modules/assignment-templates/assignment-templates.module';
 import { RecallConfigModule } from './modules/recall-config/recall-config.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
-import { PrismaClient } from '@prisma/client';
+import { PrismaModule } from './common/prisma/prisma.module';
+import { AppCacheModule } from './common/cache/cache.module';
 import { ApiKeysModule } from './modules/api-keys/api-keys.module';
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module';
 import { McpAgentModule } from './modules/mcp-agent/mcp-agent.module';
@@ -83,6 +84,8 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
         redact: ['req.headers.authorization', 'req.body.password', 'req.body.refreshToken'],
       },
     }),
+    PrismaModule,
+    AppCacheModule,
     AuthModule,
     UsersModule,
     DepartmentsModule,
@@ -125,8 +128,6 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     // Global roles guard
     { provide: APP_GUARD, useClass: RolesGuard },
-    // PrismaClient for API key guard
-    PrismaClient,
     // API key auth for external endpoints
     { provide: APP_GUARD, useClass: ApiKeyAuthGuard },
     // Global rate limiting

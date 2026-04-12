@@ -15,6 +15,9 @@ if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
 }
 
+// Type for the extended client (with soft-delete extension)
+export type ExtendedPrismaClient = typeof prisma;
+
 export { PrismaClient };
 export { softDeleteExtension } from './soft-delete-extension';
 export * from '@prisma/client';

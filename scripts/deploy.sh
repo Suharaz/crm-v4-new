@@ -4,6 +4,9 @@ set -euo pipefail
 # CRM V4 deploy: Docker (PG+Redis) + PM2 (API+Web)
 # Usage: ./scripts/deploy.sh
 
+# Load PATH for non-interactive SSH (GitHub Actions, cron)
+export PATH="/www/server/nodejs/v22.17.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+
 APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 ENV_FILE="$APP_DIR/.env.production"
 ENV_EXAMPLE="$APP_DIR/.env.production.example"

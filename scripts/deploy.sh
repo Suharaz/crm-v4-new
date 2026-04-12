@@ -75,6 +75,7 @@ cp "$ENV_FILE" "$APP_DIR/.env"
 
 # ── Step 1: Pull latest code ──────────────────────────────────────────
 echo ">>> [1/6] git pull..."
+git config --global --add safe.directory "$APP_DIR"
 git pull origin master
 
 # ── Step 2: Start infra (PG + Redis) ─────────────────────────────────

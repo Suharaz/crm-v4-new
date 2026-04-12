@@ -12,7 +12,7 @@ export default async function MyDeptPoolPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Kho phân loại</h1>
+      <h1 className="text-2xl font-bold text-slate-900">Kho phân loại</h1>
       <div className="mt-4">
         <LeadTable leads={data as unknown as Parameters<typeof LeadTable>[0]['leads']} poolMode="floating" />
       </div>

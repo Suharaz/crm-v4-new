@@ -86,18 +86,18 @@ export function PaymentActions({
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900">Thanh toán ({payments.length})</h3>
+        <h3 className="font-semibold text-slate-900">Thanh toán ({payments.length})</h3>
         <Button size="sm" variant="outline" onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4 mr-1" />Thêm TT
         </Button>
       </div>
 
       {payments.length === 0 ? (
-        <p className="text-sm text-gray-400">Chưa có thanh toán</p>
+        <p className="text-sm text-slate-400">Chưa có thanh toán</p>
       ) : (
         <div className="space-y-3">
           {payments.map((p) => (
-            <div key={p.id} className="rounded-lg border border-gray-100 p-3">
+            <div key={p.id} className="rounded-lg border border-slate-100 p-3">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -110,10 +110,10 @@ export function PaymentActions({
                     </span>
                     <span className="text-sm font-medium">{formatVND(Number(p.amount))}</span>
                     {p.installment && (
-                      <span className="text-xs text-gray-500 bg-gray-100 rounded px-1.5 py-0.5">{p.installment.name}</span>
+                      <span className="text-xs text-slate-500 bg-slate-100 rounded px-1.5 py-0.5">{p.installment.name}</span>
                     )}
                   </div>
-                  <div className="mt-1 flex flex-wrap gap-3 text-xs text-gray-400">
+                  <div className="mt-1 flex flex-wrap gap-3 text-xs text-slate-400">
                     {p.paymentType?.name && <span>{p.paymentType.name}</span>}
                     {p.transferDate && <span>Ngày CK: {formatDate(p.transferDate)}</span>}
                     {p.vatAmount && Number(p.vatAmount) > 0 && <span>VAT: {formatVND(Number(p.vatAmount))}</span>}
@@ -170,7 +170,7 @@ export function PaymentActions({
             </FormField>
             {vatRate > 0 && pmtAmountNum > 0 && (
               <FormField label="Tiền VAT (tự tính)">
-                <Input value={formatVND(pmtVatAmount)} readOnly className="bg-gray-50 text-gray-600" />
+                <Input value={formatVND(pmtVatAmount)} readOnly className="bg-slate-50 text-slate-600" />
               </FormField>
             )}
             <FormField label="Loại thanh toán">

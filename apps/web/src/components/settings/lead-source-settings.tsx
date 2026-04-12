@@ -22,8 +22,8 @@ export function LeadSourceSettings({ data, canEdit }: LeadSourceSettingsProps) {
       ]}
       renderItem={(item) => (
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700">{item.name}</span>
-          {Boolean(item.description) && <span className="text-xs text-gray-400">{String(item.description)}</span>}
+          <span className="text-sm text-slate-700">{item.name}</span>
+          {Boolean(item.description) && <span className="text-xs text-slate-400">{String(item.description)}</span>}
           {Boolean(item.skipPool) && <span className="text-xs bg-sky-100 text-sky-700 rounded px-1.5 py-0.5">Auto phân phối</span>}
         </div>
       )}

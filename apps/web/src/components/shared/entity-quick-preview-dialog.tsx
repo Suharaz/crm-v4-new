@@ -223,12 +223,12 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
         ) : data ? (
           <div>
             {/* Header */}
-            <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-4">
+            <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-5 py-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-bold text-gray-900 truncate">{data.name}</h2>
+                  <h2 className="text-lg font-bold text-slate-900 truncate">{data.name}</h2>
                   <div className="flex items-center gap-2 mt-1">
-                    <Phone className="h-3.5 w-3.5 text-gray-400" />
+                    <Phone className="h-3.5 w-3.5 text-slate-400" />
                     <a href={`tel:${data.phone}`} className="text-sm text-sky-600 hover:underline">{data.phone}</a>
                   </div>
                 </div>
@@ -261,7 +261,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
               {/* Labels */}
               {labels.length > 0 && (
                 <div>
-                  <span className="text-xs font-medium text-gray-500 uppercase">Nhãn</span>
+                  <span className="text-xs font-medium text-slate-500 uppercase">Nhãn</span>
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {labels.map((ll) => {
                       const label = (ll.label || ll) as LabelEntity;
@@ -282,20 +282,20 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
               {/* Notes & Activities */}
               {activities.length > 0 && (
                 <div>
-                  <span className="text-xs font-medium text-gray-500 uppercase">
+                  <span className="text-xs font-medium text-slate-500 uppercase">
                     Ghi chú & Hoạt động ({activities.length})
                   </span>
                   <div className="mt-1.5 space-y-1.5 max-h-40 overflow-y-auto">
                     {activities.slice(0, 5).map((a) => (
-                      <div key={a.id} className="text-xs bg-gray-50 rounded-md px-2.5 py-2 border border-gray-100">
+                      <div key={a.id} className="text-xs bg-slate-50 rounded-md px-2.5 py-2 border border-slate-100">
                         <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="font-medium text-gray-700">{a.user?.name || '—'}</span>
-                          <span className="text-gray-300">·</span>
-                          <span className="text-gray-400">{a.type === 'NOTE' ? 'Ghi chú' : a.type === 'CALL' ? 'Cuộc gọi' : a.type}</span>
-                          <span className="text-gray-300">·</span>
-                          <span className="text-gray-400">{formatDate(a.createdAt)}</span>
+                          <span className="font-medium text-slate-700">{a.user?.name || '—'}</span>
+                          <span className="text-slate-300">·</span>
+                          <span className="text-slate-400">{a.type === 'NOTE' ? 'Ghi chú' : a.type === 'CALL' ? 'Cuộc gọi' : a.type}</span>
+                          <span className="text-slate-300">·</span>
+                          <span className="text-slate-400">{formatDate(a.createdAt)}</span>
                         </div>
-                        <p className="text-gray-600 whitespace-pre-line">
+                        <p className="text-slate-600 whitespace-pre-line">
                           {a.content?.substring(0, 120)}{(a.content?.length ?? 0) > 120 ? '...' : ''}
                         </p>
                       </div>
@@ -306,7 +306,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
             </div>
 
             {/* Quick Actions */}
-            <div className="border-t border-gray-100 px-5 py-3 space-y-2">
+            <div className="border-t border-slate-100 px-5 py-3 space-y-2">
               <div className="flex gap-2">
                 <Button size="sm" variant={noteOpen ? 'default' : 'outline'} onClick={() => { setNoteOpen(!noteOpen); setLabelPickerOpen(false); setPaymentOpen(false); }}>
                   <MessageSquarePlus className="h-3.5 w-3.5 mr-1" />Ghi chú
@@ -340,7 +340,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
               {/* Inline label picker */}
               {labelPickerOpen && (
                 <div className="flex flex-wrap gap-1.5">
-                  {allLabels.length === 0 && <span className="text-xs text-gray-400">Đang tải...</span>}
+                  {allLabels.length === 0 && <span className="text-xs text-slate-400">Đang tải...</span>}
                   {allLabels.map((l) => (
                     <button
                       key={l.id}
@@ -348,7 +348,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                       disabled={labelSaving}
                       className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all ${
                         currentLabelIds.has(String(l.id))
-                          ? 'text-white ring-2 ring-offset-1 ring-gray-400'
+                          ? 'text-white ring-2 ring-offset-1 ring-slate-400'
                           : 'text-white opacity-50 hover:opacity-80'
                       }`}
                       style={{ backgroundColor: l.color || '#6b7280' }}
@@ -363,15 +363,15 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
               {paymentOpen && (
                 <div className="space-y-2">
                   {pendingOrders.length === 0 ? (
-                    <p className="text-xs text-gray-400">Chưa có đơn hàng — hãy tạo đơn hàng trước</p>
+                    <p className="text-xs text-slate-400">Chưa có đơn hàng — hãy tạo đơn hàng trước</p>
                   ) : (
                     <>
                       {pendingOrders.length > 1 ? (
                         <div className="space-y-1">
-                          <p className="text-xs text-gray-500">Chọn đơn hàng:</p>
+                          <p className="text-xs text-slate-500">Chọn đơn hàng:</p>
                           {pendingOrders.map((o) => (
                             <label key={o.id} className={`flex items-center gap-2 rounded border px-2 py-1.5 cursor-pointer text-xs ${
-                              pmtOrderId === String(o.id) ? 'border-sky-400 bg-sky-50' : 'border-gray-200'}`}>
+                              pmtOrderId === String(o.id) ? 'border-sky-400 bg-sky-50' : 'border-slate-200'}`}>
                               <input type="radio" name="pmtOrder" checked={pmtOrderId === String(o.id)} onChange={() => setPmtOrderId(String(o.id))} />
                               <span>#{o.id} — {o.product?.name || 'N/A'} — {formatVND(Number(o.totalAmount))}</span>
                               <StatusBadge status={o.status} />
@@ -398,8 +398,8 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
             </div>
 
             {/* Footer — Detail button */}
-            <div className="sticky bottom-0 border-t border-gray-200 bg-gray-50 px-5 py-3 flex justify-between items-center">
-              <span className="text-xs text-gray-400">
+            <div className="sticky bottom-0 border-t border-slate-200 bg-slate-50 px-5 py-3 flex justify-between items-center">
+              <span className="text-xs text-slate-400">
                 {entityType === 'lead' ? 'Lead' : 'Khách hàng'} #{entityId}
               </span>
               <Link href={detailUrl} onClick={() => onOpenChange(false)}>
@@ -410,7 +410,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
             </div>
           </div>
         ) : (
-          <div className="py-16 text-center text-gray-400">Không tìm thấy dữ liệu</div>
+          <div className="py-16 text-center text-slate-400">Không tìm thấy dữ liệu</div>
         )}
       </DialogContent>
     </Dialog>
@@ -420,17 +420,17 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
 /** Auto-select single order on mount */
 function AutoSelectOrder({ orderId, onSelect, children }: { orderId: string; onSelect: (id: string) => void; children: React.ReactNode }) {
   useEffect(() => { onSelect(orderId); }, [orderId, onSelect]);
-  return <p className="text-xs text-gray-500">{children}</p>;
+  return <p className="text-xs text-slate-500">{children}</p>;
 }
 
 /** Single info row for the preview grid */
 function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
   return (
     <div className="flex items-start gap-2">
-      <Icon className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
+      <Icon className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
       <div className="min-w-0">
-        <div className="text-xs text-gray-400">{label}</div>
-        <div className="text-gray-900 truncate">{value}</div>
+        <div className="text-xs text-slate-400">{label}</div>
+        <div className="text-slate-900 truncate">{value}</div>
       </div>
     </div>
   );

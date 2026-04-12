@@ -224,7 +224,7 @@ export function LeadActions({ lead, users, departments, labels }: LeadActionsPro
             placeholder="Nội dung ghi chú..."
             rows={4}
           />
-          <label className="flex items-center gap-2 text-sm text-gray-600">
+          <label className="flex items-center gap-2 text-sm text-slate-600">
             <input
               type="checkbox"
               checked={createTaskFromNote}

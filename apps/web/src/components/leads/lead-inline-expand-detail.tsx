@@ -209,7 +209,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
 
   if (!loading && !data) {
     return (
-      <tr className="bg-gray-50"><td colSpan={colSpan} className="px-6 py-4 text-center text-gray-400">Không tìm thấy</td></tr>
+      <tr className="bg-slate-50"><td colSpan={colSpan} className="px-6 py-4 text-center text-slate-400">Không tìm thấy</td></tr>
     );
   }
 
@@ -222,34 +222,34 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-5 w-5 animate-spin text-sky-500" />
-                <span className="ml-2 text-xs text-gray-400">Đang tải dữ liệu...</span>
+                <span className="ml-2 text-xs text-slate-400">Đang tải dữ liệu...</span>
               </div>
             ) : (
             <>
             {/* Orders section */}
             {uniqueOrders.length > 0 && (
               <div>
-                <h4 className="font-semibold text-gray-700 text-xs uppercase mb-1">Đơn hàng ({uniqueOrders.length})</h4>
+                <h4 className="font-semibold text-slate-700 text-xs uppercase mb-1">Đơn hàng ({uniqueOrders.length})</h4>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {uniqueOrders.map((o) => (
-                    <div key={o.id} className="rounded-md border border-gray-100 bg-white text-xs">
+                    <div key={o.id} className="rounded-md border border-slate-100 bg-white text-xs">
                       <div className="flex items-center justify-between px-2.5 py-1.5">
                         <div>
-                          <span className="font-medium text-gray-700">#{o.id}</span>
-                          <span className="ml-1.5 text-gray-500">{o.product?.name || '—'}</span>
+                          <span className="font-medium text-slate-700">#{o.id}</span>
+                          <span className="ml-1.5 text-slate-500">{o.product?.name || '—'}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-900">{formatVND(Number(o.totalAmount))}</span>
+                          <span className="font-semibold text-slate-900">{formatVND(Number(o.totalAmount))}</span>
                           <StatusBadge status={o.status} />
                         </div>
                       </div>
                       {o.payments && o.payments.length > 0 && (
-                        <div className="border-t border-gray-50 px-2.5 py-1 space-y-0.5">
+                        <div className="border-t border-slate-50 px-2.5 py-1 space-y-0.5">
                           {o.payments.map((p) => (
-                            <div key={p.id} className="flex items-center justify-between text-[11px] text-gray-500">
+                            <div key={p.id} className="flex items-center justify-between text-[11px] text-slate-500">
                               <span>{p.paymentType?.name || 'CK'} {p.transferContent ? `— ${p.transferContent}` : ''}</span>
                               <div className="flex items-center gap-1.5">
-                                <span className="font-medium text-gray-700">{formatVND(Number(p.amount))}</span>
+                                <span className="font-medium text-slate-700">{formatVND(Number(p.amount))}</span>
                                 <StatusBadge status={p.status} />
                               </div>
                             </div>
@@ -267,18 +267,18 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
               const calls = activities.filter((a) => a.type === 'CALL');
               return calls.length > 0 ? (
                 <div>
-                  <h4 className="font-semibold text-gray-700 text-xs uppercase mb-1">Cuộc gọi ({calls.length})</h4>
+                  <h4 className="font-semibold text-slate-700 text-xs uppercase mb-1">Cuộc gọi ({calls.length})</h4>
                   <div className="space-y-1 max-h-32 overflow-y-auto">
                     {calls.slice(0, 5).map((a) => (
-                      <div key={a.id} className="text-xs bg-white rounded-md px-2.5 py-1.5 border border-gray-100">
+                      <div key={a.id} className="text-xs bg-white rounded-md px-2.5 py-1.5 border border-slate-100">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-medium text-gray-700">{a.user?.name || '—'}</span>
+                          <span className="font-medium text-slate-700">{a.user?.name || '—'}</span>
                           {a._source === 'customer' && <span className="text-[9px] bg-blue-100 text-blue-600 rounded px-1">KH</span>}
-                          <span className="text-gray-300">·</span>
-                          <span className="text-gray-400">{formatDate(a.createdAt)}</span>
-                          {a.metadata?.duration && <span className="text-gray-400 ml-auto">{Math.floor(a.metadata.duration / 60)}p{a.metadata.duration % 60}s</span>}
+                          <span className="text-slate-300">·</span>
+                          <span className="text-slate-400">{formatDate(a.createdAt)}</span>
+                          {a.metadata?.duration && <span className="text-slate-400 ml-auto">{Math.floor(a.metadata.duration / 60)}p{a.metadata.duration % 60}s</span>}
                         </div>
-                        {a.content && <p className="text-gray-600 mt-0.5">{a.content.substring(0, 80)}{a.content.length > 80 ? '...' : ''}</p>}
+                        {a.content && <p className="text-slate-600 mt-0.5">{a.content.substring(0, 80)}{a.content.length > 80 ? '...' : ''}</p>}
                       </div>
                     ))}
                   </div>
@@ -291,20 +291,20 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
               const notes = activities.filter((a) => a.type === 'NOTE');
               return (
                 <div>
-                  <h4 className="font-semibold text-gray-700 text-xs uppercase mb-1">Ghi chú ({notes.length})</h4>
+                  <h4 className="font-semibold text-slate-700 text-xs uppercase mb-1">Ghi chú ({notes.length})</h4>
                   {notes.length === 0 ? (
-                    <p className="text-xs text-gray-400">Chưa có ghi chú</p>
+                    <p className="text-xs text-slate-400">Chưa có ghi chú</p>
                   ) : (
                     <div className="space-y-1 max-h-32 overflow-y-auto">
                       {notes.slice(0, 5).map((a) => (
-                        <div key={a.id} className="text-xs bg-white rounded-md px-2.5 py-1.5 border border-gray-100">
+                        <div key={a.id} className="text-xs bg-white rounded-md px-2.5 py-1.5 border border-slate-100">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-medium text-gray-700">{a.user?.name || '—'}</span>
+                            <span className="font-medium text-slate-700">{a.user?.name || '—'}</span>
                             {a._source === 'customer' && <span className="text-[9px] bg-blue-100 text-blue-600 rounded px-1">KH</span>}
-                            <span className="text-gray-300">·</span>
-                            <span className="text-gray-400">{formatDate(a.createdAt)}</span>
+                            <span className="text-slate-300">·</span>
+                            <span className="text-slate-400">{formatDate(a.createdAt)}</span>
                           </div>
-                          <p className="text-gray-600 mt-0.5">{a.content?.substring(0, 100)}{(a.content?.length || 0) > 100 ? '...' : ''}</p>
+                          <p className="text-slate-600 mt-0.5">{a.content?.substring(0, 100)}{(a.content?.length || 0) > 100 ? '...' : ''}</p>
                         </div>
                       ))}
                     </div>
@@ -318,7 +318,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
 
           {/* Col 2: Quick Actions — always visible immediately */}
           <div className="space-y-2">
-            <h4 className="font-semibold text-gray-700 text-xs uppercase">Thao tác nhanh</h4>
+            <h4 className="font-semibold text-slate-700 text-xs uppercase">Thao tác nhanh</h4>
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant={noteOpen ? 'default' : 'outline'} onClick={() => { setNoteOpen(!noteOpen); setLabelPickerOpen(false); }}>
                 <MessageSquarePlus className="h-3.5 w-3.5 mr-1" />Ghi chú
@@ -358,10 +358,10 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
             {/* Inline label picker */}
             {labelPickerOpen && (
               <div className="flex flex-wrap gap-1.5">
-                {allLabels.length === 0 && <span className="text-xs text-gray-400">Đang tải...</span>}
+                {allLabels.length === 0 && <span className="text-xs text-slate-400">Đang tải...</span>}
                 {allLabels.map((l) => (
                   <button key={l.id} onClick={() => toggleLabel(String(l.id))} disabled={labelSaving}
-                    className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all ${currentLabelIds.has(String(l.id)) ? 'text-white ring-2 ring-offset-1 ring-gray-400' : 'text-white opacity-50 hover:opacity-80'}`}
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all ${currentLabelIds.has(String(l.id)) ? 'text-white ring-2 ring-offset-1 ring-slate-400' : 'text-white opacity-50 hover:opacity-80'}`}
                     style={{ backgroundColor: l.color || '#6b7280' }}
                   >{l.name}</button>
                 ))}
@@ -371,7 +371,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
             {/* Inline transfer picker */}
             {transferOpen && (
               <div className="space-y-2">
-                <p className="text-xs text-gray-500">Chọn phòng ban hoặc thả nổi:</p>
+                <p className="text-xs text-slate-500">Chọn phòng ban hoặc thả nổi:</p>
                 <div className="flex flex-wrap gap-2">
                   {allDepts.map((d) => (
                     <Button key={d.id} size="sm" variant="outline" disabled={transferring || String(d.id) === String(data?.department?.id)}
@@ -380,7 +380,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                       <Building className="h-3.5 w-3.5 mr-1" />{d.name}
                     </Button>
                   ))}
-                  <Button size="sm" variant="outline" className="text-violet-600 border-violet-200" disabled={transferring} onClick={transferToFloating}>
+                  <Button size="sm" variant="outline" className="text-cyan-600 border-cyan-200" disabled={transferring} onClick={transferToFloating}>
                     Thả nổi
                   </Button>
                 </div>
@@ -391,15 +391,15 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
             {paymentOpen && (
               <div className="space-y-2">
                 {pendingOrders.length === 0 ? (
-                  <p className="text-xs text-gray-400">Chưa có đơn hàng — hãy tạo đơn hàng trước</p>
+                  <p className="text-xs text-slate-400">Chưa có đơn hàng — hãy tạo đơn hàng trước</p>
                 ) : (
                   <>
                     {pendingOrders.length > 1 ? (
                       <div className="space-y-1">
-                        <p className="text-xs text-gray-500">Chọn đơn hàng:</p>
+                        <p className="text-xs text-slate-500">Chọn đơn hàng:</p>
                         {pendingOrders.map((o) => (
                           <label key={o.id} className={cn('flex items-center gap-2 rounded border px-2 py-1.5 cursor-pointer text-xs',
-                            pmtOrderId === String(o.id) ? 'border-sky-400 bg-sky-50' : 'border-gray-200')}>
+                            pmtOrderId === String(o.id) ? 'border-sky-400 bg-sky-50' : 'border-slate-200')}>
                             <input type="radio" name="pmtOrder" checked={pmtOrderId === String(o.id)} onChange={() => setPmtOrderId(String(o.id))} />
                             <span>#{o.id} — {o.product?.name || 'N/A'} — {formatVND(Number(o.totalAmount))}</span>
                             <StatusBadge status={o.status} />
@@ -433,5 +433,5 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
 /** Auto-select single order on mount */
 function AutoSelect({ orderId, onSelect, children }: { orderId: string; onSelect: (id: string) => void; children: React.ReactNode }) {
   useEffect(() => { onSelect(orderId); }, [orderId, onSelect]);
-  return <p className="text-xs text-gray-500">{children}</p>;
+  return <p className="text-xs text-slate-500">{children}</p>;
 }

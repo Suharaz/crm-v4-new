@@ -13,8 +13,8 @@ export default async function TasksPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Công việc</h1>
-        <p className="text-sm text-gray-500">Quản lý và theo dõi công việc của bạn</p>
+        <h1 className="text-2xl font-bold text-slate-900">Công việc</h1>
+        <p className="text-sm text-slate-500">Quản lý và theo dõi công việc của bạn</p>
       </div>
       <TaskListClient initialTasks={data as unknown as Parameters<typeof TaskListClient>[0]['initialTasks']} />
     </div>

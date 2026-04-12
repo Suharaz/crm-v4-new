@@ -26,7 +26,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
   return (
     <div>
       <BackButton />
-      <h1 className="text-2xl font-bold text-gray-900 mb-6 mt-2">Sửa nhân viên: {user.name}</h1>
+      <h1 className="text-2xl font-bold text-slate-900 mb-6 mt-2">Sửa nhân viên: {user.name}</h1>
       <UserForm user={user} departments={departments} levels={levels} />
     </div>
   );

@@ -100,9 +100,9 @@ export function AiPromptSettings({ initialSettings }: Props) {
   return (
     <div className="space-y-6 mt-4">
       {/* API Key */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
-        <h3 className="font-semibold text-gray-900">API Key (OpenRouter)</h3>
-        <p className="text-xs text-gray-500">
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <h3 className="font-semibold text-slate-900">API Key (OpenRouter)</h3>
+        <p className="text-xs text-slate-500">
           Lấy API key tại openrouter.ai/keys. Key được lưu trong database, không lưu trong env.
         </p>
         <div className="flex gap-2">
@@ -124,14 +124,14 @@ export function AiPromptSettings({ initialSettings }: Props) {
       </div>
 
       {/* Model selector */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
-        <h3 className="font-semibold text-gray-900">Model AI</h3>
-        <p className="text-xs text-gray-500">
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <h3 className="font-semibold text-slate-900">Model AI</h3>
+        <p className="text-xs text-slate-500">
           Model hiện tại: <span className="font-mono text-sky-600">{model}</span>
         </p>
         <div className="relative" ref={dropdownRef}>
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
             <Input
               value={modelSearch}
               onChange={e => { setModelSearch(e.target.value); setShowModels(true); }}
@@ -141,11 +141,11 @@ export function AiPromptSettings({ initialSettings }: Props) {
             />
           </div>
           {showModels && (
-            <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+            <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
               {loadingModels ? (
                 <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-                  <span className="ml-2 text-xs text-gray-400">Đang tải...</span>
+                  <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                  <span className="ml-2 text-xs text-slate-400">Đang tải...</span>
                 </div>
               ) : models.length > 0 ? (
                 models.map(m => {
@@ -155,21 +155,21 @@ export function AiPromptSettings({ initialSettings }: Props) {
                     <button
                       key={m.id}
                       onClick={() => selectModel(m)}
-                      className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-50 ${isSelected ? 'bg-sky-50' : ''}`}
+                      className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-slate-50 ${isSelected ? 'bg-sky-50' : ''}`}
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-700 truncate">{m.name}</span>
+                          <span className="font-medium text-slate-700 truncate">{m.name}</span>
                           {isFree && <span className="rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700">Free</span>}
                           {isSelected && <Check className="h-3.5 w-3.5 text-sky-600 shrink-0" />}
                         </div>
-                        <span className="text-xs text-gray-400 font-mono truncate block">{m.id}</span>
+                        <span className="text-xs text-slate-400 font-mono truncate block">{m.id}</span>
                       </div>
                     </button>
                   );
                 })
               ) : (
-                <p className="px-3 py-3 text-xs text-gray-400 text-center">Không tìm thấy model</p>
+                <p className="px-3 py-3 text-xs text-slate-400 text-center">Không tìm thấy model</p>
               )}
             </div>
           )}
@@ -177,9 +177,9 @@ export function AiPromptSettings({ initialSettings }: Props) {
       </div>
 
       {/* Call analysis prompt */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
-        <h3 className="font-semibold text-gray-900">Prompt phân tích cuộc gọi</h3>
-        <p className="text-xs text-gray-500">
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <h3 className="font-semibold text-slate-900">Prompt phân tích cuộc gọi</h3>
+        <p className="text-xs text-slate-500">
           Gửi đến AI khi cuộc gọi dài hơn 1 phút. Nội dung cuộc gọi đính kèm tự động.
         </p>
         <Textarea
@@ -198,9 +198,9 @@ export function AiPromptSettings({ initialSettings }: Props) {
       </div>
 
       {/* Customer analysis prompt */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
-        <h3 className="font-semibold text-gray-900">Prompt phân tích khách hàng</h3>
-        <p className="text-xs text-gray-500">
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <h3 className="font-semibold text-slate-900">Prompt phân tích khách hàng</h3>
+        <p className="text-xs text-slate-500">
           Gửi khi phân tích khách hàng (cuộc gọi &gt; 2 phút hoặc bấm nút phân tích).
           Dữ liệu ghi chú, thanh toán, phân tích cuộc gọi đính kèm tự động.
           Kết quả trả về gồm &quot;short&quot; (tóm tắt) + &quot;detail&quot; (chi tiết) — độ dài tùy bạn mô tả trong prompt.

@@ -26,7 +26,7 @@ export default async function EditCustomerPage({ params }: { params: Promise<{ i
   return (
     <div>
       <BackButton />
-      <h1 className="text-2xl font-bold text-gray-900 mb-6 mt-2">Sửa khách hàng: {customer.name}</h1>
+      <h1 className="text-2xl font-bold text-slate-900 mb-6 mt-2">Sửa khách hàng: {customer.name}</h1>
       <CustomerForm customer={customer} departments={departments} users={users} />
     </div>
   );

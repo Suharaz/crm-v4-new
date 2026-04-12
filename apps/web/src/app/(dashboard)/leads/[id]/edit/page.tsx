@@ -26,7 +26,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
   return (
     <div>
       <BackButton />
-      <h1 className="text-2xl font-bold text-gray-900 mb-6 mt-2">Sửa lead: {lead.name}</h1>
+      <h1 className="text-2xl font-bold text-slate-900 mb-6 mt-2">Sửa lead: {lead.name}</h1>
       <LeadForm lead={lead} sources={sources} products={products} />
     </div>
   );

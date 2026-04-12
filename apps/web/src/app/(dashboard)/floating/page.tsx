@@ -17,8 +17,8 @@ export default async function FloatingPoolPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Kho Thả Nổi</h1>
-      <p className="text-sm text-gray-500">Leads thả nổi — bất kỳ ai cũng có thể nhận, manager phân hàng loạt</p>
+      <h1 className="text-2xl font-bold text-slate-900">Kho Thả Nổi</h1>
+      <p className="text-sm text-slate-500">Leads thả nổi — bất kỳ ai cũng có thể nhận, manager phân hàng loạt</p>
       <div className="mt-4">
         <LeadPoolTableWithBulkAssign leads={data as unknown as Parameters<typeof LeadPoolTableWithBulkAssign>[0]['leads']} users={users} poolMode="floating" />
       </div>

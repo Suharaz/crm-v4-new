@@ -5,11 +5,12 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, UserCheck, ShoppingCart, Package,
   Phone, Settings, Upload, Waves, ChevronLeft, ChevronRight, ChevronDown,
-  UserCog, CheckSquare, Zap, Inbox, RotateCcw, User, Building2, CreditCard,
+  UserCog, CheckSquare, Zap, Inbox, RotateCcw, User, Building2, CreditCard, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useMobileSidebar } from '@/components/layout/mobile-sidebar-provider';
 
 interface NavChild {
   label: string;
@@ -22,14 +23,12 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   roles?: string[];
-  /** Roles that see the expandable children. Others see flat link. */
   childRoles?: string[];
-  /** Role-specific children menus */
   childrenByRole?: Record<string, NavChild[]>;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Trang chủ', href: '/', icon: LayoutDashboard },
+  { label: 'Trang chủ', href: '/dashboard', icon: LayoutDashboard },
   {
     label: 'Leads', href: '/leads', icon: Users,
     childRoles: ['MANAGER', 'USER'],
@@ -61,12 +60,15 @@ const NAV_ITEMS: NavItem[] = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { open: mobileOpen, close: closeMobile } = useMobileSidebar();
   const [collapsed, setCollapsed] = useState(false);
 
-  // Auto-expand Leads group if current path is a child route
   const leadsChildPaths = ['/leads', '/floating', '/leads/pool', '/leads/dept'];
   const isLeadsActive = leadsChildPaths.some(p => pathname.startsWith(p));
   const [leadsOpen, setLeadsOpen] = useState(isLeadsActive);
+
+  // Close mobile sidebar on route change
+  useEffect(() => { closeMobile(); }, [pathname, closeMobile]);
 
   const visibleItems = NAV_ITEMS.filter((item) => {
     if (!item.roles || item.roles.length === 0) return true;
@@ -74,65 +76,54 @@ export function AppSidebar() {
   });
 
   function renderNavLink(item: { label: string; href: string; icon: React.ElementType }, indent = false) {
-    const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href) && item.href !== '/leads');
-    // Special case: /leads exact match only (not /leads/pool/new)
+    const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href) && item.href !== '/leads');
     const isExactLeads = item.href === '/leads' && pathname === '/leads';
     const active = item.href === '/leads' ? isExactLeads : isActive;
+    const showLabel = mobileOpen || !collapsed;
 
     return (
       <Link
         key={item.href}
         href={item.href}
         className={cn(
-          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+          'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
           active
-            ? 'bg-sky-50 text-sky-600'
-            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-          collapsed && 'justify-center px-2',
-          indent && !collapsed && 'pl-10',
+            ? 'bg-sky-50 text-sky-600 shadow-[0_2px_8px_-2px_rgba(14,165,233,0.15)]'
+            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+          !mobileOpen && collapsed && 'justify-center px-2',
+          indent && showLabel && 'pl-10',
         )}
-        title={collapsed ? item.label : undefined}
+        title={!showLabel ? item.label : undefined}
       >
-        <item.icon size={indent ? 16 : 20} />
-        {!collapsed && <span>{item.label}</span>}
+        {active && (
+          <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-gradient-to-b from-sky-500 to-cyan-500" />
+        )}
+        <item.icon size={indent ? 16 : 20} className={cn(active && 'text-sky-600')} />
+        {showLabel && <span>{item.label}</span>}
       </Link>
     );
   }
 
-  return (
-    <aside className={cn(
-      'flex flex-col border-r border-gray-200 bg-white transition-all duration-200',
-      collapsed ? 'w-16' : 'w-60',
-    )}>
-      {/* Logo */}
-      <div className="flex h-14 items-center justify-between border-b border-gray-200 px-4">
-        {!collapsed && <span className="text-lg font-bold text-sky-500">CRM V4</span>}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-        >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-2">
+  /** Shared nav content rendered inside both desktop aside and mobile overlay */
+  const navContent = (
+    <>
+      <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
         {visibleItems.map((item) => {
           const role = user?.role || '';
           const roleChildren = item.childrenByRole?.[role];
           const showChildren = roleChildren && item.childRoles?.includes(role);
+          const showLabel = mobileOpen || !collapsed;
 
-          // Expandable group (only for matching roles, non-collapsed)
-          if (showChildren && !collapsed) {
+          if (showChildren && showLabel) {
             return (
               <div key={item.href}>
                 <button
                   onClick={() => setLeadsOpen(!leadsOpen)}
                   className={cn(
-                    'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
                     isLeadsActive
                       ? 'text-sky-600'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
                   )}
                 >
                   <item.icon size={20} />
@@ -148,10 +139,51 @@ export function AppSidebar() {
             );
           }
 
-          // Regular nav item (flat link)
           return renderNavLink(item);
         })}
       </nav>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar — hidden on mobile */}
+      <aside className={cn(
+        'hidden lg:flex flex-col border-r border-slate-200/80 bg-white transition-all duration-200',
+        collapsed ? 'w-16' : 'w-60',
+      )}>
+        <div className="flex h-14 items-center justify-between border-b border-slate-200/80 px-4">
+          {!collapsed && <span className="text-lg font-extrabold text-gradient">VeloCRM</span>}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+          >
+            {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
+        </div>
+        {navContent}
+      </aside>
+
+      {/* Mobile sidebar overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={closeMobile} />
+          {/* Drawer */}
+          <aside className="absolute left-0 top-0 flex h-full w-72 flex-col bg-white shadow-xl animate-in slide-in-from-left duration-200">
+            <div className="flex h-14 items-center justify-between border-b border-slate-200/80 px-4">
+              <span className="text-lg font-extrabold text-gradient">VeloCRM</span>
+              <button
+                onClick={closeMobile}
+                className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            {navContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

@@ -25,8 +25,8 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Quản lý nhân viên</h1>
-          <p className="text-sm text-gray-500">Tạo, sửa, phân quyền nhân viên</p>
+          <h1 className="text-2xl font-bold text-slate-900">Quản lý nhân viên</h1>
+          <p className="text-sm text-slate-500">Tạo, sửa, phân quyền nhân viên</p>
         </div>
         <Link href="/users/new">
           <Button>

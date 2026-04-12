@@ -12,16 +12,20 @@ function isTokenExpired(token: string): boolean {
   }
 }
 
+/** Public routes that don't require authentication. */
+const PUBLIC_PATHS = ['/', '/login'];
+
 /** Auth middleware: redirect unauthenticated users to login. */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('access_token')?.value;
   const hasValidToken = token && !isTokenExpired(token);
 
-  // Allow login page — only redirect if token is actually valid
-  if (pathname.startsWith('/login')) {
-    if (hasValidToken) {
-      return NextResponse.redirect(new URL('/', request.url));
+  // Allow public pages
+  if (PUBLIC_PATHS.includes(pathname)) {
+    // Redirect authenticated users from /login to dashboard
+    if (pathname === '/login' && hasValidToken) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     return NextResponse.next();
   }

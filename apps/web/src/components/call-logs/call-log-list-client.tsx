@@ -37,7 +37,7 @@ const TAG_COLORS = [
   'bg-amber-100 text-amber-700',
   'bg-purple-100 text-purple-700',
   'bg-pink-100 text-pink-700',
-  'bg-indigo-100 text-indigo-700',
+  'bg-sky-100 text-sky-700',
   'bg-orange-100 text-orange-700',
   'bg-teal-100 text-teal-700',
 ];
@@ -72,8 +72,8 @@ function CollapsibleSection({ title, titleClass, children }: { title: string; ti
   return (
     <div>
       <button onClick={() => setOpen(!open)} className="flex items-center gap-1 text-xs font-semibold uppercase mb-1 hover:opacity-80">
-        <span className={titleClass || 'text-gray-500'}>{title}</span>
-        {open ? <ChevronUp className="h-3 w-3 text-gray-400" /> : <ChevronDown className="h-3 w-3 text-gray-400" />}
+        <span className={titleClass || 'text-slate-500'}>{title}</span>
+        {open ? <ChevronUp className="h-3 w-3 text-slate-400" /> : <ChevronDown className="h-3 w-3 text-slate-400" />}
       </button>
       {open && children}
     </div>
@@ -128,20 +128,20 @@ export function CallLogListClient({ callLogs: initialLogs }: { callLogs: RawCall
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Cuộc gọi</h1>
-      <p className="text-sm text-gray-500 mb-4">Lịch sử cuộc gọi — bấm để xem chi tiết + phân tích AI</p>
+      <h1 className="text-2xl font-bold text-slate-900">Cuộc gọi</h1>
+      <p className="text-sm text-slate-500 mb-4">Lịch sử cuộc gọi — bấm để xem chi tiết + phân tích AI</p>
 
       {/* Date filter */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-40" />
-        <span className="text-gray-400">→</span>
+        <span className="text-slate-400">→</span>
         <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-40" />
         <Button size="sm" variant="outline" onClick={fetchFiltered} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4 mr-1" />}
           Lọc
         </Button>
         {hasFilter && (
-          <Button size="sm" variant="ghost" onClick={clearFilter} className="text-gray-400">
+          <Button size="sm" variant="ghost" onClick={clearFilter} className="text-slate-400">
             <X className="h-4 w-4 mr-1" />Xóa lọc
           </Button>
         )}
@@ -167,7 +167,7 @@ export function CallLogListClient({ callLogs: initialLogs }: { callLogs: RawCall
 
       {/* Call list */}
       {callLogs.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có cuộc gọi nào</div>
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">Không có cuộc gọi nào</div>
       ) : (
         <div className="space-y-1.5">
           {callLogs.map((c) => {
@@ -186,26 +186,26 @@ export function CallLogListClient({ callLogs: initialLogs }: { callLogs: RawCall
                   onClick={() => setExpandedId(isExpanded ? null : id)}
                   className={cn(
                     'rounded-lg border bg-white px-4 py-3 cursor-pointer transition-all',
-                    isExpanded ? 'border-sky-300 bg-sky-50/50' : 'border-gray-200 hover:border-gray-300',
+                    isExpanded ? 'border-sky-300 bg-sky-50/50' : 'border-slate-200 hover:border-slate-300',
                   )}
                 >
                   <div className="flex items-center gap-3">
                     <Icon className={cn('h-5 w-5 shrink-0', config.color)} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-900">{c.phoneNumber}</span>
+                        <span className="font-medium text-slate-900">{c.phoneNumber}</span>
                         <span className={cn('text-xs', config.color)}>{config.label}</span>
                         {hasContent && <span title="Có nội dung"><FileText className="h-3 w-3 text-amber-500" /></span>}
                         {analysis && <span title="Đã phân tích AI"><Sparkles className="h-3 w-3 text-purple-500" /></span>}
                       </div>
-                      <div className="text-xs text-gray-400 mt-0.5">{formatDateTime(c.callTime)}</div>
+                      <div className="text-xs text-slate-400 mt-0.5">{formatDateTime(c.callTime)}</div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0 text-sm">
-                      <span className="text-gray-500 flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{formatDuration(c.duration)}</span>
+                      <span className="text-slate-500 flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{formatDuration(c.duration)}</span>
                       {isMatched ? (
                         <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 flex items-center gap-1"><Link2 className="h-3 w-3" />Đã ghép</span>
                       ) : (
-                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">Chưa ghép</span>
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">Chưa ghép</span>
                       )}
                     </div>
                   </div>
@@ -224,20 +224,20 @@ export function CallLogListClient({ callLogs: initialLogs }: { callLogs: RawCall
 
                 {/* Expanded detail */}
                 {isExpanded && (
-                  <div className="ml-8 mr-2 mt-1 mb-2 rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-3 text-sm">
+                  <div className="ml-8 mr-2 mt-1 mb-2 rounded-lg border border-slate-100 bg-slate-50 p-4 space-y-3 text-sm">
                     {/* Content — collapsible */}
                     <CollapsibleSection title="Nội dung hội thoại">
                       {hasContent ? (
-                        <p className="whitespace-pre-wrap text-gray-700 bg-white rounded-md border border-gray-100 p-3">{c.content}</p>
+                        <p className="whitespace-pre-wrap text-slate-700 bg-white rounded-md border border-slate-100 p-3">{c.content}</p>
                       ) : (
-                        <p className="text-gray-400 italic">Chưa có nội dung</p>
+                        <p className="text-slate-400 italic">Chưa có nội dung</p>
                       )}
                     </CollapsibleSection>
 
                     {/* AI Analysis — collapsible */}
                     {analysis && analysis.detail && (
                       <CollapsibleSection title="Phân tích AI" titleClass="text-purple-600">
-                        <div className="bg-white rounded-md border border-purple-100 p-3 prose prose-sm prose-gray max-w-none text-sm [&_strong]:text-gray-800 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_p]:my-1">
+                        <div className="bg-white rounded-md border border-purple-100 p-3 prose prose-sm prose-gray max-w-none text-sm [&_strong]:text-slate-800 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_p]:my-1">
                           <ReactMarkdown>{analysis.detail}</ReactMarkdown>
                         </div>
                       </CollapsibleSection>
@@ -246,21 +246,21 @@ export function CallLogListClient({ callLogs: initialLogs }: { callLogs: RawCall
                     {/* Match info */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <span className="text-xs text-gray-500">Trạng thái ghép</span>
-                        <p className="font-medium text-gray-700">{isMatched ? 'Đã ghép nối' : 'Chưa ghép nối'}</p>
+                        <span className="text-xs text-slate-500">Trạng thái ghép</span>
+                        <p className="font-medium text-slate-700">{isMatched ? 'Đã ghép nối' : 'Chưa ghép nối'}</p>
                       </div>
                       {c.matchedEntityType && (
                         <div>
-                          <span className="text-xs text-gray-500">Ghép với</span>
-                          <p className="font-medium text-gray-700 flex items-center gap-1">
+                          <span className="text-xs text-slate-500">Ghép với</span>
+                          <p className="font-medium text-slate-700 flex items-center gap-1">
                             <User className="h-3.5 w-3.5" />
                             {c.matchedEntityType === 'LEAD' ? 'Lead' : 'Khách hàng'} #{c.matchedEntityId}
                           </p>
                         </div>
                       )}
                       <div>
-                        <span className="text-xs text-gray-500">Thời lượng</span>
-                        <p className="font-medium text-gray-700">{formatDuration(c.duration)}</p>
+                        <span className="text-xs text-slate-500">Thời lượng</span>
+                        <p className="font-medium text-slate-700">{formatDuration(c.duration)}</p>
                       </div>
                     </div>
                   </div>

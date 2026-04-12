@@ -19,18 +19,18 @@ export default async function DistributionSettingsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Phân phối Leads</h1>
-        <p className="text-sm text-gray-500">Cấu hình phân phối tự động (AI) và thủ công (template round-robin)</p>
+        <h1 className="text-2xl font-bold text-slate-900">Phân phối Leads</h1>
+        <p className="text-sm text-slate-500">Cấu hình phân phối tự động (AI) và thủ công (template round-robin)</p>
       </div>
 
       {/* AI Distribution */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Phân phối AI tự động</h2>
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">Phân phối AI tự động</h2>
         <DistributionAiWeightConfigClient departments={departments} />
       </div>
 
       {/* Manual Assignment Templates */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
         <AssignmentTemplateCrudWithApply users={users} departments={departments} />
       </div>
     </div>

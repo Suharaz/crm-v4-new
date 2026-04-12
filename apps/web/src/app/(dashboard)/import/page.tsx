@@ -12,8 +12,8 @@ export default async function ImportPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Nhập dữ liệu</h1>
-        <p className="text-sm text-gray-500">Import leads và khách hàng từ file CSV</p>
+        <h1 className="text-2xl font-bold text-slate-900">Nhập dữ liệu</h1>
+        <p className="text-sm text-slate-500">Import leads và khách hàng từ file CSV</p>
       </div>
       <CsvImportPageClient initialHistory={history as unknown as Parameters<typeof CsvImportPageClient>[0]['initialHistory']} />
     </div>

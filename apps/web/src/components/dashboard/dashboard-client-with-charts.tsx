@@ -53,7 +53,7 @@ function getDateRange(key: RangeKey): { from: string; to: string } {
 
 // ── Design tokens from design-guidelines.md ───────────────────────────────
 const COLORS = {
-  primary: '#0ea5e9', primaryLight: '#e0f2fe',
+  primary: '#0ea5e9', primaryLight: '#e0e7ff',
   success: '#10b981', successLight: '#d1fae5',
   warning: '#f59e0b', warningLight: '#fef3c7',
   danger: '#ef4444', dangerLight: '#fee2e2',
@@ -61,10 +61,11 @@ const COLORS = {
   indigo: '#6366f1', indigoLight: '#e0e7ff',
   teal: '#14b8a6', tealLight: '#ccfbf1',
   orange: '#f97316',
+  violet: '#06b6d4',
 };
 
 const FUNNEL_COLORS: Record<string, string> = {
-  POOL: COLORS.primary, ZOOM: COLORS.orange, ASSIGNED: COLORS.indigo, IN_PROGRESS: COLORS.warning,
+  POOL: COLORS.primary, ZOOM: COLORS.orange, ASSIGNED: COLORS.teal, IN_PROGRESS: COLORS.warning,
   CONVERTED: COLORS.success, LOST: COLORS.danger, FLOATING: COLORS.purple,
 };
 const FUNNEL_LABELS: Record<string, string> = {
@@ -87,8 +88,8 @@ function ChartTooltip({ active, payload, label, valueFormatter }: {
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-gray-200 bg-white/95 backdrop-blur-sm px-3 py-2 shadow-lg">
-      <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
+    <div className="rounded-lg border border-slate-200 bg-white/95 backdrop-blur-sm px-3 py-2 shadow-[0_4px_20px_-2px_rgba(14,165,233,0.12)]">
+      <p className="text-xs font-medium text-slate-500 mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.name} className="text-sm font-semibold" style={{ color: p.color }}>
           {p.name}: {valueFormatter ? valueFormatter(p.value) : fmtNum(p.value)}
@@ -103,11 +104,11 @@ function KpiCard({ title, value, subtitle, accentColor, bgColor }: {
   title: string; value: string; subtitle: string; accentColor: string; bgColor: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
+    <div className="card-hover relative overflow-hidden rounded-xl border border-slate-100 bg-white p-4 shadow-[0_4px_20px_-2px_rgba(14,165,233,0.08)]">
       <div className="absolute -right-3 -top-3 h-16 w-16 rounded-full opacity-10" style={{ backgroundColor: accentColor }} />
-      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{title}</p>
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{title}</p>
       <p className="mt-1.5 text-2xl font-bold" style={{ color: accentColor }}>{value}</p>
-      <p className="mt-0.5 text-[11px] text-gray-400">{subtitle}</p>
+      <p className="mt-0.5 text-[11px] text-slate-400">{subtitle}</p>
       <div className="absolute bottom-0 left-0 h-0.5 w-full" style={{ background: `linear-gradient(to right, ${accentColor}, ${bgColor})` }} />
     </div>
   );
@@ -116,8 +117,8 @@ function KpiCard({ title, value, subtitle, accentColor, bgColor }: {
 // ── Chart Card wrapper ────────────────────────────────────────────────────
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h3 className="mb-4 text-sm font-semibold text-gray-700">{title}</h3>
+    <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(14,165,233,0.08)]">
+      <h3 className="mb-4 text-sm font-semibold text-slate-700">{title}</h3>
       {children}
     </div>
   );
@@ -182,14 +183,14 @@ export function DashboardClientWithCharts() {
       {/* Header + Time Range */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Trang chủ</h1>
-          <p className="text-sm text-gray-500">{isAdmin ? 'Tổng quan hệ thống CRM' : 'Thống kê cá nhân'}</p>
+          <h1 className="text-2xl font-bold text-slate-900">Trang chủ</h1>
+          <p className="text-sm text-slate-500">{isAdmin ? 'Tổng quan hệ thống VeloCRM' : 'Thống kê cá nhân'}</p>
         </div>
-        <div className="flex rounded-xl border border-gray-200 bg-white p-1 shadow-sm">
+        <div className="flex rounded-xl border border-slate-200 bg-white p-1 shadow-[0_2px_10px_-2px_rgba(14,165,233,0.08)]">
           {(Object.keys(RANGE_LABELS) as RangeKey[]).map(key => (
             <button key={key} onClick={() => setRange(key)}
-              className={`rounded-lg px-3.5 py-1.5 text-xs font-medium transition-all ${
-                range === key ? 'bg-sky-500 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 ${
+                range === key ? 'bg-gradient-to-r from-sky-600 to-cyan-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
               }`}
             >{RANGE_LABELS[key]}</button>
           ))}
@@ -215,7 +216,7 @@ export function DashboardClientWithCharts() {
         {/* Revenue Area Chart */}
         <ChartCard title="Doanh thu theo ngày">
           {revenue.length === 0 ? (
-            <p className="py-12 text-center text-sm text-gray-400">{loading ? 'Đang tải...' : 'Chưa có dữ liệu trong kỳ'}</p>
+            <p className="py-12 text-center text-sm text-slate-400">{loading ? 'Đang tải...' : 'Chưa có dữ liệu trong kỳ'}</p>
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <AreaChart data={revenue}>
@@ -239,7 +240,7 @@ export function DashboardClientWithCharts() {
         {/* Lead Funnel Donut */}
         <ChartCard title="Phân bổ leads theo trạng thái">
           {activeFunnel.length === 0 ? (
-            <p className="py-12 text-center text-sm text-gray-400">{loading ? 'Đang tải...' : 'Chưa có dữ liệu'}</p>
+            <p className="py-12 text-center text-sm text-slate-400">{loading ? 'Đang tải...' : 'Chưa có dữ liệu'}</p>
           ) : (
             <div className="flex items-center gap-6">
               <div className="relative">
@@ -254,8 +255,8 @@ export function DashboardClientWithCharts() {
                 </ResponsiveContainer>
                 {/* Center total */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-2xl font-bold text-gray-900">{fmtNum(totalFunnel)}</span>
-                  <span className="text-[10px] text-gray-400">Tổng leads</span>
+                  <span className="text-2xl font-bold text-slate-900">{fmtNum(totalFunnel)}</span>
+                  <span className="text-[10px] text-slate-400">Tổng leads</span>
                 </div>
               </div>
               <div className="flex-1 space-y-2">
@@ -264,9 +265,9 @@ export function DashboardClientWithCharts() {
                   return (
                     <div key={f.status} className="flex items-center gap-2.5 text-sm">
                       <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: FUNNEL_COLORS[f.status] }} />
-                      <span className="flex-1 text-gray-600">{FUNNEL_LABELS[f.status] || f.status}</span>
-                      <span className="font-semibold text-gray-900 tabular-nums">{fmtNum(f.count)}</span>
-                      <span className="text-xs text-gray-400 w-8 text-right tabular-nums">{pct}%</span>
+                      <span className="flex-1 text-slate-600">{FUNNEL_LABELS[f.status] || f.status}</span>
+                      <span className="font-semibold text-slate-900 tabular-nums">{fmtNum(f.count)}</span>
+                      <span className="text-xs text-slate-400 w-8 text-right tabular-nums">{pct}%</span>
                     </div>
                   );
                 })}
@@ -287,10 +288,10 @@ export function DashboardClientWithCharts() {
               return (
                 <div key={a.bucket} className="text-center">
                   <span className="text-3xl font-bold tabular-nums" style={{ color }}>{a.count}</span>
-                  <div className="mt-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                  <div className="mt-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
                     <div className="h-full rounded-full" style={{ backgroundColor: color, width: '100%' }} />
                   </div>
-                  <span className="text-xs text-gray-500 mt-1 block">{a.bucket}</span>
+                  <span className="text-xs text-slate-500 mt-1 block">{a.bucket}</span>
                 </div>
               );
             })}
@@ -335,10 +336,10 @@ export function DashboardClientWithCharts() {
                 {sourceData.map((s) => (
                   <div key={s.source} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-gray-700">{s.source}</span>
-                      <span className="text-xs text-gray-500">{s.converted}/{s.total} — <span className="font-bold" style={{ color: s.rate >= 30 ? COLORS.success : s.rate >= 10 ? COLORS.warning : COLORS.danger }}>{s.rate}%</span></span>
+                      <span className="font-medium text-slate-700">{s.source}</span>
+                      <span className="text-xs text-slate-500">{s.converted}/{s.total} — <span className="font-bold" style={{ color: s.rate >= 30 ? COLORS.success : s.rate >= 10 ? COLORS.warning : COLORS.danger }}>{s.rate}%</span></span>
                     </div>
-                    <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-2.5 rounded-full bg-slate-100 overflow-hidden">
                       <div className="h-full rounded-full" style={{ width: `${s.rate}%`, background: s.rate >= 30 ? COLORS.success : s.rate >= 10 ? COLORS.warning : COLORS.danger }} />
                     </div>
                   </div>
@@ -357,19 +358,19 @@ export function DashboardClientWithCharts() {
                   return (
                     <div key={p.userId} className="flex items-center gap-3">
                       <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold shrink-0 ${
-                        i === 0 ? 'bg-amber-400 text-white' : i === 1 ? 'bg-gray-300 text-white' : i === 2 ? 'bg-orange-300 text-white' : 'bg-gray-100 text-gray-500'
+                        i === 0 ? 'bg-amber-400 text-white' : i === 1 ? 'bg-slate-300 text-white' : i === 2 ? 'bg-orange-300 text-white' : 'bg-slate-100 text-slate-500'
                       }`}>{i + 1}</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-700 truncate">{p.name}</span>
-                          <span className="text-xs text-gray-500 ml-2 shrink-0">{p.converted} convert</span>
+                          <span className="text-sm font-medium text-slate-700 truncate">{p.name}</span>
+                          <span className="text-xs text-slate-500 ml-2 shrink-0">{p.converted} convert</span>
                         </div>
-                        <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                        <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
                           <div className="h-full rounded-full transition-all duration-500"
                             style={{ width: `${barWidth}%`, background: `linear-gradient(to right, ${COLORS.primary}, ${COLORS.purple})` }} />
                         </div>
                       </div>
-                      <span className="text-sm font-bold text-purple-600 tabular-nums shrink-0 w-24 text-right">{fmtVND(p.revenue)}</span>
+                      <span className="text-sm font-bold text-cyan-600 tabular-nums shrink-0 w-24 text-right">{fmtVND(p.revenue)}</span>
                     </div>
                   );
                 })}
@@ -392,14 +393,14 @@ export function DashboardClientWithCharts() {
                   return (
                     <div key={d.deptId} className="space-y-1">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium text-gray-700">{d.name}</span>
-                        <div className="flex gap-3 text-xs text-gray-500">
+                        <span className="font-medium text-slate-700">{d.name}</span>
+                        <div className="flex gap-3 text-xs text-slate-500">
                           <span>{d.leads} leads</span>
                           <span className="text-emerald-600">{d.converted} convert</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden">
+                        <div className="flex-1 h-3 rounded-full bg-slate-100 overflow-hidden">
                           <div className="h-full rounded-full transition-all duration-500"
                             style={{ width: `${barW}%`, background: `linear-gradient(to right, ${COLORS.primary}, ${COLORS.teal})` }} />
                         </div>
@@ -423,20 +424,20 @@ export function DashboardClientWithCharts() {
                     <div key={t.teamId} className="space-y-1">
                       <div className="flex items-center justify-between text-sm">
                         <div>
-                          <span className="font-medium text-gray-700">{t.name}</span>
-                          <span className="ml-1.5 text-xs text-gray-400">{t.dept} · {t.members} NV</span>
+                          <span className="font-medium text-slate-700">{t.name}</span>
+                          <span className="ml-1.5 text-xs text-slate-400">{t.dept} · {t.members} NV</span>
                         </div>
-                        <div className="flex gap-3 text-xs text-gray-500">
+                        <div className="flex gap-3 text-xs text-slate-500">
                           <span>{t.leads} leads</span>
                           <span className="text-emerald-600">{t.converted} convert</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden">
+                        <div className="flex-1 h-3 rounded-full bg-slate-100 overflow-hidden">
                           <div className="h-full rounded-full transition-all duration-500"
                             style={{ width: `${barW}%`, background: `linear-gradient(to right, ${COLORS.indigo}, ${COLORS.purple})` }} />
                         </div>
-                        <span className="text-sm font-bold text-indigo-600 tabular-nums w-28 text-right">{fmtVND(t.revenue)}</span>
+                        <span className="text-sm font-bold text-sky-600 tabular-nums w-28 text-right">{fmtVND(t.revenue)}</span>
                       </div>
                     </div>
                   );

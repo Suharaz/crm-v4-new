@@ -23,8 +23,8 @@ export function LabelSettings({ data, canEdit }: LabelSettingsProps) {
       renderItem={(item) => (
         <div className="flex items-center gap-2">
           <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: item.color as string | undefined }} />
-          <span className="text-sm text-gray-700">{item.name}</span>
-          {Boolean(item.category) && <span className="text-xs text-gray-400">{String(item.category)}</span>}
+          <span className="text-sm text-slate-700">{item.name}</span>
+          {Boolean(item.category) && <span className="text-xs text-slate-400">{String(item.category)}</span>}
         </div>
       )}
     />

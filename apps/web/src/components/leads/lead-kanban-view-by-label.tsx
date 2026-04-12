@@ -156,11 +156,11 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
     <div className="space-y-3">
       {/* Config toolbar */}
       <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-400">{allColumns.length} cột · {leads.length} leads</span>
+        <span className="text-xs text-slate-400">{allColumns.length} cột · {leads.length} leads</span>
         <button
           onClick={() => setConfigOpen(!configOpen)}
           className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-            configOpen ? 'bg-sky-100 text-sky-700' : 'text-gray-500 hover:bg-gray-100'
+            configOpen ? 'bg-sky-100 text-sky-700' : 'text-slate-500 hover:bg-slate-100'
           }`}
         >
           <Settings className="h-3.5 w-3.5" />Tuỳ chỉnh cột
@@ -169,10 +169,10 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
 
       {/* Config panel */}
       {configOpen && (
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold text-gray-700">Chọn nhãn hiển thị (tối đa {MAX_SELECTABLE_LABELS}, +1 cột Khác)</h4>
-            <button onClick={resetConfig} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600">
+            <h4 className="text-sm font-semibold text-slate-700">Chọn nhãn hiển thị (tối đa {MAX_SELECTABLE_LABELS}, +1 cột Khác)</h4>
+            <button onClick={resetConfig} className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600">
               <RotateCcw className="h-3 w-3" />Mặc định
             </button>
           </div>
@@ -180,21 +180,21 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
           {/* Selected labels with reorder */}
           {currentSelectedIds.length > 0 && (
             <div className="space-y-1 mb-3">
-              <p className="text-[10px] font-medium text-gray-400 uppercase">Đang hiển thị</p>
+              <p className="text-[10px] font-medium text-slate-400 uppercase">Đang hiển thị</p>
               {currentSelectedIds.map((id, idx) => {
                 const label = labelMap.get(id);
                 if (!label) return null;
                 return (
-                  <div key={id} className="flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-1.5">
+                  <div key={id} className="flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-1.5">
                     <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: label.color }} />
-                    <span className="text-sm text-gray-700 flex-1">{label.name}</span>
-                    <span className="text-[10px] text-gray-400">{labelCounts.get(id) || 0}</span>
+                    <span className="text-sm text-slate-700 flex-1">{label.name}</span>
+                    <span className="text-[10px] text-slate-400">{labelCounts.get(id) || 0}</span>
                     <button onClick={() => moveLabel(id, -1)} disabled={idx === 0}
-                      className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30">
+                      className="p-0.5 text-slate-400 hover:text-slate-600 disabled:opacity-30">
                       <ChevronUp className="h-3.5 w-3.5" />
                     </button>
                     <button onClick={() => moveLabel(id, 1)} disabled={idx === currentSelectedIds.length - 1}
-                      className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30">
+                      className="p-0.5 text-slate-400 hover:text-slate-600 disabled:opacity-30">
                       <ChevronDown className="h-3.5 w-3.5" />
                     </button>
                     <button onClick={() => toggleLabel(id)} className="p-0.5 text-red-400 hover:text-red-600 text-xs font-bold">×</button>
@@ -207,16 +207,16 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
           {/* Available labels to add */}
           {availableLabels.filter(l => !currentSelectedIds.includes(l.id)).length > 0 && (
             <div className="space-y-1">
-              <p className="text-[10px] font-medium text-gray-400 uppercase">Có thể thêm</p>
+              <p className="text-[10px] font-medium text-slate-400 uppercase">Có thể thêm</p>
               <div className="flex flex-wrap gap-1.5">
                 {availableLabels.filter(l => !currentSelectedIds.includes(l.id)).map(label => (
                   <button key={label.id} onClick={() => toggleLabel(label.id)}
                     disabled={currentSelectedIds.length >= MAX_SELECTABLE_LABELS}
-                    className="flex items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                    className="flex items-center gap-1.5 rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-40"
                   >
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: label.color }} />
                     {label.name}
-                    <span className="text-gray-400">({labelCounts.get(label.id) || 0})</span>
+                    <span className="text-slate-400">({labelCounts.get(label.id) || 0})</span>
                   </button>
                 ))}
               </div>
@@ -242,27 +242,27 @@ function KanbanColumn({ col, onLeadClick }: { col: { id: string; name: string; c
   const remaining = col.leads.length - INITIAL_CARDS_PER_COLUMN;
 
   return (
-    <div className="flex w-72 flex-shrink-0 flex-col rounded-xl border border-gray-200 bg-gray-50/50">
-      <div className="flex items-center gap-2 border-b border-gray-200 px-3 py-2.5">
+    <div className="flex w-72 flex-shrink-0 flex-col rounded-xl border border-slate-200 bg-slate-50/50">
+      <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: col.color }} />
-        <span className="text-sm font-semibold text-gray-700">{col.name}</span>
-        <span className="ml-auto rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">{col.leads.length}</span>
+        <span className="text-sm font-semibold text-slate-700">{col.name}</span>
+        <span className="ml-auto rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600">{col.leads.length}</span>
       </div>
 
       <div className="flex-1 space-y-2 overflow-y-auto p-2" style={{ maxHeight: '70vh' }}>
         {col.leads.length === 0 ? (
-          <p className="py-4 text-center text-xs text-gray-400">Trống</p>
+          <p className="py-4 text-center text-xs text-slate-400">Trống</p>
         ) : visibleLeads.map(lead => (
           <div key={lead.id} onClick={() => onLeadClick?.(lead.id)}
-            className="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-all hover:border-sky-200 hover:shadow">
+            className="cursor-pointer rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-sky-200 hover:shadow">
             <div className="flex items-start justify-between">
-              <span className="text-sm font-medium text-gray-900">{lead.name}</span>
+              <span className="text-sm font-medium text-slate-900">{lead.name}</span>
               <StatusBadge status={lead.status} />
             </div>
-            <p className="mt-1 text-xs text-gray-500">{lead.phone}
+            <p className="mt-1 text-xs text-slate-500">{lead.phone}
               {lead.customerId && <span className="ml-1 rounded-full bg-blue-100 px-1 text-[9px] text-blue-700">KH</span>}
             </p>
-            <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
+            <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
 
               <span>{formatDate(lead.createdAt)}</span>
             </div>
@@ -272,7 +272,7 @@ function KanbanColumn({ col, onLeadClick }: { col: { id: string; name: string; c
                   <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: ll.label.color }}>{ll.label.name}</span>
                 ))}
                 {lead.labels.length > 2 && (
-                  <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-[9px] font-medium text-gray-500">+{lead.labels.length - 2}</span>
+                  <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-medium text-slate-500">+{lead.labels.length - 2}</span>
                 )}
               </div>
             )}
@@ -281,7 +281,7 @@ function KanbanColumn({ col, onLeadClick }: { col: { id: string; name: string; c
 
         {remaining > 0 && (
           <button onClick={() => setShowAll(!showAll)}
-            className="w-full rounded-lg border border-dashed border-gray-300 py-2 text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+            className="w-full rounded-lg border border-dashed border-slate-300 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors">
             {showAll ? 'Thu gọn' : `Xem thêm ${remaining} leads`}
           </button>
         )}

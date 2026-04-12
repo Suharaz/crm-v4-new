@@ -46,11 +46,11 @@ export function BankTransactionListClient({ transactions, pendingPayments }: Pro
     <div>
       {/* Filter + stats */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="flex rounded-lg border border-gray-200 bg-white p-0.5">
+        <div className="flex rounded-lg border border-slate-200 bg-white p-0.5">
           {(['all', 'UNMATCHED', 'MATCHED'] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className={cn('rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
-                filter === f ? 'bg-sky-500 text-white' : 'text-gray-600 hover:bg-gray-100')}>
+                filter === f ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-100')}>
               {f === 'all' ? 'Tất cả' : f === 'UNMATCHED' ? `Chưa khớp (${unmatchedCount})` : 'Đã khớp'}
             </button>
           ))}
@@ -59,17 +59,17 @@ export function BankTransactionListClient({ transactions, pendingPayments }: Pro
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có giao dịch nào</div>
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">Không có giao dịch nào</div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
           <table className="w-full text-sm">
-            <thead className="border-b border-gray-200 bg-gray-50">
+            <thead className="border-b border-slate-200 bg-slate-50">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Thời gian</th>
-                <th className="px-4 py-3 text-right font-medium text-gray-500">Số tiền</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Nội dung CK</th>
-                <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Người gửi</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Trạng thái</th>
+                <th className="px-4 py-3 text-left font-medium text-slate-500">Thời gian</th>
+                <th className="px-4 py-3 text-right font-medium text-slate-500">Số tiền</th>
+                <th className="px-4 py-3 text-left font-medium text-slate-500">Nội dung CK</th>
+                <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-slate-500">Người gửi</th>
+                <th className="px-4 py-3 text-left font-medium text-slate-500">Trạng thái</th>
               </tr>
             </thead>
             <tbody>
@@ -98,12 +98,12 @@ function TxRow({ tx, isExpanded, isUnmatched, onToggle, pendingPayments, selecte
 }) {
   return (
     <>
-      <tr className={cn('border-b border-gray-100 hover:bg-gray-50', isUnmatched && 'cursor-pointer', isExpanded && 'bg-sky-50/50')}
+      <tr className={cn('border-b border-slate-100 hover:bg-slate-50', isUnmatched && 'cursor-pointer', isExpanded && 'bg-sky-50/50')}
         onClick={isUnmatched ? onToggle : undefined}>
-        <td className="px-4 py-3 text-gray-600">{formatDate(tx.transactionTime)}</td>
-        <td className="px-4 py-3 text-right font-semibold text-gray-900">{formatVND(Number(tx.amount))}</td>
-        <td className="px-4 py-3 text-gray-700 max-w-xs truncate">{tx.content}</td>
-        <td className="hidden md:table-cell px-4 py-3 text-gray-500">{tx.senderName || '—'}</td>
+        <td className="px-4 py-3 text-slate-600">{formatDate(tx.transactionTime)}</td>
+        <td className="px-4 py-3 text-right font-semibold text-slate-900">{formatVND(Number(tx.amount))}</td>
+        <td className="px-4 py-3 text-slate-700 max-w-xs truncate">{tx.content}</td>
+        <td className="hidden md:table-cell px-4 py-3 text-slate-500">{tx.senderName || '—'}</td>
         <td className="px-4 py-3">
           <div className="flex items-center gap-1.5">
             {tx.matchStatus === 'MATCHED' ? (
@@ -111,7 +111,7 @@ function TxRow({ tx, isExpanded, isUnmatched, onToggle, pendingPayments, selecte
             ) : (
               <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700"><Link2 className="h-3 w-3" />Chưa khớp</span>
             )}
-            {isUnmatched && <ChevronDown size={14} className={cn('text-gray-400 transition-transform', isExpanded && 'rotate-180')} />}
+            {isUnmatched && <ChevronDown size={14} className={cn('text-slate-400 transition-transform', isExpanded && 'rotate-180')} />}
           </div>
         </td>
       </tr>
@@ -119,9 +119,9 @@ function TxRow({ tx, isExpanded, isUnmatched, onToggle, pendingPayments, selecte
         <tr className="bg-sky-50/30">
           <td colSpan={5} className="px-6 py-4">
             <div className="space-y-3">
-              <p className="text-sm font-medium text-gray-700">Match thủ công — chọn thanh toán PENDING:</p>
+              <p className="text-sm font-medium text-slate-700">Match thủ công — chọn thanh toán PENDING:</p>
               {pendingPayments.length === 0 ? (
-                <p className="text-sm text-gray-400">Không có thanh toán PENDING nào</p>
+                <p className="text-sm text-slate-400">Không có thanh toán PENDING nào</p>
               ) : (
                 <div className="flex items-end gap-3">
                   <div className="flex-1 max-w-md">

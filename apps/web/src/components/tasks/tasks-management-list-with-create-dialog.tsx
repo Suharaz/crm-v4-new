@@ -53,7 +53,7 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_COLORS: Record<string, string> = {
   PENDING: 'bg-sky-100 text-sky-700',
   COMPLETED: 'bg-green-100 text-green-700',
-  CANCELLED: 'bg-gray-100 text-gray-500',
+  CANCELLED: 'bg-slate-100 text-slate-500',
 };
 
 const PRIORITY_LABEL: Record<string, string> = {
@@ -65,7 +65,7 @@ const PRIORITY_LABEL: Record<string, string> = {
 const PRIORITY_COLORS: Record<string, string> = {
   HIGH: 'bg-red-100 text-red-600',
   MEDIUM: 'bg-yellow-100 text-yellow-600',
-  LOW: 'bg-gray-100 text-gray-500',
+  LOW: 'bg-slate-100 text-slate-500',
 };
 
 const TAB_LABELS: { value: FilterTab; label: string }[] = [
@@ -244,7 +244,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
   return (
     <div>
       {/* Quick-add bar */}
-      <div className="flex items-center gap-2 mb-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+      <div className="flex items-center gap-2 mb-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
         <Input
           ref={quickInputRef}
           className="flex-1 border-0 shadow-none focus-visible:ring-0 text-sm"
@@ -263,7 +263,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors border ${
                 quickPreset === p
                   ? 'bg-sky-500 text-white border-sky-500'
-                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
               }`}
             >
               {labels[i]}
@@ -282,7 +282,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
 
       {/* Filter tabs + advanced create */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
+        <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
           {TAB_LABELS.map(tab => (
             <button
               key={tab.value}
@@ -290,7 +290,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                 activeTab === tab.value
                   ? 'bg-white text-sky-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               {tab.label}
@@ -310,7 +310,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
           </DialogHeader>
           <div className="space-y-3 mt-2">
             <div>
-              <label className="text-sm font-medium text-gray-700">Tiêu đề *</label>
+              <label className="text-sm font-medium text-slate-700">Tiêu đề *</label>
               <Input
                 className="mt-1"
                 placeholder="Nhập tiêu đề công việc..."
@@ -323,7 +323,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
               {fieldErrors.title && <p className="text-xs text-red-500 mt-1">{fieldErrors.title}</p>}
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Mô tả</label>
+              <label className="text-sm font-medium text-slate-700">Mô tả</label>
               <Input
                 className="mt-1"
                 placeholder="Mô tả chi tiết (tùy chọn)"
@@ -332,7 +332,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Hạn hoàn thành</label>
+              <label className="text-sm font-medium text-slate-700">Hạn hoàn thành</label>
               <Input
                 type="datetime-local"
                 className="mt-1"
@@ -345,7 +345,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
               {fieldErrors.dueDate && <p className="text-xs text-red-500 mt-1">{fieldErrors.dueDate}</p>}
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Độ ưu tiên</label>
+              <label className="text-sm font-medium text-slate-700">Độ ưu tiên</label>
               <Select value={form.priority} onValueChange={v => setForm(f => ({ ...f, priority: v }))}>
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Chọn độ ưu tiên" />
@@ -358,7 +358,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Nhắc nhở</label>
+              <label className="text-sm font-medium text-slate-700">Nhắc nhở</label>
               <Input
                 type="datetime-local"
                 className="mt-1"
@@ -367,7 +367,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Giao cho</label>
+              <label className="text-sm font-medium text-slate-700">Giao cho</label>
               <Select value={form.assignedTo} onValueChange={v => setForm(f => ({ ...f, assignedTo: v }))}>
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Chọn người thực hiện" />
@@ -392,7 +392,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
       {/* Task list */}
       <div className="space-y-2">
         {filtered.length === 0 ? (
-          <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">
+          <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">
             Không có công việc nào
           </div>
         ) : (
@@ -402,14 +402,14 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
             return (
               <div
                 key={task.id}
-                className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm flex items-start justify-between gap-4"
+                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm flex items-start justify-between gap-4"
               >
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   <div className="mt-0.5 shrink-0">
                     {task.status === 'COMPLETED' ? (
                       <CheckCircle2 className="h-5 w-5 text-green-500" />
                     ) : task.status === 'CANCELLED' ? (
-                      <XCircle className="h-5 w-5 text-gray-400" />
+                      <XCircle className="h-5 w-5 text-slate-400" />
                     ) : (
                       <Circle className="h-5 w-5 text-sky-400" />
                     )}
@@ -419,15 +419,15 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
                       type="button"
                       onClick={() => openEdit(task)}
                       className={`font-medium text-left truncate block w-full hover:text-sky-600 transition-colors ${
-                        task.status === 'COMPLETED' ? 'line-through text-gray-400' : 'text-gray-900'
+                        task.status === 'COMPLETED' ? 'line-through text-slate-400' : 'text-slate-900'
                       }`}
                     >
                       {task.title}
                     </button>
                     {task.description && (
-                      <p className="text-sm text-gray-500 truncate">{task.description}</p>
+                      <p className="text-sm text-slate-500 truncate">{task.description}</p>
                     )}
-                    <div className="flex items-center flex-wrap gap-2 mt-1 text-xs text-gray-400">
+                    <div className="flex items-center flex-wrap gap-2 mt-1 text-xs text-slate-400">
                       {task.dueDate && (
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
@@ -487,7 +487,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
                   <button
                     type="button"
                     onClick={() => openEdit(task)}
-                    className="p-1 rounded text-gray-400 hover:text-sky-600 hover:bg-sky-50 transition-colors"
+                    className="p-1 rounded text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors"
                     title="Chỉnh sửa"
                   >
                     <Pencil className="h-3.5 w-3.5" />
@@ -496,7 +496,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
                     trigger={
                       <button
                         type="button"
-                        className="p-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                         title="Xóa"
                       >
                         <Trash2 className="h-3.5 w-3.5" />

@@ -71,7 +71,7 @@ function UploadZone({ label, endpoint, onJobCreated }: UploadZoneProps) {
       onDrop={onDrop}
       onClick={() => !uploading && inputRef.current?.click()}
       className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-colors ${
-        dragging ? 'border-sky-400 bg-sky-50' : 'border-gray-300 bg-white hover:border-sky-300 hover:bg-sky-50/30'
+        dragging ? 'border-sky-400 bg-sky-50' : 'border-slate-300 bg-white hover:border-sky-300 hover:bg-sky-50/30'
       }`}
     >
       <input
@@ -85,14 +85,14 @@ function UploadZone({ label, endpoint, onJobCreated }: UploadZoneProps) {
         {uploading ? (
           <Loader2 className="h-10 w-10 animate-spin text-sky-400" />
         ) : (
-          <Upload className="h-10 w-10 text-gray-300" />
+          <Upload className="h-10 w-10 text-slate-300" />
         )}
         <div>
-          <p className="font-semibold text-gray-700">{label}</p>
-          <p className="mt-1 text-sm text-gray-400">
+          <p className="font-semibold text-slate-700">{label}</p>
+          <p className="mt-1 text-sm text-slate-400">
             {uploading ? 'Đang upload...' : 'Kéo thả hoặc nhấn để chọn file CSV'}
           </p>
-          <p className="mt-2 text-xs text-gray-400">Hỗ trợ: .csv, tối đa 10MB</p>
+          <p className="mt-2 text-xs text-slate-400">Hỗ trợ: .csv, tối đa 10MB</p>
         </div>
       </div>
     </div>
@@ -140,11 +140,11 @@ function JobStatusRow({ job, onUpdate }: { job: ImportJob; onUpdate: (updated: I
   useState(() => { if (polling) poll(); });
 
   return (
-    <tr className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+    <tr className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-gray-400" />
-          <span className="text-sm font-medium text-gray-700">
+          <FileText className="h-4 w-4 text-slate-400" />
+          <span className="text-sm font-medium text-slate-700">
             {job.type === 'leads' ? 'Import Leads' : 'Import Khách hàng'}
           </span>
         </div>
@@ -157,12 +157,12 @@ function JobStatusRow({ job, onUpdate }: { job: ImportJob; onUpdate: (updated: I
           {JOB_STATUS_LABELS[job.status]}
         </span>
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">
+      <td className="px-4 py-3 text-sm text-slate-600">
         {job.total != null ? (
           <span>{job.processed ?? 0}/{job.total} <span className="text-red-500">({job.failed ?? 0} lỗi)</span></span>
         ) : '—'}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-400">{formatDateTime(job.createdAt)}</td>
+      <td className="px-4 py-3 text-sm text-slate-400">{formatDateTime(job.createdAt)}</td>
     </tr>
   );
 }
@@ -203,18 +203,18 @@ export function CsvImportPageClient({ initialHistory }: { initialHistory: Import
   return (
     <div className="space-y-6">
       {/* Template downloads */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Tải file mẫu</h3>
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <h3 className="font-semibold text-slate-900 mb-3">Tải file mẫu</h3>
         <div className="flex gap-3">
           <button
             onClick={() => downloadTemplate('lead')}
-            className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+            className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
           >
             <Download className="h-4 w-4 text-sky-500" />Mẫu import leads
           </button>
           <button
             onClick={() => downloadTemplate('customer')}
-            className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+            className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
           >
             <Download className="h-4 w-4 text-emerald-500" />Mẫu import khách hàng
           </button>
@@ -237,18 +237,18 @@ export function CsvImportPageClient({ initialHistory }: { initialHistory: Import
 
       {/* Import history */}
       <div>
-        <h2 className="mb-3 text-base font-semibold text-gray-800">Lịch sử import</h2>
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+        <h2 className="mb-3 text-base font-semibold text-slate-800">Lịch sử import</h2>
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
           {jobs.length === 0 ? (
-            <div className="p-8 text-center text-gray-400">Chưa có lịch sử import</div>
+            <div className="p-8 text-center text-slate-400">Chưa có lịch sử import</div>
           ) : (
             <table className="w-full text-sm">
-              <thead className="border-b border-gray-200 bg-gray-50">
+              <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Loại</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Trạng thái</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Tiến độ</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Thời gian</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500">Loại</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500">Trạng thái</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500">Tiến độ</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500">Thời gian</th>
                 </tr>
               </thead>
               <tbody>

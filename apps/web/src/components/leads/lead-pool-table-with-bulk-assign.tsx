@@ -179,7 +179,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
   }
 
   if (leads.length === 0) {
-    return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có data</div>;
+    return <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">Không có data</div>;
   }
 
   const isNewPool = poolMode === 'new';
@@ -219,7 +219,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
 
       {/* Auto-refresh indicator */}
       {isNewPool && (
-        <div className="mb-2 flex items-center justify-end gap-2 text-xs text-gray-400">
+        <div className="mb-2 flex items-center justify-end gap-2 text-xs text-slate-400">
           <RefreshCw className="h-3 w-3" />
           <span>Tự động cập nhật{lastRefresh ? ` · ${lastRefresh.toLocaleTimeString('vi-VN')}` : ''}</span>
           <button type="button" onClick={fetchLeads} className="text-sky-500 hover:underline">Làm mới</button>
@@ -227,28 +227,28 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50">
+          <thead className="border-b border-slate-200 bg-slate-50">
             <tr>
               {isManager && (
                 <th className="w-10 px-3 py-3">
                   <input type="checkbox" checked={allSelected} onChange={toggleAll}
-                    className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500" />
+                    className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
                 </th>
               )}
-              <th className="px-4 py-3 text-left font-medium text-gray-500">Họ tên</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-500">SĐT</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-500">Trạng thái</th>
-              <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nguồn</th>
+              <th className="px-4 py-3 text-left font-medium text-slate-500">Họ tên</th>
+              <th className="px-4 py-3 text-left font-medium text-slate-500">SĐT</th>
+              <th className="px-4 py-3 text-left font-medium text-slate-500">Trạng thái</th>
+              <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-slate-500">Nguồn</th>
               {isNewPool && (
                 <>
-                  <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Phân cho</th>
-                  <th className="hidden lg:table-cell px-4 py-3 text-center font-medium text-gray-500">Tương tác</th>
+                  <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-slate-500">Phân cho</th>
+                  <th className="hidden lg:table-cell px-4 py-3 text-center font-medium text-slate-500">Tương tác</th>
                 </>
               )}
-              <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Ngày tạo</th>
-              <th className="px-4 py-3 text-right font-medium text-gray-500">Thao tác</th>
+              <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-slate-500">Ngày tạo</th>
+              <th className="px-4 py-3 text-right font-medium text-slate-500">Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -256,11 +256,11 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
               const isDistributed = lead.status !== 'POOL' && !!lead.assignedAt;
               return (
                 <tr key={lead.id}
-                  className={`border-b border-gray-100 hover:bg-gray-50 last:border-0 ${selected.has(lead.id) ? 'bg-sky-50/50' : ''} ${isDistributed ? 'bg-amber-50/30' : ''}`}>
+                  className={`border-b border-slate-100 hover:bg-slate-50 last:border-0 ${selected.has(lead.id) ? 'bg-sky-50/50' : ''} ${isDistributed ? 'bg-amber-50/30' : ''}`}>
                   {isManager && (
                     <td className="w-10 px-3 py-3">
                       <input type="checkbox" checked={selected.has(lead.id)} onChange={() => toggleOne(lead.id)}
-                        className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500" />
+                        className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
                     </td>
                   )}
                   <td className="px-4 py-3">
@@ -278,20 +278,20 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                         {lead.labels.slice(0, 3).map(ll => (
                           <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: ll.label.color }}>{ll.label.name}</span>
                         ))}
-                        {lead.labels.length > 3 && <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-[9px] text-gray-500">+{lead.labels.length - 3}</span>}
+                        {lead.labels.length > 3 && <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] text-slate-500">+{lead.labels.length - 3}</span>}
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{lead.phone}</td>
+                  <td className="px-4 py-3 text-slate-600">{lead.phone}</td>
                   <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
-                  <td className="hidden md:table-cell px-4 py-3 text-gray-600">{lead.source?.name || '—'}</td>
+                  <td className="hidden md:table-cell px-4 py-3 text-slate-600">{lead.source?.name || '—'}</td>
                   {isNewPool && (
                     <>
-                      <td className="hidden lg:table-cell px-4 py-3 text-gray-600">
+                      <td className="hidden lg:table-cell px-4 py-3 text-slate-600">
                         {isDistributed ? (
                           <div>
-                            <span className="font-medium text-gray-800">{lead.assignedUser?.name}</span>
-                            <span className="ml-1 text-xs text-gray-400">({relativeTime(lead.assignedAt!)})</span>
+                            <span className="font-medium text-slate-800">{lead.assignedUser?.name}</span>
+                            <span className="ml-1 text-xs text-slate-400">({relativeTime(lead.assignedAt!)})</span>
                           </div>
                         ) : '—'}
                       </td>
@@ -308,7 +308,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                       </td>
                     </>
                   )}
-                  <td className="hidden lg:table-cell px-4 py-3 text-gray-400">{formatDate(lead.createdAt)}</td>
+                  <td className="hidden lg:table-cell px-4 py-3 text-slate-400">{formatDate(lead.createdAt)}</td>
                   <td className="px-4 py-3 text-right">
                     {isDistributed ? (
                       <Button size="sm" variant="outline" onClick={() => handleRecallOne(lead.id)}
@@ -371,7 +371,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
               </SelectContent>
             </Select>
             {selectedTemplateId && (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-slate-500">
                 Round-robin: {selectedPool.length} leads chia đều cho{' '}
                 {templates.find(t => t.id === selectedTemplateId)?.members?.map(m => m.user.name).join(', ')}
               </p>

@@ -42,28 +42,28 @@ export function PaymentApprovalClient({ payments: initial }: Props) {
   }
 
   if (payments.length === 0) {
-    return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có thanh toán chờ duyệt</div>;
+    return <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">Không có thanh toán chờ duyệt</div>;
   }
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-gray-500">{payments.length} khoản chờ duyệt</p>
+      <p className="text-sm text-slate-500">{payments.length} khoản chờ duyệt</p>
       {payments.map((p) => {
         const isProcessing = processing === String(p.id);
         return (
-          <div key={p.id} className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4">
+          <div key={p.id} className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4">
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="font-semibold text-lg text-gray-900">{formatVND(Number(p.amount))}</span>
-                <span className="text-xs text-gray-400">#{p.id}</span>
+                <span className="font-semibold text-lg text-slate-900">{formatVND(Number(p.amount))}</span>
+                <span className="text-xs text-slate-400">#{p.id}</span>
                 {p.paymentType?.name && <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">{p.paymentType.name}</span>}
               </div>
-              <div className="mt-1 text-sm text-gray-500 space-x-3">
+              <div className="mt-1 text-sm text-slate-500 space-x-3">
                 <span>Đơn #{p.orderId}</span>
-                {p.transferContent && <span>· Nội dung CK: <span className="font-medium text-gray-700">{p.transferContent}</span></span>}
+                {p.transferContent && <span>· Nội dung CK: <span className="font-medium text-slate-700">{p.transferContent}</span></span>}
               </div>
-              <div className="mt-0.5 text-xs text-gray-400">
+              <div className="mt-0.5 text-xs text-slate-400">
                 Tạo {formatDate(p.createdAt)}
                 {p.matchedTransaction && (
                   <span className="ml-2 text-emerald-600">Auto-match: {formatVND(Number(p.matchedTransaction.amount))} — {p.matchedTransaction.content}</span>
@@ -74,7 +74,7 @@ export function PaymentApprovalClient({ payments: initial }: Props) {
             {/* Actions */}
             <div className="flex gap-2 shrink-0">
               {isProcessing ? (
-                <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
               ) : (
                 <>
                   <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={() => reject(String(p.id))}>

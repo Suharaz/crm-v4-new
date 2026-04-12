@@ -137,7 +137,7 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="relative flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+        className="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
         aria-label="Thông báo"
       >
         <Bell size={20} />
@@ -150,10 +150,10 @@ export function NotificationBell() {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-96 rounded-xl border border-gray-200 bg-white shadow-lg z-50">
+        <div className="absolute right-0 top-full mt-2 w-96 rounded-xl border border-slate-200 bg-white shadow-[0_10px_25px_-5px_rgba(14,165,233,0.1)] z-50">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-            <span className="font-semibold text-gray-800 text-sm">Thông báo</span>
+          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+            <span className="font-semibold text-slate-800 text-sm">Thông báo</span>
             {unreadCount > 0 && (
               <button
                 type="button"
@@ -169,12 +169,12 @@ export function NotificationBell() {
           {/* List */}
           <div className="max-h-[400px] overflow-y-auto">
             {loading ? (
-              <div className="flex items-center justify-center py-10 text-sm text-gray-400">
+              <div className="flex items-center justify-center py-10 text-sm text-slate-400">
                 Đang tải...
               </div>
             ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-2 py-10 text-sm text-gray-400">
-                <Bell size={28} className="text-gray-300" />
+              <div className="flex flex-col items-center justify-center gap-2 py-10 text-sm text-slate-400">
+                <Bell size={28} className="text-slate-300" />
                 Không có thông báo nào
               </div>
             ) : (
@@ -183,21 +183,21 @@ export function NotificationBell() {
                   key={notification.id}
                   type="button"
                   onClick={() => handleNotificationClick(notification)}
-                  className={`flex w-full items-start gap-3 border-b border-gray-100 px-4 py-3 text-left hover:bg-gray-50 transition-colors last:border-b-0 ${
-                    !notification.isRead ? 'bg-sky-50' : ''
+                  className={`flex w-full items-start gap-3 border-b border-slate-100 px-4 py-3 text-left hover:bg-slate-50 transition-colors last:border-b-0 ${
+                    !notification.isRead ? 'bg-sky-50/50' : ''
                   }`}
                 >
                   <div className="mt-0.5">
                     <NotificationIcon type={notification.type} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className={`text-sm leading-snug ${!notification.isRead ? 'font-medium text-gray-800' : 'text-gray-700'}`}>
+                    <p className={`text-sm leading-snug ${!notification.isRead ? 'font-medium text-slate-800' : 'text-slate-700'}`}>
                       {notification.title}
                     </p>
                     {notification.message && (
-                      <p className="mt-0.5 truncate text-xs text-gray-500">{notification.message}</p>
+                      <p className="mt-0.5 truncate text-xs text-slate-500">{notification.message}</p>
                     )}
-                    <p className="mt-1 text-xs text-gray-400">{timeAgo(notification.createdAt)}</p>
+                    <p className="mt-1 text-xs text-slate-400">{timeAgo(notification.createdAt)}</p>
                   </div>
                   {!notification.isRead && (
                     <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-sky-500" />

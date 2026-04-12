@@ -3,16 +3,16 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
-        default: 'bg-sky-500 text-white hover:bg-sky-600 shadow-sm',
+        default: 'bg-gradient-to-r from-sky-600 to-cyan-600 text-white shadow-[0_4px_14px_0_rgba(14,165,233,0.3)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_0_rgba(14,165,233,0.4)]',
         destructive: 'bg-red-500 text-white hover:bg-red-600 shadow-sm',
-        outline: 'border border-gray-200 bg-white hover:bg-gray-50 text-gray-700',
-        secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
-        ghost: 'hover:bg-gray-100 text-gray-700',
-        link: 'text-sky-500 underline-offset-4 hover:underline',
+        outline: 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hover:border-slate-300',
+        secondary: 'bg-slate-100 text-slate-700 hover:bg-slate-200',
+        ghost: 'hover:bg-slate-100 text-slate-700',
+        link: 'text-sky-600 underline-offset-4 hover:underline',
       },
       size: {
         default: 'h-10 px-4 py-2',

@@ -34,17 +34,17 @@ interface KpiCardProps {
   icon: React.ReactNode;
 }
 
-function KpiCard({ title, value, subtitle, iconBg, iconText, valueColor = 'text-gray-900', icon }: KpiCardProps) {
+function KpiCard({ title, value, subtitle, iconBg, iconText, valueColor = 'text-slate-900', icon }: KpiCardProps) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(14,165,233,0.08)]">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-500">{title}</span>
+        <span className="text-sm font-medium text-slate-500">{title}</span>
         <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${iconBg} ${iconText} text-lg`}>
           {icon}
         </span>
       </div>
       <div className={`mt-2 text-2xl font-bold ${valueColor}`}>{value}</div>
-      <div className="mt-1 text-xs text-gray-400">{subtitle}</div>
+      <div className="mt-1 text-xs text-slate-400">{subtitle}</div>
     </div>
   );
 }
@@ -87,8 +87,8 @@ export function DashboardKpiStatsGrid({ stats }: Props) {
       title: 'Khách hàng',
       value: fmt(stats?.totalCustomers),
       subtitle: 'Đang hoạt động',
-      iconBg: 'bg-indigo-100',
-      iconText: 'text-indigo-600',
+      iconBg: 'bg-sky-100',
+      iconText: 'text-sky-600',
       icon: '👥',
     },
     {
@@ -105,7 +105,7 @@ export function DashboardKpiStatsGrid({ stats }: Props) {
       subtitle: 'Chờ xác nhận',
       iconBg: 'bg-orange-100',
       iconText: 'text-orange-600',
-      valueColor: stats?.pendingPayments ? 'text-orange-600' : 'text-gray-900',
+      valueColor: stats?.pendingPayments ? 'text-orange-600' : 'text-slate-900',
       icon: '⏳',
     },
     {
@@ -114,7 +114,7 @@ export function DashboardKpiStatsGrid({ stats }: Props) {
       subtitle: 'Cần xử lý ngay',
       iconBg: 'bg-red-100',
       iconText: 'text-red-600',
-      valueColor: stats?.overdueTask ? 'text-red-600' : 'text-gray-900',
+      valueColor: stats?.overdueTask ? 'text-red-600' : 'text-slate-900',
       icon: '🔔',
     },
   ];

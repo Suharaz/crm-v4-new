@@ -1,1 +1,89 @@
 @import 'tailwindcss';
+
+/* ── VeloCRM Design Tokens — Sky Blue Primary ───────────────────────────── */
+@theme {
+  /* Primary: Sky 50→900 (xanh nước biển nhạt) */
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
+
+  /* Accent: Cyan (gradient endpoint) */
+  --color-accent-400: #22d3ee;
+  --color-accent-500: #06b6d4;
+  --color-accent-600: #0891b2;
+
+  /* Status colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #0ea5e9;
+  --color-floating: #8b5cf6;
+
+  /* Colored shadows — sky-blue tinted */
+  --shadow-soft: 0 4px 20px -2px rgba(14, 165, 233, 0.1);
+  --shadow-hover: 0 10px 25px -5px rgba(14, 165, 233, 0.15), 0 8px 10px -6px rgba(14, 165, 233, 0.1);
+  --shadow-button: 0 4px 14px 0 rgba(14, 165, 233, 0.3);
+  --shadow-glow: 0 0 20px rgba(14, 165, 233, 0.5);
+
+  /* Font family */
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ── Base layer overrides ────────────────────────────────────────────────── */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+
+  :focus-visible {
+    outline: 2px solid #0ea5e9;
+    outline-offset: 2px;
+  }
+}
+
+/* ── Utility classes ─────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Gradient text (sky→cyan) */
+  .text-gradient {
+    background: linear-gradient(135deg, #0284c7, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Primary gradient background */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+  }
+
+  /* Card hover lift */
+  .card-hover {
+    transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  /* Atmospheric blur orbs */
+  .blur-orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(64px);
+    pointer-events: none;
+  }
+}

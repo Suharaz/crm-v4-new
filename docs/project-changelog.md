@@ -4,6 +4,35 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Settings Page Grouped Sidebar Navigation (2026-04-12)
+- **Layout:** Replaced 12 flat tabs with sidebar grouped into 4 categories
+- **Tổ chức:** Phòng ban & Team (combined view), Cấp bậc
+- **Lead & KH:** Nguồn lead, Nhãn
+- **Đơn hàng & TT:** Thanh toán, Lần CK, Hình thức, Nhóm SP, TK Ngân hàng
+- **Hệ thống:** API Keys, AI (admin only)
+- **Mobile:** Native select dropdown for settings navigation
+- **UX:** Collapsible group headers, icon + active highlight per item
+
+### User Profile Page + Password Toggle (2026-04-12)
+- **Profile page:** `/profile` — view account info (email, role, dept, team), edit name/phone, change password
+- **Password toggle:** Eye/EyeOff icon on login + profile password fields
+- **Header link:** Avatar/name in header now links to `/profile`
+- **Password change:** Auto-logout + redirect to login (tokens revoked server-side)
+
+### VeloCRM Rebrand + Design System Overhaul (2026-04-12)
+- **Rebrand:** "CRM V4" → "VeloCRM" across all UI (sidebar logo, login page, metadata, dashboard)
+- **Design System:** Sky Blue (#0ea5e9) primary + Cyan (#06b6d4) accent. Plus Jakarta Sans font. Colored shadows, hover-lift cards, gradient text
+- **Font:** Plus Jakarta Sans (geometric sans-serif, Vietnamese subset) via next/font/google
+- **Design Tokens:** globals.css @theme — sky primary scale, cyan accent, blue-tinted shadows, gradient utilities
+- **shadcn/ui:** All 11 base components updated — gradient buttons (sky→cyan), colored card shadows, sky focus rings
+- **Layout Shell:** Sidebar gradient active indicator, gradient avatar, responsive hamburger menu
+- **Login:** Split-screen design — left branded panel (sky gradient, feature highlights), right clean form. Responsive on mobile
+- **Dashboard:** KPI cards with hover-lift, gradient time range selector (sky→cyan), chart color update
+- **Landing Page:** Root `/` (public) — nav, hero (isometric mockup), features (8 cards), stats (dark sky gradient), CTA, footer
+- **Routing:** `/` = landing (public), `/dashboard` = CRM home (auth). Middleware PUBLIC_PATHS array
+- **Responsive:** Mobile sidebar drawer with hamburger toggle, auto-close on navigate, h-dvh layout, responsive padding
+- **Docs:** Updated design-guidelines.md, CLAUDE.md, changelog
+
 ### Payment Excel Export/Import + Customer AI Rating + Activity Chart (2026-04-11)
 - **Export Excel:** Manager+ can download verified payments as .xlsx with date range filter (23 columns, Vietnamese headers)
 - **Import Excel:** Upload .xlsx with 20 columns (order + payment data). Auto-maps SĐT→customer, product→order. Creates new customers/orders if needed. Returns summary: created/matched/new customers/errors

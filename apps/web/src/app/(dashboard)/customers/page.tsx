@@ -42,8 +42,8 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Khách hàng</h1>
-          <p className="text-sm text-gray-500">Quản lý thông tin khách hàng</p>
+          <h1 className="text-2xl font-bold text-slate-900">Khách hàng</h1>
+          <p className="text-sm text-slate-500">Quản lý thông tin khách hàng</p>
         </div>
         <div className="flex gap-2">
           <CsvExportButton exportPath="/exports/customers" />
@@ -59,7 +59,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
         <CustomerListAdvancedFilterBar departments={departments} users={users} labels={labels} />
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <CustomerTableWithPreview customers={data as unknown as Parameters<typeof CustomerTableWithPreview>[0]['customers']} />
       </div>
       <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} />

@@ -87,7 +87,7 @@ export function PaginationControls({ total, page, limit, totalPages }: Props) {
   return (
     <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
       {/* Left: info + page size */}
-      <div className="flex items-center gap-3 text-sm text-gray-500">
+      <div className="flex items-center gap-3 text-sm text-slate-500">
         <span>Tổng {total.toLocaleString('vi-VN')} kết quả</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs">Hiển thị</span>
@@ -116,7 +116,7 @@ export function PaginationControls({ total, page, limit, totalPages }: Props) {
 
         {getPageNumbers().map((p, i) =>
           p === '...' ? (
-            <span key={`dot-${i}`} className="px-1 text-gray-400">…</span>
+            <span key={`dot-${i}`} className="px-1 text-slate-400">…</span>
           ) : (
             <Button
               key={p}

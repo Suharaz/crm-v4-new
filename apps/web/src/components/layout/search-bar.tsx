@@ -100,7 +100,7 @@ export function SearchBar() {
       <div className="relative flex items-center">
         <Search
           size={16}
-          className={cn('absolute left-3 text-gray-400', loading && 'animate-pulse')}
+          className={cn('absolute left-3 text-slate-400', loading && 'animate-pulse')}
         />
         <input
           type="text"
@@ -108,16 +108,16 @@ export function SearchBar() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => results && setOpen(true)}
           placeholder="Tìm kiếm leads, khách hàng, đơn hàng..."
-          className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-sm text-gray-700 placeholder-gray-400 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-100"
+          className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-700 placeholder-slate-400 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-100"
         />
       </div>
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 w-full min-w-[320px] rounded-xl border border-gray-200 bg-white shadow-lg">
+        <div className="absolute left-0 top-full z-50 mt-1 w-full min-w-[320px] rounded-xl border border-slate-200 bg-white shadow-[0_10px_25px_-5px_rgba(14,165,233,0.1)]">
           <div className="max-h-96 overflow-y-auto py-2">
             {!hasResults ? (
-              <div className="px-4 py-6 text-center text-sm text-gray-400">
+              <div className="px-4 py-6 text-center text-sm text-slate-400">
                 Không tìm thấy kết quả
               </div>
             ) : (
@@ -125,7 +125,7 @@ export function SearchBar() {
                 {/* Leads */}
                 {results.leads.length > 0 && (
                   <section>
-                    <div className="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    <div className="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                       Leads
                     </div>
                     {results.leads.map((lead) => (
@@ -133,15 +133,15 @@ export function SearchBar() {
                         key={lead.id}
                         href={`/leads/${lead.id}`}
                         onClick={() => setOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50"
+                        className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-slate-50"
                       >
                         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-semibold text-sky-600">
                           L
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate font-medium text-gray-700">{lead.name}</div>
+                          <div className="truncate font-medium text-slate-700">{lead.name}</div>
                           {lead.phone && (
-                            <div className="truncate text-xs text-gray-400">{lead.phone}</div>
+                            <div className="truncate text-xs text-slate-400">{lead.phone}</div>
                           )}
                         </div>
                       </Link>
@@ -152,7 +152,7 @@ export function SearchBar() {
                 {/* Khách hàng */}
                 {results.customers.length > 0 && (
                   <section>
-                    <div className="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    <div className="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                       Khách hàng
                     </div>
                     {results.customers.map((customer) => (
@@ -160,15 +160,15 @@ export function SearchBar() {
                         key={customer.id}
                         href={`/customers/${customer.id}`}
                         onClick={() => setOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50"
+                        className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-slate-50"
                       >
                         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-600">
                           K
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate font-medium text-gray-700">{customer.name}</div>
+                          <div className="truncate font-medium text-slate-700">{customer.name}</div>
                           {customer.phone && (
-                            <div className="truncate text-xs text-gray-400">{customer.phone}</div>
+                            <div className="truncate text-xs text-slate-400">{customer.phone}</div>
                           )}
                         </div>
                       </Link>
@@ -179,7 +179,7 @@ export function SearchBar() {
                 {/* Đơn hàng */}
                 {results.orders.length > 0 && (
                   <section>
-                    <div className="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    <div className="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                       Đơn hàng
                     </div>
                     {results.orders.map((order) => (
@@ -187,17 +187,17 @@ export function SearchBar() {
                         key={order.id}
                         href={`/orders/${order.id}`}
                         onClick={() => setOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50"
+                        className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-slate-50"
                       >
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-semibold text-violet-600">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-semibold text-cyan-600">
                           Đ
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate font-medium text-gray-700">
+                          <div className="truncate font-medium text-slate-700">
                             {order.code ?? `#${order.id}`}
                           </div>
                           {order.customerName && (
-                            <div className="truncate text-xs text-gray-400">
+                            <div className="truncate text-xs text-slate-400">
                               {order.customerName}
                             </div>
                           )}

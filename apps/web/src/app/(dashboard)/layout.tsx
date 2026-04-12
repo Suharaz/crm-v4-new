@@ -2,22 +2,25 @@ import { getCurrentUser } from '@/lib/auth';
 import { AuthProvider } from '@/providers/auth-provider';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AppHeader } from '@/components/layout/app-header';
+import { MobileSidebarProvider } from '@/components/layout/mobile-sidebar-provider';
 
-/** Dashboard layout: sidebar + header + main content. */
+/** Dashboard layout: responsive sidebar + header + main content. */
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
 
   return (
     <AuthProvider initialUser={user}>
-      <div className="flex h-screen overflow-hidden">
-        <AppSidebar />
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <AppHeader />
-          <main className="flex-1 overflow-auto bg-gray-50 p-6">
-            {children}
-          </main>
+      <MobileSidebarProvider>
+        <div className="flex h-dvh overflow-hidden">
+          <AppSidebar />
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <AppHeader />
+            <main className="flex-1 overflow-auto bg-slate-50 p-4 sm:p-6">
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
+      </MobileSidebarProvider>
     </AuthProvider>
   );
 }

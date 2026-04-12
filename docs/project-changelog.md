@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### VeloCRM Rebrand + Corporate Trust Design System (2026-04-12)
+- **Rebrand:** "CRM V4" → "VeloCRM" across all UI (sidebar logo, login page, metadata, dashboard)
+- **Design System:** Migrated from Sky Blue (#0ea5e9) to Corporate Trust: Indigo (#4f46e5) + Violet (#7c3aed) dual-tone palette
+- **Font:** Added Plus Jakarta Sans (geometric sans-serif, Vietnamese subset) via next/font/google
+- **Design Tokens:** New globals.css with @theme directive — primary/secondary color scales, colored shadows (indigo-tinted), gradient utilities
+- **shadcn/ui:** All 11 base components updated — gradient buttons, colored card shadows, indigo focus rings
+- **Layout Shell:** Sidebar gradient active indicator, header gradient avatar, search/notification bell with indigo accents
+- **Auth:** Atmospheric blur orbs, gradient logo mark, enhanced login card shadow
+- **Dashboard:** KPI cards with hover-lift, gradient time range selector, chart color migration
+- **Bulk Migration:** 74 files, 808 line changes — zero remaining sky-* or gray-* references
+- **Landing Page:** New /landing route with 6 components: nav (glass-blur), hero (isometric mockup, gradient headline), features (8 cards), stats (dark gradient), CTA, footer
+- **Docs:** Updated design-guidelines.md to reflect Corporate Trust tokens
+
 ### Payment Excel Export/Import + Customer AI Rating + Activity Chart (2026-04-11)
 - **Export Excel:** Manager+ can download verified payments as .xlsx with date range filter (23 columns, Vietnamese headers)
 - **Import Excel:** Upload .xlsx with 20 columns (order + payment data). Auto-maps SĐT→customer, product→order. Creates new customers/orders if needed. Returns summary: created/matched/new customers/errors

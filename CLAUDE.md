@@ -1,12 +1,13 @@
-# CLAUDE.md — CRM V4 Project
+# CLAUDE.md — VeloCRM Project
 
 ## Project Overview
 
-Internal CRM system for sales team efficiency, customer data management, lead pipeline, and performance evaluation. Supports 50-200 users across multiple departments.
+Internal CRM system (VeloCRM) for sales team efficiency, customer data management, lead pipeline, and performance evaluation. Supports 50-200 users across multiple departments.
 
 - **Stack:** NestJS 11 + Next.js 16 + PostgreSQL 16 + Prisma 6 + Turborepo + pnpm
 - **Architecture:** Next.js = pure frontend, NestJS = sole API server, REST only
-- **UI:** shadcn/ui + Tailwind 4, Vietnamese language only
+- **UI:** shadcn/ui + Tailwind 4 + Plus Jakarta Sans, Vietnamese language only
+- **Design:** Corporate Trust (Indigo #4f46e5 + Violet #7c3aed, colored shadows, gradient text)
 - **Auth:** JWT + refresh token rotation, httpOnly cookies
 - **Deploy:** VPS + Docker Compose
 

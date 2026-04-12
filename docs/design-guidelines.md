@@ -1,30 +1,40 @@
-# CRM V4 — Design Guidelines
+# VeloCRM — Design Guidelines (Corporate Trust)
 
 ## 1. Design System
+
+**Style:** Corporate Trust — Trustworthy, Vibrant, Polished, Dimensional, Enterprise-Ready
+**Font:** Plus Jakarta Sans (400/500/600/700/800)
+**Visual DNA:** Colored shadows, gradient text (indigo→violet), atmospheric blur orbs, hover lift cards
 
 ### Color Palette
 
 ```
-PRIMARY (Xanh nước biển nhạt)
-  --primary-50:  #f0f9ff    ← background tint
-  --primary-100: #e0f2fe    ← hover states
-  --primary-200: #bae6fd    ← borders, dividers
-  --primary-300: #7dd3fc    ← secondary buttons
-  --primary-400: #38bdf8    ← icons, links
-  --primary-500: #0ea5e9    ← PRIMARY action buttons
-  --primary-600: #0284c7    ← hover on primary buttons
-  --primary-700: #0369a1    ← active/pressed
+PRIMARY (Indigo)
+  --primary-50:  #eef2ff    ← background tint
+  --primary-100: #e0e7ff    ← hover states
+  --primary-200: #c7d2fe    ← borders, dividers
+  --primary-300: #a5b4fc    ← secondary buttons
+  --primary-400: #818cf8    ← icons, links
+  --primary-500: #6366f1    ← accent
+  --primary-600: #4f46e5    ← PRIMARY action buttons
+  --primary-700: #4338ca    ← hover on primary buttons
+  --primary-800: #3730a3    ← active/pressed
+  --primary-900: #312e81    ← dark sections
 
-NEUTRAL (Trắng + Gray)
+SECONDARY (Violet)
+  --secondary-600: #7c3aed  ← gradient end, accents
+  --secondary-500: #8b5cf6  ← floating status, badges
+
+NEUTRAL (Trắng + Slate)
   --white:       #ffffff
-  --gray-50:     #f8fafc    ← page background
-  --gray-100:    #f1f5f9    ← card background (light)
-  --gray-200:    #e2e8f0    ← borders
-  --gray-300:    #cbd5e1    ← disabled
-  --gray-400:    #94a3b8    ← placeholder text
-  --gray-500:    #64748b    ← secondary text
-  --gray-700:    #334155    ← primary text
-  --gray-900:    #0f172a    ← headings
+  --slate-50:    #f8fafc    ← page background
+  --slate-100:   #f1f5f9    ← card background (light)
+  --slate-200:   #e2e8f0    ← borders
+  --slate-300:   #cbd5e1    ← disabled
+  --slate-400:   #94a3b8    ← placeholder text
+  --slate-500:   #64748b    ← secondary text
+  --slate-700:   #334155    ← primary text
+  --slate-900:   #0f172a    ← headings
 
 STATUS COLORS
   --success:     #10b981    (emerald-500)  ← VERIFIED, CONVERTED, ACTIVE

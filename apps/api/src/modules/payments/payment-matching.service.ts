@@ -55,25 +55,30 @@ export class PaymentMatchingService {
   /** Execute the match: verify payment + update bank transaction in transaction. */
   private async executeMatch(paymentId: bigint, bankTxId: bigint) {
     return this.prisma.$transaction(async (tx) => {
-      // Verify payment
-      await tx.payment.update({
-        where: { id: paymentId },
+      // Optimistic guard: only match if bank transaction is still UNMATCHED
+      const bankTxClaimed = await tx.bankTransaction.updateMany({
+        where: { id: bankTxId, matchStatus: 'UNMATCHED' },
+        data: { matchedPaymentId: paymentId, matchStatus: 'AUTO_MATCHED' },
+      });
+      if (bankTxClaimed.count === 0) return null; // already matched by concurrent request
+
+      // Optimistic guard: only verify if payment is still PENDING
+      const paymentClaimed = await tx.payment.updateMany({
+        where: { id: paymentId, status: 'PENDING' },
         data: {
           status: 'VERIFIED',
           verifiedSource: 'AUTO',
           verifiedAt: new Date(),
-          matchedTransaction: { connect: { id: bankTxId } },
         },
       });
-
-      // Update bank transaction
-      await tx.bankTransaction.update({
-        where: { id: bankTxId },
-        data: {
-          matchedPaymentId: paymentId,
-          matchStatus: 'AUTO_MATCHED',
-        },
-      });
+      if (paymentClaimed.count === 0) {
+        // Rollback bank transaction claim
+        await tx.bankTransaction.update({
+          where: { id: bankTxId },
+          data: { matchedPaymentId: null, matchStatus: 'UNMATCHED' },
+        });
+        return null;
+      }
 
       // Check conversion trigger
       await this.checkConversionTrigger(tx, paymentId);

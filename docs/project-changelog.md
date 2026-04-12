@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Full Codebase Audit — Security, Performance, Query Speed (2026-04-12)
+- **Scope:** 51 findings across 3 categories — Security (15), Performance (15), Database/Query (21)
+- **Critical (7):** Path traversal in file serving, payment matching race condition, missing partial indexes on leads/activities/phone, import processor memory+connection leak, no notification cleanup
+- **High (16):** IDOR in findById methods, missing Helmet headers, N+1 in scoring (6000 queries/batch), webhook auth gaps, MCP rate limit bypass, search/export role scoping, dashboard cross-joins
+- **Medium (17):** Zero caching layer, unbounded queries, missing customer/task indexes, connection pool defaults, CORS fallback, metadata validation
+- **Report:** `plans/reports/audit-260412-2116-security-performance-query.md`
+- **Remediation roadmap:** 3 phases (~34h total effort), prioritized by risk severity
+
 ### MCP Server + AI Agent REST API (2026-04-12)
 - **MCP Server:** Streamable HTTP transport at `POST /api/v1/mcp` (stateless mode). Read-only tools for AI agents to query CRM data
 - **MCP Tools (18):** 10 core tools + 8 analytics tools for Sales Director

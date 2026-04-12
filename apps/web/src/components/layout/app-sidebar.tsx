@@ -75,7 +75,6 @@ export function AppSidebar() {
 
   function renderNavLink(item: { label: string; href: string; icon: React.ElementType }, indent = false) {
     const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href) && item.href !== '/leads');
-    // Special case: /leads exact match only (not /leads/pool/new)
     const isExactLeads = item.href === '/leads' && pathname === '/leads';
     const active = item.href === '/leads' ? isExactLeads : isActive;
 
@@ -84,16 +83,19 @@ export function AppSidebar() {
         key={item.href}
         href={item.href}
         className={cn(
-          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+          'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
           active
-            ? 'bg-sky-50 text-sky-600'
-            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+            ? 'bg-indigo-50 text-indigo-600 shadow-[0_2px_8px_-2px_rgba(79,70,229,0.15)]'
+            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
           collapsed && 'justify-center px-2',
           indent && !collapsed && 'pl-10',
         )}
         title={collapsed ? item.label : undefined}
       >
-        <item.icon size={indent ? 16 : 20} />
+        {active && (
+          <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-gradient-to-b from-indigo-600 to-violet-600" />
+        )}
+        <item.icon size={indent ? 16 : 20} className={cn(active && 'text-indigo-600')} />
         {!collapsed && <span>{item.label}</span>}
       </Link>
     );
@@ -101,15 +103,15 @@ export function AppSidebar() {
 
   return (
     <aside className={cn(
-      'flex flex-col border-r border-gray-200 bg-white transition-all duration-200',
+      'flex flex-col border-r border-slate-200/80 bg-white transition-all duration-200',
       collapsed ? 'w-16' : 'w-60',
     )}>
       {/* Logo */}
-      <div className="flex h-14 items-center justify-between border-b border-gray-200 px-4">
+      <div className="flex h-14 items-center justify-between border-b border-slate-200/80 px-4">
         {!collapsed && <span className="text-lg font-extrabold text-gradient">VeloCRM</span>}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+          className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
         >
           {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
@@ -129,10 +131,10 @@ export function AppSidebar() {
                 <button
                   onClick={() => setLeadsOpen(!leadsOpen)}
                   className={cn(
-                    'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
                     isLeadsActive
-                      ? 'text-sky-600'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                      ? 'text-indigo-600'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
                   )}
                 >
                   <item.icon size={20} />

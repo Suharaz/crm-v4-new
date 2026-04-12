@@ -39,7 +39,7 @@ function NotificationIcon({ type }: { type: string }) {
   if (type.includes('LEAD') || type.includes('CUSTOMER') || type.includes('lead') || type.includes('customer')) return <Users className={`${cls} text-purple-500`} />;
   if (type.includes('SUCCESS') || type.includes('success')) return <CheckCircle className={`${cls} text-green-500`} />;
   if (type.includes('ERROR') || type.includes('WARN') || type.includes('error') || type.includes('warn')) return <AlertCircle className={`${cls} text-red-500`} />;
-  return <Info className={`${cls} text-sky-500`} />;
+  return <Info className={`${cls} text-indigo-500`} />;
 }
 
 export function NotificationBell() {
@@ -137,7 +137,7 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="relative flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+        className="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
         aria-label="Thông báo"
       >
         <Bell size={20} />
@@ -150,15 +150,15 @@ export function NotificationBell() {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-96 rounded-xl border border-gray-200 bg-white shadow-lg z-50">
+        <div className="absolute right-0 top-full mt-2 w-96 rounded-xl border border-slate-200 bg-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.1)] z-50">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-            <span className="font-semibold text-gray-800 text-sm">Thông báo</span>
+          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+            <span className="font-semibold text-slate-800 text-sm">Thông báo</span>
             {unreadCount > 0 && (
               <button
                 type="button"
                 onClick={markAllAsRead}
-                className="flex items-center gap-1 text-sm text-sky-500 hover:text-sky-600 transition-colors"
+                className="flex items-center gap-1 text-sm text-indigo-500 hover:text-indigo-600 transition-colors"
               >
                 <Check size={14} />
                 Đánh dấu tất cả đã đọc
@@ -183,8 +183,8 @@ export function NotificationBell() {
                   key={notification.id}
                   type="button"
                   onClick={() => handleNotificationClick(notification)}
-                  className={`flex w-full items-start gap-3 border-b border-gray-100 px-4 py-3 text-left hover:bg-gray-50 transition-colors last:border-b-0 ${
-                    !notification.isRead ? 'bg-sky-50' : ''
+                  className={`flex w-full items-start gap-3 border-b border-slate-100 px-4 py-3 text-left hover:bg-slate-50 transition-colors last:border-b-0 ${
+                    !notification.isRead ? 'bg-indigo-50/50' : ''
                   }`}
                 >
                   <div className="mt-0.5">
@@ -200,7 +200,7 @@ export function NotificationBell() {
                     <p className="mt-1 text-xs text-gray-400">{timeAgo(notification.createdAt)}</p>
                   </div>
                   {!notification.isRead && (
-                    <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-sky-500" />
+                    <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-indigo-500" />
                   )}
                 </button>
               ))

@@ -9,6 +9,28 @@ services:
       POSTGRES_USER: crm
       POSTGRES_PASSWORD: crm
       POSTGRES_DB: crm_v4
+    command:
+      - postgres
+      - -c
+      - shared_buffers=512MB
+      - -c
+      - effective_cache_size=2GB
+      - -c
+      - work_mem=16MB
+      - -c
+      - maintenance_work_mem=128MB
+      - -c
+      - random_page_cost=1.1
+      - -c
+      - effective_io_concurrency=200
+      - -c
+      - wal_buffers=16MB
+      - -c
+      - max_connections=100
+      - -c
+      - log_min_duration_statement=500
+      - -c
+      - log_lock_waits=on
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
@@ -20,7 +42,7 @@ services:
     restart: unless-stopped
     ports:
       - "6380:6379"
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
     volumes:
       - redis-data:/data
     networks:

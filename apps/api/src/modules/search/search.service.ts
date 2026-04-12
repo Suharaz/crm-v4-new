@@ -1,16 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma, UserRole } from '@prisma/client';
+
+interface CurrentUser {
+  id: bigint;
+  role: UserRole;
+  departmentId: bigint | null;
+}
 
 @Injectable()
 export class SearchService {
   constructor(private readonly prisma: PrismaClient) {}
 
-  /** Global search across leads, customers, orders. */
-  async search(query: string, limit = 10) {
+  /** Global search across leads, customers, orders. Role-scoped for USER. */
+  async search(query: string, limit = 10, user?: CurrentUser) {
+    // USER role scoping: only search own records
+    const leadScope: Prisma.LeadWhereInput = user?.role === UserRole.USER
+      ? { assignedUserId: user.id } : {};
+    const customerScope: Prisma.CustomerWhereInput = user?.role === UserRole.USER
+      ? { assignedUserId: user.id } : {};
+    const orderScope: Prisma.OrderWhereInput = user?.role === UserRole.USER
+      ? { createdBy: user.id } : {};
+
     const [leads, customers, orders] = await Promise.all([
       this.prisma.lead.findMany({
         where: {
           deletedAt: null,
+          ...leadScope,
           OR: [
             { name: { contains: query, mode: 'insensitive' } },
             { phone: { contains: query } },
@@ -23,6 +38,7 @@ export class SearchService {
       this.prisma.customer.findMany({
         where: {
           deletedAt: null,
+          ...customerScope,
           OR: [
             { name: { contains: query, mode: 'insensitive' } },
             { phone: { contains: query } },
@@ -35,6 +51,7 @@ export class SearchService {
       this.prisma.order.findMany({
         where: {
           deletedAt: null,
+          ...orderScope,
           customer: {
             OR: [
               { name: { contains: query, mode: 'insensitive' } },

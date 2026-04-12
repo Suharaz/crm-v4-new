@@ -26,70 +26,74 @@ export class ScoringService {
     });
 
     if (users.length === 0) return [];
+    const userIds = users.map(u => u.id);
 
-    // Get employee levels for rank
+    // Batch: employee levels for rank
     const levels = await this.prisma.employeeLevel.findMany({ select: { id: true, rank: true } });
     const levelMap = new Map(levels.map((l) => [l.id.toString(), l.rank]));
     const maxRank = Math.max(...levels.map((l) => l.rank), 1);
 
-    // Calculate workload (fewer active leads = higher score)
-    const workloads = await Promise.all(
-      users.map(async (u) => {
-        const count = await this.prisma.lead.count({
-          where: { assignedUserId: u.id, status: { in: ['ASSIGNED', 'IN_PROGRESS'] }, deletedAt: null },
-        });
-        return { userId: u.id, count };
-      }),
-    );
-    const maxWorkload = Math.max(...workloads.map((w) => w.count), 1);
+    // Batch: workload counts (single groupBy instead of N queries)
+    const workloadGroups = await this.prisma.lead.groupBy({
+      by: ['assignedUserId'],
+      where: { assignedUserId: { in: userIds }, status: { in: ['ASSIGNED', 'IN_PROGRESS'] }, deletedAt: null },
+      _count: true,
+    });
+    const workloadMap = new Map(workloadGroups.map(g => [g.assignedUserId!.toString(), g._count]));
+    const maxWorkload = Math.max(...workloadGroups.map(g => g._count), 1);
 
-    // Calculate conversion rates (last 90 days) — based on assignment history, not current assignedUserId
-    // This ensures leads that were converted then unassigned still count for the user who converted them
+    // Batch: conversion rates (last 90 days) — 2 queries total instead of 2-3 per user
     const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-    const conversions = await Promise.all(
-      users.map(async (u) => {
-        // Count distinct leads ever assigned to this user (via history)
-        const historyLeads = await this.prisma.assignmentHistory.findMany({
-          where: { toUserId: u.id, entityType: 'LEAD', createdAt: { gte: since } },
-          select: { entityId: true },
-          distinct: ['entityId'],
-        });
-        const totalAssigned = historyLeads.length;
 
-        if (totalAssigned === 0) {
-          // Fallback: count current leads if no history
-          const currentTotal = await this.prisma.lead.count({
-            where: { assignedUserId: u.id, deletedAt: null, createdAt: { gte: since } },
-          });
-          const currentConverted = await this.prisma.lead.count({
-            where: { assignedUserId: u.id, status: 'CONVERTED', deletedAt: null, createdAt: { gte: since } },
-          });
-          return { userId: u.id, rate: currentTotal > 0 ? currentConverted / currentTotal : 0 };
-        }
+    // Count distinct leads assigned to each user via history
+    const historyGroups = await this.prisma.assignmentHistory.groupBy({
+      by: ['toUserId'],
+      where: { toUserId: { in: userIds }, entityType: 'LEAD', createdAt: { gte: since } },
+      _count: { entityId: true },
+    });
+    const historyCountMap = new Map(historyGroups.map(g => [g.toUserId!.toString(), g._count.entityId]));
 
-        // Count how many of those distinct leads are now CONVERTED
-        const convertedCount = await this.prisma.lead.count({
-          where: {
-            id: { in: historyLeads.map(h => h.entityId) },
-            status: 'CONVERTED',
-            deletedAt: null,
-          },
-        });
+    // Get all assignment history entity IDs for converted lead count
+    const allHistoryLeads = await this.prisma.assignmentHistory.findMany({
+      where: { toUserId: { in: userIds }, entityType: 'LEAD', createdAt: { gte: since } },
+      select: { toUserId: true, entityId: true },
+      distinct: ['toUserId', 'entityId'],
+    });
 
-        return { userId: u.id, rate: convertedCount / totalAssigned };
-      }),
-    );
+    // Group by user and check conversion status in batch
+    const userLeadIds = new Map<string, bigint[]>();
+    for (const h of allHistoryLeads) {
+      const key = h.toUserId!.toString();
+      if (!userLeadIds.has(key)) userLeadIds.set(key, []);
+      userLeadIds.get(key)!.push(h.entityId);
+    }
 
-    // Calculate scores
+    // Count converted leads for all users in one query
+    const allLeadIds = allHistoryLeads.map(h => h.entityId);
+    const convertedLeads = allLeadIds.length > 0
+      ? await this.prisma.lead.findMany({
+          where: { id: { in: allLeadIds }, status: 'CONVERTED', deletedAt: null },
+          select: { id: true },
+        })
+      : [];
+    const convertedSet = new Set(convertedLeads.map(l => l.id.toString()));
+
+    // Calculate scores using Maps (O(1) lookup instead of Array.find O(n))
     return users.map((u) => {
-      const workload = workloads.find((wl) => wl.userId === u.id)!;
-      const conversion = conversions.find((c) => c.userId === u.id)!;
+      const uid = u.id.toString();
+      const workloadCount = workloadMap.get(uid) || 0;
       const levelRank = u.employeeLevelId ? (levelMap.get(u.employeeLevelId.toString()) || 1) : 1;
 
+      // Conversion rate from history
+      const assignedLeadIds = userLeadIds.get(uid) || [];
+      const totalAssigned = assignedLeadIds.length || (historyCountMap.get(uid) || 0);
+      const convertedCount = assignedLeadIds.filter(id => convertedSet.has(id.toString())).length;
+      const conversionRate = totalAssigned > 0 ? convertedCount / totalAssigned : 0;
+
       // Normalize: higher = better
-      const workloadScore = (1 - workload.count / maxWorkload) * w.workload;
+      const workloadScore = (1 - workloadCount / maxWorkload) * w.workload;
       const levelScore = (levelRank / maxRank) * w.level;
-      const perfScore = conversion.rate * w.performance;
+      const perfScore = conversionRate * w.performance;
       const total = workloadScore + levelScore + perfScore;
 
       return {

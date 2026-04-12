@@ -1,29 +1,42 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { CacheService } from '../../common/cache/cache.service';
+import { CACHE_KEYS, CACHE_TTL } from '../../common/cache/cache.constants';
 
 @Injectable()
 export class OrderFormatsService {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly cacheService: CacheService,
+  ) {}
 
   async list() {
-    const data = await this.prisma.orderFormat.findMany({
-      where: { isActive: true },
-      orderBy: { id: 'asc' },
-    });
-    return { data };
+    return {
+      data: await this.cacheService.getOrSet(
+        CACHE_KEYS.LOOKUP_ORDER_FORMATS,
+        CACHE_TTL.LOOKUP,
+        () => this.prisma.orderFormat.findMany({ where: { isActive: true }, orderBy: { id: 'asc' } }),
+      ),
+    };
   }
 
   async create(data: { name: string }) {
-    return this.prisma.orderFormat.create({ data });
+    const result = await this.prisma.orderFormat.create({ data });
+    await this.cacheService.del(CACHE_KEYS.LOOKUP_ORDER_FORMATS);
+    return result;
   }
 
   async update(id: bigint, data: { name?: string; isActive?: boolean }) {
     const record = await this.prisma.orderFormat.findUnique({ where: { id } });
     if (!record) throw new NotFoundException('Không tìm thấy định dạng đơn hàng');
-    return this.prisma.orderFormat.update({ where: { id }, data });
+    const result = await this.prisma.orderFormat.update({ where: { id }, data });
+    await this.cacheService.del(CACHE_KEYS.LOOKUP_ORDER_FORMATS);
+    return result;
   }
 
   async deactivate(id: bigint) {
-    return this.prisma.orderFormat.update({ where: { id }, data: { isActive: false } });
+    const result = await this.prisma.orderFormat.update({ where: { id }, data: { isActive: false } });
+    await this.cacheService.del(CACHE_KEYS.LOOKUP_ORDER_FORMATS);
+    return result;
   }
 }

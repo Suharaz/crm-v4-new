@@ -1,8 +1,11 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { PrismaClient, Prisma, EntityType } from '@prisma/client';
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(private readonly prisma: PrismaClient) {}
 
   async list(userId: bigint, limit = 20, cursor?: string) {
@@ -45,5 +48,21 @@ export class NotificationsService {
     return this.prisma.notification.create({
       data: { userId, title, content, type, entityType, entityId },
     });
+  }
+
+  /** Cron: delete notifications older than 90 days. Runs daily at 3 AM. */
+  @Cron('0 3 * * *')
+  async cleanupOldNotifications() {
+    try {
+      const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+      const result = await this.prisma.notification.deleteMany({
+        where: { createdAt: { lt: cutoff } },
+      });
+      if (result.count > 0) {
+        this.logger.log(`Đã xóa ${result.count} thông báo cũ (>90 ngày)`);
+      }
+    } catch (error) {
+      this.logger.error('Lỗi cleanup thông báo:', error);
+    }
   }
 }

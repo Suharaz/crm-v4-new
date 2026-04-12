@@ -1,4 +1,4 @@
-import { Inject, Injectable, BadRequestException } from '@nestjs/common';
+import { Inject, Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
@@ -33,12 +33,20 @@ export class FileUploadService {
     mimetype: string,
     subDir: string = 'attachments',
   ): Promise<{ filePath: string; fileName: string; fileSize: number }> {
-    // Validate
+    // Validate size
     if (buffer.length > MAX_FILE_SIZE) {
       throw new BadRequestException('File vượt quá 10MB');
     }
     if (!ALLOWED_MIME_TYPES.includes(mimetype)) {
       throw new BadRequestException('Loại file không được hỗ trợ');
+    }
+
+    // Validate magic bytes — prevent MIME spoofing (e.g., .php uploaded as image/jpeg)
+    const { fileTypeFromBuffer } = await import('file-type');
+    const detected = await fileTypeFromBuffer(buffer);
+    // CSV/plain text files have no magic bytes — skip for text types
+    if (detected && !ALLOWED_MIME_TYPES.includes(detected.mime)) {
+      throw new BadRequestException(`File thực tế là ${detected.mime}, không được hỗ trợ`);
     }
 
     // Generate safe filename
@@ -63,13 +71,35 @@ export class FileUploadService {
     return { filePath, fileName: originalName, fileSize: buffer.length };
   }
 
-  /** Get absolute path for a relative file path. */
-  getAbsolutePath(relativePath: string): string {
-    return path.join(this.uploadDir, relativePath);
+  /**
+   * Resolve relative path to absolute, with path traversal protection.
+   * Throws ForbiddenException if path escapes upload directory.
+   */
+  getSecurePath(relativePath: string): string {
+    // Lớp 3: Whitelist — chỉ cho phép pattern subDir/YYYY-MM/uuid.ext
+    const SAFE_PATH_PATTERN = /^[\w-]+\/\d{4}-\d{2}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.\w+$/;
+    if (!SAFE_PATH_PATTERN.test(relativePath)) {
+      throw new ForbiddenException('Đường dẫn file không hợp lệ');
+    }
+
+    // Lớp 2: Path normalization — chống ../../ traversal
+    const resolvedUploadDir = path.resolve(this.uploadDir);
+    const resolvedFilePath = path.resolve(this.uploadDir, relativePath);
+
+    if (!resolvedFilePath.startsWith(resolvedUploadDir + path.sep)) {
+      throw new ForbiddenException('Truy cập file bị từ chối');
+    }
+
+    return resolvedFilePath;
   }
 
-  /** Check if file exists. */
+  /** Check if file exists (with path traversal protection). */
   fileExists(relativePath: string): boolean {
-    return fs.existsSync(this.getAbsolutePath(relativePath));
+    try {
+      const securePath = this.getSecurePath(relativePath);
+      return fs.existsSync(securePath);
+    } catch {
+      return false;
+    }
   }
 }

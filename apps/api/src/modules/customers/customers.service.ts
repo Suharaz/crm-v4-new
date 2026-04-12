@@ -98,9 +98,14 @@ export class CustomersService {
     return { data };
   }
 
-  async findById(id: bigint) {
+  async findById(id: bigint, user?: CurrentUser) {
+    const where: Prisma.CustomerWhereInput = { id, deletedAt: null };
+    // IDOR prevention: USER role can only view their own customers
+    if (user && user.role === UserRole.USER) {
+      where.assignedUserId = user.id;
+    }
     const customer = await this.prisma.customer.findFirst({
-      where: { id, deletedAt: null },
+      where,
       select: {
         ...CUSTOMER_SELECT,
         leads: {

@@ -12,7 +12,6 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { FileUploadService } from './file-upload.service';
-import { Public } from '../auth/decorators/public-route.decorator';
 
 @Controller('files')
 export class FileUploadController {
@@ -36,8 +35,8 @@ export class FileUploadController {
     return { data };
   }
 
+  // Lớp 1: Không có @Public() → JWT guard tự động bảo vệ
   @Get('*')
-  @Public()
   async serveFile(
     @Param('0') filePath: string,
     @Res() res: Response,
@@ -50,7 +49,8 @@ export class FileUploadController {
       throw new NotFoundException('Không tìm thấy file');
     }
 
-    const absolutePath = this.service.getAbsolutePath(filePath);
+    // getSecurePath: kiểm tra path traversal + whitelist UUID pattern
+    const absolutePath = this.service.getSecurePath(filePath);
     res.sendFile(absolutePath);
   }
 }

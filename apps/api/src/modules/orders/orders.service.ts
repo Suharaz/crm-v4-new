@@ -1,6 +1,12 @@
 import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
-import { PrismaClient, Prisma, OrderStatus } from '@prisma/client';
+import { PrismaClient, Prisma, OrderStatus, UserRole } from '@prisma/client';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+
+interface CurrentUser {
+  id: bigint;
+  role: UserRole;
+  departmentId: bigint | null;
+}
 
 const ALLOWED_ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   PENDING: ['CONFIRMED', 'CANCELLED'],
@@ -97,9 +103,14 @@ export class OrdersService {
     };
   }
 
-  async findById(id: bigint) {
+  async findById(id: bigint, user?: CurrentUser) {
+    const where: Prisma.OrderWhereInput = { id, deletedAt: null };
+    // IDOR prevention: USER role can only view their own orders
+    if (user && user.role === UserRole.USER) {
+      where.createdBy = user.id;
+    }
     const order = await this.prisma.order.findFirst({
-      where: { id, deletedAt: null }, select: ORDER_SELECT,
+      where, select: ORDER_SELECT,
     });
     if (!order) throw new NotFoundException('Không tìm thấy đơn hàng');
     return order;

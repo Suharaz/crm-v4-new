@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, HttpCode, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, HttpCode, BadRequestException, UseGuards } from '@nestjs/common';
 import { IsOptional, IsString } from 'class-validator';
 import { UserRole } from '@prisma/client';
 import { BankTransactionsService } from './bank-transactions.service';
@@ -6,6 +6,7 @@ import { Roles } from '../auth/decorators/roles-required.decorator';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { Public } from '../auth/decorators/public-route.decorator';
 import { ApiKeyAuth } from '../auth/decorators/api-key-auth.decorator';
+import { WebhookSignatureGuard } from '../auth/guards/webhook-signature.guard';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
@@ -19,9 +20,10 @@ class BankTransactionListQueryDto extends PaginationQueryDto {
 export class BankTransactionsController {
   constructor(private readonly service: BankTransactionsService) {}
 
-  /** Webhook endpoint for bank transaction ingestion — requires x-api-key header. */
+  /** Webhook endpoint for bank transaction ingestion — requires x-api-key + HMAC signature. */
   @Public()
   @ApiKeyAuth()
+  @UseGuards(WebhookSignatureGuard)
   @Post('webhooks/bank-transactions')
   async ingest(@Body() body: {
     externalId: string; amount: number; content: string;

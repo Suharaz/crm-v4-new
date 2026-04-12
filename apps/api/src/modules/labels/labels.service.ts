@@ -1,26 +1,37 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { CacheService } from '../../common/cache/cache.service';
+import { CACHE_KEYS, CACHE_TTL } from '../../common/cache/cache.constants';
 
 @Injectable()
 export class LabelsService {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly cacheService: CacheService,
+  ) {}
 
   async list(category?: string) {
-    const where: Record<string, unknown> = { isActive: true };
-    if (category) where.category = category;
-
-    const data = await this.prisma.label.findMany({ where, orderBy: { name: 'asc' } });
+    const allLabels = await this.cacheService.getOrSet(
+      CACHE_KEYS.LOOKUP_LABELS,
+      CACHE_TTL.LOOKUP,
+      () => this.prisma.label.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } }),
+    );
+    const data = category ? allLabels.filter((l: any) => l.category === category) : allLabels;
     return { data };
   }
 
   async create(data: { name: string; color?: string; category?: string }) {
-    return this.prisma.label.create({ data });
+    const result = await this.prisma.label.create({ data });
+    await this.cacheService.del(CACHE_KEYS.LOOKUP_LABELS);
+    return result;
   }
 
   async update(id: bigint, data: { name?: string; color?: string; category?: string; isActive?: boolean }) {
     const label = await this.prisma.label.findUnique({ where: { id } });
     if (!label) throw new NotFoundException('Không tìm thấy nhãn');
-    return this.prisma.label.update({ where: { id }, data });
+    const result = await this.prisma.label.update({ where: { id }, data });
+    await this.cacheService.del(CACHE_KEYS.LOOKUP_LABELS);
+    return result;
   }
 
   // Attach labels to lead

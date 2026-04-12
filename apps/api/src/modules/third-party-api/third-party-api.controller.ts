@@ -43,6 +43,16 @@ export class ThirdPartyApiController {
       });
     }
 
+    // Validate metadata size — prevent oversized JSONB payloads
+    let validatedMetadata: object | undefined;
+    if (body.metadata) {
+      const metaStr = JSON.stringify(body.metadata);
+      if (metaStr.length > 10_000) {
+        return { error: 'metadata quá lớn (tối đa 10KB)' };
+      }
+      validatedMetadata = body.metadata as object;
+    }
+
     // Create lead (no dedup for API — always create new)
     const lead = await this.prisma.lead.create({
       data: {
@@ -50,7 +60,7 @@ export class ThirdPartyApiController {
         status: 'POOL',
         customerId: customer.id,
         sourceId,
-        metadata: body.metadata as any,
+        ...(validatedMetadata ? { metadata: validatedMetadata } : {}),
       },
       select: { id: true, phone: true, name: true, status: true, customerId: true },
     });

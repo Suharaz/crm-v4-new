@@ -33,6 +33,64 @@ All notable changes to this project will be documented in this file.
 - **Responsive:** Mobile sidebar drawer with hamburger toggle, auto-close on navigate, h-dvh layout, responsive padding
 - **Docs:** Updated design-guidelines.md, CLAUDE.md, changelog
 
+### Audit Remediation — 40+ Fixes Across Security, Performance, Database (2026-04-12)
+- **Branch:** `fix/audit-remediation-260412` — 12 commits addressing 40+ audit findings
+- **Security (Critical/High):**
+  - Path traversal in file serving (already patched in prior commit)
+  - Payment matching race condition — optimistic locking with `updateMany` guards
+  - IDOR in `findById` — USER role now scoped to own leads/customers/orders
+  - Helmet security headers (X-Frame-Options, CSP, HSTS, etc.)
+  - Webhook HMAC-SHA256 signature verification (`WEBHOOK_SECRET` env var)
+  - MCP endpoint rate limiting (was @SkipThrottle, now 100 req/min)
+  - File upload magic bytes validation (file-type package)
+  - API key permission scope enforcement
+- **Security (Medium):**
+  - CORS production guard — throws on missing `FRONTEND_URL` in production
+  - `externalId` format validation (max 255, alphanumeric+dash)
+  - Third-party API metadata size limit (10KB max)
+  - Global search scoped by user role (USER sees only own records)
+- **Performance:**
+  - Import processor: streaming CSV + DI PrismaClient (was: readFileSync + new PrismaClient per worker)
+  - Scoring service: 4 batch queries replaces 6000 queries per distribute batch
+  - Assignment template apply: grouped `updateMany` + `createMany` per user
+  - CSV import: preloaded source/product/phone Maps — 1 query/row instead of 4-6
+  - Dashboard `getLeadFunnel`: single `groupBy` replaces 7 COUNT queries
+  - Dashboard `getLeadAging`: LATERAL JOIN replaces correlated subquery
+  - Recall service: chunk processing (500/batch) prevents large IN clauses
+  - Activities stats: bounded to 500 records max
+- **Database:**
+  - 17 new indexes: partial (leads/activities/customers/tasks), pg_trgm (phone/name search), functional (date cast), payment status+amount
+  - Connection pool config documented (`connection_limit=20&pool_timeout=10`)
+  - Notification cleanup cron (delete >90 days, daily at 3 AM)
+- **~~Still remaining:~~ Redis caching layer (PERF-M1) — DONE** (see below), streaming CSV export (PERF-M3)
+
+### Database Optimization & Redis Caching — 5 Phases (2026-04-12)
+- **Branch:** `fix/audit-remediation-260412`
+- **Phase 01 — PrismaClient Singleton:** Fixed 35 modules each creating `new PrismaClient()` → single @Global() PrismaModule with shared singleton. Connection pool: 20 connections, 10s timeout.
+- **Phase 02 — Redis Cache Infrastructure:** `CacheService` with BigInt-safe serialization, fail-open pattern, `getOrSet()` helper, `@CacheInvalidate()` decorator. Uses existing Redis 7 on port 6380 with `crm:cache:` key prefix.
+- **Phase 03 — Lookup Table Caching:** 9 lookup services (labels, lead-sources, payment-types, order-formats, product-groups, payment-installments, product-categories, bank-accounts, employee-levels) cached with 10min TTL + write-through invalidation on mutations.
+- **Phase 04 — Dashboard Caching:** 9 dashboard query methods cached with 30s TTL, hash-based cache keys scoped by userId/role/date range.
+- **Phase 05 — PostgreSQL Docker Tuning:** `shared_buffers=512MB`, `work_mem=16MB`, `effective_cache_size=2GB`, `random_page_cost=1.1`, slow query logging (>500ms). Redis: `maxmemory=128mb` with `allkeys-lru` eviction.
+
+### Full Codebase Audit — Security, Performance, Query Speed (2026-04-12)
+- **Scope:** 51 findings across 3 categories — Security (15), Performance (15), Database/Query (21)
+- **Critical (7):** Path traversal in file serving, payment matching race condition, missing partial indexes on leads/activities/phone, import processor memory+connection leak, no notification cleanup
+- **High (16):** IDOR in findById methods, missing Helmet headers, N+1 in scoring (6000 queries/batch), webhook auth gaps, MCP rate limit bypass, search/export role scoping, dashboard cross-joins
+- **Medium (17):** Zero caching layer, unbounded queries, missing customer/task indexes, connection pool defaults, CORS fallback, metadata validation
+- **Report:** `plans/reports/audit-260412-2116-security-performance-query.md`
+- **Remediation roadmap:** 3 phases (~34h total effort), prioritized by risk severity
+
+### MCP Server + AI Agent REST API (2026-04-12)
+- **MCP Server:** Streamable HTTP transport at `POST /api/v1/mcp` (stateless mode). Read-only tools for AI agents to query CRM data
+- **MCP Tools (18):** 10 core tools + 8 analytics tools for Sales Director
+  - Core: `get_schema`, `search_leads`, `get_lead_detail`, `search_customers`, `get_customer_detail`, `search_orders`, `get_order_detail`, `list_products`, `get_stats`, `list_users`
+  - Analytics: `get_revenue_trend`, `get_top_performers`, `get_dept_performance`, `get_team_performance`, `get_leads_by_source`, `get_conversion_trend`, `get_lead_aging`, `analyze_lead_quality` (CPL/CPA/ROAS with adSpend input)
+  - Ads: `analyze_ads_effectiveness` — phone dedup, true duplicates, multi-product interest, revenue per source, avg conversion time, source×product matrix
+- **Smart filtering:** All tools enforce `limit` (default 20, max 100), cursor pagination. Never return all data
+- **Auth:** API key via `x-api-key` header with granular `mcp:*` permissions (leads, customers, orders, products, stats, users, schema)
+- **REST fallback:** `/ai-agent/` endpoints reuse same query service for non-MCP AI clients
+- **Frontend:** MCP permission checkboxes in API key creation dialog, MCP connection info (endpoint URL + Claude Desktop config JSON), MCP badge on key list
+
 ### Payment Excel Export/Import + Customer AI Rating + Activity Chart (2026-04-11)
 - **Export Excel:** Manager+ can download verified payments as .xlsx with date range filter (23 columns, Vietnamese headers)
 - **Import Excel:** Upload .xlsx with 20 columns (order + payment data). Auto-maps SĐT→customer, product→order. Creates new customers/orders if needed. Returns summary: created/matched/new customers/errors

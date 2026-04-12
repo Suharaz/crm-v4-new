@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PrismaClient } from '@prisma/client';
 import { createHash } from 'crypto';
@@ -14,10 +14,10 @@ export class ApiKeyAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Only activate on endpoints decorated with @ApiKeyAuth()
-    const requiresApiKey = this.reflector.getAllAndOverride<boolean>(API_KEY_AUTH, [
+    const metadata = this.reflector.getAllAndOverride<boolean | string>(API_KEY_AUTH, [
       context.getHandler(), context.getClass(),
     ]);
-    if (!requiresApiKey) return true;
+    if (!metadata) return true;
 
     const request = context.switchToHttp().getRequest();
     const rawKey = request.headers['x-api-key'];
@@ -38,6 +38,18 @@ export class ApiKeyAuthGuard implements CanActivate {
     if (apiKey.expiresAt && apiKey.expiresAt < new Date()) {
       throw new UnauthorizedException('API key đã hết hạn');
     }
+
+    // Check permission scope if a specific scope is required
+    const requiredScope = typeof metadata === 'string' ? metadata : null;
+    if (requiredScope) {
+      const permissions = (apiKey.permissions as string[]) || [];
+      if (!permissions.includes(requiredScope) && !permissions.includes('*')) {
+        throw new ForbiddenException(`API key thiếu quyền: ${requiredScope}`);
+      }
+    }
+
+    // Attach API key to request for downstream use
+    request.apiKey = apiKey;
 
     // Update lastUsedAt (fire-and-forget)
     this.prisma.apiKey.update({

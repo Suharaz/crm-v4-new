@@ -107,26 +107,36 @@ export class AssignmentTemplatesService {
       return { assigned: 0, skipped };
     }
 
-    // Round-robin assignment
+    // Round-robin: group leads by target user, then batch updateMany + createMany
+    const userLeadGroups = new Map<string, bigint[]>();
+    const historyData: { entityType: 'LEAD'; entityId: bigint; toUserId: bigint; assignedBy: bigint; reason: string }[] = [];
+
+    for (let i = 0; i < eligibleLeads.length; i++) {
+      const lead = eligibleLeads[i];
+      const member = members[i % members.length];
+      const userId = member.userId;
+      const key = userId.toString();
+
+      if (!userLeadGroups.has(key)) userLeadGroups.set(key, []);
+      userLeadGroups.get(key)!.push(lead.id);
+
+      historyData.push({
+        entityType: 'LEAD', entityId: lead.id,
+        toUserId: userId, assignedBy,
+        reason: `Áp dụng mẫu phân phối: ${template.name}`,
+      });
+    }
+
     await this.prisma.$transaction(async (tx) => {
-      for (let i = 0; i < eligibleLeads.length; i++) {
-        const lead = eligibleLeads[i];
-        const member = members[i % members.length];
-        const userId = member.userId;
-
-        await tx.lead.update({
-          where: { id: lead.id },
-          data: { assignedUserId: userId, status: 'ASSIGNED' },
-        });
-
-        await tx.assignmentHistory.create({
-          data: {
-            entityType: 'LEAD', entityId: lead.id,
-            toUserId: userId, assignedBy,
-            reason: `Áp dụng mẫu phân phối: ${template.name}`,
-          },
+      // Batch update leads grouped by userId (N groups instead of N individual updates)
+      for (const [userIdStr, leadIdGroup] of userLeadGroups) {
+        await tx.lead.updateMany({
+          where: { id: { in: leadIdGroup } },
+          data: { assignedUserId: BigInt(userIdStr), status: 'ASSIGNED' },
         });
       }
+      // Batch create all history records
+      await tx.assignmentHistory.createMany({ data: historyData });
     });
 
     return { assigned: eligibleLeads.length, skipped };

@@ -29,8 +29,8 @@ export class CustomersController {
   }
 
   @Get(':id')
-  async findById(@Param('id', ParseBigIntPipe) id: bigint) {
-    const data = await this.customersService.findById(id);
+  async findById(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
+    const data = await this.customersService.findById(id, user);
     return { data };
   }
 

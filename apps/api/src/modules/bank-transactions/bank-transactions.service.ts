@@ -47,6 +47,10 @@ export class BankTransactionsService {
     if (!data.externalId) {
       throw new BadRequestException('externalId là bắt buộc');
     }
+    // Validate externalId format — prevent malformed strings
+    if (typeof data.externalId !== 'string' || data.externalId.length > 255 || !/^[\w\-.]+$/.test(data.externalId)) {
+      throw new BadRequestException('externalId không hợp lệ (chỉ chấp nhận chữ, số, dấu gạch, tối đa 255 ký tự)');
+    }
     if (!data.transactionTime) {
       throw new BadRequestException('transactionTime là bắt buộc');
     }

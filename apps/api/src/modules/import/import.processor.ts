@@ -1,4 +1,5 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Inject } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { PrismaClient } from '@prisma/client';
 import { normalizePhone, isValidVNPhone } from '@crm/utils';
@@ -15,10 +16,12 @@ interface ImportJobData {
 
 @Processor('import')
 export class ImportProcessor extends WorkerHost {
-  private readonly prisma = new PrismaClient();
   private readonly uploadDir: string;
 
-  constructor(configService: ConfigService) {
+  constructor(
+    @Inject(PrismaClient) private readonly prisma: PrismaClient,
+    configService: ConfigService,
+  ) {
     super();
     this.uploadDir = configService.get('UPLOAD_DIR', './uploads');
   }
@@ -34,39 +37,30 @@ export class ImportProcessor extends WorkerHost {
     const errors: { row: number; field: string; message: string }[] = [];
 
     try {
-      const fileContent = fs.readFileSync(absolutePath, 'utf-8');
-      const records: Record<string, string>[] = [];
+      // Stream CSV instead of loading entire file into memory
+      const parser = fs.createReadStream(absolutePath, 'utf-8').pipe(
+        parse({ columns: true, skip_empty_lines: true, trim: true, bom: true }),
+      );
 
-      // Parse CSV
-      await new Promise<void>((resolve, reject) => {
-        const parser = parse(fileContent, {
-          columns: true, skip_empty_lines: true, trim: true,
-          bom: true,
-        });
-        parser.on('data', (row: Record<string, string>) => records.push(row));
-        parser.on('end', resolve);
-        parser.on('error', reject);
-      });
-
-      totalRows = records.length;
-
-      // Process in chunks
-      for (let i = 0; i < records.length; i++) {
-        const row = records[i];
+      let rowIndex = 0;
+      for await (const row of parser) {
+        rowIndex++;
+        totalRows++;
         try {
           if (type === 'leads') {
-            await this.processLeadRow(row, i + 2); // +2 for header + 0-index
+            await this.processLeadRow(row, rowIndex + 1); // +1 for header
           } else {
-            await this.processCustomerRow(row, i + 2);
+            await this.processCustomerRow(row, rowIndex + 1);
           }
           successCount++;
-        } catch (e: any) {
+        } catch (e: unknown) {
           errorCount++;
-          errors.push({ row: i + 2, field: 'general', message: e.message });
+          const message = e instanceof Error ? e.message : String(e);
+          errors.push({ row: rowIndex + 1, field: 'general', message });
         }
 
         // Update progress every 100 rows
-        if ((i + 1) % 100 === 0) {
+        if (totalRows % 100 === 0) {
           await this.prisma.importJob.update({
             where: { id: jobId },
             data: { totalRows, successCount, errorCount },

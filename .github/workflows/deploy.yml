@@ -17,4 +17,4 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             cd /www/wwwroot/crm-v4
-            ./scripts/deploy.sh
+            bash scripts/deploy.sh

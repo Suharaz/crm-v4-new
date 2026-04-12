@@ -759,8 +759,7 @@ git push → GitHub Actions → auto deploy via SSH
 
 ## Related docs
 
-- `docs/vps-deployment-guide.md` — guide cũ (NPM-based, legacy reference)
-- `docs/deployment-guide.md` — deployment nội bộ CRM
+- `docs/deployment-guide.md` — dev setup guide
 - `CLAUDE.md` — project overview + architecture rules
 - `.github/workflows/deploy.yml` — CI/CD config
 - `scripts/deploy.sh` — deploy script logic

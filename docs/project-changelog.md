@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### User Profile Page + Password Toggle (2026-04-12)
+- **Profile page:** `/profile` — view account info (email, role, dept, team), edit name/phone, change password
+- **Password toggle:** Eye/EyeOff icon on login + profile password fields
+- **Header link:** Avatar/name in header now links to `/profile`
+- **Password change:** Auto-logout + redirect to login (tokens revoked server-side)
+
 ### VeloCRM Rebrand + Design System Overhaul (2026-04-12)
 - **Rebrand:** "CRM V4" → "VeloCRM" across all UI (sidebar logo, login page, metadata, dashboard)
 - **Design System:** Sky Blue (#0ea5e9) primary + Cyan (#06b6d4) accent. Plus Jakarta Sans font. Colored shadows, hover-lift cards, gradient text

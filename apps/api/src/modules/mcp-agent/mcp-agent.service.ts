@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { Request, Response } from 'express';
+import { DashboardService } from '../dashboard/dashboard.service';
 import { registerLeadsTools } from './tools/leads.tool';
 import { registerCustomersTools } from './tools/customers.tool';
 import { registerOrdersTools } from './tools/orders.tool';
@@ -10,12 +11,16 @@ import { registerProductsTools } from './tools/products.tool';
 import { registerStatsTools } from './tools/stats.tool';
 import { registerUsersTools } from './tools/users.tool';
 import { registerSchemaTools } from './tools/schema.tool';
+import { registerAnalyticsTools } from './tools/analytics.tool';
 
 @Injectable()
 export class McpAgentService implements OnModuleDestroy {
   private readonly logger = new Logger(McpAgentService.name);
 
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly dashboardService: DashboardService,
+  ) {}
 
   /** Create a fresh MCP server with all read-only tools registered */
   private createServer(permissions: string[]): McpServer {
@@ -32,6 +37,7 @@ export class McpAgentService implements OnModuleDestroy {
     registerProductsTools(server, this.prisma, permissions);
     registerStatsTools(server, this.prisma, permissions);
     registerUsersTools(server, this.prisma, permissions);
+    registerAnalyticsTools(server, this.prisma, this.dashboardService, permissions);
 
     return server;
   }

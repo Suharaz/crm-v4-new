@@ -8,11 +8,11 @@ export function LandingHero() {
         {/* Text column */}
         <div className="max-w-xl">
           {/* Badge */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-[10px] font-bold text-white">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-1.5">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-sky-600 to-cyan-600 text-[10px] font-bold text-white">
               <Zap size={10} />
             </span>
-            <span className="text-xs font-semibold text-indigo-700">CRM nội bộ thế hệ mới</span>
+            <span className="text-xs font-semibold text-sky-700">CRM nội bộ thế hệ mới</span>
           </div>
 
           {/* Headline with gradient */}
@@ -31,7 +31,7 @@ export function LandingHero() {
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
               href="/login"
-              className="group inline-flex h-12 items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-7 text-sm font-semibold text-white shadow-[0_4px_14px_0_rgba(79,70,229,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_0_rgba(79,70,229,0.4)]"
+              className="group inline-flex h-12 items-center gap-2 rounded-lg bg-gradient-to-r from-sky-600 to-cyan-600 px-7 text-sm font-semibold text-white shadow-[0_4px_14px_0_rgba(14,165,233,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_0_rgba(14,165,233,0.4)]"
             >
               Bắt đầu ngay
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
@@ -58,7 +58,7 @@ export function LandingHero() {
         {/* Isometric mockup column */}
         <div className="relative hidden lg:block" style={{ perspective: '2000px' }}>
           <div
-            className="relative rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_20px_60px_-15px_rgba(79,70,229,0.15)] transition-transform duration-500"
+            className="relative rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_20px_60px_-15px_rgba(14,165,233,0.15)] transition-transform duration-500"
             style={{ transform: 'rotateX(5deg) rotateY(-8deg)' }}
           >
             {/* Mockup header */}
@@ -72,9 +72,9 @@ export function LandingHero() {
             {/* Mockup KPI row */}
             <div className="grid grid-cols-3 gap-3 mb-4">
               {[
-                { label: 'Leads mới', value: '1.284', color: 'from-indigo-500 to-indigo-600', icon: Users },
+                { label: 'Leads mới', value: '1.284', color: 'from-sky-500 to-sky-600', icon: Users },
                 { label: 'Chuyển đổi', value: '89%', color: 'from-emerald-500 to-emerald-600', icon: TrendingUp },
-                { label: 'Doanh thu', value: '2.4B ₫', color: 'from-violet-500 to-violet-600', icon: BarChart3 },
+                { label: 'Doanh thu', value: '2.4B ₫', color: 'from-cyan-500 to-cyan-600', icon: BarChart3 },
               ].map((kpi) => (
                 <div key={kpi.label} className="rounded-xl border border-slate-100 p-3">
                   <div className="flex items-center justify-between">
@@ -95,7 +95,7 @@ export function LandingHero() {
                 {[40, 65, 45, 80, 55, 90, 70, 95, 60, 85, 75, 100].map((h, i) => (
                   <div
                     key={i}
-                    className="flex-1 rounded-t-sm bg-gradient-to-t from-indigo-500 to-violet-400 opacity-80"
+                    className="flex-1 rounded-t-sm bg-gradient-to-t from-sky-500 to-cyan-400 opacity-80"
                     style={{ height: `${h}%` }}
                   />
                 ))}
@@ -104,7 +104,7 @@ export function LandingHero() {
           </div>
 
           {/* Floating badge — top right */}
-          <div className="absolute -right-4 -top-4 animate-pulse rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-[0_4px_20px_-2px_rgba(79,70,229,0.15)]" style={{ animationDuration: '4s' }}>
+          <div className="absolute -right-4 -top-4 animate-pulse rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-[0_4px_20px_-2px_rgba(14,165,233,0.15)]" style={{ animationDuration: '4s' }}>
             <div className="flex items-center gap-2">
               <Shield size={16} className="text-emerald-500" />
               <span className="text-xs font-semibold text-slate-700">IDOR Protected</span>
@@ -112,9 +112,9 @@ export function LandingHero() {
           </div>
 
           {/* Floating badge — bottom left */}
-          <div className="absolute -bottom-2 -left-4 animate-pulse rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-[0_4px_20px_-2px_rgba(79,70,229,0.15)]" style={{ animationDuration: '5s' }}>
+          <div className="absolute -bottom-2 -left-4 animate-pulse rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-[0_4px_20px_-2px_rgba(14,165,233,0.15)]" style={{ animationDuration: '5s' }}>
             <div className="flex items-center gap-2">
-              <Zap size={16} className="text-indigo-500" />
+              <Zap size={16} className="text-sky-500" />
               <span className="text-xs font-semibold text-slate-700">AI Distribution</span>
             </div>
           </div>

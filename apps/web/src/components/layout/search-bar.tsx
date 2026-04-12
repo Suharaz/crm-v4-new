@@ -108,13 +108,13 @@ export function SearchBar() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => results && setOpen(true)}
           placeholder="Tìm kiếm leads, khách hàng, đơn hàng..."
-          className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-700 placeholder-slate-400 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+          className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-700 placeholder-slate-400 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-100"
         />
       </div>
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 w-full min-w-[320px] rounded-xl border border-slate-200 bg-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.1)]">
+        <div className="absolute left-0 top-full z-50 mt-1 w-full min-w-[320px] rounded-xl border border-slate-200 bg-white shadow-[0_10px_25px_-5px_rgba(14,165,233,0.1)]">
           <div className="max-h-96 overflow-y-auto py-2">
             {!hasResults ? (
               <div className="px-4 py-6 text-center text-sm text-slate-400">
@@ -135,7 +135,7 @@ export function SearchBar() {
                         onClick={() => setOpen(false)}
                         className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-slate-50"
                       >
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-600">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-semibold text-sky-600">
                           L
                         </div>
                         <div className="min-w-0">
@@ -189,7 +189,7 @@ export function SearchBar() {
                         onClick={() => setOpen(false)}
                         className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-slate-50"
                       >
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-semibold text-violet-600">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-semibold text-cyan-600">
                           Đ
                         </div>
                         <div className="min-w-0">

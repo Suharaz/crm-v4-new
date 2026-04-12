@@ -214,14 +214,14 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
   }
 
   return (
-    <tr className="bg-indigo-50/20">
+    <tr className="bg-sky-50/20">
       <td colSpan={colSpan} className="px-4 py-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           {/* Col 1: Calls + Notes + Orders — shows spinner while loading */}
           <div className="space-y-2">
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
+                <Loader2 className="h-5 w-5 animate-spin text-sky-500" />
                 <span className="ml-2 text-xs text-slate-400">Đang tải dữ liệu...</span>
               </div>
             ) : (
@@ -380,7 +380,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                       <Building className="h-3.5 w-3.5 mr-1" />{d.name}
                     </Button>
                   ))}
-                  <Button size="sm" variant="outline" className="text-violet-600 border-violet-200" disabled={transferring} onClick={transferToFloating}>
+                  <Button size="sm" variant="outline" className="text-cyan-600 border-cyan-200" disabled={transferring} onClick={transferToFloating}>
                     Thả nổi
                   </Button>
                 </div>
@@ -399,7 +399,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                         <p className="text-xs text-slate-500">Chọn đơn hàng:</p>
                         {pendingOrders.map((o) => (
                           <label key={o.id} className={cn('flex items-center gap-2 rounded border px-2 py-1.5 cursor-pointer text-xs',
-                            pmtOrderId === String(o.id) ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200')}>
+                            pmtOrderId === String(o.id) ? 'border-sky-400 bg-sky-50' : 'border-slate-200')}>
                             <input type="radio" name="pmtOrder" checked={pmtOrderId === String(o.id)} onChange={() => setPmtOrderId(String(o.id))} />
                             <span>#{o.id} — {o.product?.name || 'N/A'} — {formatVND(Number(o.totalAmount))}</span>
                             <StatusBadge status={o.status} />

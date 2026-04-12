@@ -216,7 +216,7 @@ export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
                   <button
                     type="button"
                     onClick={() => setSelectedUserIds(new Set(filteredUsers.map(u => u.id)))}
-                    className="ml-2 text-xs text-indigo-600 hover:underline"
+                    className="ml-2 text-xs text-sky-600 hover:underline"
                   >Chọn tất cả</button>
                 </label>
                 <div className="max-h-48 overflow-y-auto space-y-1 border rounded-lg p-2">
@@ -228,7 +228,7 @@ export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
                         type="checkbox"
                         checked={selectedUserIds.has(u.id)}
                         onChange={() => toggleUser(u.id)}
-                        className="h-4 w-4 rounded border-slate-300 text-indigo-600"
+                        className="h-4 w-4 rounded border-slate-300 text-sky-600"
                       />
                       <span className="text-sm text-slate-700">{u.name}</span>
                     </label>
@@ -254,7 +254,7 @@ export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
           </DialogHeader>
           <div className="py-2">
             <p className="text-sm text-slate-600">
-              Sẽ phân phối <span className="font-semibold text-indigo-600">{poolLeads.length} leads</span> từ
+              Sẽ phân phối <span className="font-semibold text-sky-600">{poolLeads.length} leads</span> từ
               Kho Mới cho nhân viên trong template theo round-robin.
             </p>
             {poolLeads.length === 0 && (

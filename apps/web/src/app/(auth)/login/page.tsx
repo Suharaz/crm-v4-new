@@ -52,10 +52,10 @@ function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md shadow-[0_10px_40px_-10px_rgba(79,70,229,0.15)]">
+    <Card className="w-full max-w-md shadow-[0_10px_40px_-10px_rgba(14,165,233,0.15)]">
       <CardHeader className="text-center pb-2">
         {/* Gradient logo mark */}
-        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-[0_4px_14px_0_rgba(79,70,229,0.3)]">
+        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-600 to-cyan-600 shadow-[0_4px_14px_0_rgba(14,165,233,0.3)]">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
           </svg>

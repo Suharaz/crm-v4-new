@@ -122,7 +122,7 @@ export function PaginationControls({ total, page, limit, totalPages }: Props) {
               key={p}
               variant={p === currentPage ? 'default' : 'ghost'}
               size="icon"
-              className={`h-8 w-8 text-xs ${p === currentPage ? 'bg-indigo-500 text-white hover:bg-indigo-600' : ''}`}
+              className={`h-8 w-8 text-xs ${p === currentPage ? 'bg-sky-500 text-white hover:bg-sky-600' : ''}`}
               onClick={() => navigate(p)}
             >
               {p}

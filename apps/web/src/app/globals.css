@@ -1,43 +1,36 @@
 @import 'tailwindcss';
 
-/* ── VeloCRM Corporate Trust Design Tokens ──────────────────────────────── */
+/* ── VeloCRM Design Tokens — Sky Blue Primary ───────────────────────────── */
 @theme {
-  /* Primary: Indigo 50→900 */
-  --color-primary-50: #eef2ff;
-  --color-primary-100: #e0e7ff;
-  --color-primary-200: #c7d2fe;
-  --color-primary-300: #a5b4fc;
-  --color-primary-400: #818cf8;
-  --color-primary-500: #6366f1;
-  --color-primary-600: #4f46e5;
-  --color-primary-700: #4338ca;
-  --color-primary-800: #3730a3;
-  --color-primary-900: #312e81;
+  /* Primary: Sky 50→900 (xanh nước biển nhạt) */
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
 
-  /* Secondary: Violet 50→900 */
-  --color-secondary-50: #f5f3ff;
-  --color-secondary-100: #ede9fe;
-  --color-secondary-200: #ddd6fe;
-  --color-secondary-300: #c4b5fd;
-  --color-secondary-400: #a78bfa;
-  --color-secondary-500: #8b5cf6;
-  --color-secondary-600: #7c3aed;
-  --color-secondary-700: #6d28d9;
-  --color-secondary-800: #5b21b6;
-  --color-secondary-900: #4c1d95;
+  /* Accent: Cyan (gradient endpoint) */
+  --color-accent-400: #22d3ee;
+  --color-accent-500: #06b6d4;
+  --color-accent-600: #0891b2;
 
   /* Status colors */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
-  --color-info: #6366f1;
+  --color-info: #0ea5e9;
   --color-floating: #8b5cf6;
 
-  /* Colored shadows — Corporate Trust signature */
-  --shadow-soft: 0 4px 20px -2px rgba(79, 70, 229, 0.1);
-  --shadow-hover: 0 10px 25px -5px rgba(79, 70, 229, 0.15), 0 8px 10px -6px rgba(79, 70, 229, 0.1);
-  --shadow-button: 0 4px 14px 0 rgba(79, 70, 229, 0.3);
-  --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.5);
+  /* Colored shadows — sky-blue tinted */
+  --shadow-soft: 0 4px 20px -2px rgba(14, 165, 233, 0.1);
+  --shadow-hover: 0 10px 25px -5px rgba(14, 165, 233, 0.15), 0 8px 10px -6px rgba(14, 165, 233, 0.1);
+  --shadow-button: 0 4px 14px 0 rgba(14, 165, 233, 0.3);
+  --shadow-glow: 0 0 20px rgba(14, 165, 233, 0.5);
 
   /* Font family */
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
@@ -56,18 +49,17 @@
     color: #0f172a;
   }
 
-  /* Focus ring: indigo for all focusable elements */
   :focus-visible {
-    outline: 2px solid #4f46e5;
+    outline: 2px solid #0ea5e9;
     outline-offset: 2px;
   }
 }
 
-/* ── Utility classes — Corporate Trust signature effects ──────────────── */
+/* ── Utility classes ─────────────────────────────────────────────────────── */
 @layer utilities {
-  /* Gradient text (indigo→violet) */
+  /* Gradient text (sky→cyan) */
   .text-gradient {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    background: linear-gradient(135deg, #0284c7, #06b6d4);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -75,7 +67,7 @@
 
   /* Primary gradient background */
   .bg-gradient-primary {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    background: linear-gradient(135deg, #0ea5e9, #06b6d4);
   }
 
   /* Card hover lift */

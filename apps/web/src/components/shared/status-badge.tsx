@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 
 const STATUS_STYLES: Record<string, string> = {
   // Lead statuses
-  POOL: 'bg-indigo-100 text-indigo-700',
+  POOL: 'bg-sky-100 text-sky-700',
   ZOOM: 'bg-orange-100 text-orange-700',
   ASSIGNED: 'bg-blue-100 text-blue-700',
   IN_PROGRESS: 'bg-amber-100 text-amber-700',

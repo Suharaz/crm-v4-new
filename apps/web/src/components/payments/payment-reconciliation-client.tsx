@@ -88,7 +88,7 @@ function ImportExcelDialog({ open, onClose }: { open: boolean; onClose: () => vo
           <div className="space-y-4">
             {/* File picker */}
             <div
-              className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-indigo-400 transition-colors"
+              className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-sky-400 transition-colors"
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="h-8 w-8 text-slate-400 mx-auto mb-2" />
@@ -113,7 +113,7 @@ function ImportExcelDialog({ open, onClose }: { open: boolean; onClose: () => vo
             <button
               type="button"
               onClick={handleDownloadTemplate}
-              className="text-xs text-indigo-600 hover:underline flex items-center gap-1"
+              className="text-xs text-sky-600 hover:underline flex items-center gap-1"
             >
               <Download className="h-3.5 w-3.5" />
               Tải file mẫu Excel
@@ -125,7 +125,7 @@ function ImportExcelDialog({ open, onClose }: { open: boolean; onClose: () => vo
                 Huỷ
               </Button>
               <Button
-                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="bg-sky-600 hover:bg-sky-700 text-white"
                 onClick={handleUpload}
                 disabled={!file || uploading}
               >
@@ -143,10 +143,10 @@ function ImportExcelDialog({ open, onClose }: { open: boolean; onClose: () => vo
                 <p className="text-2xl font-bold text-emerald-700">{result.created}</p>
                 <p className="text-xs text-emerald-500">chờ xác minh</p>
               </div>
-              <div className="rounded-lg bg-indigo-50 border border-indigo-200 p-3">
-                <p className="text-xs text-indigo-600 font-medium">Đã map NH</p>
-                <p className="text-2xl font-bold text-indigo-700">{result.matched}</p>
-                <p className="text-xs text-indigo-500">giao dịch tự động</p>
+              <div className="rounded-lg bg-sky-50 border border-sky-200 p-3">
+                <p className="text-xs text-sky-600 font-medium">Đã map NH</p>
+                <p className="text-2xl font-bold text-sky-700">{result.matched}</p>
+                <p className="text-xs text-sky-500">giao dịch tự động</p>
               </div>
               <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                 <p className="text-xs text-amber-600 font-medium">Khách hàng mới</p>
@@ -451,7 +451,7 @@ export function PaymentReconciliationClient({
           <Button
             size="sm"
             variant="outline"
-            className="border-indigo-300 text-indigo-700 hover:bg-indigo-50 h-8 text-xs"
+            className="border-sky-300 text-sky-700 hover:bg-sky-50 h-8 text-xs"
             onClick={() => setImportOpen(true)}
           >
             <Upload className="h-3.5 w-3.5 mr-1.5" />
@@ -474,7 +474,7 @@ export function PaymentReconciliationClient({
           {/* Action bar */}
           <div className="flex items-center gap-3 my-3 min-h-[40px]">
             {processing ? (
-              <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
+              <Loader2 className="h-5 w-5 animate-spin text-sky-500" />
             ) : canMatch ? (
               <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={handleMatch}>
                 <CheckCircle className="h-4 w-4 mr-1" />Xác minh ghép cặp
@@ -551,13 +551,13 @@ export function PaymentReconciliationClient({
                     const expanded = expandedPending === id;
                     return (
                       <div key={id} className={cn('rounded-lg border bg-white transition-all overflow-hidden',
-                        selected ? 'border-indigo-400 ring-1 ring-indigo-400' : 'border-slate-200')}>
+                        selected ? 'border-sky-400 ring-1 ring-sky-400' : 'border-slate-200')}>
                         {/* Main row */}
                         <div className="flex items-start gap-2 px-3 py-2.5">
                           <input
                             type="checkbox" checked={selected}
                             onChange={() => setSelectedLeft(selected ? null : id)}
-                            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 shrink-0"
+                            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 shrink-0"
                           />
                           {/* Clickable content area */}
                           <button
@@ -569,7 +569,7 @@ export function PaymentReconciliationClient({
                               <div className="flex items-baseline gap-2">
                                 <span className="font-bold text-slate-900">{formatVND(Number(p.amount))}</span>
                                 {p.paymentType?.name && (
-                                  <span className="text-xs bg-indigo-50 text-indigo-600 rounded px-1.5 py-0.5">{p.paymentType.name}</span>
+                                  <span className="text-xs bg-sky-50 text-sky-600 rounded px-1.5 py-0.5">{p.paymentType.name}</span>
                                 )}
                               </div>
                               {expanded
@@ -605,7 +605,7 @@ export function PaymentReconciliationClient({
             {/* Right: Unmatched bank transactions */}
             <div>
               <h3 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-indigo-400" />
+                <span className="h-2 w-2 rounded-full bg-sky-400" />
                 Ngân hàng — chưa match ({unmatched.length})
               </h3>
               {unmatched.length === 0 ? (
@@ -698,7 +698,7 @@ export function PaymentReconciliationClient({
                       <React.Fragment key={id}>
                         <tr
                           className={cn('border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors',
-                            expanded ? 'bg-indigo-50' : '')}
+                            expanded ? 'bg-sky-50' : '')}
                           onClick={() => setExpandedVerified(expanded ? null : id)}
                         >
                           <td className="px-4 py-3 text-slate-500">
@@ -718,7 +718,7 @@ export function PaymentReconciliationClient({
                             {p.transferDate ? formatDate(p.transferDate) : '—'}
                           </td>
                           <td className="px-4 py-3">
-                            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${p.verifiedSource === 'AUTO' ? 'bg-indigo-100 text-indigo-700' : 'bg-purple-100 text-purple-700'}`}>
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${p.verifiedSource === 'AUTO' ? 'bg-sky-100 text-sky-700' : 'bg-purple-100 text-purple-700'}`}>
                               {p.verifiedSource === 'AUTO' ? 'Auto' : 'Thủ công'}
                             </span>
                           </td>

@@ -50,7 +50,7 @@ export function BankTransactionListClient({ transactions, pendingPayments }: Pro
           {(['all', 'UNMATCHED', 'MATCHED'] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className={cn('rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
-                filter === f ? 'bg-indigo-500 text-white' : 'text-slate-600 hover:bg-slate-100')}>
+                filter === f ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-100')}>
               {f === 'all' ? 'Tất cả' : f === 'UNMATCHED' ? `Chưa khớp (${unmatchedCount})` : 'Đã khớp'}
             </button>
           ))}
@@ -98,7 +98,7 @@ function TxRow({ tx, isExpanded, isUnmatched, onToggle, pendingPayments, selecte
 }) {
   return (
     <>
-      <tr className={cn('border-b border-slate-100 hover:bg-slate-50', isUnmatched && 'cursor-pointer', isExpanded && 'bg-indigo-50/50')}
+      <tr className={cn('border-b border-slate-100 hover:bg-slate-50', isUnmatched && 'cursor-pointer', isExpanded && 'bg-sky-50/50')}
         onClick={isUnmatched ? onToggle : undefined}>
         <td className="px-4 py-3 text-slate-600">{formatDate(tx.transactionTime)}</td>
         <td className="px-4 py-3 text-right font-semibold text-slate-900">{formatVND(Number(tx.amount))}</td>
@@ -116,7 +116,7 @@ function TxRow({ tx, isExpanded, isUnmatched, onToggle, pendingPayments, selecte
         </td>
       </tr>
       {isExpanded && isUnmatched && (
-        <tr className="bg-indigo-50/30">
+        <tr className="bg-sky-50/30">
           <td colSpan={5} className="px-6 py-4">
             <div className="space-y-3">
               <p className="text-sm font-medium text-slate-700">Match thủ công — chọn thanh toán PENDING:</p>

@@ -188,8 +188,8 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
     <div>
       {/* Bulk action toolbar */}
       {someSelected && isManager && (
-        <div className="mb-3 flex items-center gap-3 rounded-lg bg-indigo-50 border border-indigo-200 px-4 py-2.5">
-          <span className="text-sm font-medium text-indigo-700">
+        <div className="mb-3 flex items-center gap-3 rounded-lg bg-sky-50 border border-sky-200 px-4 py-2.5">
+          <span className="text-sm font-medium text-sky-700">
             Đã chọn {selected.size} lead
           </span>
           {selectedPool.length > 0 && (
@@ -222,7 +222,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
         <div className="mb-2 flex items-center justify-end gap-2 text-xs text-slate-400">
           <RefreshCw className="h-3 w-3" />
           <span>Tự động cập nhật{lastRefresh ? ` · ${lastRefresh.toLocaleTimeString('vi-VN')}` : ''}</span>
-          <button type="button" onClick={fetchLeads} className="text-indigo-500 hover:underline">Làm mới</button>
+          <button type="button" onClick={fetchLeads} className="text-sky-500 hover:underline">Làm mới</button>
         </div>
       )}
 
@@ -234,7 +234,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
               {isManager && (
                 <th className="w-10 px-3 py-3">
                   <input type="checkbox" checked={allSelected} onChange={toggleAll}
-                    className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                    className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
                 </th>
               )}
               <th className="px-4 py-3 text-left font-medium text-slate-500">Họ tên</th>
@@ -256,17 +256,17 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
               const isDistributed = lead.status !== 'POOL' && !!lead.assignedAt;
               return (
                 <tr key={lead.id}
-                  className={`border-b border-slate-100 hover:bg-slate-50 last:border-0 ${selected.has(lead.id) ? 'bg-indigo-50/50' : ''} ${isDistributed ? 'bg-amber-50/30' : ''}`}>
+                  className={`border-b border-slate-100 hover:bg-slate-50 last:border-0 ${selected.has(lead.id) ? 'bg-sky-50/50' : ''} ${isDistributed ? 'bg-amber-50/30' : ''}`}>
                   {isManager && (
                     <td className="w-10 px-3 py-3">
                       <input type="checkbox" checked={selected.has(lead.id)} onChange={() => toggleOne(lead.id)}
-                        className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                        className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
                     </td>
                   )}
                   <td className="px-4 py-3">
                     <div>
                       <button type="button" onClick={() => setPreviewId(lead.id)}
-                        className="font-medium text-indigo-600 hover:underline text-left">
+                        className="font-medium text-sky-600 hover:underline text-left">
                         {lead.name}
                       </button>
                       {lead.orders && lead.orders.length > 0 && (

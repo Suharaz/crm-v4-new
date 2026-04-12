@@ -109,7 +109,7 @@ export function CreateLeadDialog({ sources: initialSources, products: initialPro
             <FormField label="Số điện thoại" required error={fieldErrors.phone}>
               <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" autoFocus />
               {phoneDuplicate && (
-                <p className="mt-1 text-xs text-indigo-600">
+                <p className="mt-1 text-xs text-sky-600">
                   KH đã có: <span className="font-semibold">{phoneDuplicate.name}</span> — dữ liệu đã tự điền
                 </p>
               )}

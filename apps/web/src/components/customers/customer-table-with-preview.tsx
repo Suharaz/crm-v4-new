@@ -30,7 +30,7 @@ export function CustomerTableWithPreview({ customers }: { customers: Customer[] 
             <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50 last:border-0">
               <td className="px-4 py-3">
                 <Link href={`/customers/${c.id}`}
-                  className="font-medium text-indigo-600 hover:underline">
+                  className="font-medium text-sky-600 hover:underline">
                   {c.name}
                 </Link>
               </td>

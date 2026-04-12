@@ -33,8 +33,8 @@ const DEPT_COLORS = [
   { bar: '#059669', badge: 'bg-emerald-100 text-emerald-800' },  // emerald
   { bar: '#d97706', badge: 'bg-amber-100 text-amber-800' },      // amber
   { bar: '#be123c', badge: 'bg-rose-100 text-rose-800' },        // rose
-  { bar: '#4f46e5', badge: 'bg-indigo-100 text-indigo-800' },          // sky
-  { bar: '#7c3aed', badge: 'bg-violet-100 text-violet-800' },    // violet
+  { bar: '#0ea5e9', badge: 'bg-sky-100 text-sky-800' },          // sky
+  { bar: '#06b6d4', badge: 'bg-teal-100 text-teal-800' },    // violet
   { bar: '#db2777', badge: 'bg-pink-100 text-pink-800' },        // pink
 ];
 
@@ -145,7 +145,7 @@ function DeptRow({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setShownCount(c => c + PAGE_SIZE); }}
-              className="mt-1 text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+              className="mt-1 text-xs text-sky-600 hover:text-sky-700 font-medium"
             >
               Xem thêm ({group.activities.length - shownCount} còn lại)
             </button>

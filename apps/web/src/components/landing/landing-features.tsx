@@ -52,7 +52,7 @@ export function LandingFeatures() {
       <div className="mx-auto max-w-7xl">
         {/* Section header */}
         <div className="mx-auto max-w-2xl text-center">
-          <span className="text-sm font-semibold uppercase tracking-wider text-indigo-600">Tính năng</span>
+          <span className="text-sm font-semibold uppercase tracking-wider text-sky-600">Tính năng</span>
           <h2 className="mt-3 text-3xl font-extrabold text-slate-900 sm:text-4xl">
             Mọi thứ đội sales{' '}
             <span className="text-gradient">cần trong một nơi</span>
@@ -68,14 +68,14 @@ export function LandingFeatures() {
           {FEATURES.map((feature) => (
             <div
               key={feature.title}
-              className="card-hover group rounded-xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(79,70,229,0.08)]"
+              className="card-hover group rounded-xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(14,165,233,0.08)]"
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition-colors group-hover:bg-gradient-to-br group-hover:from-indigo-600 group-hover:to-violet-600 group-hover:text-white">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-sky-600 transition-colors group-hover:bg-gradient-to-br group-hover:from-sky-600 group-hover:to-cyan-600 group-hover:text-white">
                 <feature.icon size={22} />
               </div>
               <h3 className="text-base font-bold text-slate-900">{feature.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-500">{feature.description}</p>
-              <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-indigo-600 opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-1">
+              <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-sky-600 opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-1">
                 Tìm hiểu thêm <span aria-hidden="true">&rarr;</span>
               </div>
             </div>

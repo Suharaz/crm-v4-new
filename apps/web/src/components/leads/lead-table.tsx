@@ -92,12 +92,12 @@ function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan }: {
 }) {
   return (
     <>
-      <tr className={cn('border-b border-slate-100 hover:bg-slate-50 cursor-pointer', isExpanded && 'bg-indigo-50/50')} onClick={onToggle}>
+      <tr className={cn('border-b border-slate-100 hover:bg-slate-50 cursor-pointer', isExpanded && 'bg-sky-50/50')} onClick={onToggle}>
         <td className="px-4 py-3">
-          <span className="font-medium text-indigo-600">{lead.name}</span>
+          <span className="font-medium text-sky-600">{lead.name}</span>
           {lead.metadata?.aiLevel && (
             <span className={`ml-1 text-[9px] font-bold px-1 py-0.5 rounded-full text-white ${
-              lead.metadata.aiLevel === 'HOT' ? 'bg-red-500' : lead.metadata.aiLevel === 'WARM' ? 'bg-amber-500' : 'bg-indigo-400'
+              lead.metadata.aiLevel === 'HOT' ? 'bg-red-500' : lead.metadata.aiLevel === 'WARM' ? 'bg-amber-500' : 'bg-sky-400'
             }`}>{lead.metadata.aiScore || '?'}</span>
           )}
         </td>

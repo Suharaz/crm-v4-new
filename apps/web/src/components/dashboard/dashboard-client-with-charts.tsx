@@ -53,7 +53,7 @@ function getDateRange(key: RangeKey): { from: string; to: string } {
 
 // ── Design tokens from design-guidelines.md ───────────────────────────────
 const COLORS = {
-  primary: '#4f46e5', primaryLight: '#e0e7ff',
+  primary: '#0ea5e9', primaryLight: '#e0e7ff',
   success: '#10b981', successLight: '#d1fae5',
   warning: '#f59e0b', warningLight: '#fef3c7',
   danger: '#ef4444', dangerLight: '#fee2e2',
@@ -61,7 +61,7 @@ const COLORS = {
   indigo: '#6366f1', indigoLight: '#e0e7ff',
   teal: '#14b8a6', tealLight: '#ccfbf1',
   orange: '#f97316',
-  violet: '#7c3aed',
+  violet: '#06b6d4',
 };
 
 const FUNNEL_COLORS: Record<string, string> = {
@@ -88,7 +88,7 @@ function ChartTooltip({ active, payload, label, valueFormatter }: {
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-slate-200 bg-white/95 backdrop-blur-sm px-3 py-2 shadow-[0_4px_20px_-2px_rgba(79,70,229,0.12)]">
+    <div className="rounded-lg border border-slate-200 bg-white/95 backdrop-blur-sm px-3 py-2 shadow-[0_4px_20px_-2px_rgba(14,165,233,0.12)]">
       <p className="text-xs font-medium text-slate-500 mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.name} className="text-sm font-semibold" style={{ color: p.color }}>
@@ -104,7 +104,7 @@ function KpiCard({ title, value, subtitle, accentColor, bgColor }: {
   title: string; value: string; subtitle: string; accentColor: string; bgColor: string;
 }) {
   return (
-    <div className="card-hover relative overflow-hidden rounded-xl border border-slate-100 bg-white p-4 shadow-[0_4px_20px_-2px_rgba(79,70,229,0.08)]">
+    <div className="card-hover relative overflow-hidden rounded-xl border border-slate-100 bg-white p-4 shadow-[0_4px_20px_-2px_rgba(14,165,233,0.08)]">
       <div className="absolute -right-3 -top-3 h-16 w-16 rounded-full opacity-10" style={{ backgroundColor: accentColor }} />
       <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{title}</p>
       <p className="mt-1.5 text-2xl font-bold" style={{ color: accentColor }}>{value}</p>
@@ -117,7 +117,7 @@ function KpiCard({ title, value, subtitle, accentColor, bgColor }: {
 // ── Chart Card wrapper ────────────────────────────────────────────────────
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(79,70,229,0.08)]">
+    <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(14,165,233,0.08)]">
       <h3 className="mb-4 text-sm font-semibold text-slate-700">{title}</h3>
       {children}
     </div>
@@ -186,11 +186,11 @@ export function DashboardClientWithCharts() {
           <h1 className="text-2xl font-bold text-slate-900">Trang chủ</h1>
           <p className="text-sm text-slate-500">{isAdmin ? 'Tổng quan hệ thống VeloCRM' : 'Thống kê cá nhân'}</p>
         </div>
-        <div className="flex rounded-xl border border-slate-200 bg-white p-1 shadow-[0_2px_10px_-2px_rgba(79,70,229,0.08)]">
+        <div className="flex rounded-xl border border-slate-200 bg-white p-1 shadow-[0_2px_10px_-2px_rgba(14,165,233,0.08)]">
           {(Object.keys(RANGE_LABELS) as RangeKey[]).map(key => (
             <button key={key} onClick={() => setRange(key)}
               className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 ${
-                range === key ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                range === key ? 'bg-gradient-to-r from-sky-600 to-cyan-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
               }`}
             >{RANGE_LABELS[key]}</button>
           ))}
@@ -370,7 +370,7 @@ export function DashboardClientWithCharts() {
                             style={{ width: `${barWidth}%`, background: `linear-gradient(to right, ${COLORS.primary}, ${COLORS.purple})` }} />
                         </div>
                       </div>
-                      <span className="text-sm font-bold text-violet-600 tabular-nums shrink-0 w-24 text-right">{fmtVND(p.revenue)}</span>
+                      <span className="text-sm font-bold text-cyan-600 tabular-nums shrink-0 w-24 text-right">{fmtVND(p.revenue)}</span>
                     </div>
                   );
                 })}
@@ -437,7 +437,7 @@ export function DashboardClientWithCharts() {
                           <div className="h-full rounded-full transition-all duration-500"
                             style={{ width: `${barW}%`, background: `linear-gradient(to right, ${COLORS.indigo}, ${COLORS.purple})` }} />
                         </div>
-                        <span className="text-sm font-bold text-indigo-600 tabular-nums w-28 text-right">{fmtVND(t.revenue)}</span>
+                        <span className="text-sm font-bold text-sky-600 tabular-nums w-28 text-right">{fmtVND(t.revenue)}</span>
                       </div>
                     </div>
                   );

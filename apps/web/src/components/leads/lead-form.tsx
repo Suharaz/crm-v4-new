@@ -124,7 +124,7 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
           <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" readOnly={!canEditPhone} className={!canEditPhone ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : ''} />
           {!canEditPhone && <p className="text-xs text-slate-400 mt-0.5">Chỉ quản lý mới được sửa SĐT</p>}
           {phoneDuplicate && (
-            <div className="mt-1 rounded-md bg-indigo-50 border border-indigo-200 px-3 py-2 text-xs text-indigo-700">
+            <div className="mt-1 rounded-md bg-sky-50 border border-sky-200 px-3 py-2 text-xs text-sky-700">
               Khách hàng đã có: <span className="font-semibold">{phoneDuplicate.name}</span> — dữ liệu đã tự điền
               {phoneDuplicate.diffs && phoneDuplicate.diffs.length > 0 && (
                 <div className="mt-1 text-red-600 font-medium">

@@ -16,7 +16,7 @@ export function LandingCta() {
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/login"
-            className="group inline-flex h-12 items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-8 text-sm font-semibold text-white shadow-[0_4px_14px_0_rgba(79,70,229,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_0_rgba(79,70,229,0.4)]"
+            className="group inline-flex h-12 items-center gap-2 rounded-lg bg-gradient-to-r from-sky-600 to-cyan-600 px-8 text-sm font-semibold text-white shadow-[0_4px_14px_0_rgba(14,165,233,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_0_rgba(14,165,233,0.4)]"
           >
             Đăng nhập hệ thống
             <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />

@@ -89,14 +89,14 @@ export function LeadListAdvancedFilterBar({ sources, products, users, department
             placeholder="Tìm theo tên, SĐT, email..."
             onKeyDown={e => { if (e.key === 'Enter') updateFilter('search', (e.target as HTMLInputElement).value); }}
             onBlur={e => { if (e.target.value !== currentSearch) updateFilter('search', e.target.value); }}
-            className="w-full rounded-lg border border-slate-200 py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-slate-200 py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
           />
         </div>
         <Button size="sm" variant={expanded ? 'default' : 'outline'} onClick={() => setExpanded(!expanded)}>
           <Filter className="h-4 w-4 mr-1" />
           Bộ lọc
           {activeFilterCount > 0 && (
-            <span className="ml-1 rounded-full bg-indigo-200 px-1.5 py-0.5 text-[10px] font-bold text-indigo-800">{activeFilterCount}</span>
+            <span className="ml-1 rounded-full bg-sky-200 px-1.5 py-0.5 text-[10px] font-bold text-sky-800">{activeFilterCount}</span>
           )}
           {expanded ? <ChevronUp className="h-3.5 w-3.5 ml-1" /> : <ChevronDown className="h-3.5 w-3.5 ml-1" />}
         </Button>
@@ -204,7 +204,7 @@ export function LeadListAdvancedFilterBar({ sources, products, users, department
               type="date"
               value={currentDateFrom}
               onChange={e => updateFilter('dateFrom', e.target.value)}
-              className="w-full h-9 rounded-md border border-slate-200 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full h-9 rounded-md border border-slate-200 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
           </div>
           <div>
@@ -213,7 +213,7 @@ export function LeadListAdvancedFilterBar({ sources, products, users, department
               type="date"
               value={currentDateTo}
               onChange={e => updateFilter('dateTo', e.target.value)}
-              className="w-full h-9 rounded-md border border-slate-200 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full h-9 rounded-md border border-slate-200 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
           </div>
         </div>

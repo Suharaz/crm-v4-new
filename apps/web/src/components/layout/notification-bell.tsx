@@ -39,7 +39,7 @@ function NotificationIcon({ type }: { type: string }) {
   if (type.includes('LEAD') || type.includes('CUSTOMER') || type.includes('lead') || type.includes('customer')) return <Users className={`${cls} text-purple-500`} />;
   if (type.includes('SUCCESS') || type.includes('success')) return <CheckCircle className={`${cls} text-green-500`} />;
   if (type.includes('ERROR') || type.includes('WARN') || type.includes('error') || type.includes('warn')) return <AlertCircle className={`${cls} text-red-500`} />;
-  return <Info className={`${cls} text-indigo-500`} />;
+  return <Info className={`${cls} text-sky-500`} />;
 }
 
 export function NotificationBell() {
@@ -150,7 +150,7 @@ export function NotificationBell() {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-96 rounded-xl border border-slate-200 bg-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.1)] z-50">
+        <div className="absolute right-0 top-full mt-2 w-96 rounded-xl border border-slate-200 bg-white shadow-[0_10px_25px_-5px_rgba(14,165,233,0.1)] z-50">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <span className="font-semibold text-slate-800 text-sm">Thông báo</span>
@@ -158,7 +158,7 @@ export function NotificationBell() {
               <button
                 type="button"
                 onClick={markAllAsRead}
-                className="flex items-center gap-1 text-sm text-indigo-500 hover:text-indigo-600 transition-colors"
+                className="flex items-center gap-1 text-sm text-sky-500 hover:text-sky-600 transition-colors"
               >
                 <Check size={14} />
                 Đánh dấu tất cả đã đọc
@@ -184,7 +184,7 @@ export function NotificationBell() {
                   type="button"
                   onClick={() => handleNotificationClick(notification)}
                   className={`flex w-full items-start gap-3 border-b border-slate-100 px-4 py-3 text-left hover:bg-slate-50 transition-colors last:border-b-0 ${
-                    !notification.isRead ? 'bg-indigo-50/50' : ''
+                    !notification.isRead ? 'bg-sky-50/50' : ''
                   }`}
                 >
                   <div className="mt-0.5">
@@ -200,7 +200,7 @@ export function NotificationBell() {
                     <p className="mt-1 text-xs text-slate-400">{timeAgo(notification.createdAt)}</p>
                   </div>
                   {!notification.isRead && (
-                    <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-indigo-500" />
+                    <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-sky-500" />
                   )}
                 </button>
               ))

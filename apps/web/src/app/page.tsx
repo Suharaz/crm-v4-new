@@ -15,9 +15,9 @@ export default function LandingPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-50">
       {/* Atmospheric blur orbs */}
-      <div className="blur-orb -left-48 top-20 h-[500px] w-[500px] bg-indigo-200 opacity-25" />
-      <div className="blur-orb -right-32 top-96 h-[400px] w-[400px] bg-violet-200 opacity-20" />
-      <div className="blur-orb left-1/3 top-[800px] h-[350px] w-[350px] bg-indigo-100 opacity-15" />
+      <div className="blur-orb -left-48 top-20 h-[500px] w-[500px] bg-sky-200 opacity-25" />
+      <div className="blur-orb -right-32 top-96 h-[400px] w-[400px] bg-cyan-200 opacity-20" />
+      <div className="blur-orb left-1/3 top-[800px] h-[350px] w-[350px] bg-sky-100 opacity-15" />
 
       <div className="relative z-10">
         <LandingNav />

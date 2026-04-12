@@ -84,7 +84,7 @@ export function MetadataKeyValueEditor({ entityType, entityId, metadata, canEdit
                   type="text"
                   value={editValue}
                   onChange={e => setEditValue(e.target.value)}
-                  className="flex-1 rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="flex-1 rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-sky-500"
                   autoFocus
                 />
                 <button onClick={() => handleEdit(key)} className="text-green-600 hover:text-green-700"><Check className="h-4 w-4" /></button>
@@ -98,7 +98,7 @@ export function MetadataKeyValueEditor({ entityType, entityId, metadata, canEdit
                 </div>
                 {canEdit && (
                   <div className="hidden group-hover:flex gap-1">
-                    <button onClick={() => { setEditingKey(key); setEditValue(String(value)); }} className="text-slate-400 hover:text-indigo-600"><Pencil className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => { setEditingKey(key); setEditValue(String(value)); }} className="text-slate-400 hover:text-sky-600"><Pencil className="h-3.5 w-3.5" /></button>
                     <button onClick={() => handleDelete(key)} className="text-slate-400 hover:text-red-600"><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>
                 )}
@@ -116,7 +116,7 @@ export function MetadataKeyValueEditor({ entityType, entityId, metadata, canEdit
             value={newKey}
             onChange={e => setNewKey(e.target.value)}
             placeholder="Tên trường"
-            className="w-32 rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-32 rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-sky-500"
             autoFocus
           />
           <input
@@ -124,7 +124,7 @@ export function MetadataKeyValueEditor({ entityType, entityId, metadata, canEdit
             value={newValue}
             onChange={e => setNewValue(e.target.value)}
             placeholder="Giá trị"
-            className="flex-1 rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="flex-1 rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-sky-500"
           />
           <button onClick={handleAdd} disabled={saving} className="text-green-600 hover:text-green-700"><Check className="h-4 w-4" /></button>
           <button onClick={() => { setAdding(false); setNewKey(''); setNewValue(''); }} className="text-slate-400 hover:text-slate-600"><X className="h-4 w-4" /></button>

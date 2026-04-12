@@ -160,7 +160,7 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
         <button
           onClick={() => setConfigOpen(!configOpen)}
           className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-            configOpen ? 'bg-indigo-100 text-indigo-700' : 'text-slate-500 hover:bg-slate-100'
+            configOpen ? 'bg-sky-100 text-sky-700' : 'text-slate-500 hover:bg-slate-100'
           }`}
         >
           <Settings className="h-3.5 w-3.5" />Tuỳ chỉnh cột
@@ -254,7 +254,7 @@ function KanbanColumn({ col, onLeadClick }: { col: { id: string; name: string; c
           <p className="py-4 text-center text-xs text-slate-400">Trống</p>
         ) : visibleLeads.map(lead => (
           <div key={lead.id} onClick={() => onLeadClick?.(lead.id)}
-            className="cursor-pointer rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-indigo-200 hover:shadow">
+            className="cursor-pointer rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-sky-200 hover:shadow">
             <div className="flex items-start justify-between">
               <span className="text-sm font-medium text-slate-900">{lead.name}</span>
               <StatusBadge status={lead.status} />

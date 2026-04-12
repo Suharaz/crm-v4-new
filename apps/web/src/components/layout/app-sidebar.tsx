@@ -85,7 +85,7 @@ export function AppSidebar() {
         className={cn(
           'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
           active
-            ? 'bg-indigo-50 text-indigo-600 shadow-[0_2px_8px_-2px_rgba(79,70,229,0.15)]'
+            ? 'bg-sky-50 text-sky-600 shadow-[0_2px_8px_-2px_rgba(14,165,233,0.15)]'
             : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
           collapsed && 'justify-center px-2',
           indent && !collapsed && 'pl-10',
@@ -93,9 +93,9 @@ export function AppSidebar() {
         title={collapsed ? item.label : undefined}
       >
         {active && (
-          <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-gradient-to-b from-indigo-600 to-violet-600" />
+          <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-gradient-to-b from-sky-600 to-cyan-600" />
         )}
-        <item.icon size={indent ? 16 : 20} className={cn(active && 'text-indigo-600')} />
+        <item.icon size={indent ? 16 : 20} className={cn(active && 'text-sky-600')} />
         {!collapsed && <span>{item.label}</span>}
       </Link>
     );
@@ -133,7 +133,7 @@ export function AppSidebar() {
                   className={cn(
                     'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
                     isLeadsActive
-                      ? 'text-indigo-600'
+                      ? 'text-sky-600'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
                   )}
                 >

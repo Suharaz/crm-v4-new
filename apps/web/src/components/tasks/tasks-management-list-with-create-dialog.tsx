@@ -51,7 +51,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: 'bg-indigo-100 text-indigo-700',
+  PENDING: 'bg-sky-100 text-sky-700',
   COMPLETED: 'bg-green-100 text-green-700',
   CANCELLED: 'bg-slate-100 text-slate-500',
 };
@@ -262,7 +262,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
               onClick={() => setQuickPreset(prev => prev === p ? '' : p)}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors border ${
                 quickPreset === p
-                  ? 'bg-indigo-500 text-white border-indigo-500'
+                  ? 'bg-sky-500 text-white border-sky-500'
                   : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
               }`}
             >
@@ -289,7 +289,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
               onClick={() => setActiveTab(tab.value)}
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                 activeTab === tab.value
-                  ? 'bg-white text-indigo-600 shadow-sm'
+                  ? 'bg-white text-sky-600 shadow-sm'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
@@ -411,14 +411,14 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
                     ) : task.status === 'CANCELLED' ? (
                       <XCircle className="h-5 w-5 text-slate-400" />
                     ) : (
-                      <Circle className="h-5 w-5 text-indigo-400" />
+                      <Circle className="h-5 w-5 text-sky-400" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <button
                       type="button"
                       onClick={() => openEdit(task)}
-                      className={`font-medium text-left truncate block w-full hover:text-indigo-600 transition-colors ${
+                      className={`font-medium text-left truncate block w-full hover:text-sky-600 transition-colors ${
                         task.status === 'COMPLETED' ? 'line-through text-slate-400' : 'text-slate-900'
                       }`}
                     >
@@ -447,14 +447,14 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
                       {entityLink ? (
                         <a
                           href={entityLink}
-                          className="flex items-center gap-1 text-indigo-500 hover:text-indigo-700"
+                          className="flex items-center gap-1 text-sky-500 hover:text-sky-700"
                           onClick={e => e.stopPropagation()}
                         >
                           <Link2 className="h-3 w-3" />
                           {task.entityType} #{task.entityId}
                         </a>
                       ) : task.entityType ? (
-                        <span className="text-indigo-500">{task.entityType} #{task.entityId}</span>
+                        <span className="text-sky-500">{task.entityType} #{task.entityId}</span>
                       ) : null}
                     </div>
                   </div>
@@ -487,7 +487,7 @@ export function TaskListClient({ initialTasks }: { initialTasks: Task[] }) {
                   <button
                     type="button"
                     onClick={() => openEdit(task)}
-                    className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                    className="p-1 rounded text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors"
                     title="Chỉnh sửa"
                   >
                     <Pencil className="h-3.5 w-3.5" />

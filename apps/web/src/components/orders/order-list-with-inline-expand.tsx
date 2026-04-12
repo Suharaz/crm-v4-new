@@ -54,13 +54,13 @@ function OrderRow({ order: o, isExpanded, onToggle }: { order: OrderRecord; isEx
   return (
     <>
       <tr
-        className={cn('border-b border-slate-100 hover:bg-slate-50 cursor-pointer', isExpanded && 'bg-indigo-50/50')}
+        className={cn('border-b border-slate-100 hover:bg-slate-50 cursor-pointer', isExpanded && 'bg-sky-50/50')}
         onClick={onToggle}
       >
         <td className="px-2 text-center">
           <ChevronDown size={14} className={cn('text-slate-400 transition-transform', isExpanded && 'rotate-180')} />
         </td>
-        <td className="px-4 py-3 font-medium text-indigo-600">#{o.id}</td>
+        <td className="px-4 py-3 font-medium text-sky-600">#{o.id}</td>
         <td className="px-4 py-3 text-slate-600">{o.customer?.name}</td>
         <td className="hidden md:table-cell px-4 py-3 text-slate-600">{o.product?.name || '—'}</td>
         <td className="px-4 py-3 text-right font-medium text-slate-900">{formatVND(Number(o.totalAmount))}</td>
@@ -89,7 +89,7 @@ function OrderExpandedDetail({ order: o }: { order: OrderRecord }) {
           <span>Sản phẩm:</span><span>{o.product?.name || '—'}</span>
           <span>Giá:</span><span>{formatVND(Number(o.amount))}</span>
           {Number(o.vatRate) > 0 && <><span>VAT ({o.vatRate}%):</span><span>{formatVND(Number(o.vatAmount))}</span></>}
-          <span>Tổng:</span><span className="font-bold text-indigo-600">{formatVND(Number(o.totalAmount))}</span>
+          <span>Tổng:</span><span className="font-bold text-sky-600">{formatVND(Number(o.totalAmount))}</span>
           {(o.orderFormat || o.productGroup) && (
             <>
               {o.orderFormat && <><span>Hình thức:</span><span>{o.orderFormat.name}</span></>}

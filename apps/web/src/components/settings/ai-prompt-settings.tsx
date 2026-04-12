@@ -127,7 +127,7 @@ export function AiPromptSettings({ initialSettings }: Props) {
       <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
         <h3 className="font-semibold text-slate-900">Model AI</h3>
         <p className="text-xs text-slate-500">
-          Model hiện tại: <span className="font-mono text-indigo-600">{model}</span>
+          Model hiện tại: <span className="font-mono text-sky-600">{model}</span>
         </p>
         <div className="relative" ref={dropdownRef}>
           <div className="relative">
@@ -155,13 +155,13 @@ export function AiPromptSettings({ initialSettings }: Props) {
                     <button
                       key={m.id}
                       onClick={() => selectModel(m)}
-                      className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-slate-50 ${isSelected ? 'bg-indigo-50' : ''}`}
+                      className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-slate-50 ${isSelected ? 'bg-sky-50' : ''}`}
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-slate-700 truncate">{m.name}</span>
                           {isFree && <span className="rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700">Free</span>}
-                          {isSelected && <Check className="h-3.5 w-3.5 text-indigo-600 shrink-0" />}
+                          {isSelected && <Check className="h-3.5 w-3.5 text-sky-600 shrink-0" />}
                         </div>
                         <span className="text-xs text-slate-400 font-mono truncate block">{m.id}</span>
                       </div>

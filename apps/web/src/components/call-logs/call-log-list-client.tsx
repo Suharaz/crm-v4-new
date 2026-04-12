@@ -26,18 +26,18 @@ interface RawCallLog {
 
 const CALL_TYPE_CONFIG: Record<string, { label: string; icon: typeof PhoneIncoming; color: string }> = {
   INCOMING: { label: 'Gọi đến', icon: PhoneIncoming, color: 'text-emerald-600' },
-  OUTGOING: { label: 'Gọi đi', icon: PhoneOutgoing, color: 'text-indigo-600' },
+  OUTGOING: { label: 'Gọi đi', icon: PhoneOutgoing, color: 'text-sky-600' },
   MISSED: { label: 'Nhỡ', icon: PhoneMissed, color: 'text-red-500' },
 };
 
 /** 8-color pastel palette for hash-based tag coloring. */
 const TAG_COLORS = [
-  'bg-indigo-100 text-indigo-700',
+  'bg-sky-100 text-sky-700',
   'bg-emerald-100 text-emerald-700',
   'bg-amber-100 text-amber-700',
   'bg-purple-100 text-purple-700',
   'bg-pink-100 text-pink-700',
-  'bg-indigo-100 text-indigo-700',
+  'bg-sky-100 text-sky-700',
   'bg-orange-100 text-orange-700',
   'bg-teal-100 text-teal-700',
 ];
@@ -186,7 +186,7 @@ export function CallLogListClient({ callLogs: initialLogs }: { callLogs: RawCall
                   onClick={() => setExpandedId(isExpanded ? null : id)}
                   className={cn(
                     'rounded-lg border bg-white px-4 py-3 cursor-pointer transition-all',
-                    isExpanded ? 'border-indigo-300 bg-indigo-50/50' : 'border-slate-200 hover:border-slate-300',
+                    isExpanded ? 'border-sky-300 bg-sky-50/50' : 'border-slate-200 hover:border-slate-300',
                   )}
                 >
                   <div className="flex items-center gap-3">

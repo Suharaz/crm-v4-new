@@ -57,7 +57,7 @@ export function PaymentApprovalClient({ payments: initial }: Props) {
               <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="font-semibold text-lg text-slate-900">{formatVND(Number(p.amount))}</span>
                 <span className="text-xs text-slate-400">#{p.id}</span>
-                {p.paymentType?.name && <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs text-indigo-700">{p.paymentType.name}</span>}
+                {p.paymentType?.name && <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">{p.paymentType.name}</span>}
               </div>
               <div className="mt-1 text-sm text-slate-500 space-x-3">
                 <span>Đơn #{p.orderId}</span>

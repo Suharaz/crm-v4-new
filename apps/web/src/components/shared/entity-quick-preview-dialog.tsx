@@ -218,7 +218,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
         </DialogTitle>
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+            <Loader2 className="h-8 w-8 animate-spin text-sky-500" />
           </div>
         ) : data ? (
           <div>
@@ -229,7 +229,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                   <h2 className="text-lg font-bold text-slate-900 truncate">{data.name}</h2>
                   <div className="flex items-center gap-2 mt-1">
                     <Phone className="h-3.5 w-3.5 text-slate-400" />
-                    <a href={`tel:${data.phone}`} className="text-sm text-indigo-600 hover:underline">{data.phone}</a>
+                    <a href={`tel:${data.phone}`} className="text-sm text-sky-600 hover:underline">{data.phone}</a>
                   </div>
                 </div>
                 <StatusBadge status={data.status} />
@@ -371,7 +371,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                           <p className="text-xs text-slate-500">Chọn đơn hàng:</p>
                           {pendingOrders.map((o) => (
                             <label key={o.id} className={`flex items-center gap-2 rounded border px-2 py-1.5 cursor-pointer text-xs ${
-                              pmtOrderId === String(o.id) ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}`}>
+                              pmtOrderId === String(o.id) ? 'border-sky-400 bg-sky-50' : 'border-slate-200'}`}>
                               <input type="radio" name="pmtOrder" checked={pmtOrderId === String(o.id)} onChange={() => setPmtOrderId(String(o.id))} />
                               <span>#{o.id} — {o.product?.name || 'N/A'} — {formatVND(Number(o.totalAmount))}</span>
                               <StatusBadge status={o.status} />

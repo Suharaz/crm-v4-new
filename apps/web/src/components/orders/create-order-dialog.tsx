@@ -261,7 +261,7 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
               <div className="rounded-lg bg-slate-50 p-3 text-sm space-y-1">
                 <div className="flex justify-between"><span className="text-slate-500">Giá</span><span className="font-medium">{formatVND(price)}</span></div>
                 {vatRate > 0 && <div className="flex justify-between"><span className="text-slate-500">VAT ({vatRate}%)</span><span>{formatVND(vatAmount)}</span></div>}
-                <div className="flex justify-between border-t border-slate-200 pt-1 font-semibold"><span>Tổng</span><span className="text-indigo-600">{formatVND(totalAmount)}</span></div>
+                <div className="flex justify-between border-t border-slate-200 pt-1 font-semibold"><span>Tổng</span><span className="text-sky-600">{formatVND(totalAmount)}</span></div>
               </div>
             )}
 

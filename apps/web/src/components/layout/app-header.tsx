@@ -17,7 +17,7 @@ export function AppHeader() {
       <div className="flex items-center gap-3">
         <NotificationBell />
         <div className="flex items-center gap-2 text-sm">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-[0_2px_8px_-2px_rgba(79,70,229,0.4)]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-[0_2px_8px_-2px_rgba(14,165,233,0.4)]">
             <User size={16} />
           </div>
           <div className="hidden sm:block">

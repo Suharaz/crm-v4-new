@@ -58,7 +58,7 @@ function getTypeIconByEffective(effectiveType: string, metaType?: string) {
   if (metaType === 'ORDER_CREATED') return <ShoppingCart className="h-4 w-4 text-blue-500" />;
   if (metaType === 'PAYMENT_CREATED') return <CreditCard className="h-4 w-4 text-emerald-500" />;
   if (metaType === 'PAYMENT_VERIFIED') return <CheckCircle className="h-4 w-4 text-green-600" />;
-  if (effectiveType === 'NOTE') return <MessageSquare className="h-4 w-4 text-indigo-500" />;
+  if (effectiveType === 'NOTE') return <MessageSquare className="h-4 w-4 text-sky-500" />;
   if (effectiveType === 'CALL') return <Phone className="h-4 w-4 text-green-500" />;
   if (effectiveType === 'STATUS_CHANGE') return <ArrowRightLeft className="h-4 w-4 text-amber-500" />;
   return <FileText className="h-4 w-4 text-slate-400" />;
@@ -105,14 +105,14 @@ export function ActivityTimelineWithFilterTabs({ activities }: { activities: Act
               onClick={() => setActiveTab(tab.value)}
               className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.value
-                  ? 'bg-indigo-100 text-indigo-700'
+                  ? 'bg-sky-100 text-sky-700'
                   : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
               }`}
             >
               <tab.icon className="h-3.5 w-3.5" />
               {tab.label}
               <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${
-                activeTab === tab.value ? 'bg-indigo-200 text-indigo-800' : 'bg-slate-200 text-slate-600'
+                activeTab === tab.value ? 'bg-sky-200 text-sky-800' : 'bg-slate-200 text-slate-600'
               }`}>
                 {count}
               </span>

@@ -60,7 +60,7 @@ export function CustomerAnalysisCard({ customerId, shortDescription, description
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-2 text-xs text-slate-400 hover:text-indigo-600"
+            className="h-7 px-2 text-xs text-slate-400 hover:text-sky-600"
             onClick={handleAnalyze}
             disabled={analyzing}
           >
@@ -88,7 +88,7 @@ export function CustomerAnalysisCard({ customerId, shortDescription, description
               <Button
                 variant="ghost"
                 size="sm"
-                className="mt-2 h-7 px-2 text-xs text-indigo-600 hover:text-indigo-700"
+                className="mt-2 h-7 px-2 text-xs text-sky-600 hover:text-sky-700"
                 onClick={() => setExpanded(!expanded)}
               >
                 {expanded ? (

@@ -71,7 +71,7 @@ function UploadZone({ label, endpoint, onJobCreated }: UploadZoneProps) {
       onDrop={onDrop}
       onClick={() => !uploading && inputRef.current?.click()}
       className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-colors ${
-        dragging ? 'border-indigo-400 bg-indigo-50' : 'border-slate-300 bg-white hover:border-indigo-300 hover:bg-indigo-50/30'
+        dragging ? 'border-sky-400 bg-sky-50' : 'border-slate-300 bg-white hover:border-sky-300 hover:bg-sky-50/30'
       }`}
     >
       <input
@@ -83,7 +83,7 @@ function UploadZone({ label, endpoint, onJobCreated }: UploadZoneProps) {
       />
       <div className="flex flex-col items-center gap-3">
         {uploading ? (
-          <Loader2 className="h-10 w-10 animate-spin text-indigo-400" />
+          <Loader2 className="h-10 w-10 animate-spin text-sky-400" />
         ) : (
           <Upload className="h-10 w-10 text-slate-300" />
         )}
@@ -100,7 +100,7 @@ function UploadZone({ label, endpoint, onJobCreated }: UploadZoneProps) {
 }
 
 const JOB_STATUS_COLORS: Record<string, string> = {
-  PROCESSING: 'bg-indigo-100 text-indigo-700',
+  PROCESSING: 'bg-sky-100 text-sky-700',
   COMPLETED: 'bg-green-100 text-green-700',
   FAILED: 'bg-red-100 text-red-600',
 };
@@ -210,7 +210,7 @@ export function CsvImportPageClient({ initialHistory }: { initialHistory: Import
             onClick={() => downloadTemplate('lead')}
             className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
           >
-            <Download className="h-4 w-4 text-indigo-500" />Mẫu import leads
+            <Download className="h-4 w-4 text-sky-500" />Mẫu import leads
           </button>
           <button
             onClick={() => downloadTemplate('customer')}

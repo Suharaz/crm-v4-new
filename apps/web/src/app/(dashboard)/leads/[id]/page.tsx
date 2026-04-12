@@ -49,7 +49,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   const aiLevel = meta?.aiLevel;
   const aiSummary = meta?.aiSummary;
   const aiScoreReason = meta?.aiScoreReason;
-  const levelColor = aiLevel === 'HOT' ? 'bg-red-500' : aiLevel === 'WARM' ? 'bg-amber-500' : aiLevel === 'COLD' ? 'bg-indigo-500' : '';
+  const levelColor = aiLevel === 'HOT' ? 'bg-red-500' : aiLevel === 'WARM' ? 'bg-amber-500' : aiLevel === 'COLD' ? 'bg-sky-500' : '';
   const levelText = aiLevel === 'HOT' ? 'Nóng' : aiLevel === 'WARM' ? 'Ấm' : aiLevel === 'COLD' ? 'Lạnh' : '';
 
   const initials = (lead.name || '?').split(' ').map((w: string) => w[0]).slice(-2).join('').toUpperCase();
@@ -62,7 +62,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
       <div className="rounded-xl border border-slate-200 bg-white p-5">
         <div className="flex items-start gap-4">
           {/* Avatar */}
-          <div className="hidden sm:flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-lg font-bold">
+          <div className="hidden sm:flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-700 text-lg font-bold">
             {initials}
           </div>
 
@@ -85,11 +85,11 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
 
             {/* Row 3: Contact info inline */}
             <div className="flex items-center gap-4 mt-2 flex-wrap text-sm">
-              <a href={`tel:${lead.phone}`} className="flex items-center gap-1.5 text-slate-600 hover:text-indigo-600">
+              <a href={`tel:${lead.phone}`} className="flex items-center gap-1.5 text-slate-600 hover:text-sky-600">
                 <Phone className="h-3.5 w-3.5" />{lead.phone}
               </a>
               {lead.email && (
-                <a href={`mailto:${lead.email}`} className="flex items-center gap-1.5 text-slate-600 hover:text-indigo-600">
+                <a href={`mailto:${lead.email}`} className="flex items-center gap-1.5 text-slate-600 hover:text-sky-600">
                   <Mail className="h-3.5 w-3.5" />{lead.email}
                 </a>
               )}
@@ -107,7 +107,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
               )}
               {lead.linkedinUrl && (
                 <a href={lead.linkedinUrl} target="_blank" rel="noopener noreferrer"
-                  className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-xs font-medium hover:bg-indigo-100">LinkedIn</a>
+                  className="px-2 py-0.5 rounded bg-sky-50 text-sky-700 text-xs font-medium hover:bg-sky-100">LinkedIn</a>
               )}
             </div>
 
@@ -162,7 +162,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                 <div className="flex items-center gap-2">
                   <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
                   <span className="text-slate-500">Khách hàng</span>
-                  <Link href={`/customers/${lead.customerId ?? ''}`} className="ml-auto text-indigo-600 hover:underline text-sm">
+                  <Link href={`/customers/${lead.customerId ?? ''}`} className="ml-auto text-sky-600 hover:underline text-sm">
                     {lead.customer.name}
                   </Link>
                 </div>

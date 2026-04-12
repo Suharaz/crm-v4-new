@@ -131,7 +131,7 @@ export function DistributionAiWeightConfigClient({ departments }: Props) {
               <button
                 onClick={() => setConfig({ ...config, isActive: !config.isActive })}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  config.isActive ? 'bg-indigo-500' : 'bg-slate-300'
+                  config.isActive ? 'bg-sky-500' : 'bg-slate-300'
                 }`}
               >
                 <span
@@ -165,7 +165,7 @@ export function DistributionAiWeightConfigClient({ departments }: Props) {
                     max={100}
                     value={config.weightConfig[key]}
                     onChange={(e) => handleWeightChange(key, Number(e.target.value))}
-                    className="w-20 rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-20 rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
                   />
                   <span className="text-sm text-slate-400">%</span>
                 </div>
@@ -201,7 +201,7 @@ export function DistributionAiWeightConfigClient({ departments }: Props) {
                     {scores.map((s) => (
                       <tr key={s.userId} className="border-b border-slate-100 hover:bg-slate-50 last:border-0">
                         <td className="px-4 py-2 font-medium text-slate-800">{s.name}</td>
-                        <td className="px-4 py-2 text-right font-semibold text-indigo-600">{s.score.toFixed(1)}</td>
+                        <td className="px-4 py-2 text-right font-semibold text-sky-600">{s.score.toFixed(1)}</td>
                         <td className="px-4 py-2 text-right text-slate-600">{s.details?.workload?.toFixed(1) ?? '—'}</td>
                         <td className="px-4 py-2 text-right text-slate-600">{s.details?.level?.toFixed(1) ?? '—'}</td>
                         <td className="px-4 py-2 text-right text-slate-600">{s.details?.conversion?.toFixed(1) ?? '—'}</td>

@@ -130,7 +130,7 @@ export function ProductListClient({ products, categories }: ProductListClientPro
             {products.length === 0 ? (
               <div className="col-span-full rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">Không có sản phẩm nào</div>
             ) : products.map((p) => (
-              <div key={p.id} className={`rounded-xl border p-5 cursor-pointer hover:shadow-sm transition-all ${p.isActive ? 'border-slate-200 bg-white hover:border-indigo-200' : 'border-slate-100 bg-slate-50 opacity-60'}`} onClick={() => setViewingProduct(p)}>
+              <div key={p.id} className={`rounded-xl border p-5 cursor-pointer hover:shadow-sm transition-all ${p.isActive ? 'border-slate-200 bg-white hover:border-sky-200' : 'border-slate-100 bg-slate-50 opacity-60'}`} onClick={() => setViewingProduct(p)}>
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-semibold text-slate-900">
@@ -165,7 +165,7 @@ export function ProductListClient({ products, categories }: ProductListClientPro
                   )}
                 </div>
                 <div className="mt-3 flex items-baseline gap-2">
-                  <span className="text-lg font-bold text-indigo-600">{formatVND(Number(p.price))}</span>
+                  <span className="text-lg font-bold text-sky-600">{formatVND(Number(p.price))}</span>
                   {Number(p.vatRate) > 0 && <span className="text-xs text-slate-400">+VAT {p.vatRate}%</span>}
                 </div>
                 {p.description && <p className="mt-2 line-clamp-2 text-sm text-slate-600">{p.description}</p>}
@@ -200,7 +200,7 @@ export function ProductListClient({ products, categories }: ProductListClientPro
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Giá</span>
-                <span className="text-lg font-bold text-indigo-600">{formatVND(Number(viewingProduct.price))}</span>
+                <span className="text-lg font-bold text-sky-600">{formatVND(Number(viewingProduct.price))}</span>
               </div>
               {Number(viewingProduct.vatRate) > 0 && (
                 <div className="flex items-center justify-between">

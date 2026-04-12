@@ -153,7 +153,7 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
                       type="checkbox"
                       checked={!!formData[f.key]}
                       onChange={e => setFormData(prev => ({ ...prev, [f.key]: e.target.checked }))}
-                      className="h-4 w-4 rounded border-slate-300 text-indigo-600"
+                      className="h-4 w-4 rounded border-slate-300 text-sky-600"
                     />
                     <span className="text-sm text-slate-600">{f.placeholder || 'Bật'}</span>
                   </label>

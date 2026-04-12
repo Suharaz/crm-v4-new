@@ -97,7 +97,6 @@ pnpm db:push
 
 # ── Step 6: Restart PM2 ─────────────────────────────────────────────
 echo ">>> [6/6] Starting PM2 apps..."
-mkdir -p logs
 if pm2 describe crm-api > /dev/null 2>&1; then
   pm2 reload ecosystem.config.cjs
 else

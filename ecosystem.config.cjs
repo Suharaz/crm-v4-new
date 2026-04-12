@@ -13,10 +13,6 @@ module.exports = {
         API_PORT: 3010,
       },
       max_memory_restart: '512M',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
-      error_file: './logs/api-error.log',
-      out_file: './logs/api-out.log',
-      merge_logs: true,
     },
     {
       name: 'crm-web',
@@ -30,10 +26,6 @@ module.exports = {
         PORT: 3011,
       },
       max_memory_restart: '512M',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
-      error_file: './logs/web-error.log',
-      out_file: './logs/web-out.log',
-      merge_logs: true,
     },
   ],
 };

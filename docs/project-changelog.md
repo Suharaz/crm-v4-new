@@ -6,7 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ### MCP Server + AI Agent REST API (2026-04-12)
 - **MCP Server:** Streamable HTTP transport at `POST /api/v1/mcp` (stateless mode). Read-only tools for AI agents to query CRM data
-- **MCP Tools (10):** `get_schema`, `search_leads`, `get_lead_detail`, `search_customers`, `get_customer_detail`, `search_orders`, `get_order_detail`, `list_products`, `get_stats`, `list_users`
+- **MCP Tools (18):** 10 core tools + 8 analytics tools for Sales Director
+  - Core: `get_schema`, `search_leads`, `get_lead_detail`, `search_customers`, `get_customer_detail`, `search_orders`, `get_order_detail`, `list_products`, `get_stats`, `list_users`
+  - Analytics: `get_revenue_trend`, `get_top_performers`, `get_dept_performance`, `get_team_performance`, `get_leads_by_source`, `get_conversion_trend`, `get_lead_aging`, `analyze_lead_quality` (CPL/CPA/ROAS with adSpend input)
 - **Smart filtering:** All tools enforce `limit` (default 20, max 100), cursor pagination. Never return all data
 - **Auth:** API key via `x-api-key` header with granular `mcp:*` permissions (leads, customers, orders, products, stats, users, schema)
 - **REST fallback:** `/ai-agent/` endpoints reuse same query service for non-MCP AI clients

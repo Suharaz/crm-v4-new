@@ -75,6 +75,9 @@ export function LandingFeatures() {
               </div>
               <h3 className="text-base font-bold text-slate-900">{feature.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-500">{feature.description}</p>
+              <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-indigo-600 opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-1">
+                Tìm hiểu thêm <span aria-hidden="true">&rarr;</span>
+              </div>
             </div>
           ))}
         </div>

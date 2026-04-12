@@ -29,7 +29,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Trang chủ', href: '/', icon: LayoutDashboard },
+  { label: 'Trang chủ', href: '/dashboard', icon: LayoutDashboard },
   {
     label: 'Leads', href: '/leads', icon: Users,
     childRoles: ['MANAGER', 'USER'],
@@ -74,7 +74,7 @@ export function AppSidebar() {
   });
 
   function renderNavLink(item: { label: string; href: string; icon: React.ElementType }, indent = false) {
-    const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href) && item.href !== '/leads');
+    const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href) && item.href !== '/leads');
     const isExactLeads = item.href === '/leads' && pathname === '/leads';
     const active = item.href === '/leads' ? isExactLeads : isActive;
 

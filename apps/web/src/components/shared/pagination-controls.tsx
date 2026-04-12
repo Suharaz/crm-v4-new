@@ -38,7 +38,7 @@ export function PaginationControls({ total, page, limit, totalPages }: Props) {
       params.set('limit', String(savedNum));
       router.replace(`?${params.toString()}`);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   if (total == null) return null;
 

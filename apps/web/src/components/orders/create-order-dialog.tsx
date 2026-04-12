@@ -142,7 +142,7 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
         }).catch(() => {});
       }
     }
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open]);
 
   // Order fields
   const [productId, setProductId] = useState('');

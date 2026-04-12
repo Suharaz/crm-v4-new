@@ -50,7 +50,7 @@ export function PaymentActions({
     api.get<{ data: NamedEntity[] }>('/payment-installments')
       .then(r => setInstallments((r.data || []).map(i => ({ id: String(i.id), name: i.name }))))
       .catch(() => {});
-  }, [createOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [createOpen]);
 
   const createAction = useFormAction({ successMessage: 'Đã tạo thanh toán' });
   const verifyAction = useFormAction({ successMessage: 'Đã xác nhận thanh toán' });

@@ -183,6 +183,17 @@ export function registerSchemaTools(
               sourceId: 'string (bigint) — optional, filter to specific source',
             },
           },
+          {
+            name: 'analyze_ads_effectiveness',
+            permission: 'mcp:stats:read',
+            description: 'Deep ads analysis: phone dedup, true duplicates, multi-product interest, revenue per source, conversion time, source×product matrix.',
+            filters: {
+              dateFrom: 'ISO date (required)',
+              dateTo: 'ISO date (required)',
+              adSpend: 'number (VND) — optional, for CPL per source',
+              sourceId: 'string (bigint) — optional, filter to specific source',
+            },
+          },
         ],
         enums: {
           LeadStatus: ['POOL', 'ASSIGNED', 'IN_PROGRESS', 'CONVERTED', 'LOST', 'FLOATING'],

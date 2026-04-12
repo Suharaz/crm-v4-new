@@ -1,5 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { DashboardService } from '../../dashboard/dashboard.service';
 import { hasPermission } from '../mcp-agent-auth.guard';
@@ -266,6 +266,207 @@ export function registerAnalyticsTools(
           summary: { totalLeads, totalConverted, conversionRate: `${conversionRate}%`, revenue },
           roi,
           bySource: filtered,
+        };
+
+        return { content: [{ type: 'text' as const, text: JSON.stringify(result, bigIntReplacer, 2) }] };
+      } catch (err) {
+        return { content: [{ type: 'text' as const, text: `Error: ${(err as Error).message}` }], isError: true };
+      }
+    },
+  );
+
+  // ── 9. Ads Effectiveness — Dedup + Source×Product Matrix ─────
+  server.registerTool(
+    'analyze_ads_effectiveness',
+    {
+      title: 'Ads Effectiveness Analysis',
+      description:
+        'Deep analysis of advertising effectiveness. Detects: ' +
+        '(1) phone dedup ratio (unique phones vs total leads), ' +
+        '(2) true duplicates (same phone+product+source = wasted spend), ' +
+        '(3) multi-product interest (same phone, different products = upsell), ' +
+        '(4) revenue attribution per source (actual VND, not just count), ' +
+        '(5) avg days to convert, ' +
+        '(6) source×product performance matrix. ' +
+        'Provide adSpend to calculate CPL per source.',
+      inputSchema: z.object({
+        dateFrom: z.string().describe('Period start (ISO date)'),
+        dateTo: z.string().describe('Period end (ISO date)'),
+        adSpend: z.number().optional().describe('Total ads spend in VND (optional, for CPL calculation)'),
+        sourceId: z.string().optional().describe('Filter to specific source ID'),
+      }),
+      annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+    },
+    async (params: { dateFrom: string; dateTo: string; adSpend?: number; sourceId?: string }) => {
+      if (!hasPermission(permissions, 'mcp:stats:read')) {
+        return { content: [{ type: 'text' as const, text: 'Permission denied: mcp:stats:read required' }], isError: true };
+      }
+      try {
+        const from = new Date(params.dateFrom);
+        const to = new Date(params.dateTo + 'T23:59:59Z');
+        const sourceFilter = params.sourceId
+          ? Prisma.sql`AND l.source_id = ${BigInt(params.sourceId)}`
+          : Prisma.sql``;
+
+        // ── 1. Dedup analysis ──────────────────────────────────
+        const dedupRows = await prisma.$queryRaw<{ total_leads: bigint; unique_phones: bigint }[]>`
+          SELECT COUNT(*)::bigint as total_leads,
+                 COUNT(DISTINCT phone)::bigint as unique_phones
+          FROM leads l
+          WHERE l.deleted_at IS NULL
+            AND l.created_at >= ${from} AND l.created_at <= ${to}
+            ${sourceFilter}
+        `;
+        const totalLeads = Number(dedupRows[0]?.total_leads ?? 0);
+        const uniquePhones = Number(dedupRows[0]?.unique_phones ?? 0);
+        const dedupRatio = totalLeads > 0 ? Math.round((uniquePhones / totalLeads) * 100) : 100;
+
+        // ── 2. True duplicates (same phone+product+source) ────
+        const dupeRows = await prisma.$queryRaw<{
+          phone: string; source_name: string; product_name: string; count: bigint;
+        }[]>`
+          SELECT l.phone,
+                 COALESCE(ls.name, 'Không rõ') as source_name,
+                 COALESCE(p.name, 'Không rõ') as product_name,
+                 COUNT(*)::bigint as count
+          FROM leads l
+          LEFT JOIN lead_sources ls ON ls.id = l.source_id
+          LEFT JOIN products p ON p.id = l.product_id
+          WHERE l.deleted_at IS NULL
+            AND l.created_at >= ${from} AND l.created_at <= ${to}
+            ${sourceFilter}
+          GROUP BY l.phone, ls.name, p.name
+          HAVING COUNT(*) > 1
+          ORDER BY count DESC
+          LIMIT 20
+        `;
+
+        // ── 3. Multi-product interest (same phone, diff products)
+        const multiProductRows = await prisma.$queryRaw<{
+          phone: string; name: string; product_count: bigint; products: string;
+        }[]>`
+          SELECT l.phone, MAX(l.name) as name,
+                 COUNT(DISTINCT l.product_id)::bigint as product_count,
+                 STRING_AGG(DISTINCT p.name, ', ') as products
+          FROM leads l
+          LEFT JOIN products p ON p.id = l.product_id
+          WHERE l.deleted_at IS NULL
+            AND l.created_at >= ${from} AND l.created_at <= ${to}
+            AND l.product_id IS NOT NULL
+            ${sourceFilter}
+          GROUP BY l.phone
+          HAVING COUNT(DISTINCT l.product_id) > 1
+          ORDER BY product_count DESC
+          LIMIT 20
+        `;
+
+        // ── 4. Revenue per source ──────────────────────────────
+        const revenueBySource = await prisma.$queryRaw<{
+          source_name: string; leads: bigint; converted: bigint; revenue: bigint;
+        }[]>`
+          SELECT COALESCE(ls.name, 'Không rõ') as source_name,
+                 COUNT(DISTINCT l.id)::bigint as leads,
+                 COUNT(DISTINCT CASE WHEN l.status = 'CONVERTED' THEN l.id END)::bigint as converted,
+                 COALESCE(SUM(CASE WHEN pay.status = 'VERIFIED' THEN pay.amount ELSE 0 END), 0)::bigint as revenue
+          FROM leads l
+          LEFT JOIN lead_sources ls ON ls.id = l.source_id
+          LEFT JOIN orders o ON o.lead_id = l.id AND o.deleted_at IS NULL
+          LEFT JOIN payments pay ON pay.order_id = o.id
+          WHERE l.deleted_at IS NULL
+            AND l.created_at >= ${from} AND l.created_at <= ${to}
+            ${sourceFilter}
+          GROUP BY ls.name
+          ORDER BY revenue DESC
+        `;
+
+        // ── 5. Avg conversion time ────────────────────────────
+        const convTimeRows = await prisma.$queryRaw<{ avg_days: number }[]>`
+          SELECT ROUND(AVG(EXTRACT(DAY FROM l.updated_at - l.created_at))::numeric, 1) as avg_days
+          FROM leads l
+          WHERE l.deleted_at IS NULL AND l.status = 'CONVERTED'
+            AND l.created_at >= ${from} AND l.created_at <= ${to}
+            ${sourceFilter}
+        `;
+        const avgDaysToConvert = convTimeRows[0]?.avg_days ?? null;
+
+        // ── 6. Source × Product matrix ─────────────────────────
+        const matrixRows = await prisma.$queryRaw<{
+          source_name: string; product_name: string;
+          leads: bigint; converted: bigint; revenue: bigint;
+        }[]>`
+          SELECT COALESCE(ls.name, 'Không rõ') as source_name,
+                 COALESCE(p.name, 'Không rõ') as product_name,
+                 COUNT(DISTINCT l.id)::bigint as leads,
+                 COUNT(DISTINCT CASE WHEN l.status = 'CONVERTED' THEN l.id END)::bigint as converted,
+                 COALESCE(SUM(CASE WHEN pay.status = 'VERIFIED' THEN pay.amount ELSE 0 END), 0)::bigint as revenue
+          FROM leads l
+          LEFT JOIN lead_sources ls ON ls.id = l.source_id
+          LEFT JOIN products p ON p.id = l.product_id
+          LEFT JOIN orders o ON o.lead_id = l.id AND o.deleted_at IS NULL
+          LEFT JOIN payments pay ON pay.order_id = o.id
+          WHERE l.deleted_at IS NULL
+            AND l.created_at >= ${from} AND l.created_at <= ${to}
+            ${sourceFilter}
+          GROUP BY ls.name, p.name
+          ORDER BY revenue DESC
+          LIMIT 30
+        `;
+
+        // Build result
+        const totalRevenue = revenueBySource.reduce((s, r) => s + Number(r.revenue), 0);
+        const totalConverted = revenueBySource.reduce((s, r) => s + Number(r.converted), 0);
+
+        const result = {
+          period: { from: from.toISOString(), to: to.toISOString() },
+          dedup: {
+            totalLeads,
+            uniquePhones,
+            dedupRatio: `${dedupRatio}%`,
+            duplicateLeads: totalLeads - uniquePhones,
+            verdict: dedupRatio >= 90 ? 'Tốt — ít trùng' : dedupRatio >= 70 ? 'Trung bình — có trùng' : 'Kém — nhiều lead trùng SĐT',
+          },
+          trueDuplicates: {
+            count: dupeRows.length,
+            note: 'Cùng SĐT + cùng SP + cùng nguồn = lead trùng, phí ads',
+            items: dupeRows.map(r => ({
+              phone: r.phone, source: r.source_name, product: r.product_name, count: Number(r.count),
+            })),
+          },
+          multiProductInterest: {
+            count: multiProductRows.length,
+            note: 'Cùng SĐT + khác SP = quan tâm nhiều SP, tiềm năng upsell',
+            items: multiProductRows.map(r => ({
+              phone: r.phone, name: r.name, productCount: Number(r.product_count), products: r.products,
+            })),
+          },
+          revenueBySource: revenueBySource.map(r => ({
+            source: r.source_name,
+            leads: Number(r.leads),
+            converted: Number(r.converted),
+            conversionRate: Number(r.leads) > 0 ? `${Math.round(Number(r.converted) / Number(r.leads) * 100)}%` : '0%',
+            revenue: Number(r.revenue),
+            ...(params.adSpend ? {
+              estimatedCPL: Math.round((params.adSpend * Number(r.leads) / Math.max(totalLeads, 1)) / Math.max(Number(r.leads), 1)),
+            } : {}),
+          })),
+          conversionTime: {
+            avgDays: avgDaysToConvert,
+            note: avgDaysToConvert !== null ? `Trung bình ${avgDaysToConvert} ngày từ tạo lead → CONVERTED` : 'Chưa có data',
+          },
+          sourceProductMatrix: matrixRows.map(r => ({
+            source: r.source_name, product: r.product_name,
+            leads: Number(r.leads), converted: Number(r.converted), revenue: Number(r.revenue),
+          })),
+          summary: {
+            totalLeads, uniquePhones, totalConverted, totalRevenue,
+            overallConversionRate: totalLeads > 0 ? `${Math.round(totalConverted / totalLeads * 100)}%` : '0%',
+            ...(params.adSpend ? {
+              adSpend: params.adSpend,
+              cpl: Math.round(params.adSpend / Math.max(totalLeads, 1)),
+              cpa: totalConverted > 0 ? Math.round(params.adSpend / totalConverted) : null,
+              roas: params.adSpend > 0 ? Math.round(totalRevenue / params.adSpend * 100) / 100 : null,
+            } : {}),
+          },
         };
 
         return { content: [{ type: 'text' as const, text: JSON.stringify(result, bigIntReplacer, 2) }] };

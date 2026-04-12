@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Settings Page Grouped Sidebar Navigation (2026-04-12)
+- **Layout:** Replaced 12 flat tabs with sidebar grouped into 4 categories
+- **Tổ chức:** Phòng ban & Team (combined view), Cấp bậc
+- **Lead & KH:** Nguồn lead, Nhãn
+- **Đơn hàng & TT:** Thanh toán, Lần CK, Hình thức, Nhóm SP, TK Ngân hàng
+- **Hệ thống:** API Keys, AI (admin only)
+- **Mobile:** Native select dropdown for settings navigation
+- **UX:** Collapsible group headers, icon + active highlight per item
+
 ### User Profile Page + Password Toggle (2026-04-12)
 - **Profile page:** `/profile` — view account info (email, role, dept, team), edit name/phone, change password
 - **Password toggle:** Eye/EyeOff icon on login + profile password fields

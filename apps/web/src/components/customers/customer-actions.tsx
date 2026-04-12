@@ -121,7 +121,7 @@ export function CustomerActions({ customer, departments, labels }: CustomerActio
                   onClick={() => setSelectedLabelIds(prev =>
                     isSelected ? prev.filter(id => id !== l.id) : [...prev, l.id]
                   )}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${isSelected ? 'ring-2 ring-sky-500 text-white' : 'text-white opacity-60'}`}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${isSelected ? 'ring-2 ring-indigo-500 text-white' : 'text-white opacity-60'}`}
                   style={{ backgroundColor: l.color }}
                 >
                   {l.name}

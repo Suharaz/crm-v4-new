@@ -39,8 +39,8 @@ export default async function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Cài đặt</h1>
-      <p className="text-sm text-gray-500 mb-6">Quản lý cấu hình hệ thống</p>
+      <h1 className="text-2xl font-bold text-slate-900">Cài đặt</h1>
+      <p className="text-sm text-slate-500 mb-6">Quản lý cấu hình hệ thống</p>
 
       <SettingsPageClient
         departments={departments}

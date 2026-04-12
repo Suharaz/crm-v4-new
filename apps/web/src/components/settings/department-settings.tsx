@@ -22,9 +22,9 @@ export function DepartmentSettings({ data, canEdit }: DepartmentSettingsProps) {
         const count = item._count as { users?: number } | undefined;
         return (
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-700">{item.name}</span>
+            <span className="text-sm text-slate-700">{item.name}</span>
             {count?.users !== undefined && (
-              <span className="text-xs text-gray-400">({count.users} NV)</span>
+              <span className="text-xs text-slate-400">({count.users} NV)</span>
             )}
           </div>
         );

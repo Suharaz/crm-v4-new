@@ -23,8 +23,8 @@ export default async function PoolNewPage() {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Chờ phân phối</h1>
-          <p className="text-sm text-gray-500">Leads chưa phân phối + theo dõi leads đã phân gần đây</p>
+          <h1 className="text-2xl font-bold text-slate-900">Chờ phân phối</h1>
+          <p className="text-sm text-slate-500">Leads chưa phân phối + theo dõi leads đã phân gần đây</p>
         </div>
         {isManager && <CreateLeadDialog />}
       </div>

@@ -138,29 +138,29 @@ export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
     }
   }
 
-  if (loading) return <div className="text-sm text-gray-400">Đang tải...</div>;
+  if (loading) return <div className="text-sm text-slate-400">Đang tải...</div>;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-gray-900">Template phân phối thủ công</h3>
-          <p className="text-xs text-gray-500">Round-robin: chia đều leads cho danh sách nhân viên</p>
+          <h3 className="font-semibold text-slate-900">Template phân phối thủ công</h3>
+          <p className="text-xs text-slate-500">Round-robin: chia đều leads cho danh sách nhân viên</p>
         </div>
         <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" />Tạo template</Button>
       </div>
 
       {templates.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-400">
+        <div className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
           Chưa có template nào. Tạo template để phân phối leads nhanh.
         </div>
       ) : (
         <div className="space-y-2">
           {templates.map(t => (
-            <div key={t.id} className="rounded-lg border border-gray-200 bg-white p-4 flex items-center justify-between">
+            <div key={t.id} className="rounded-lg border border-slate-200 bg-white p-4 flex items-center justify-between">
               <div>
-                <div className="font-medium text-gray-800">{t.name}</div>
-                <div className="text-xs text-gray-500 mt-0.5">
+                <div className="font-medium text-slate-800">{t.name}</div>
+                <div className="text-xs text-slate-500 mt-0.5">
                   <Users className="inline h-3 w-3 mr-1" />
                   {t.members?.map(m => m.user.name).join(', ') || 'Chưa có thành viên'}
                   <span className="mx-1">·</span>
@@ -172,7 +172,7 @@ export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
                   <Play className="h-3.5 w-3.5 mr-1" />Phân phối
                 </Button>
                 <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(t)}>
-                  <Pencil className="h-3.5 w-3.5 text-gray-400" />
+                  <Pencil className="h-3.5 w-3.5 text-slate-400" />
                 </Button>
                 <ConfirmDialog
                   trigger={<Button size="icon" variant="ghost" className="h-8 w-8"><Trash2 className="h-3.5 w-3.5 text-red-400" /></Button>}
@@ -195,11 +195,11 @@ export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium text-gray-700">Tên template</label>
+              <label className="text-sm font-medium text-slate-700">Tên template</label>
               <Input value={name} onChange={e => setName(e.target.value)} placeholder="VD: Team Sales A" className="mt-1" />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Phòng ban</label>
+              <label className="text-sm font-medium text-slate-700 mb-1 block">Phòng ban</label>
               <Select value={selectedDeptId} onValueChange={(v) => { setSelectedDeptId(v); setSelectedUserIds(new Set()); }}>
                 <SelectTrigger><SelectValue placeholder="Chọn phòng ban" /></SelectTrigger>
                 <SelectContent>
@@ -211,26 +211,26 @@ export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
             </div>
             {selectedDeptId && (
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                <label className="text-sm font-medium text-slate-700 mb-2 block">
                   Chọn nhân viên ({selectedUserIds.size}/{filteredUsers.length} đã chọn)
                   <button
                     type="button"
                     onClick={() => setSelectedUserIds(new Set(filteredUsers.map(u => u.id)))}
-                    className="ml-2 text-xs text-sky-600 hover:underline"
+                    className="ml-2 text-xs text-indigo-600 hover:underline"
                   >Chọn tất cả</button>
                 </label>
                 <div className="max-h-48 overflow-y-auto space-y-1 border rounded-lg p-2">
                   {filteredUsers.length === 0 ? (
-                    <p className="text-xs text-gray-400 p-2">Không có nhân viên trong phòng ban này</p>
+                    <p className="text-xs text-slate-400 p-2">Không có nhân viên trong phòng ban này</p>
                   ) : filteredUsers.map(u => (
-                    <label key={u.id} className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-gray-50 cursor-pointer">
+                    <label key={u.id} className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-slate-50 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={selectedUserIds.has(u.id)}
                         onChange={() => toggleUser(u.id)}
-                        className="h-4 w-4 rounded border-gray-300 text-sky-600"
+                        className="h-4 w-4 rounded border-slate-300 text-indigo-600"
                       />
-                      <span className="text-sm text-gray-700">{u.name}</span>
+                      <span className="text-sm text-slate-700">{u.name}</span>
                     </label>
                   ))}
                 </div>
@@ -253,8 +253,8 @@ export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
             <DialogTitle>Phân phối leads theo template</DialogTitle>
           </DialogHeader>
           <div className="py-2">
-            <p className="text-sm text-gray-600">
-              Sẽ phân phối <span className="font-semibold text-sky-600">{poolLeads.length} leads</span> từ
+            <p className="text-sm text-slate-600">
+              Sẽ phân phối <span className="font-semibold text-indigo-600">{poolLeads.length} leads</span> từ
               Kho Mới cho nhân viên trong template theo round-robin.
             </p>
             {poolLeads.length === 0 && (

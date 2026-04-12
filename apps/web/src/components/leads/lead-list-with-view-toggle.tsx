@@ -36,18 +36,18 @@ export function LeadListWithViewToggle({ leads, allLabels }: Props) {
     <>
       {/* View mode toggle */}
       <div className="flex justify-end">
-        <div className="flex rounded-lg border border-gray-200 bg-white p-0.5">
+        <div className="flex rounded-lg border border-slate-200 bg-white p-0.5">
           <button
             onClick={() => changeView('table')}
             className={cn('flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
-              view === 'table' ? 'bg-sky-500 text-white' : 'text-gray-600 hover:bg-gray-100')}
+              view === 'table' ? 'bg-indigo-500 text-white' : 'text-slate-600 hover:bg-slate-100')}
           >
             <List size={14} /> Bảng
           </button>
           <button
             onClick={() => changeView('kanban')}
             className={cn('flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
-              view === 'kanban' ? 'bg-sky-500 text-white' : 'text-gray-600 hover:bg-gray-100')}
+              view === 'kanban' ? 'bg-indigo-500 text-white' : 'text-slate-600 hover:bg-slate-100')}
           >
             <LayoutGrid size={14} /> Kanban
           </button>

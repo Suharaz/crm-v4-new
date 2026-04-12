@@ -89,12 +89,12 @@ export function CustomerForm({ customer, departments, users }: CustomerFormProps
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
       {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
-      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-        <h3 className="font-semibold text-gray-900">Thông tin khách hàng</h3>
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+        <h3 className="font-semibold text-slate-900">Thông tin khách hàng</h3>
 
         <FormField label="Số điện thoại" required error={fieldErrors.phone}>
-          <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" readOnly={!canEditPhone} className={!canEditPhone ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''} />
-          {!canEditPhone && <p className="text-xs text-gray-400 mt-0.5">Chỉ quản lý mới được sửa SĐT</p>}
+          <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" readOnly={!canEditPhone} className={!canEditPhone ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : ''} />
+          {!canEditPhone && <p className="text-xs text-slate-400 mt-0.5">Chỉ quản lý mới được sửa SĐT</p>}
         </FormField>
 
         <FormField label="Họ tên" required error={fieldErrors.name}>
@@ -125,8 +125,8 @@ export function CustomerForm({ customer, departments, users }: CustomerFormProps
       </div>
 
       {/* Description */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-        <h3 className="font-semibold text-gray-900">Mô tả</h3>
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+        <h3 className="font-semibold text-slate-900">Mô tả</h3>
 
         <FormField label="Mô tả ngắn" error={fieldErrors.shortDescription}>
           <Input value={form.shortDescription} onChange={e => update('shortDescription', e.target.value)} placeholder="VD: Khách hàng tiềm năng mảng bất động sản" />
@@ -138,8 +138,8 @@ export function CustomerForm({ customer, departments, users }: CustomerFormProps
       </div>
 
       {/* Company + Social links */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-        <h3 className="font-semibold text-gray-900">Công ty & Mạng xã hội</h3>
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+        <h3 className="font-semibold text-slate-900">Công ty & Mạng xã hội</h3>
 
         <FormField label="Tên công ty" error={fieldErrors.companyName}>
           <Input value={form.companyName} onChange={e => update('companyName', e.target.value)} placeholder="Công ty ABC" />
@@ -162,9 +162,9 @@ export function CustomerForm({ customer, departments, users }: CustomerFormProps
       </div>
 
       {/* Metadata */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">Thông tin thêm</h3>
+          <h3 className="font-semibold text-slate-900">Thông tin thêm</h3>
           <Button type="button" size="sm" variant="outline" onClick={() => setMetadataRows(prev => [...prev, { key: '', value: '' }])}>
             + Thêm trường
           </Button>
@@ -178,7 +178,7 @@ export function CustomerForm({ customer, departments, users }: CustomerFormProps
             </Button>
           </div>
         ))}
-        {metadataRows.length === 0 && <p className="text-sm text-gray-400">Nhấn "Thêm trường" để thêm thông tin tùy chỉnh.</p>}
+        {metadataRows.length === 0 && <p className="text-sm text-slate-400">Nhấn "Thêm trường" để thêm thông tin tùy chỉnh.</p>}
       </div>
 
       <div className="flex gap-3">

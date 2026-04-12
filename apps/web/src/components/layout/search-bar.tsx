@@ -117,7 +117,7 @@ export function SearchBar() {
         <div className="absolute left-0 top-full z-50 mt-1 w-full min-w-[320px] rounded-xl border border-slate-200 bg-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.1)]">
           <div className="max-h-96 overflow-y-auto py-2">
             {!hasResults ? (
-              <div className="px-4 py-6 text-center text-sm text-gray-400">
+              <div className="px-4 py-6 text-center text-sm text-slate-400">
                 Không tìm thấy kết quả
               </div>
             ) : (
@@ -125,7 +125,7 @@ export function SearchBar() {
                 {/* Leads */}
                 {results.leads.length > 0 && (
                   <section>
-                    <div className="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    <div className="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                       Leads
                     </div>
                     {results.leads.map((lead) => (
@@ -139,9 +139,9 @@ export function SearchBar() {
                           L
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate font-medium text-gray-700">{lead.name}</div>
+                          <div className="truncate font-medium text-slate-700">{lead.name}</div>
                           {lead.phone && (
-                            <div className="truncate text-xs text-gray-400">{lead.phone}</div>
+                            <div className="truncate text-xs text-slate-400">{lead.phone}</div>
                           )}
                         </div>
                       </Link>
@@ -152,7 +152,7 @@ export function SearchBar() {
                 {/* Khách hàng */}
                 {results.customers.length > 0 && (
                   <section>
-                    <div className="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    <div className="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                       Khách hàng
                     </div>
                     {results.customers.map((customer) => (
@@ -166,9 +166,9 @@ export function SearchBar() {
                           K
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate font-medium text-gray-700">{customer.name}</div>
+                          <div className="truncate font-medium text-slate-700">{customer.name}</div>
                           {customer.phone && (
-                            <div className="truncate text-xs text-gray-400">{customer.phone}</div>
+                            <div className="truncate text-xs text-slate-400">{customer.phone}</div>
                           )}
                         </div>
                       </Link>
@@ -179,7 +179,7 @@ export function SearchBar() {
                 {/* Đơn hàng */}
                 {results.orders.length > 0 && (
                   <section>
-                    <div className="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    <div className="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                       Đơn hàng
                     </div>
                     {results.orders.map((order) => (
@@ -193,11 +193,11 @@ export function SearchBar() {
                           Đ
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate font-medium text-gray-700">
+                          <div className="truncate font-medium text-slate-700">
                             {order.code ?? `#${order.id}`}
                           </div>
                           {order.customerName && (
-                            <div className="truncate text-xs text-gray-400">
+                            <div className="truncate text-xs text-slate-400">
                               {order.customerName}
                             </div>
                           )}

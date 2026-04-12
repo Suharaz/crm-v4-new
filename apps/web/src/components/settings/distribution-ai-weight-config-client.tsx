@@ -102,7 +102,7 @@ export function DistributionAiWeightConfigClient({ departments }: Props) {
     <div className="space-y-6">
       {/* Department selector */}
       <div className="rounded-xl border bg-white p-5 shadow-sm">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Chọn phòng ban</label>
+        <label className="block text-sm font-medium text-slate-700 mb-2">Chọn phòng ban</label>
         <Select value={deptId} onValueChange={setDeptId}>
           <SelectTrigger className="w-72">
             <SelectValue placeholder="-- Chọn phòng ban --" />
@@ -116,7 +116,7 @@ export function DistributionAiWeightConfigClient({ departments }: Props) {
       </div>
 
       {deptId && loadingConfig && (
-        <div className="text-sm text-gray-400">Đang tải cấu hình...</div>
+        <div className="text-sm text-slate-400">Đang tải cấu hình...</div>
       )}
 
       {deptId && !loadingConfig && config && (
@@ -125,13 +125,13 @@ export function DistributionAiWeightConfigClient({ departments }: Props) {
           <div className="rounded-xl border bg-white p-5 shadow-sm space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-800">Phân phối AI tự động</p>
-                <p className="text-sm text-gray-500">Bật để hệ thống tự động phân phối leads theo điểm số</p>
+                <p className="font-medium text-slate-800">Phân phối AI tự động</p>
+                <p className="text-sm text-slate-500">Bật để hệ thống tự động phân phối leads theo điểm số</p>
               </div>
               <button
                 onClick={() => setConfig({ ...config, isActive: !config.isActive })}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  config.isActive ? 'bg-sky-500' : 'bg-gray-300'
+                  config.isActive ? 'bg-indigo-500' : 'bg-slate-300'
                 }`}
               >
                 <span
@@ -143,7 +143,7 @@ export function DistributionAiWeightConfigClient({ departments }: Props) {
             </div>
 
             <div className="border-t pt-4 space-y-4">
-              <p className="text-sm font-medium text-gray-700">
+              <p className="text-sm font-medium text-slate-700">
                 Trọng số tính điểm{' '}
                 <span className={totalWeight !== 100 ? 'text-red-500 font-semibold' : 'text-green-600'}>
                   (tổng: {totalWeight}%)
@@ -158,16 +158,16 @@ export function DistributionAiWeightConfigClient({ departments }: Props) {
                 ] as const
               ).map(({ key, label }) => (
                 <div key={key} className="flex items-center gap-4">
-                  <label className="w-52 text-sm text-gray-600">{label}</label>
+                  <label className="w-52 text-sm text-slate-600">{label}</label>
                   <input
                     type="number"
                     min={0}
                     max={100}
                     value={config.weightConfig[key]}
                     onChange={(e) => handleWeightChange(key, Number(e.target.value))}
-                    className="w-20 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
+                    className="w-20 rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   />
-                  <span className="text-sm text-gray-400">%</span>
+                  <span className="text-sm text-slate-400">%</span>
                 </div>
               ))}
             </div>
@@ -185,26 +185,26 @@ export function DistributionAiWeightConfigClient({ departments }: Props) {
           {/* Scores table */}
           {scores.length > 0 && (
             <div className="rounded-xl border bg-white p-5 shadow-sm">
-              <p className="font-medium text-gray-800 mb-3">Điểm số nhân viên</p>
+              <p className="font-medium text-slate-800 mb-3">Điểm số nhân viên</p>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="border-b border-gray-200 bg-gray-50">
+                  <thead className="border-b border-slate-200 bg-slate-50">
                     <tr>
-                      <th className="px-4 py-2 text-left font-medium text-gray-500">Nhân viên</th>
-                      <th className="px-4 py-2 text-right font-medium text-gray-500">Điểm tổng</th>
-                      <th className="px-4 py-2 text-right font-medium text-gray-500">Khối lượng</th>
-                      <th className="px-4 py-2 text-right font-medium text-gray-500">Cấp bậc</th>
-                      <th className="px-4 py-2 text-right font-medium text-gray-500">Chuyển đổi</th>
+                      <th className="px-4 py-2 text-left font-medium text-slate-500">Nhân viên</th>
+                      <th className="px-4 py-2 text-right font-medium text-slate-500">Điểm tổng</th>
+                      <th className="px-4 py-2 text-right font-medium text-slate-500">Khối lượng</th>
+                      <th className="px-4 py-2 text-right font-medium text-slate-500">Cấp bậc</th>
+                      <th className="px-4 py-2 text-right font-medium text-slate-500">Chuyển đổi</th>
                     </tr>
                   </thead>
                   <tbody>
                     {scores.map((s) => (
-                      <tr key={s.userId} className="border-b border-gray-100 hover:bg-gray-50 last:border-0">
-                        <td className="px-4 py-2 font-medium text-gray-800">{s.name}</td>
-                        <td className="px-4 py-2 text-right font-semibold text-sky-600">{s.score.toFixed(1)}</td>
-                        <td className="px-4 py-2 text-right text-gray-600">{s.details?.workload?.toFixed(1) ?? '—'}</td>
-                        <td className="px-4 py-2 text-right text-gray-600">{s.details?.level?.toFixed(1) ?? '—'}</td>
-                        <td className="px-4 py-2 text-right text-gray-600">{s.details?.conversion?.toFixed(1) ?? '—'}</td>
+                      <tr key={s.userId} className="border-b border-slate-100 hover:bg-slate-50 last:border-0">
+                        <td className="px-4 py-2 font-medium text-slate-800">{s.name}</td>
+                        <td className="px-4 py-2 text-right font-semibold text-indigo-600">{s.score.toFixed(1)}</td>
+                        <td className="px-4 py-2 text-right text-slate-600">{s.details?.workload?.toFixed(1) ?? '—'}</td>
+                        <td className="px-4 py-2 text-right text-slate-600">{s.details?.level?.toFixed(1) ?? '—'}</td>
+                        <td className="px-4 py-2 text-right text-slate-600">{s.details?.conversion?.toFixed(1) ?? '—'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -214,7 +214,7 @@ export function DistributionAiWeightConfigClient({ departments }: Props) {
           )}
 
           {scores.length === 0 && (
-            <div className="rounded-xl border bg-white p-5 shadow-sm text-center text-sm text-gray-400">
+            <div className="rounded-xl border bg-white p-5 shadow-sm text-center text-sm text-slate-400">
               Chưa có dữ liệu điểm số nhân viên
             </div>
           )}

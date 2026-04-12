@@ -98,8 +98,8 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
       {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
-      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-        <h3 className="font-semibold text-gray-900">Thông tin cơ bản</h3>
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+        <h3 className="font-semibold text-slate-900">Thông tin cơ bản</h3>
 
         <FormField label="Email" required={!isEdit} error={fieldErrors.email}>
           <Input
@@ -145,8 +145,8 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
         </FormField>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-        <h3 className="font-semibold text-gray-900">Phân quyền & Tổ chức</h3>
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+        <h3 className="font-semibold text-slate-900">Phân quyền & Tổ chức</h3>
 
         <FormField label="Vai trò">
           <Select value={form.role} onValueChange={v => update('role', v)}>

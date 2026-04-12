@@ -258,16 +258,16 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
 
             {/* Price summary */}
             {selectedProduct && (
-              <div className="rounded-lg bg-gray-50 p-3 text-sm space-y-1">
-                <div className="flex justify-between"><span className="text-gray-500">Giá</span><span className="font-medium">{formatVND(price)}</span></div>
-                {vatRate > 0 && <div className="flex justify-between"><span className="text-gray-500">VAT ({vatRate}%)</span><span>{formatVND(vatAmount)}</span></div>}
-                <div className="flex justify-between border-t border-gray-200 pt-1 font-semibold"><span>Tổng</span><span className="text-sky-600">{formatVND(totalAmount)}</span></div>
+              <div className="rounded-lg bg-slate-50 p-3 text-sm space-y-1">
+                <div className="flex justify-between"><span className="text-slate-500">Giá</span><span className="font-medium">{formatVND(price)}</span></div>
+                {vatRate > 0 && <div className="flex justify-between"><span className="text-slate-500">VAT ({vatRate}%)</span><span>{formatVND(vatAmount)}</span></div>}
+                <div className="flex justify-between border-t border-slate-200 pt-1 font-semibold"><span>Tổng</span><span className="text-indigo-600">{formatVND(totalAmount)}</span></div>
               </div>
             )}
 
             {/* Customer info */}
-            <div className="border-t border-gray-200 pt-3">
-              <p className="text-sm font-semibold text-gray-700 mb-3">Thông tin khách hàng</p>
+            <div className="border-t border-slate-200 pt-3">
+              <p className="text-sm font-semibold text-slate-700 mb-3">Thông tin khách hàng</p>
               <div className="grid grid-cols-2 gap-3">
                 <FormField label="Tên khách">
                   <Input value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Họ tên" />
@@ -294,8 +294,8 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
             </div>
 
             {/* Order details */}
-            <div className="border-t border-gray-200 pt-3">
-              <p className="text-sm font-semibold text-gray-700 mb-3">Chi tiết đơn hàng</p>
+            <div className="border-t border-slate-200 pt-3">
+              <p className="text-sm font-semibold text-slate-700 mb-3">Chi tiết đơn hàng</p>
               <div className="grid grid-cols-2 gap-3">
                 <FormField label="Hình thức">
                   <Select value={formatId} onValueChange={setFormatId}>
@@ -327,8 +327,8 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
             </div>
 
             {/* Payment section */}
-            <div className="border-t border-gray-200 pt-3">
-              <p className="text-sm font-semibold text-gray-700 mb-3">Thanh toán</p>
+            <div className="border-t border-slate-200 pt-3">
+              <p className="text-sm font-semibold text-slate-700 mb-3">Thanh toán</p>
               <div className="grid grid-cols-2 gap-3">
                 {paymentTypes.length > 0 && (
                   <FormField label="Hình thức CK">
@@ -369,7 +369,7 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
                 </FormField>
                 {vatRate > 0 && pmtAmountNum > 0 && (
                   <FormField label="Tiền VAT (tính từ số CK)">
-                    <Input value={formatVND(pmtVatAmount)} readOnly className="bg-gray-50 text-gray-600" />
+                    <Input value={formatVND(pmtVatAmount)} readOnly className="bg-slate-50 text-slate-600" />
                   </FormField>
                 )}
               </div>

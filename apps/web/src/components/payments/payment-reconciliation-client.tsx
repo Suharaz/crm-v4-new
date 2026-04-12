@@ -88,16 +88,16 @@ function ImportExcelDialog({ open, onClose }: { open: boolean; onClose: () => vo
           <div className="space-y-4">
             {/* File picker */}
             <div
-              className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:border-sky-400 transition-colors"
+              className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-indigo-400 transition-colors"
               onClick={() => fileInputRef.current?.click()}
             >
-              <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              <Upload className="h-8 w-8 text-slate-400 mx-auto mb-2" />
               {file ? (
-                <p className="text-sm font-medium text-gray-700">{file.name}</p>
+                <p className="text-sm font-medium text-slate-700">{file.name}</p>
               ) : (
                 <>
-                  <p className="text-sm text-gray-500">Nhấn để chọn file Excel</p>
-                  <p className="text-xs text-gray-400 mt-1">Hỗ trợ .xlsx, .xls — tối đa 10MB</p>
+                  <p className="text-sm text-slate-500">Nhấn để chọn file Excel</p>
+                  <p className="text-xs text-slate-400 mt-1">Hỗ trợ .xlsx, .xls — tối đa 10MB</p>
                 </>
               )}
               <input
@@ -113,7 +113,7 @@ function ImportExcelDialog({ open, onClose }: { open: boolean; onClose: () => vo
             <button
               type="button"
               onClick={handleDownloadTemplate}
-              className="text-xs text-sky-600 hover:underline flex items-center gap-1"
+              className="text-xs text-indigo-600 hover:underline flex items-center gap-1"
             >
               <Download className="h-3.5 w-3.5" />
               Tải file mẫu Excel
@@ -125,7 +125,7 @@ function ImportExcelDialog({ open, onClose }: { open: boolean; onClose: () => vo
                 Huỷ
               </Button>
               <Button
-                className="bg-sky-600 hover:bg-sky-700 text-white"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
                 onClick={handleUpload}
                 disabled={!file || uploading}
               >
@@ -143,10 +143,10 @@ function ImportExcelDialog({ open, onClose }: { open: boolean; onClose: () => vo
                 <p className="text-2xl font-bold text-emerald-700">{result.created}</p>
                 <p className="text-xs text-emerald-500">chờ xác minh</p>
               </div>
-              <div className="rounded-lg bg-sky-50 border border-sky-200 p-3">
-                <p className="text-xs text-sky-600 font-medium">Đã map NH</p>
-                <p className="text-2xl font-bold text-sky-700">{result.matched}</p>
-                <p className="text-xs text-sky-500">giao dịch tự động</p>
+              <div className="rounded-lg bg-indigo-50 border border-indigo-200 p-3">
+                <p className="text-xs text-indigo-600 font-medium">Đã map NH</p>
+                <p className="text-2xl font-bold text-indigo-700">{result.matched}</p>
+                <p className="text-xs text-indigo-500">giao dịch tự động</p>
               </div>
               <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                 <p className="text-xs text-amber-600 font-medium">Khách hàng mới</p>
@@ -162,7 +162,7 @@ function ImportExcelDialog({ open, onClose }: { open: boolean; onClose: () => vo
               )}
             </div>
 
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-slate-500">
               Tổng cộng {result.total} dòng · {result.newOrders} đơn hàng mới
             </p>
 
@@ -180,8 +180,8 @@ function ImportExcelDialog({ open, onClose }: { open: boolean; onClose: () => vo
                   <tbody>
                     {result.errors.map((e, i) => (
                       <tr key={i} className="border-t border-red-100">
-                        <td className="px-3 py-1.5 text-gray-600">{e.row}</td>
-                        <td className="px-3 py-1.5 text-gray-600">{e.phone || '—'}</td>
+                        <td className="px-3 py-1.5 text-slate-600">{e.row}</td>
+                        <td className="px-3 py-1.5 text-slate-600">{e.phone || '—'}</td>
                         <td className="px-3 py-1.5 text-red-600">{e.reason}</td>
                       </tr>
                     ))}
@@ -210,12 +210,12 @@ const ORDER_STATUS_LABEL: Record<string, string> = {
 function PaymentExpandDetail({ payment }: { payment: PaymentRecord }) {
   const o = payment.order;
   return (
-    <div className="bg-gray-50 border-t border-gray-100 px-4 py-3 text-xs text-gray-700 space-y-3">
+    <div className="bg-slate-50 border-t border-slate-100 px-4 py-3 text-xs text-slate-700 space-y-3">
       {/* Order info */}
       {o && (
         <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-3">
           <div>
-            <span className="text-gray-400 block">Đơn hàng</span>
+            <span className="text-slate-400 block">Đơn hàng</span>
             <span className="font-medium">#{o.id}</span>
             {o.status && (
               <span className={cn('ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium',
@@ -228,88 +228,88 @@ function PaymentExpandDetail({ payment }: { payment: PaymentRecord }) {
             )}
           </div>
           <div>
-            <span className="text-gray-400 block">Tổng đơn</span>
-            <span className="font-semibold text-gray-900">{formatVND(Number(o.totalAmount))}</span>
+            <span className="text-slate-400 block">Tổng đơn</span>
+            <span className="font-semibold text-slate-900">{formatVND(Number(o.totalAmount))}</span>
           </div>
           {o.vatEmail && (
             <div>
-              <span className="text-gray-400 block">Email VAT</span>
+              <span className="text-slate-400 block">Email VAT</span>
               <span>{o.vatEmail}</span>
             </div>
           )}
           {o.customer && (
             <div>
-              <span className="text-gray-400 block">Khách hàng</span>
+              <span className="text-slate-400 block">Khách hàng</span>
               <span className="font-medium">{o.customer.name}</span>
-              {o.customer.phone && <span className="text-gray-500 ml-1">· {o.customer.phone}</span>}
+              {o.customer.phone && <span className="text-slate-500 ml-1">· {o.customer.phone}</span>}
             </div>
           )}
           {o.product && (
             <div>
-              <span className="text-gray-400 block">Sản phẩm</span>
+              <span className="text-slate-400 block">Sản phẩm</span>
               <span>{o.product.name}</span>
             </div>
           )}
           {o.creator && (
             <div>
-              <span className="text-gray-400 block">Sale phụ trách</span>
+              <span className="text-slate-400 block">Sale phụ trách</span>
               <span>{o.creator.name}</span>
             </div>
           )}
           {o.lead && (
             <div>
-              <span className="text-gray-400 block">Lead</span>
-              <span>{o.lead.name} <span className="text-gray-400">#{o.lead.id}</span></span>
+              <span className="text-slate-400 block">Lead</span>
+              <span>{o.lead.name} <span className="text-slate-400">#{o.lead.id}</span></span>
             </div>
           )}
         </div>
       )}
       {/* Payment detail */}
-      <div className="border-t border-gray-100 pt-2 grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-3">
+      <div className="border-t border-slate-100 pt-2 grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-3">
         <div>
-          <span className="text-gray-400 block">Số tiền thanh toán</span>
-          <span className="font-semibold text-gray-900">{formatVND(Number(payment.amount))}</span>
+          <span className="text-slate-400 block">Số tiền thanh toán</span>
+          <span className="font-semibold text-slate-900">{formatVND(Number(payment.amount))}</span>
         </div>
         {payment.vatAmount != null && (
           <div>
-            <span className="text-gray-400 block">VAT</span>
+            <span className="text-slate-400 block">VAT</span>
             <span>{formatVND(Number(payment.vatAmount))}</span>
           </div>
         )}
         {payment.installment && (
           <div>
-            <span className="text-gray-400 block">Đợt thanh toán</span>
+            <span className="text-slate-400 block">Đợt thanh toán</span>
             <span>{payment.installment.name}</span>
           </div>
         )}
         {payment.transferDate && (
           <div>
-            <span className="text-gray-400 block">Ngày chuyển khoản</span>
+            <span className="text-slate-400 block">Ngày chuyển khoản</span>
             <span>{formatDate(payment.transferDate)}</span>
           </div>
         )}
         {payment.transferContent && (
           <div className="col-span-2">
-            <span className="text-gray-400 block">Nội dung CK</span>
+            <span className="text-slate-400 block">Nội dung CK</span>
             <span className="break-all">{payment.transferContent}</span>
           </div>
         )}
         {payment.bankAccount && (
           <div>
-            <span className="text-gray-400 block">Tài khoản ngân hàng</span>
+            <span className="text-slate-400 block">Tài khoản ngân hàng</span>
             <span>{payment.bankAccount.name}</span>
           </div>
         )}
       </div>
       {/* Auto-match info */}
       {payment.matchedTransaction && (
-        <div className="border-t border-gray-100 pt-2">
-          <span className="text-gray-400 block mb-1">Giao dịch NH đã match</span>
+        <div className="border-t border-slate-100 pt-2">
+          <span className="text-slate-400 block mb-1">Giao dịch NH đã match</span>
           <div className="flex flex-wrap gap-4">
             <span>{formatVND(Number(payment.matchedTransaction.amount))}</span>
-            <span className="text-gray-600">{payment.matchedTransaction.content}</span>
+            <span className="text-slate-600">{payment.matchedTransaction.content}</span>
             {payment.matchedTransaction.transactionTime && (
-              <span className="text-gray-400">{formatDate(payment.matchedTransaction.transactionTime)}</span>
+              <span className="text-slate-400">{formatDate(payment.matchedTransaction.transactionTime)}</span>
             )}
           </div>
         </div>
@@ -446,12 +446,12 @@ export function PaymentReconciliationClient({
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <h1 className="text-2xl font-bold text-gray-900">Đối soát thanh toán</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Đối soát thanh toán</h1>
         {isManager && (
           <Button
             size="sm"
             variant="outline"
-            className="border-sky-300 text-sky-700 hover:bg-sky-50 h-8 text-xs"
+            className="border-indigo-300 text-indigo-700 hover:bg-indigo-50 h-8 text-xs"
             onClick={() => setImportOpen(true)}
           >
             <Upload className="h-3.5 w-3.5 mr-1.5" />
@@ -459,7 +459,7 @@ export function PaymentReconciliationClient({
           </Button>
         )}
       </div>
-      <p className="text-sm text-gray-500 mb-4">Tick 1 bên trái + 1 bên phải → Xác minh ghép cặp</p>
+      <p className="text-sm text-slate-500 mb-4">Tick 1 bên trái + 1 bên phải → Xác minh ghép cặp</p>
 
       <ImportExcelDialog open={importOpen} onClose={() => { setImportOpen(false); router.refresh(); }} />
 
@@ -474,7 +474,7 @@ export function PaymentReconciliationClient({
           {/* Action bar */}
           <div className="flex items-center gap-3 my-3 min-h-[40px]">
             {processing ? (
-              <Loader2 className="h-5 w-5 animate-spin text-sky-500" />
+              <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
             ) : canMatch ? (
               <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={handleMatch}>
                 <CheckCircle className="h-4 w-4 mr-1" />Xác minh ghép cặp
@@ -489,14 +489,14 @@ export function PaymentReconciliationClient({
                 </Button>
               </div>
             ) : (
-              <span className="text-sm text-gray-400">Chọn khoản thanh toán để xử lý</span>
+              <span className="text-sm text-slate-400">Chọn khoản thanh toán để xử lý</span>
             )}
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {/* Left: Pending payments */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-amber-400" />
                 Sale nhập — chờ duyệt ({filteredPending.length}/{pending.length})
               </h3>
@@ -504,7 +504,7 @@ export function PaymentReconciliationClient({
               {/* Filter bar */}
               <div className="space-y-2 mb-3">
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                   <Input
                     placeholder="Tìm nội dung CK hoặc tên khách..."
                     value={filterSearch}
@@ -525,12 +525,12 @@ export function PaymentReconciliationClient({
                     </SelectContent>
                   </Select>
                   <div className="flex items-center gap-1 flex-1">
-                    <Calendar className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                    <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                     <Input
                       type="date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)}
                       className="h-8 text-xs px-2"
                     />
-                    <span className="text-gray-400 text-xs shrink-0">–</span>
+                    <span className="text-slate-400 text-xs shrink-0">–</span>
                     <Input
                       type="date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)}
                       className="h-8 text-xs px-2"
@@ -540,7 +540,7 @@ export function PaymentReconciliationClient({
               </div>
 
               {filteredPending.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-400">
+                <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
                   {pending.length === 0 ? 'Không có' : 'Không có kết quả phù hợp'}
                 </div>
               ) : (
@@ -551,13 +551,13 @@ export function PaymentReconciliationClient({
                     const expanded = expandedPending === id;
                     return (
                       <div key={id} className={cn('rounded-lg border bg-white transition-all overflow-hidden',
-                        selected ? 'border-sky-400 ring-1 ring-sky-400' : 'border-gray-200')}>
+                        selected ? 'border-indigo-400 ring-1 ring-indigo-400' : 'border-slate-200')}>
                         {/* Main row */}
                         <div className="flex items-start gap-2 px-3 py-2.5">
                           <input
                             type="checkbox" checked={selected}
                             onChange={() => setSelectedLeft(selected ? null : id)}
-                            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500 shrink-0"
+                            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 shrink-0"
                           />
                           {/* Clickable content area */}
                           <button
@@ -567,18 +567,18 @@ export function PaymentReconciliationClient({
                           >
                             <div className="flex items-baseline gap-2 justify-between">
                               <div className="flex items-baseline gap-2">
-                                <span className="font-bold text-gray-900">{formatVND(Number(p.amount))}</span>
+                                <span className="font-bold text-slate-900">{formatVND(Number(p.amount))}</span>
                                 {p.paymentType?.name && (
-                                  <span className="text-xs bg-sky-50 text-sky-600 rounded px-1.5 py-0.5">{p.paymentType.name}</span>
+                                  <span className="text-xs bg-indigo-50 text-indigo-600 rounded px-1.5 py-0.5">{p.paymentType.name}</span>
                                 )}
                               </div>
                               {expanded
-                                ? <ChevronDown className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                                : <ChevronRight className="h-3.5 w-3.5 text-gray-400 shrink-0" />}
+                                ? <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                                : <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />}
                             </div>
-                            <div className="flex flex-wrap gap-x-3 mt-0.5 text-xs text-gray-500">
+                            <div className="flex flex-wrap gap-x-3 mt-0.5 text-xs text-slate-500">
                               {p.order?.customer?.name && (
-                                <span className="font-medium text-gray-700">{p.order.customer.name}</span>
+                                <span className="font-medium text-slate-700">{p.order.customer.name}</span>
                               )}
                               {p.order?.product?.name && (
                                 <span>{p.order.product.name}</span>
@@ -589,7 +589,7 @@ export function PaymentReconciliationClient({
                               <span>{formatDate(p.createdAt)}</span>
                             </div>
                             {p.transferContent && (
-                              <div className="text-xs text-gray-600 mt-0.5 truncate">{p.transferContent}</div>
+                              <div className="text-xs text-slate-600 mt-0.5 truncate">{p.transferContent}</div>
                             )}
                           </button>
                         </div>
@@ -604,12 +604,12 @@ export function PaymentReconciliationClient({
 
             {/* Right: Unmatched bank transactions */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-sky-400" />
+              <h3 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-indigo-400" />
                 Ngân hàng — chưa match ({unmatched.length})
               </h3>
               {unmatched.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-400">Tất cả đã match</div>
+                <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">Tất cả đã match</div>
               ) : (
                 <div className="space-y-1.5 max-h-[60vh] overflow-y-auto">
                   {unmatched.map((tx) => {
@@ -617,16 +617,16 @@ export function PaymentReconciliationClient({
                     const selected = selectedRight === id;
                     return (
                       <label key={id} className={cn('flex items-center gap-3 rounded-lg border bg-white px-3 py-2.5 cursor-pointer transition-all',
-                        selected ? 'border-emerald-400 bg-emerald-50 ring-1 ring-emerald-400' : 'border-gray-200 hover:border-gray-300')}>
+                        selected ? 'border-emerald-400 bg-emerald-50 ring-1 ring-emerald-400' : 'border-slate-200 hover:border-slate-300')}>
                         <input type="checkbox" checked={selected} onChange={() => setSelectedRight(selected ? null : id)}
-                          className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
+                          className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-baseline gap-2">
-                            <span className="font-bold text-gray-900">{formatVND(Number(tx.amount))}</span>
-                            {tx.senderName && <span className="text-xs text-gray-500">{tx.senderName}</span>}
+                            <span className="font-bold text-slate-900">{formatVND(Number(tx.amount))}</span>
+                            {tx.senderName && <span className="text-xs text-slate-500">{tx.senderName}</span>}
                           </div>
-                          <div className="text-xs text-gray-700 mt-0.5">{tx.content}</div>
-                          <div className="text-xs text-gray-400">{formatDate(tx.transactionTime)}</div>
+                          <div className="text-xs text-slate-700 mt-0.5">{tx.content}</div>
+                          <div className="text-xs text-slate-400">{formatDate(tx.transactionTime)}</div>
                         </div>
                       </label>
                     );
@@ -642,7 +642,7 @@ export function PaymentReconciliationClient({
           {isManager && (
             <div className="flex flex-wrap items-center gap-2 my-3">
               <div className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                 <Input
                   type="date"
                   value={exportFrom}
@@ -650,7 +650,7 @@ export function PaymentReconciliationClient({
                   className="h-8 text-xs px-2 w-36"
                   placeholder="Từ ngày"
                 />
-                <span className="text-gray-400 text-xs shrink-0">–</span>
+                <span className="text-slate-400 text-xs shrink-0">–</span>
                 <Input
                   type="date"
                   value={exportTo}
@@ -673,21 +673,21 @@ export function PaymentReconciliationClient({
             </div>
           )}
           {verifiedPayments.length === 0 ? (
-            <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400 mt-2">Chưa có</div>
+            <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400 mt-2">Chưa có</div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white mt-2">
+            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white mt-2">
               <table className="w-full text-sm">
-                <thead className="border-b border-gray-200 bg-gray-50">
+                <thead className="border-b border-slate-200 bg-slate-50">
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">#</th>
-                    <th className="px-4 py-3 text-right font-medium text-gray-500">Số tiền</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Loại</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Khách hàng</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Sản phẩm</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Người tạo</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Ngày CK</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Nguồn</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Xác nhận</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-500">#</th>
+                    <th className="px-4 py-3 text-right font-medium text-slate-500">Số tiền</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-500">Loại</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-500">Khách hàng</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-500">Sản phẩm</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-500">Người tạo</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-500">Ngày CK</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-500">Nguồn</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-500">Xác nhận</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -697,38 +697,38 @@ export function PaymentReconciliationClient({
                     return (
                       <React.Fragment key={id}>
                         <tr
-                          className={cn('border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors',
-                            expanded ? 'bg-sky-50' : '')}
+                          className={cn('border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors',
+                            expanded ? 'bg-indigo-50' : '')}
                           onClick={() => setExpandedVerified(expanded ? null : id)}
                         >
-                          <td className="px-4 py-3 text-gray-500">
+                          <td className="px-4 py-3 text-slate-500">
                             <span className="flex items-center gap-1">
                               {expanded
-                                ? <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
-                                : <ChevronRight className="h-3.5 w-3.5 text-gray-400" />}
+                                ? <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                                : <ChevronRight className="h-3.5 w-3.5 text-slate-400" />}
                               #{p.id}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-right font-semibold text-gray-900">{formatVND(Number(p.amount))}</td>
-                          <td className="px-4 py-3 text-gray-600">{p.paymentType?.name || '—'}</td>
-                          <td className="px-4 py-3 text-gray-700">{p.order?.customer?.name || '—'}</td>
-                          <td className="px-4 py-3 text-gray-600">{p.order?.product?.name || '—'}</td>
-                          <td className="px-4 py-3 text-gray-600">{p.order?.creator?.name || '—'}</td>
-                          <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                          <td className="px-4 py-3 text-right font-semibold text-slate-900">{formatVND(Number(p.amount))}</td>
+                          <td className="px-4 py-3 text-slate-600">{p.paymentType?.name || '—'}</td>
+                          <td className="px-4 py-3 text-slate-700">{p.order?.customer?.name || '—'}</td>
+                          <td className="px-4 py-3 text-slate-600">{p.order?.product?.name || '—'}</td>
+                          <td className="px-4 py-3 text-slate-600">{p.order?.creator?.name || '—'}</td>
+                          <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
                             {p.transferDate ? formatDate(p.transferDate) : '—'}
                           </td>
                           <td className="px-4 py-3">
-                            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${p.verifiedSource === 'AUTO' ? 'bg-sky-100 text-sky-700' : 'bg-purple-100 text-purple-700'}`}>
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${p.verifiedSource === 'AUTO' ? 'bg-indigo-100 text-indigo-700' : 'bg-purple-100 text-purple-700'}`}>
                               {p.verifiedSource === 'AUTO' ? 'Auto' : 'Thủ công'}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
+                          <td className="px-4 py-3 text-xs text-slate-400 whitespace-nowrap">
                             {p.verifiedAt ? formatDate(p.verifiedAt) : '—'}
                             {p.verifier?.name && ` · ${p.verifier.name}`}
                           </td>
                         </tr>
                         {expanded && (
-                          <tr className="border-b border-gray-100">
+                          <tr className="border-b border-slate-100">
                             <td colSpan={9} className="p-0">
                               <PaymentExpandDetail payment={p} />
                             </td>

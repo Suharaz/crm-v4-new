@@ -24,7 +24,7 @@ function StarRating({ rating }: { rating: number }) {
           {i < rating ? '★' : '☆'}
         </span>
       ))}
-      <span className="ml-1 text-xs text-gray-500">{rating}/5</span>
+      <span className="ml-1 text-xs text-slate-500">{rating}/5</span>
     </span>
   );
 }
@@ -50,17 +50,17 @@ export function CustomerAnalysisCard({ customerId, shortDescription, description
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-gray-900">Phân tích khách hàng</h3>
+          <h3 className="font-semibold text-slate-900">Phân tích khách hàng</h3>
           {aiRating != null && <StarRating rating={aiRating} />}
         </div>
         {hasAnalysis && (
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-2 text-xs text-gray-400 hover:text-sky-600"
+            className="h-7 px-2 text-xs text-slate-400 hover:text-indigo-600"
             onClick={handleAnalyze}
             disabled={analyzing}
           >
@@ -72,15 +72,15 @@ export function CustomerAnalysisCard({ customerId, shortDescription, description
       {hasAnalysis ? (
         <>
           {shortDescription && (
-            <p className="text-sm text-gray-700">{shortDescription}</p>
+            <p className="text-sm text-slate-700">{shortDescription}</p>
           )}
 
           {description && (
             <>
               {expanded && (
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <h4 className="text-sm font-bold text-gray-800 mb-2">Phân tích chi tiết chân dung khách hàng</h4>
-                  <div className="prose prose-sm prose-gray max-w-none text-sm text-gray-600 [&_strong]:text-gray-800 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_p]:my-1 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_h1]:font-bold [&_h2]:font-semibold [&_h3]:font-medium">
+                <div className="mt-3 pt-3 border-t border-slate-100">
+                  <h4 className="text-sm font-bold text-slate-800 mb-2">Phân tích chi tiết chân dung khách hàng</h4>
+                  <div className="prose prose-sm prose-gray max-w-none text-sm text-slate-600 [&_strong]:text-slate-800 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_p]:my-1 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_h1]:font-bold [&_h2]:font-semibold [&_h3]:font-medium">
                     <ReactMarkdown>{description}</ReactMarkdown>
                   </div>
                 </div>
@@ -88,7 +88,7 @@ export function CustomerAnalysisCard({ customerId, shortDescription, description
               <Button
                 variant="ghost"
                 size="sm"
-                className="mt-2 h-7 px-2 text-xs text-sky-600 hover:text-sky-700"
+                className="mt-2 h-7 px-2 text-xs text-indigo-600 hover:text-indigo-700"
                 onClick={() => setExpanded(!expanded)}
               >
                 {expanded ? (
@@ -101,13 +101,13 @@ export function CustomerAnalysisCard({ customerId, shortDescription, description
           )}
 
           {!description && shortDescription && (
-            <p className="mt-2 text-xs text-gray-400 italic">Chưa có phân tích chi tiết</p>
+            <p className="mt-2 text-xs text-slate-400 italic">Chưa có phân tích chi tiết</p>
           )}
         </>
       ) : (
         <div className="flex flex-col items-center py-4 text-center">
-          <Sparkles className="h-8 w-8 text-gray-300 mb-2" />
-          <p className="text-sm text-gray-400 mb-3">Chưa có phân tích cụ thể</p>
+          <Sparkles className="h-8 w-8 text-slate-300 mb-2" />
+          <p className="text-sm text-slate-400 mb-3">Chưa có phân tích cụ thể</p>
           <Button
             variant="outline"
             size="sm"

@@ -169,12 +169,12 @@ export function NotificationBell() {
           {/* List */}
           <div className="max-h-[400px] overflow-y-auto">
             {loading ? (
-              <div className="flex items-center justify-center py-10 text-sm text-gray-400">
+              <div className="flex items-center justify-center py-10 text-sm text-slate-400">
                 Đang tải...
               </div>
             ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-2 py-10 text-sm text-gray-400">
-                <Bell size={28} className="text-gray-300" />
+              <div className="flex flex-col items-center justify-center gap-2 py-10 text-sm text-slate-400">
+                <Bell size={28} className="text-slate-300" />
                 Không có thông báo nào
               </div>
             ) : (
@@ -191,13 +191,13 @@ export function NotificationBell() {
                     <NotificationIcon type={notification.type} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className={`text-sm leading-snug ${!notification.isRead ? 'font-medium text-gray-800' : 'text-gray-700'}`}>
+                    <p className={`text-sm leading-snug ${!notification.isRead ? 'font-medium text-slate-800' : 'text-slate-700'}`}>
                       {notification.title}
                     </p>
                     {notification.message && (
-                      <p className="mt-0.5 truncate text-xs text-gray-500">{notification.message}</p>
+                      <p className="mt-0.5 truncate text-xs text-slate-500">{notification.message}</p>
                     )}
-                    <p className="mt-1 text-xs text-gray-400">{timeAgo(notification.createdAt)}</p>
+                    <p className="mt-1 text-xs text-slate-400">{timeAgo(notification.createdAt)}</p>
                   </div>
                   {!notification.isRead && (
                     <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-indigo-500" />

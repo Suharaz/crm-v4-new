@@ -11,31 +11,31 @@ interface Customer {
 /** Customer list table — click name navigates to detail page. */
 export function CustomerTableWithPreview({ customers }: { customers: Customer[] }) {
   if (customers.length === 0) {
-    return <div className="p-8 text-center text-gray-400">Không có khách hàng nào</div>;
+    return <div className="p-8 text-center text-slate-400">Không có khách hàng nào</div>;
   }
 
   return (
       <table className="w-full text-sm">
-        <thead className="border-b border-gray-200 bg-gray-50">
+        <thead className="border-b border-slate-200 bg-slate-50">
           <tr>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Họ tên</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">SĐT</th>
-            <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Mô tả ngắn</th>
-            <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-gray-500">Nhãn</th>
-            <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-gray-500">Ngày tạo</th>
+            <th className="px-4 py-3 text-left font-medium text-slate-500">Họ tên</th>
+            <th className="px-4 py-3 text-left font-medium text-slate-500">SĐT</th>
+            <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-slate-500">Mô tả ngắn</th>
+            <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-slate-500">Nhãn</th>
+            <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-slate-500">Ngày tạo</th>
           </tr>
         </thead>
         <tbody>
           {customers.map((c) => (
-            <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50 last:border-0">
+            <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50 last:border-0">
               <td className="px-4 py-3">
                 <Link href={`/customers/${c.id}`}
-                  className="font-medium text-sky-600 hover:underline">
+                  className="font-medium text-indigo-600 hover:underline">
                   {c.name}
                 </Link>
               </td>
-              <td className="px-4 py-3 text-gray-600">{c.phone}</td>
-              <td className="hidden md:table-cell px-4 py-3 text-gray-500 text-xs max-w-xs truncate">
+              <td className="px-4 py-3 text-slate-600">{c.phone}</td>
+              <td className="hidden md:table-cell px-4 py-3 text-slate-500 text-xs max-w-xs truncate">
                 {c.shortDescription || '—'}
               </td>
               <td className="hidden md:table-cell px-4 py-3">
@@ -46,12 +46,12 @@ export function CustomerTableWithPreview({ customers }: { customers: Customer[] 
                         style={{ backgroundColor: ll.label.color }}>{ll.label.name}</span>
                     ))}
                     {c.labels.length > 3 && (
-                      <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-[9px] text-gray-500">+{c.labels.length - 3}</span>
+                      <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] text-slate-500">+{c.labels.length - 3}</span>
                     )}
                   </div>
-                ) : <span className="text-gray-400">—</span>}
+                ) : <span className="text-slate-400">—</span>}
               </td>
-              <td className="hidden lg:table-cell px-4 py-3 text-gray-400">{formatDate(c.createdAt)}</td>
+              <td className="hidden lg:table-cell px-4 py-3 text-slate-400">{formatDate(c.createdAt)}</td>
             </tr>
           ))}
         </tbody>

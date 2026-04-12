@@ -71,7 +71,7 @@ export function OrderListAdvancedFilterBar({ products, users, orderFormats, prod
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
+    <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
           <input
@@ -80,14 +80,14 @@ export function OrderListAdvancedFilterBar({ products, users, orderFormats, prod
             placeholder="Tìm theo tên KH, SĐT, mã khoá..."
             onKeyDown={e => { if (e.key === 'Enter') updateFilter('search', (e.target as HTMLInputElement).value); }}
             onBlur={e => { if (e.target.value !== currentSearch) updateFilter('search', e.target.value); }}
-            className="w-full rounded-lg border border-gray-200 py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+            className="w-full rounded-lg border border-slate-200 py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
         <Button size="sm" variant={expanded ? 'default' : 'outline'} onClick={() => setExpanded(!expanded)}>
           <Filter className="h-4 w-4 mr-1" />
           Bộ lọc
           {activeFilterCount > 0 && (
-            <span className="ml-1 rounded-full bg-sky-200 px-1.5 py-0.5 text-[10px] font-bold text-sky-800">{activeFilterCount}</span>
+            <span className="ml-1 rounded-full bg-indigo-200 px-1.5 py-0.5 text-[10px] font-bold text-indigo-800">{activeFilterCount}</span>
           )}
           {expanded ? <ChevronUp className="h-3.5 w-3.5 ml-1" /> : <ChevronDown className="h-3.5 w-3.5 ml-1" />}
         </Button>
@@ -97,9 +97,9 @@ export function OrderListAdvancedFilterBar({ products, users, orderFormats, prod
       </div>
 
       {expanded && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 pt-2 border-t border-gray-100">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 pt-2 border-t border-slate-100">
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Trạng thái</label>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">Trạng thái</label>
             <Select value={currentStatus} onValueChange={v => updateFilter('status', v === 'all' ? '' : v)}>
               <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Tất cả" /></SelectTrigger>
               <SelectContent>
@@ -110,7 +110,7 @@ export function OrderListAdvancedFilterBar({ products, users, orderFormats, prod
           </div>
 
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Sản phẩm</label>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">Sản phẩm</label>
             <Select value={currentProductId} onValueChange={v => updateFilter('productId', v === 'all' ? '' : v)}>
               <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Tất cả" /></SelectTrigger>
               <SelectContent>
@@ -121,7 +121,7 @@ export function OrderListAdvancedFilterBar({ products, users, orderFormats, prod
           </div>
 
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Người tạo</label>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">Người tạo</label>
             <Select value={currentCreatedBy} onValueChange={v => updateFilter('createdBy', v === 'all' ? '' : v)}>
               <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Tất cả" /></SelectTrigger>
               <SelectContent>
@@ -132,7 +132,7 @@ export function OrderListAdvancedFilterBar({ products, users, orderFormats, prod
           </div>
 
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Hình thức</label>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">Hình thức</label>
             <Select value={currentFormatId} onValueChange={v => updateFilter('formatId', v === 'all' ? '' : v)}>
               <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Tất cả" /></SelectTrigger>
               <SelectContent>
@@ -143,7 +143,7 @@ export function OrderListAdvancedFilterBar({ products, users, orderFormats, prod
           </div>
 
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Nhóm sản phẩm</label>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">Nhóm sản phẩm</label>
             <Select value={currentProductGroupId} onValueChange={v => updateFilter('productGroupId', v === 'all' ? '' : v)}>
               <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Tất cả" /></SelectTrigger>
               <SelectContent>
@@ -154,15 +154,15 @@ export function OrderListAdvancedFilterBar({ products, users, orderFormats, prod
           </div>
 
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Từ ngày</label>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">Từ ngày</label>
             <input type="date" value={currentDateFrom} onChange={e => updateFilter('dateFrom', e.target.value)}
-              className="w-full h-9 rounded-md border border-gray-200 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+              className="w-full h-9 rounded-md border border-slate-200 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
 
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Đến ngày</label>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">Đến ngày</label>
             <input type="date" value={currentDateTo} onChange={e => updateFilter('dateTo', e.target.value)}
-              className="w-full h-9 rounded-md border border-gray-200 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+              className="w-full h-9 rounded-md border border-slate-200 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
         </div>
       )}

@@ -39,8 +39,8 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     <div>
       <div className="flex items-center justify-between mb-1">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Đơn hàng</h1>
-          <p className="text-sm text-gray-500">Quản lý đơn hàng và thanh toán</p>
+          <h1 className="text-2xl font-bold text-slate-900">Đơn hàng</h1>
+          <p className="text-sm text-slate-500">Quản lý đơn hàng và thanh toán</p>
         </div>
         <CsvExportButton exportPath="/exports/orders" />
       </div>

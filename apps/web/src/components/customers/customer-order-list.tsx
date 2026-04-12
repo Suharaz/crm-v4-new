@@ -65,8 +65,8 @@ export function CustomerOrderList({ orders }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
-      <h3 className="mb-3 font-semibold text-gray-900">Đơn hàng ({orders.length})</h3>
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
+      <h3 className="mb-3 font-semibold text-slate-900">Đơn hàng ({orders.length})</h3>
       <div className="space-y-2">
         {orders.map((o) => {
           const isExpanded = expandedId === o.id;
@@ -74,56 +74,56 @@ export function CustomerOrderList({ orders }: Props) {
           const isLoading = loading === o.id;
 
           return (
-            <div key={o.id} className="rounded-lg border border-gray-100 overflow-hidden">
+            <div key={o.id} className="rounded-lg border border-slate-100 overflow-hidden">
               <button
                 onClick={() => toggleOrder(o.id)}
-                className="flex w-full items-center justify-between p-3 hover:bg-gray-50 transition-colors text-left"
+                className="flex w-full items-center justify-between p-3 hover:bg-slate-50 transition-colors text-left"
               >
                 <div className="flex items-center gap-2">
                   {isExpanded ? (
-                    <ChevronDown className="h-4 w-4 text-gray-400 shrink-0" />
+                    <ChevronDown className="h-4 w-4 text-slate-400 shrink-0" />
                   ) : (
-                    <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
                   )}
                   <StatusBadge status={o.status} />
-                  <span className="text-sm font-medium text-gray-700">{formatVND(Number(o.totalAmount))}</span>
+                  <span className="text-sm font-medium text-slate-700">{formatVND(Number(o.totalAmount))}</span>
                   {o.product && (
-                    <span className="text-xs text-gray-500">• {o.product.name}</span>
+                    <span className="text-xs text-slate-500">• {o.product.name}</span>
                   )}
                 </div>
-                <span className="text-xs text-gray-400 shrink-0">{formatDate(o.createdAt)}</span>
+                <span className="text-xs text-slate-400 shrink-0">{formatDate(o.createdAt)}</span>
               </button>
 
               {isExpanded && (
-                <div className="border-t border-gray-100 bg-gray-50/50 px-4 py-3">
+                <div className="border-t border-slate-100 bg-slate-50/50 px-4 py-3">
                   {isLoading ? (
                     <div className="flex items-center justify-center py-3">
-                      <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-                      <span className="ml-2 text-xs text-gray-400">Đang tải...</span>
+                      <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                      <span className="ml-2 text-xs text-slate-400">Đang tải...</span>
                     </div>
                   ) : orderPayments && orderPayments.length > 0 ? (
                     <div className="space-y-2">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Lịch sử thanh toán</p>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Lịch sử thanh toán</p>
                       {orderPayments.map((p) => {
-                        const statusInfo = PAYMENT_STATUS_MAP[p.status] || { label: p.status, className: 'bg-gray-100 text-gray-600' };
+                        const statusInfo = PAYMENT_STATUS_MAP[p.status] || { label: p.status, className: 'bg-slate-100 text-slate-600' };
                         return (
-                          <div key={p.id} className="flex items-center justify-between rounded-md bg-white border border-gray-100 px-3 py-2">
+                          <div key={p.id} className="flex items-center justify-between rounded-md bg-white border border-slate-100 px-3 py-2">
                             <div className="flex items-center gap-2">
                               <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusInfo.className}`}>
                                 {statusInfo.label}
                               </span>
-                              <span className="text-sm font-medium text-gray-700">{formatVND(Number(p.amount))}</span>
+                              <span className="text-sm font-medium text-slate-700">{formatVND(Number(p.amount))}</span>
                               {p.paymentType && (
-                                <span className="text-xs text-gray-500">• {p.paymentType.name}</span>
+                                <span className="text-xs text-slate-500">• {p.paymentType.name}</span>
                               )}
                             </div>
-                            <span className="text-xs text-gray-400">{formatDate(p.createdAt)}</span>
+                            <span className="text-xs text-slate-400">{formatDate(p.createdAt)}</span>
                           </div>
                         );
                       })}
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-400 text-center py-2">Chưa có thanh toán</p>
+                    <p className="text-xs text-slate-400 text-center py-2">Chưa có thanh toán</p>
                   )}
                 </div>
               )}

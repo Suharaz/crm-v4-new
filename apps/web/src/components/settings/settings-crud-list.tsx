@@ -89,9 +89,9 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900">{entityName} ({data.length})</h3>
+        <h3 className="font-semibold text-slate-900">{entityName} ({data.length})</h3>
         {canEdit && (
           <Button size="sm" onClick={openCreate}>
             <Plus className="h-4 w-4 mr-1" />
@@ -101,20 +101,20 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
       </div>
 
       {data.length === 0 ? (
-        <p className="text-sm text-gray-400">Chưa có dữ liệu</p>
+        <p className="text-sm text-slate-400">Chưa có dữ liệu</p>
       ) : (
         <div className="space-y-1">
           {data.map((item) => (
-            <div key={item.id} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-gray-50">
+            <div key={item.id} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-slate-50">
               <div className="flex-1">
                 {renderItem ? renderItem(item) : (
-                  <span className="text-sm text-gray-700">{item.name}</span>
+                  <span className="text-sm text-slate-700">{item.name}</span>
                 )}
               </div>
               {canEdit && (
                 <div className="flex items-center gap-1">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(item)}>
-                    <Pencil className="h-3.5 w-3.5 text-gray-400" />
+                    <Pencil className="h-3.5 w-3.5 text-slate-400" />
                   </Button>
                   <ConfirmDialog
                     trigger={
@@ -143,7 +143,7 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
           <div className="space-y-4 py-2">
             {fields.map(f => (
               <div key={f.key} className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-slate-700">
                   {f.label}
                   {f.required && <span className="text-red-500 ml-0.5">*</span>}
                 </label>
@@ -153,9 +153,9 @@ export function SettingsCrudList({ data, endpoint, entityName, fields, canEdit, 
                       type="checkbox"
                       checked={!!formData[f.key]}
                       onChange={e => setFormData(prev => ({ ...prev, [f.key]: e.target.checked }))}
-                      className="h-4 w-4 rounded border-gray-300 text-sky-600"
+                      className="h-4 w-4 rounded border-slate-300 text-indigo-600"
                     />
-                    <span className="text-sm text-gray-600">{f.placeholder || 'Bật'}</span>
+                    <span className="text-sm text-slate-600">{f.placeholder || 'Bật'}</span>
                   </label>
                 ) : (
                   <Input

@@ -33,7 +33,7 @@ const DEPT_COLORS = [
   { bar: '#059669', badge: 'bg-emerald-100 text-emerald-800' },  // emerald
   { bar: '#d97706', badge: 'bg-amber-100 text-amber-800' },      // amber
   { bar: '#be123c', badge: 'bg-rose-100 text-rose-800' },        // rose
-  { bar: '#0ea5e9', badge: 'bg-sky-100 text-sky-800' },          // sky
+  { bar: '#4f46e5', badge: 'bg-indigo-100 text-indigo-800' },          // sky
   { bar: '#7c3aed', badge: 'bg-violet-100 text-violet-800' },    // violet
   { bar: '#db2777', badge: 'bg-pink-100 text-pink-800' },        // pink
 ];
@@ -61,7 +61,7 @@ function ActivityTypeBadge({ type }: { type: string }) {
 
 function ActivityRow({ activity }: { activity: DeptActivity }) {
   return (
-    <div className="flex gap-3 border-b border-gray-50 pb-2 last:border-0 last:pb-0">
+    <div className="flex gap-3 border-b border-slate-50 pb-2 last:border-0 last:pb-0">
       <div className="mt-0.5 shrink-0">
         {activity.type === 'CALL'
           ? <Phone className="h-3.5 w-3.5 text-green-500" />
@@ -70,14 +70,14 @@ function ActivityRow({ activity }: { activity: DeptActivity }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-medium text-gray-700">{activity.user?.name || '—'}</span>
+          <span className="text-xs font-medium text-slate-700">{activity.user?.name || '—'}</span>
           <ActivityTypeBadge type={activity.type} />
-          <span className="text-[10px] text-gray-400 ml-auto whitespace-nowrap">
+          <span className="text-[10px] text-slate-400 ml-auto whitespace-nowrap">
             {formatDateTime(activity.createdAt)}
           </span>
         </div>
         {activity.content && (
-          <p className="mt-0.5 text-xs text-gray-600 line-clamp-2">{activity.content}</p>
+          <p className="mt-0.5 text-xs text-slate-600 line-clamp-2">{activity.content}</p>
         )}
       </div>
     </div>
@@ -103,20 +103,20 @@ function DeptRow({
   const hasMore = group.activities.length > shownCount;
 
   return (
-    <div className="rounded-lg border border-gray-100 overflow-hidden">
+    <div className="rounded-lg border border-slate-100 overflow-hidden">
       {/* Bar row — clickable */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors text-left"
+        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 transition-colors text-left"
         type="button"
       >
         {/* Dept name */}
-        <span className="w-28 shrink-0 text-xs font-medium text-gray-700 truncate">
+        <span className="w-28 shrink-0 text-xs font-medium text-slate-700 truncate">
           {group.departmentName}
         </span>
 
         {/* Bar */}
-        <div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="flex-1 h-5 bg-slate-100 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-300"
             style={{ width: `${barWidth}%`, backgroundColor: color.bar }}
@@ -124,20 +124,20 @@ function DeptRow({
         </div>
 
         {/* Count */}
-        <span className="w-8 shrink-0 text-right text-xs font-semibold text-gray-600">
+        <span className="w-8 shrink-0 text-right text-xs font-semibold text-slate-600">
           {group.count}
         </span>
 
         {/* Toggle icon */}
         {expanded
-          ? <ChevronDown className="h-3.5 w-3.5 shrink-0 text-gray-400" />
-          : <ChevronRight className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+          ? <ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+          : <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
         }
       </button>
 
       {/* Expanded activity list */}
       {expanded && (
-        <div className="border-t border-gray-100 bg-gray-50/60 px-3 py-2.5 space-y-2">
+        <div className="border-t border-slate-100 bg-slate-50/60 px-3 py-2.5 space-y-2">
           {visibleActivities.map(act => (
             <ActivityRow key={act.id} activity={act} />
           ))}
@@ -145,7 +145,7 @@ function DeptRow({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setShownCount(c => c + PAGE_SIZE); }}
-              className="mt-1 text-xs text-sky-600 hover:text-sky-700 font-medium"
+              className="mt-1 text-xs text-indigo-600 hover:text-indigo-700 font-medium"
             >
               Xem thêm ({group.activities.length - shownCount} còn lại)
             </button>
@@ -196,17 +196,17 @@ export function CustomerActivityByDepartment({ entityType, entityId }: Props) {
     setExpandedDept(prev => (prev === key ? null : key));
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-900">Tương tác theo phòng ban</h3>
+        <h3 className="font-semibold text-slate-900">Tương tác theo phòng ban</h3>
         {!loading && totalInteractions > 0 && (
-          <span className="text-xs text-gray-400">{totalInteractions} tương tác</span>
+          <span className="text-xs text-slate-400">{totalInteractions} tương tác</span>
         )}
       </div>
 
       {loading && (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+          <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
         </div>
       )}
 
@@ -215,7 +215,7 @@ export function CustomerActivityByDepartment({ entityType, entityId }: Props) {
       )}
 
       {!loading && !error && groups.length === 0 && (
-        <p className="text-sm text-gray-400">Chưa có tương tác</p>
+        <p className="text-sm text-slate-400">Chưa có tương tác</p>
       )}
 
       {!loading && !error && groups.length > 0 && (

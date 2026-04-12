@@ -78,7 +78,7 @@ export function ApiKeySettings({ apiKeys: initialKeys }: ApiKeySettingsProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">Quản lý API key cho tích hợp bên thứ 3</p>
+        <p className="text-sm text-slate-500">Quản lý API key cho tích hợp bên thứ 3</p>
         <Button size="sm" onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4 mr-1" />Tạo API Key
         </Button>
@@ -86,19 +86,19 @@ export function ApiKeySettings({ apiKeys: initialKeys }: ApiKeySettingsProps) {
 
       {/* Keys list */}
       {keys.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Chưa có API key nào</div>
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">Chưa có API key nào</div>
       ) : (
         <div className="space-y-2">
           {keys.map((k) => (
-            <div key={k.id} className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
-              <Key className="h-4 w-4 text-gray-400 shrink-0" />
+            <div key={k.id} className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3">
+              <Key className="h-4 w-4 text-slate-400 shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{k.name}</span>
-                  <code className="text-xs text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">{k.keyPrefix}...</code>
+                  <span className="font-medium text-slate-900">{k.name}</span>
+                  <code className="text-xs text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded">{k.keyPrefix}...</code>
                   {!k.isActive && <span className="text-xs text-red-500 font-medium">Vô hiệu</span>}
                 </div>
-                <div className="text-xs text-gray-400 mt-0.5">
+                <div className="text-xs text-slate-400 mt-0.5">
                   Tạo {k.createdAt ? formatDate(k.createdAt) : '—'}
                   {k.lastUsedAt && <> · Dùng lần cuối {formatDate(k.lastUsedAt)}</>}
                   {k.creator?.name && <> · bởi {k.creator.name}</>}
@@ -107,7 +107,7 @@ export function ApiKeySettings({ apiKeys: initialKeys }: ApiKeySettingsProps) {
               <div className="flex items-center gap-1 shrink-0">
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleActive(String(k.id), k.isActive)}
                   title={k.isActive ? 'Vô hiệu' : 'Kích hoạt'}>
-                  {k.isActive ? <ToggleRight className="h-4 w-4 text-emerald-500" /> : <ToggleLeft className="h-4 w-4 text-gray-400" />}
+                  {k.isActive ? <ToggleRight className="h-4 w-4 text-emerald-500" /> : <ToggleLeft className="h-4 w-4 text-slate-400" />}
                 </Button>
                 <ConfirmDialog
                   trigger={<Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="h-4 w-4 text-red-400" /></Button>}
@@ -136,8 +136,8 @@ export function ApiKeySettings({ apiKeys: initialKeys }: ApiKeySettingsProps) {
                   </Button>
                 </div>
               </div>
-              <div className="text-xs text-gray-500 space-y-1">
-                <p>Sử dụng trong header: <code className="bg-gray-100 px-1">x-api-key: {'{key}'}</code></p>
+              <div className="text-xs text-slate-500 space-y-1">
+                <p>Sử dụng trong header: <code className="bg-slate-100 px-1">x-api-key: {'{key}'}</code></p>
                 <p>Endpoints được phép:</p>
                 <ul className="list-disc pl-4">
                   <li><code>POST /api/v1/external/leads</code> — Tạo lead</li>

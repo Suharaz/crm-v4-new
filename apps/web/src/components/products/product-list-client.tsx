@@ -107,8 +107,8 @@ export function ProductListClient({ products, categories }: ProductListClientPro
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Sản phẩm</h1>
-      <p className="text-sm text-gray-500 mb-4">Quản lý sản phẩm và danh mục</p>
+      <h1 className="text-2xl font-bold text-slate-900">Sản phẩm</h1>
+      <p className="text-sm text-slate-500 mb-4">Quản lý sản phẩm và danh mục</p>
 
       <Tabs defaultValue="products">
         <TabsList>
@@ -128,24 +128,24 @@ export function ProductListClient({ products, categories }: ProductListClientPro
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {products.length === 0 ? (
-              <div className="col-span-full rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">Không có sản phẩm nào</div>
+              <div className="col-span-full rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">Không có sản phẩm nào</div>
             ) : products.map((p) => (
-              <div key={p.id} className={`rounded-xl border p-5 cursor-pointer hover:shadow-sm transition-all ${p.isActive ? 'border-gray-200 bg-white hover:border-sky-200' : 'border-gray-100 bg-gray-50 opacity-60'}`} onClick={() => setViewingProduct(p)}>
+              <div key={p.id} className={`rounded-xl border p-5 cursor-pointer hover:shadow-sm transition-all ${p.isActive ? 'border-slate-200 bg-white hover:border-indigo-200' : 'border-slate-100 bg-slate-50 opacity-60'}`} onClick={() => setViewingProduct(p)}>
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-slate-900">
                       {p.name}
                       {!p.isActive && <span className="ml-2 text-xs text-red-400 font-normal">Đã ẩn</span>}
                     </h3>
-                    <p className="mt-1 text-sm text-gray-500">{p.category?.name || 'Chưa phân loại'}</p>
+                    <p className="mt-1 text-sm text-slate-500">{p.category?.name || 'Chưa phân loại'}</p>
                   </div>
                   {isManager && (
                     <div className="flex gap-1" onClick={e => e.stopPropagation()}>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleActive(p)} disabled={toggling === p.id} title={p.isActive ? 'Ẩn sản phẩm' : 'Kích hoạt'}>
-                        <Power className={`h-3.5 w-3.5 ${p.isActive ? 'text-emerald-500' : 'text-gray-300'}`} />
+                        <Power className={`h-3.5 w-3.5 ${p.isActive ? 'text-emerald-500' : 'text-slate-300'}`} />
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(p)}>
-                        <Pencil className="h-3.5 w-3.5 text-gray-400" />
+                        <Pencil className="h-3.5 w-3.5 text-slate-400" />
                       </Button>
                       {isAdmin && (
                         <ConfirmDialog
@@ -165,10 +165,10 @@ export function ProductListClient({ products, categories }: ProductListClientPro
                   )}
                 </div>
                 <div className="mt-3 flex items-baseline gap-2">
-                  <span className="text-lg font-bold text-sky-600">{formatVND(Number(p.price))}</span>
-                  {Number(p.vatRate) > 0 && <span className="text-xs text-gray-400">+VAT {p.vatRate}%</span>}
+                  <span className="text-lg font-bold text-indigo-600">{formatVND(Number(p.price))}</span>
+                  {Number(p.vatRate) > 0 && <span className="text-xs text-slate-400">+VAT {p.vatRate}%</span>}
                 </div>
-                {p.description && <p className="mt-2 line-clamp-2 text-sm text-gray-600">{p.description}</p>}
+                {p.description && <p className="mt-2 line-clamp-2 text-sm text-slate-600">{p.description}</p>}
               </div>
             ))}
           </div>
@@ -195,23 +195,23 @@ export function ProductListClient({ products, categories }: ProductListClientPro
           {viewingProduct && (
             <div className="space-y-3 py-2 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-gray-500">Danh mục</span>
+                <span className="text-slate-500">Danh mục</span>
                 <span className="font-medium">{viewingProduct.category?.name || 'Chưa phân loại'}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-500">Giá</span>
-                <span className="text-lg font-bold text-sky-600">{formatVND(Number(viewingProduct.price))}</span>
+                <span className="text-slate-500">Giá</span>
+                <span className="text-lg font-bold text-indigo-600">{formatVND(Number(viewingProduct.price))}</span>
               </div>
               {Number(viewingProduct.vatRate) > 0 && (
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-500">VAT</span>
+                  <span className="text-slate-500">VAT</span>
                   <span>{viewingProduct.vatRate}%</span>
                 </div>
               )}
               {viewingProduct.description && (
                 <div>
-                  <span className="text-gray-500">Mô tả</span>
-                  <p className="mt-1 whitespace-pre-wrap text-gray-700">{viewingProduct.description}</p>
+                  <span className="text-slate-500">Mô tả</span>
+                  <p className="mt-1 whitespace-pre-wrap text-slate-700">{viewingProduct.description}</p>
                 </div>
               )}
             </div>

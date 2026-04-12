@@ -58,10 +58,10 @@ function getTypeIconByEffective(effectiveType: string, metaType?: string) {
   if (metaType === 'ORDER_CREATED') return <ShoppingCart className="h-4 w-4 text-blue-500" />;
   if (metaType === 'PAYMENT_CREATED') return <CreditCard className="h-4 w-4 text-emerald-500" />;
   if (metaType === 'PAYMENT_VERIFIED') return <CheckCircle className="h-4 w-4 text-green-600" />;
-  if (effectiveType === 'NOTE') return <MessageSquare className="h-4 w-4 text-sky-500" />;
+  if (effectiveType === 'NOTE') return <MessageSquare className="h-4 w-4 text-indigo-500" />;
   if (effectiveType === 'CALL') return <Phone className="h-4 w-4 text-green-500" />;
   if (effectiveType === 'STATUS_CHANGE') return <ArrowRightLeft className="h-4 w-4 text-amber-500" />;
-  return <FileText className="h-4 w-4 text-gray-400" />;
+  return <FileText className="h-4 w-4 text-slate-400" />;
 }
 
 /** Activity timeline with filter tabs: Tất cả | Ghi chú | Cuộc gọi | Trạng thái | Khác */
@@ -91,8 +91,8 @@ export function ActivityTimelineWithFilterTabs({ activities }: { activities: Act
   });
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
-      <h3 className="mb-4 font-semibold text-gray-900">Lịch sử hoạt động</h3>
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
+      <h3 className="mb-4 font-semibold text-slate-900">Lịch sử hoạt động</h3>
 
       {/* Filter tabs */}
       <div className="flex gap-1 mb-4 overflow-x-auto pb-1">
@@ -105,14 +105,14 @@ export function ActivityTimelineWithFilterTabs({ activities }: { activities: Act
               onClick={() => setActiveTab(tab.value)}
               className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.value
-                  ? 'bg-sky-100 text-sky-700'
-                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                  ? 'bg-indigo-100 text-indigo-700'
+                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
               }`}
             >
               <tab.icon className="h-3.5 w-3.5" />
               {tab.label}
               <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${
-                activeTab === tab.value ? 'bg-sky-200 text-sky-800' : 'bg-gray-200 text-gray-600'
+                activeTab === tab.value ? 'bg-indigo-200 text-indigo-800' : 'bg-slate-200 text-slate-600'
               }`}>
                 {count}
               </span>
@@ -123,7 +123,7 @@ export function ActivityTimelineWithFilterTabs({ activities }: { activities: Act
 
       {/* Timeline */}
       {filtered.length === 0 ? (
-        <p className="text-sm text-gray-400">Chưa có hoạt động nào</p>
+        <p className="text-sm text-slate-400">Chưa có hoạt động nào</p>
       ) : (
         <div className="space-y-3 max-h-[500px] overflow-y-auto">
           {filtered.map((a) => {
@@ -131,26 +131,26 @@ export function ActivityTimelineWithFilterTabs({ activities }: { activities: Act
             const metaType = a.metadata?.type;
             const isPmt = isPaymentActivity(a);
             return (
-              <div key={a.id} className={`flex gap-3 border-b border-gray-100 pb-3 last:border-0 ${isPmt ? 'bg-emerald-50/40 rounded-lg px-2 py-1.5 -mx-1' : ''}`}>
+              <div key={a.id} className={`flex gap-3 border-b border-slate-100 pb-3 last:border-0 ${isPmt ? 'bg-emerald-50/40 rounded-lg px-2 py-1.5 -mx-1' : ''}`}>
                 <div className="mt-0.5 shrink-0">{getTypeIconByEffective(effectiveType, metaType)}</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium text-gray-700">{a.user?.name || '—'}</span>
+                    <span className="text-sm font-medium text-slate-700">{a.user?.name || '—'}</span>
                     <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
-                      isPmt ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                      isPmt ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
                     }`}>
                       {getTypeLabelByEffective(effectiveType, metaType)}
                     </span>
-                    <span className="text-xs text-gray-400 ml-auto whitespace-nowrap">
+                    <span className="text-xs text-slate-400 ml-auto whitespace-nowrap">
                       {formatDateTime(a.createdAt)}
                     </span>
                   </div>
                   {a.content && (
-                    <p className="mt-1 text-sm text-gray-600 whitespace-pre-line">{a.content}</p>
+                    <p className="mt-1 text-sm text-slate-600 whitespace-pre-line">{a.content}</p>
                   )}
                   {/* Call duration */}
                   {a.type === 'CALL' && a.metadata?.duration && (
-                    <p className="mt-0.5 text-xs text-gray-400">
+                    <p className="mt-0.5 text-xs text-slate-400">
                       Thời lượng: {Math.floor(a.metadata.duration / 60)} phút {a.metadata.duration % 60}s
                     </p>
                   )}

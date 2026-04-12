@@ -60,9 +60,9 @@ export function MetadataKeyValueEditor({ entityType, entityId, metadata, canEdit
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-gray-900">Thông tin thêm</h3>
+        <h3 className="font-semibold text-slate-900">Thông tin thêm</h3>
         {canEdit && !adding && (
           <Button size="sm" variant="outline" onClick={() => setAdding(true)}>
             <Plus className="h-3.5 w-3.5 mr-1" />Thêm
@@ -71,7 +71,7 @@ export function MetadataKeyValueEditor({ entityType, entityId, metadata, canEdit
       </div>
 
       {entries.length === 0 && !adding && (
-        <p className="text-sm text-gray-400">Chưa có thông tin thêm</p>
+        <p className="text-sm text-slate-400">Chưa có thông tin thêm</p>
       )}
 
       <dl className="space-y-2 text-sm">
@@ -79,27 +79,27 @@ export function MetadataKeyValueEditor({ entityType, entityId, metadata, canEdit
           <div key={key} className="flex items-center justify-between group">
             {editingKey === key ? (
               <div className="flex items-center gap-2 flex-1">
-                <dt className="text-gray-500 w-32 shrink-0">{key}</dt>
+                <dt className="text-slate-500 w-32 shrink-0">{key}</dt>
                 <input
                   type="text"
                   value={editValue}
                   onChange={e => setEditValue(e.target.value)}
-                  className="flex-1 rounded border border-gray-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  className="flex-1 rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   autoFocus
                 />
                 <button onClick={() => handleEdit(key)} className="text-green-600 hover:text-green-700"><Check className="h-4 w-4" /></button>
-                <button onClick={() => setEditingKey(null)} className="text-gray-400 hover:text-gray-600"><X className="h-4 w-4" /></button>
+                <button onClick={() => setEditingKey(null)} className="text-slate-400 hover:text-slate-600"><X className="h-4 w-4" /></button>
               </div>
             ) : (
               <>
                 <div className="flex gap-2">
-                  <dt className="text-gray-500">{key}</dt>
-                  <dd className="text-gray-700">{String(value)}</dd>
+                  <dt className="text-slate-500">{key}</dt>
+                  <dd className="text-slate-700">{String(value)}</dd>
                 </div>
                 {canEdit && (
                   <div className="hidden group-hover:flex gap-1">
-                    <button onClick={() => { setEditingKey(key); setEditValue(String(value)); }} className="text-gray-400 hover:text-sky-600"><Pencil className="h-3.5 w-3.5" /></button>
-                    <button onClick={() => handleDelete(key)} className="text-gray-400 hover:text-red-600"><Trash2 className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => { setEditingKey(key); setEditValue(String(value)); }} className="text-slate-400 hover:text-indigo-600"><Pencil className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => handleDelete(key)} className="text-slate-400 hover:text-red-600"><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>
                 )}
               </>
@@ -110,13 +110,13 @@ export function MetadataKeyValueEditor({ entityType, entityId, metadata, canEdit
 
       {/* Add new row */}
       {adding && (
-        <div className="mt-2 flex items-center gap-2 border-t border-gray-100 pt-2">
+        <div className="mt-2 flex items-center gap-2 border-t border-slate-100 pt-2">
           <input
             type="text"
             value={newKey}
             onChange={e => setNewKey(e.target.value)}
             placeholder="Tên trường"
-            className="w-32 rounded border border-gray-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-sky-500"
+            className="w-32 rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
             autoFocus
           />
           <input
@@ -124,10 +124,10 @@ export function MetadataKeyValueEditor({ entityType, entityId, metadata, canEdit
             value={newValue}
             onChange={e => setNewValue(e.target.value)}
             placeholder="Giá trị"
-            className="flex-1 rounded border border-gray-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-sky-500"
+            className="flex-1 rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
           <button onClick={handleAdd} disabled={saving} className="text-green-600 hover:text-green-700"><Check className="h-4 w-4" /></button>
-          <button onClick={() => { setAdding(false); setNewKey(''); setNewValue(''); }} className="text-gray-400 hover:text-gray-600"><X className="h-4 w-4" /></button>
+          <button onClick={() => { setAdding(false); setNewKey(''); setNewValue(''); }} className="text-slate-400 hover:text-slate-600"><X className="h-4 w-4" /></button>
         </div>
       )}
     </div>

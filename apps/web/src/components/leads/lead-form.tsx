@@ -117,14 +117,14 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
       {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
-      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-        <h3 className="font-semibold text-gray-900">Thông tin lead</h3>
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+        <h3 className="font-semibold text-slate-900">Thông tin lead</h3>
 
         <FormField label="Số điện thoại" required error={fieldErrors.phone}>
-          <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" readOnly={!canEditPhone} className={!canEditPhone ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''} />
-          {!canEditPhone && <p className="text-xs text-gray-400 mt-0.5">Chỉ quản lý mới được sửa SĐT</p>}
+          <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="0912345678" readOnly={!canEditPhone} className={!canEditPhone ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : ''} />
+          {!canEditPhone && <p className="text-xs text-slate-400 mt-0.5">Chỉ quản lý mới được sửa SĐT</p>}
           {phoneDuplicate && (
-            <div className="mt-1 rounded-md bg-sky-50 border border-sky-200 px-3 py-2 text-xs text-sky-700">
+            <div className="mt-1 rounded-md bg-indigo-50 border border-indigo-200 px-3 py-2 text-xs text-indigo-700">
               Khách hàng đã có: <span className="font-semibold">{phoneDuplicate.name}</span> — dữ liệu đã tự điền
               {phoneDuplicate.diffs && phoneDuplicate.diffs.length > 0 && (
                 <div className="mt-1 text-red-600 font-medium">
@@ -163,8 +163,8 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
       </div>
 
       {/* Company + Social links */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-        <h3 className="font-semibold text-gray-900">Công ty & Mạng xã hội</h3>
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+        <h3 className="font-semibold text-slate-900">Công ty & Mạng xã hội</h3>
 
         <FormField label="Tên công ty" error={fieldErrors.companyName}>
           <Input value={form.companyName} onChange={e => update('companyName', e.target.value)} placeholder="Công ty ABC" />
@@ -187,9 +187,9 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
       </div>
 
       {/* Metadata key-value pairs */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">Thông tin thêm</h3>
+          <h3 className="font-semibold text-slate-900">Thông tin thêm</h3>
           <Button type="button" size="sm" variant="outline" onClick={() => setMetadataRows(prev => [...prev, { key: '', value: '' }])}>
             + Thêm trường
           </Button>
@@ -213,7 +213,7 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
             </Button>
           </div>
         ))}
-        {metadataRows.length === 0 && <p className="text-sm text-gray-400">Chưa có trường nào. Nhấn "Thêm trường" để bắt đầu.</p>}
+        {metadataRows.length === 0 && <p className="text-sm text-slate-400">Chưa có trường nào. Nhấn "Thêm trường" để bắt đầu.</p>}
       </div>
 
       <div className="flex gap-3">

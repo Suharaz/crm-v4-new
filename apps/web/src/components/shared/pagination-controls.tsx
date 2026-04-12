@@ -87,7 +87,7 @@ export function PaginationControls({ total, page, limit, totalPages }: Props) {
   return (
     <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
       {/* Left: info + page size */}
-      <div className="flex items-center gap-3 text-sm text-gray-500">
+      <div className="flex items-center gap-3 text-sm text-slate-500">
         <span>Tổng {total.toLocaleString('vi-VN')} kết quả</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs">Hiển thị</span>
@@ -116,13 +116,13 @@ export function PaginationControls({ total, page, limit, totalPages }: Props) {
 
         {getPageNumbers().map((p, i) =>
           p === '...' ? (
-            <span key={`dot-${i}`} className="px-1 text-gray-400">…</span>
+            <span key={`dot-${i}`} className="px-1 text-slate-400">…</span>
           ) : (
             <Button
               key={p}
               variant={p === currentPage ? 'default' : 'ghost'}
               size="icon"
-              className={`h-8 w-8 text-xs ${p === currentPage ? 'bg-sky-500 text-white hover:bg-sky-600' : ''}`}
+              className={`h-8 w-8 text-xs ${p === currentPage ? 'bg-indigo-500 text-white hover:bg-indigo-600' : ''}`}
               onClick={() => navigate(p)}
             >
               {p}

@@ -18,7 +18,7 @@ export default async function CreateCustomerPage() {
   return (
     <div>
       <BackButton />
-      <h1 className="text-2xl font-bold text-gray-900 mb-6 mt-2">Tạo khách hàng mới</h1>
+      <h1 className="text-2xl font-bold text-slate-900 mb-6 mt-2">Tạo khách hàng mới</h1>
       <CustomerForm departments={departments} users={users} />
     </div>
   );

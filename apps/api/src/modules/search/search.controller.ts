@@ -7,7 +7,7 @@ export class SearchController {
   constructor(private readonly service: SearchService) {}
 
   @Get()
-  async search(@Query('q') query: string, @Query('limit') limit?: number, @CurrentUser() user: any) {
+  async search(@Query('q') query: string, @CurrentUser() user: any, @Query('limit') limit?: number) {
     if (!query || query.length < 2) return { data: { leads: [], customers: [], orders: [] } };
     return { data: await this.service.search(query, limit ?? 10, user) };
   }

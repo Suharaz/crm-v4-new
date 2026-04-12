@@ -33,7 +33,15 @@ All notable changes to this project will be documented in this file.
   - 17 new indexes: partial (leads/activities/customers/tasks), pg_trgm (phone/name search), functional (date cast), payment status+amount
   - Connection pool config documented (`connection_limit=20&pool_timeout=10`)
   - Notification cleanup cron (delete >90 days, daily at 3 AM)
-- **Still remaining:** Redis caching layer (PERF-M1), streaming CSV export (PERF-M3)
+- **~~Still remaining:~~ Redis caching layer (PERF-M1) — DONE** (see below), streaming CSV export (PERF-M3)
+
+### Database Optimization & Redis Caching — 5 Phases (2026-04-12)
+- **Branch:** `fix/audit-remediation-260412`
+- **Phase 01 — PrismaClient Singleton:** Fixed 35 modules each creating `new PrismaClient()` → single @Global() PrismaModule with shared singleton. Connection pool: 20 connections, 10s timeout.
+- **Phase 02 — Redis Cache Infrastructure:** `CacheService` with BigInt-safe serialization, fail-open pattern, `getOrSet()` helper, `@CacheInvalidate()` decorator. Uses existing Redis 7 on port 6380 with `crm:cache:` key prefix.
+- **Phase 03 — Lookup Table Caching:** 9 lookup services (labels, lead-sources, payment-types, order-formats, product-groups, payment-installments, product-categories, bank-accounts, employee-levels) cached with 10min TTL + write-through invalidation on mutations.
+- **Phase 04 — Dashboard Caching:** 9 dashboard query methods cached with 30s TTL, hash-based cache keys scoped by userId/role/date range.
+- **Phase 05 — PostgreSQL Docker Tuning:** `shared_buffers=512MB`, `work_mem=16MB`, `effective_cache_size=2GB`, `random_page_cost=1.1`, slow query logging (>500ms). Redis: `maxmemory=128mb` with `allkeys-lru` eviction.
 
 ### Full Codebase Audit — Security, Performance, Query Speed (2026-04-12)
 - **Scope:** 51 findings across 3 categories — Security (15), Performance (15), Database/Query (21)

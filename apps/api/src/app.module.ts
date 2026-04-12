@@ -41,6 +41,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { PrismaClient } from '@prisma/client';
 import { ApiKeysModule } from './modules/api-keys/api-keys.module';
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module';
+import { McpAgentModule } from './modules/mcp-agent/mcp-agent.module';
 import { ApiKeyAuthGuard } from './modules/auth/guards/api-key-auth.guard';
 import { BullModule } from '@nestjs/bullmq';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -116,6 +117,7 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     DashboardModule,
     ApiKeysModule,
     SystemSettingsModule,
+    McpAgentModule,
   ],
   controllers: [AppController],
   providers: [

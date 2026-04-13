@@ -1,19 +1,27 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'crypto';
 
 /**
  * Guard that validates HMAC-SHA256 webhook signatures.
  * Expects `x-signature` header containing HMAC of raw body.
- * Falls back to API key auth if WEBHOOK_SECRET is not configured.
+ * Fails closed in production if WEBHOOK_SECRET is not configured.
  */
 @Injectable()
 export class WebhookSignatureGuard implements CanActivate {
+  private readonly logger = new Logger(WebhookSignatureGuard.name);
   constructor(private readonly config: ConfigService) {}
 
   canActivate(context: ExecutionContext): boolean {
     const secret = this.config.get<string>('WEBHOOK_SECRET');
-    if (!secret) return true; // fallback: skip if not configured
+    if (!secret) {
+      // Fail closed in production — do not silently skip signature verification
+      if (process.env.NODE_ENV === 'production') {
+        throw new UnauthorizedException('WEBHOOK_SECRET chưa được cấu hình — webhook bị từ chối');
+      }
+      this.logger.warn('WEBHOOK_SECRET not configured — skipping signature check (dev only)');
+      return true;
+    }
 
     const request = context.switchToHttp().getRequest();
     const signature = request.headers['x-signature'] as string;

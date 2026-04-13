@@ -45,9 +45,14 @@ export class LeadsController {
   @Get('pool/department/:deptId')
   async poolDepartment(
     @Param('deptId', ParseBigIntPipe) deptId: bigint,
+    @CurrentUser() user: any,
     @Query('limit') limit?: number,
     @Query('cursor') cursor?: string,
   ) {
+    // USER can only see own department pool; MANAGER+ can see any
+    if (user.role === 'USER' && user.departmentId?.toString() !== deptId.toString()) {
+      throw new BadRequestException('Bạn chỉ có thể xem kho phòng ban của mình');
+    }
     return this.leadsService.poolDepartment(deptId, limit ?? 20, cursor);
   }
 
@@ -172,12 +177,14 @@ export class LeadsController {
     return { data: { message: 'Đã xóa lead' } };
   }
 
-  // Label attach/detach
+  // Label attach/detach — ownership verified via findById
   @Post(':id/labels')
   async attachLabels(
     @Param('id', ParseBigIntPipe) id: bigint,
     @Body() body: { labelIds: string[] },
+    @CurrentUser() user: any,
   ) {
+    await this.leadsService.findById(id, user); // ownership check
     await this.labelsService.attachToLead(id, body.labelIds.map(BigInt));
     return { data: { message: 'Đã gắn nhãn' } };
   }
@@ -186,7 +193,9 @@ export class LeadsController {
   async detachLabel(
     @Param('id', ParseBigIntPipe) id: bigint,
     @Param('labelId', ParseBigIntPipe) labelId: bigint,
+    @CurrentUser() user: any,
   ) {
+    await this.leadsService.findById(id, user); // ownership check
     await this.labelsService.detachFromLead(id, labelId);
     return { data: { message: 'Đã gỡ nhãn' } };
   }

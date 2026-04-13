@@ -84,12 +84,14 @@ export class CustomersController {
     return { data: { message: 'Đã xóa khách hàng' } };
   }
 
-  // Label attach/detach
+  // Label attach/detach — ownership verified via findById
   @Post(':id/labels')
   async attachLabels(
     @Param('id', ParseBigIntPipe) id: bigint,
     @Body() body: { labelIds: string[] },
+    @CurrentUser() user: any,
   ) {
+    await this.customersService.findById(id, user); // ownership check
     await this.labelsService.attachToCustomer(id, body.labelIds.map(BigInt));
     return { data: { message: 'Đã gắn nhãn' } };
   }
@@ -98,7 +100,9 @@ export class CustomersController {
   async detachLabel(
     @Param('id', ParseBigIntPipe) id: bigint,
     @Param('labelId', ParseBigIntPipe) labelId: bigint,
+    @CurrentUser() user: any,
   ) {
+    await this.customersService.findById(id, user); // ownership check
     await this.labelsService.detachFromCustomer(id, labelId);
     return { data: { message: 'Đã gỡ nhãn' } };
   }

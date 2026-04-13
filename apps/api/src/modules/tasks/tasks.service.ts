@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
-import { PrismaClient, Prisma, TaskStatus } from '@prisma/client';
+import { Injectable, NotFoundException, ConflictException, ForbiddenException, Logger } from '@nestjs/common';
+import { PrismaClient, Prisma, TaskStatus, UserRole } from '@prisma/client';
 import { Cron } from '@nestjs/schedule';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
@@ -57,9 +57,20 @@ export class TasksService {
     });
   }
 
-  async complete(id: bigint) {
+  /** Verify task exists and user has ownership (assignee, creator, or MANAGER+) */
+  private async findTaskWithOwnershipCheck(id: bigint, userId: bigint, userRole: UserRole) {
     const task = await this.prisma.task.findFirst({ where: { id, deletedAt: null } });
     if (!task) throw new NotFoundException('Không tìm thấy công việc');
+    if (userRole !== UserRole.SUPER_ADMIN && userRole !== UserRole.MANAGER) {
+      if (task.assignedTo.toString() !== userId.toString() && task.createdBy.toString() !== userId.toString()) {
+        throw new ForbiddenException('Bạn không có quyền thao tác công việc này');
+      }
+    }
+    return task;
+  }
+
+  async complete(id: bigint, userId: bigint, userRole: UserRole) {
+    const task = await this.findTaskWithOwnershipCheck(id, userId, userRole);
     if (task.status === 'COMPLETED') throw new ConflictException('Công việc đã hoàn thành');
     if (task.status === 'CANCELLED') throw new ConflictException('Không thể hoàn thành công việc đã hủy');
     return this.prisma.task.update({
@@ -69,7 +80,8 @@ export class TasksService {
     });
   }
 
-  async cancel(id: bigint) {
+  async cancel(id: bigint, userId: bigint, userRole: UserRole) {
+    await this.findTaskWithOwnershipCheck(id, userId, userRole);
     return this.prisma.task.update({
       where: { id },
       data: { status: 'CANCELLED' },
@@ -80,9 +92,8 @@ export class TasksService {
   async update(id: bigint, data: {
     title?: string; description?: string; dueDate?: string;
     remindAt?: string; priority?: string; assignedTo?: string;
-  }, userId: bigint) {
-    const task = await this.prisma.task.findFirst({ where: { id, deletedAt: null } });
-    if (!task) throw new NotFoundException('Không tìm thấy công việc');
+  }, userId: bigint, userRole: UserRole) {
+    await this.findTaskWithOwnershipCheck(id, userId, userRole);
 
     const updateData: any = {};
     if (data.title !== undefined) updateData.title = data.title;
@@ -102,9 +113,8 @@ export class TasksService {
     });
   }
 
-  async remove(id: bigint) {
-    const task = await this.prisma.task.findFirst({ where: { id, deletedAt: null } });
-    if (!task) throw new NotFoundException('Không tìm thấy công việc');
+  async remove(id: bigint, userId: bigint, userRole: UserRole) {
+    await this.findTaskWithOwnershipCheck(id, userId, userRole);
     return this.prisma.task.update({
       where: { id },
       data: { deletedAt: new Date() },
@@ -129,20 +139,17 @@ export class TasksService {
       take: 100,
     });
 
-    for (const task of dueTasks) {
-      // Create notification
-      await this.prisma.notification.create({
-        data: {
+    if (dueTasks.length > 0) {
+      await this.prisma.notification.createMany({
+        data: dueTasks.map(task => ({
           userId: task.assignedTo,
           title: 'Nhắc nhở công việc',
           content: task.title,
           type: 'TASK_REMINDER',
-        },
+        })),
       });
-
-      // Mark as reminded
-      await this.prisma.task.update({
-        where: { id: task.id },
+      await this.prisma.task.updateMany({
+        where: { id: { in: dueTasks.map(t => t.id) } },
         data: { remindedAt: now },
       });
     }
@@ -160,17 +167,17 @@ export class TasksService {
       take: 100,
     });
 
-    for (const task of escalation1Tasks) {
-      await this.prisma.notification.create({
-        data: {
+    if (escalation1Tasks.length > 0) {
+      await this.prisma.notification.createMany({
+        data: escalation1Tasks.map(task => ({
           userId: task.assignedTo,
           title: 'Công việc quá hạn',
           content: `"${task.title}" đã quá hạn hơn 1 giờ`,
           type: 'TASK_OVERDUE',
-        },
+        })),
       });
-      await this.prisma.task.update({
-        where: { id: task.id },
+      await this.prisma.task.updateMany({
+        where: { id: { in: escalation1Tasks.map(t => t.id) } },
         data: { escalation1At: now },
       });
     }
@@ -188,31 +195,53 @@ export class TasksService {
       take: 100,
     });
 
-    for (const task of escalation2Tasks) {
-      if (task.assignee?.departmentId) {
-        const managers = await this.prisma.user.findMany({
-          where: {
-            departmentId: task.assignee.departmentId,
-            role: { in: ['MANAGER', 'SUPER_ADMIN'] },
-            status: 'ACTIVE',
-          },
-          select: { id: true },
-        });
-        for (const manager of managers) {
-          await this.prisma.notification.create({
-            data: {
-              userId: manager.id,
+    if (escalation2Tasks.length > 0) {
+      // Pre-load managers by department (avoids N+1 per task)
+      const deptIds = [...new Set(escalation2Tasks
+        .map(t => t.assignee?.departmentId)
+        .filter((d): d is bigint => d !== null && d !== undefined))];
+
+      const allManagers = deptIds.length > 0
+        ? await this.prisma.user.findMany({
+            where: { departmentId: { in: deptIds }, role: { in: ['MANAGER', 'SUPER_ADMIN'] }, status: 'ACTIVE' },
+            select: { id: true, departmentId: true },
+          })
+        : [];
+
+      const managersByDept = new Map<string, bigint[]>();
+      for (const m of allManagers) {
+        const key = m.departmentId!.toString();
+        if (!managersByDept.has(key)) managersByDept.set(key, []);
+        managersByDept.get(key)!.push(m.id);
+      }
+
+      const notifications: { userId: bigint; title: string; content: string; type: string }[] = [];
+      const taskIdsToUpdate: bigint[] = [];
+
+      for (const task of escalation2Tasks) {
+        if (task.assignee?.departmentId) {
+          const managers = managersByDept.get(task.assignee.departmentId.toString()) || [];
+          for (const managerId of managers) {
+            notifications.push({
+              userId: managerId,
               title: 'Công việc nhân viên quá hạn',
               content: `"${task.title}" của ${task.assignee.name} đã quá hạn hơn 24 giờ`,
               type: 'TASK_ESCALATION',
-            },
-          });
+            });
+          }
         }
+        taskIdsToUpdate.push(task.id);
       }
-      await this.prisma.task.update({
-        where: { id: task.id },
-        data: { escalation2At: now },
-      });
+
+      if (notifications.length > 0) {
+        await this.prisma.notification.createMany({ data: notifications as any });
+      }
+      if (taskIdsToUpdate.length > 0) {
+        await this.prisma.task.updateMany({
+          where: { id: { in: taskIdsToUpdate } },
+          data: { escalation2At: now },
+        });
+      }
     }
     } catch (error) {
       this.logger.error('Lỗi khi xử lý reminders/escalations', error instanceof Error ? error.stack : error);

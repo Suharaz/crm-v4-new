@@ -1,8 +1,14 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { PrismaClient, Prisma, PaymentStatus } from '@prisma/client';
+import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { PrismaClient, Prisma, PaymentStatus, UserRole } from '@prisma/client';
 import * as ExcelJS from 'exceljs';
 import { PaymentMatchingService } from './payment-matching.service';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+
+interface CurrentUser {
+  id: bigint;
+  role: UserRole;
+  departmentId: bigint | null;
+}
 
 const PAYMENT_SELECT = {
   id: true, orderId: true, paymentTypeId: true, bankAccountId: true, amount: true,
@@ -39,9 +45,13 @@ export class PaymentsService {
   async list(query: PaginationQueryDto & {
     status?: PaymentStatus; orderId?: string;
     paymentTypeId?: string; search?: string; dateFrom?: string; dateTo?: string;
-  }) {
+  }, user?: CurrentUser) {
     const limit = query.limit ?? 20;
     const where: Prisma.PaymentWhereInput = {};
+    // IDOR: USER role can only see payments for own orders
+    if (user && user.role === UserRole.USER) {
+      where.order = { createdBy: user.id };
+    }
     if (query.status) where.status = query.status;
     if (query.orderId) where.orderId = BigInt(query.orderId);
     if (query.paymentTypeId) where.paymentTypeId = BigInt(query.paymentTypeId);
@@ -82,9 +92,14 @@ export class PaymentsService {
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }
 
-  async findById(id: bigint) {
+  async findById(id: bigint, user?: CurrentUser) {
+    const where: Prisma.PaymentWhereInput = { id };
+    // IDOR: USER role can only see payments for own orders
+    if (user && user.role === UserRole.USER) {
+      where.order = { createdBy: user.id };
+    }
     const payment = await this.prisma.payment.findFirst({
-      where: { id }, select: PAYMENT_SELECT,
+      where, select: PAYMENT_SELECT,
     });
     if (!payment) throw new NotFoundException('Không tìm thấy thanh toán');
     return payment;
@@ -97,10 +112,15 @@ export class PaymentsService {
   async create(data: {
     orderId: string; amount: number; paymentTypeId?: string; bankAccountId?: string; transferContent?: string;
     transferDate?: Date; vatAmount?: number; installmentId?: bigint;
-  }) {
+  }, user?: CurrentUser) {
     const orderId = BigInt(data.orderId);
     const order = await this.prisma.order.findFirst({ where: { id: orderId, deletedAt: null } });
     if (!order) throw new NotFoundException('Đơn hàng không tồn tại');
+
+    // IDOR: USER can only create payments for own orders
+    if (user && user.role === UserRole.USER && order.createdBy.toString() !== user.id.toString()) {
+      throw new ForbiddenException('Bạn chỉ có thể tạo thanh toán cho đơn hàng của mình');
+    }
 
     // Validate total payments don't exceed order amount
     const existing = await this.prisma.payment.aggregate({
@@ -214,6 +234,7 @@ export class PaymentsService {
       where,
       select: PAYMENT_SELECT,
       orderBy: { id: 'desc' },
+      take: 10000, // bounded to prevent OOM on large datasets
     });
 
     const workbook = new ExcelJS.Workbook();

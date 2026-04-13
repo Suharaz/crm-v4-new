@@ -323,7 +323,7 @@ export class LeadsService {
 
   // ── Update ──────────────────────────────────────────────────────────────
   async update(id: bigint, data: Record<string, unknown>, user: CurrentUser) {
-    await this.findById(id);
+    await this.findById(id, user);
 
     // Phone field-level permission
     if (data.phone && !([UserRole.SUPER_ADMIN, UserRole.MANAGER] as UserRole[]).includes(user.role)) {
@@ -428,35 +428,39 @@ export class LeadsService {
     });
     if (!targetUser) throw new NotFoundException('Không tìm thấy nhân viên');
 
-    await this.prisma.lead.update({
-      where: { id },
-      data: {
-        assignedUserId: targetUserId,
-        departmentId: targetUser.departmentId,
-        status: 'IN_PROGRESS',
-      },
-    });
+    // Atomic: use updateMany with status guard to prevent race condition
+    await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.lead.updateMany({
+        where: { id, status: { in: ['POOL', 'ZOOM', 'FLOATING'] } },
+        data: {
+          assignedUserId: targetUserId,
+          departmentId: targetUser.departmentId,
+          status: 'IN_PROGRESS',
+        },
+      });
+      if (updated.count === 0) {
+        throw new ConflictException('Lead đã được gán bởi người khác');
+      }
 
-    // Log assignment history
-    await this.prisma.assignmentHistory.create({
-      data: {
-        entityType: 'LEAD', entityId: id,
-        fromUserId: lead.assignedUserId,
-        toUserId: targetUserId,
-        fromDepartmentId: lead.departmentId,
-        toDepartmentId: targetUser.departmentId,
-        assignedBy: user.id,
-      },
-    });
+      await tx.assignmentHistory.create({
+        data: {
+          entityType: 'LEAD', entityId: id,
+          fromUserId: lead.assignedUserId,
+          toUserId: targetUserId,
+          fromDepartmentId: lead.departmentId,
+          toDepartmentId: targetUser.departmentId,
+          assignedBy: user.id,
+        },
+      });
 
-    // Log activity
-    await this.prisma.activity.create({
-      data: {
-        entityType: 'LEAD', entityId: id, userId: user.id,
-        type: 'ASSIGNMENT',
-        content: `Gán cho nhân viên`,
-        metadata: { toUserId: targetUserId.toString() },
-      },
+      await tx.activity.create({
+        data: {
+          entityType: 'LEAD', entityId: id, userId: user.id,
+          type: 'ASSIGNMENT',
+          content: `Gán cho nhân viên`,
+          metadata: { toUserId: targetUserId.toString() },
+        },
+      });
     });
 
     return this.findById(id);

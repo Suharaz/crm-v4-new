@@ -44,8 +44,8 @@ export class PaymentsController {
   ) {}
 
   @Get()
-  async list(@Query() query: PaymentListQueryDto) {
-    return this.service.list(query);
+  async list(@Query() query: PaymentListQueryDto, @CurrentUser() user: any) {
+    return this.service.list(query, user);
   }
 
   @Get('pending')
@@ -94,8 +94,8 @@ export class PaymentsController {
   }
 
   @Get(':id')
-  async findById(@Param('id', ParseBigIntPipe) id: bigint) {
-    return { data: await this.service.findById(id) };
+  async findById(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
+    return { data: await this.service.findById(id, user) };
   }
 
   @Post()
@@ -104,6 +104,7 @@ export class PaymentsController {
       orderId: string; amount: number; paymentTypeId?: string; bankAccountId?: string; transferContent?: string;
       transferDate?: string; vatAmount?: number; installmentId?: string;
     },
+    @CurrentUser() user: any,
   ) {
     if (!body.orderId) throw new BadRequestException('orderId là bắt buộc');
     if (body.amount === undefined || body.amount === null) throw new BadRequestException('amount là bắt buộc');
@@ -112,7 +113,7 @@ export class PaymentsController {
       transferDate: body.transferDate ? new Date(body.transferDate) : undefined,
       installmentId: body.installmentId ? BigInt(body.installmentId) : undefined,
     };
-    return { data: await this.service.create(createData) };
+    return { data: await this.service.create(createData, user) };
   }
 
   @Post(':id/verify')

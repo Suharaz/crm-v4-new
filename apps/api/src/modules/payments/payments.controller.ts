@@ -59,9 +59,10 @@ export class PaymentsController {
   async exportExcel(
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
+    @CurrentUser() user: any,
     @Res() res?: Response,
   ) {
-    const buffer = await this.service.exportVerified(dateFrom, dateTo);
+    const buffer = await this.service.exportVerified(dateFrom, dateTo, user);
     res!.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res!.setHeader('Content-Disposition', 'attachment; filename=payments-verified.xlsx');
     res!.send(buffer);

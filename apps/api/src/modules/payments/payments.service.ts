@@ -221,13 +221,17 @@ export class PaymentsService {
     });
   }
 
-  async exportVerified(dateFrom?: string, dateTo?: string): Promise<Buffer> {
+  async exportVerified(dateFrom?: string, dateTo?: string, user?: CurrentUser): Promise<Buffer> {
     const where: Prisma.PaymentWhereInput = { status: 'VERIFIED' };
     if (dateFrom || dateTo) {
       where.createdAt = {
         ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
         ...(dateTo ? { lte: new Date(dateTo + 'T23:59:59.999Z') } : {}),
       };
+    }
+    // IDOR: MANAGER only sees payments from own department's orders
+    if (user && user.role !== UserRole.SUPER_ADMIN && user.departmentId) {
+      where.order = { creator: { departmentId: user.departmentId } };
     }
 
     const payments = await this.prisma.payment.findMany({

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Báo cáo tiến độ dự án (2026-04-13)
+- **Report:** `plans/reports/project-timeline-260413-0918-velocrm-progress-report.md`
+- **Nội dung:** 36 tính năng/phase, timeline realistic cho 1 senior fullstack dev (~21 tuần)
+- **Tiến độ:** 35/36 hoàn thành (97.2%), performance optimization đang tiến hành
+- **Ghi chú:** Timeline đã được chuẩn hóa từ git history cho phù hợp với nhân lực thực tế
+
 ### Settings Page Grouped Sidebar Navigation (2026-04-12)
 - **Layout:** Replaced 12 flat tabs with sidebar grouped into 4 categories
 - **Tổ chức:** Phòng ban & Team (combined view), Cấp bậc

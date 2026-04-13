@@ -3,104 +3,93 @@
 > **Dự án:** VeloCRM — Hệ thống CRM nội bộ cho đội ngũ kinh doanh
 > **Nhân sự:** 1 Senior Fullstack Developer
 > **Stack:** NestJS 11 + Next.js 16 + PostgreSQL 16 + Prisma 6 + Turborepo
-> **Ngày bắt đầu dự án:** 25/03/2026
-> **Deadline dự kiến:** 23/07/2026 (18 tuần)
+> **Ngày bắt đầu:** 25/03/2026 (lên kế hoạch) · 27/03/2026 (commit đầu tiên)
+> **Ngày hiện tại:** 13/04/2026
 > **Tổng effort ước tính:** ~330 giờ (~210h phases chính + ~120h tính năng bổ sung)
 
 ---
 
-## GIAI ĐOẠN 1: NỀN TẢNG (Foundation)
+## SPRINT 1: NỀN TẢNG — Foundation (25/03 → 28/03)
 
 | # | Tính năng | Bắt đầu | Deadline | Hoàn thành | Trạng thái |
 |---|-----------|---------|----------|------------|------------|
-| 01 | Khởi tạo Monorepo & Môi trường dev | 25/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
-| 02 | Thiết kế Database Schema & Prisma | 31/03/2026 | 02/04/2026 | 02/04/2026 | Hoàn thành |
-| 03 | Xác thực & Quản lý người dùng (JWT + RBAC) | 03/04/2026 | 08/04/2026 | 07/04/2026 | Hoàn thành |
+| 01 | Lên kế hoạch dự án, thiết kế kiến trúc, tài liệu | 25/03/2026 | 26/03/2026 | 26/03/2026 | Hoàn thành |
+| 02 | Khởi tạo Monorepo & Môi trường dev (Turborepo + pnpm) | 27/03/2026 | 27/03/2026 | 27/03/2026 | Hoàn thành |
+| 03 | Database Schema & Prisma Setup (30+ tables, enums, indexes) | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 04 | Authentication & User Management (JWT + refresh + RBAC) | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 05 | Core CRM: Leads & Customers (3 Kho, status flow) | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 06 | Products, Orders & Payments + Bank Webhook | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 07 | Activity Timeline & Call Integration | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 08 | Data Import/Export & Third-Party API | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 09 | Frontend Layout Shell & Auth UI | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 10 | Frontend Leads, Customers, Orders, Dashboard Pages | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 11 | AI Lead Distribution + Tasks/Transfer/Advanced Features | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 12 | Testing Setup & Deployment Config | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 13 | Frontend CRUD (forms, dialogs, shared UI) | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 14 | Gap Fill, Polish, Tasks Enhancement, Audit | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 15 | Test Suites (531 tests — E2E + API + Unit) | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 16 | Lead Pool Inline Actions (Claim/Assign buttons) | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
+| 17 | RBAC E2E Tests + Lead Lifecycle Flow Tests | 28/03/2026 | 28/03/2026 | 28/03/2026 | Hoàn thành |
 
-**Milestone M1:** Monorepo chạy, DB schema applied, login + RBAC hoạt động
+**Milestone M1:** Toàn bộ backend + frontend + tests hoàn thành. 531/531 tests passed.
 
 ---
 
-## GIAI ĐOẠN 2: BACKEND CỐT LÕI (Core Backend)
+## SPRINT 2: NÂNG CẤP TÍNH NĂNG — Feature Enhancement (30/03 → 03/04)
 
 | # | Tính năng | Bắt đầu | Deadline | Hoàn thành | Trạng thái |
 |---|-----------|---------|----------|------------|------------|
-| 04 | Core CRM: Leads & Customers (3 Kho, status flow) | 09/04/2026 | 14/04/2026 | 14/04/2026 | Hoàn thành |
-| 05 | Products, Orders & Payments + Bank Webhook | 15/04/2026 | 21/04/2026 | 18/04/2026 | Hoàn thành |
-| 06 | Activity Timeline & Call Integration | 22/04/2026 | 24/04/2026 | 24/04/2026 | Hoàn thành |
-| 07 | Data Import/Export & Third-Party API | 25/04/2026 | 29/04/2026 | 28/04/2026 | Hoàn thành |
+| 18 | Assignment Templates & Bulk Assign (round-robin) | 30/03/2026 | 30/03/2026 | 30/03/2026 | Hoàn thành |
+| 19 | Team Management + Kanban View + Quick Preview Popup | 30/03/2026 | 30/03/2026 | 30/03/2026 | Hoàn thành |
+| 20 | Create Order from Lead (auto-create customer) | 30/03/2026 | 30/03/2026 | 30/03/2026 | Hoàn thành |
+| 21 | Kho Re-data (4th pool) + maxLeads capacity per level | 31/03/2026 | 31/03/2026 | 31/03/2026 | Hoàn thành |
+| 22 | Deep Lead Filters (10 dimensions) + CSV template download | 01/04/2026 | 01/04/2026 | 01/04/2026 | Hoàn thành |
+| 23 | Metadata JSONB editor + Order fields mở rộng | 01/04/2026 | 01/04/2026 | 01/04/2026 | Hoàn thành |
+| 24 | RBAC chi tiết (USER/MANAGER/ADMIN) + Dashboard Redesign | 02/04/2026 | 02/04/2026 | 02/04/2026 | Hoàn thành |
+| 25 | UI Redesign: REDATA→ZOOM rename + Role-based sidebar | 02/04/2026 | 02/04/2026 | 02/04/2026 | Hoàn thành |
+| 26 | API Keys + AI Lead Scoring + Payment Reconciliation 2-column | 03/04/2026 | 03/04/2026 | 03/04/2026 | Hoàn thành |
+| 27 | Strategic Dashboard (conversion trend, lead aging, source quality) | 03/04/2026 | 03/04/2026 | 03/04/2026 | Hoàn thành |
+| 28 | API Integration Guide (docs) | 03/04/2026 | 03/04/2026 | 03/04/2026 | Hoàn thành |
 
-**Milestone M2:** Lead lifecycle POOL→CONVERTED, payment matching, CSV import/export hoạt động
+**Milestone M2:** Tính năng nâng cao hoàn chỉnh — RBAC, AI scoring, filters, kanban, dashboard charts.
 
 ---
 
-## GIAI ĐOẠN 3: GIAO DIỆN NGƯỜI DÙNG (Frontend)
+## SPRINT 3: THIẾT KẾ LẠI UX — UX Redesign (06/04 → 09/04)
 
 | # | Tính năng | Bắt đầu | Deadline | Hoàn thành | Trạng thái |
 |---|-----------|---------|----------|------------|------------|
-| 08 | Frontend Layout Shell & Auth UI | 30/04/2026 | 02/05/2026 | 02/05/2026 | Hoàn thành |
-| 09 | Frontend Leads & Customers Pages | 05/05/2026 | 08/05/2026 | 07/05/2026 | Hoàn thành |
-| 10 | Frontend Orders, Payments & Settings | 09/05/2026 | 13/05/2026 | 12/05/2026 | Hoàn thành |
-| 11 | Frontend Analytics Dashboard | 14/05/2026 | 16/05/2026 | 16/05/2026 | Hoàn thành |
+| 29 | Lead Detail Redesign + Orders/Payments trong expand | 06/04/2026 | 06/04/2026 | 06/04/2026 | Hoàn thành |
+| 30 | Kanban Config (chọn labels, reorder, max 5 columns) | 06/04/2026 | 06/04/2026 | 06/04/2026 | Hoàn thành |
+| 31 | Create Lead Dialog + Payment History tab | 06/04/2026 | 06/04/2026 | 06/04/2026 | Hoàn thành |
+| 32 | Order/Product Improvements + Bank Account CRUD | 07/04/2026 | 07/04/2026 | 07/04/2026 | Hoàn thành |
+| 33 | Advanced Filter Bars (Customers & Orders) + Distribution Monitoring | 08/04/2026 | 08/04/2026 | 08/04/2026 | Hoàn thành |
+| 34 | AI Analysis System — Call + Customer analysis, tags, markdown | 09/04/2026 | 09/04/2026 | 09/04/2026 | Hoàn thành |
+| 35 | Customer Detail Redesign (social icons, expandable orders) | 09/04/2026 | 09/04/2026 | 09/04/2026 | Hoàn thành |
 
-**Milestone M3:** App shell hoàn chỉnh, tất cả CRUD pages, dashboard analytics
+**Milestone M3:** UX hoàn chỉnh — lead/customer detail redesigned, AI analysis, kanban config.
 
 ---
 
-## GIAI ĐOẠN 4: TÍNH NĂNG NÂNG CAO (Advanced Features)
+## SPRINT 4: TRIỂN KHAI & BẢO MẬT — Production (10/04 → 12/04)
 
 | # | Tính năng | Bắt đầu | Deadline | Hoàn thành | Trạng thái |
 |---|-----------|---------|----------|------------|------------|
-| 12 | AI Lead Distribution (scoring + auto-assign) | 19/05/2026 | 21/05/2026 | 21/05/2026 | Hoàn thành |
-| 13 | Tasks/Todo, Transfer & Claim system | 22/05/2026 | 27/05/2026 | 26/05/2026 | Hoàn thành |
-| 14 | Testing Setup & Deployment Config | 28/05/2026 | 30/05/2026 | 30/05/2026 | Hoàn thành |
-
-**Milestone M4:** AI distribution, tasks/todo, transfer/claim, deploy config
-
----
-
-## GIAI ĐOẠN 5: HOÀN THIỆN & KIỂM THỬ (Polish & Testing)
-
-| # | Tính năng | Bắt đầu | Deadline | Hoàn thành | Trạng thái |
-|---|-----------|---------|----------|------------|------------|
-| 15 | Frontend CRUD Implementation (forms, dialogs) | 02/06/2026 | 04/06/2026 | 03/06/2026 | Hoàn thành |
-| 16 | Missing Features Gap Fill | 05/06/2026 | 06/06/2026 | 06/06/2026 | Hoàn thành |
-| 17 | Frontend Polish — Dashboard, Pagination, Distribution | 09/06/2026 | 10/06/2026 | 10/06/2026 | Hoàn thành |
-| 18 | Tasks/Todo Enhancement (quick add, escalation) | 11/06/2026 | 12/06/2026 | 12/06/2026 | Hoàn thành |
-| 19 | Full Project Audit & Quality Fixes | 13/06/2026 | 16/06/2026 | 15/06/2026 | Hoàn thành |
-| 20 | Comprehensive Test Suites (E2E + API + Unit) | 17/06/2026 | 19/06/2026 | 19/06/2026 | Hoàn thành |
-| 21 | Test Execution & Bug Fixes (531/531 passed) | 20/06/2026 | 23/06/2026 | 22/06/2026 | Hoàn thành |
-
-**Milestone M5:** Tests 531/531 passed, audit hoàn tất, quality fixes
-
----
-
-## GIAI ĐOẠN 6: TÍNH NĂNG BỔ SUNG (Post-Phase Features)
-
-| # | Tính năng | Bắt đầu | Deadline | Hoàn thành | Trạng thái |
-|---|-----------|---------|----------|------------|------------|
-| 22 | Assignment Templates & Bulk Actions | 24/06/2026 | 26/06/2026 | 26/06/2026 | Hoàn thành |
-| 23 | Kho Re-data & Lead Capacity Limit | 27/06/2026 | 27/06/2026 | 27/06/2026 | Hoàn thành |
-| 24 | Lead Filters nâng cao (10 dimensions) + CSV cải tiến | 30/06/2026 | 01/07/2026 | 01/07/2026 | Hoàn thành |
-| 25 | RBAC chi tiết & Dashboard Redesign (charts, time range) | 02/07/2026 | 03/07/2026 | 03/07/2026 | Hoàn thành |
-| 26 | API Keys + AI Scoring + Payment Reconciliation | 04/07/2026 | 08/07/2026 | 07/07/2026 | Hoàn thành |
-| 27 | Lead Detail Redesign + Kanban View | 09/07/2026 | 11/07/2026 | 10/07/2026 | Hoàn thành |
-| 28 | Order/Product Improvements + Bank Account CRUD | 14/07/2026 | 15/07/2026 | 15/07/2026 | Hoàn thành |
-| 29 | Advanced Filter Bars (Customers & Orders) + Distribution Monitoring | 16/07/2026 | 17/07/2026 | 17/07/2026 | Hoàn thành |
-| 30 | AI Analysis System (Call + Customer analysis, tags, markdown) | 18/07/2026 | 22/07/2026 | 21/07/2026 | Hoàn thành |
-
----
-
-## GIAI ĐOẠN 7: TRIỂN KHAI & BẢO MẬT (Deployment & Security)
-
-| # | Tính năng | Bắt đầu | Deadline | Hoàn thành | Trạng thái |
-|---|-----------|---------|----------|------------|------------|
-| 31 | VPS Deployment (Docker + Nginx + PM2 + aaPanel) | 23/07/2026 | 25/07/2026 | 24/07/2026 | Hoàn thành |
-| 32 | Payment Excel Import/Export + Lookup Tables + Pagination redesign | 28/07/2026 | 30/07/2026 | 30/07/2026 | Hoàn thành |
-| 33 | VeloCRM Rebrand + Landing Page + Design System overhaul | 31/07/2026 | 04/08/2026 | 04/08/2026 | Hoàn thành |
-| 34 | MCP Server + AI Agent REST API (18 tools) | 05/08/2026 | 07/08/2026 | 06/08/2026 | Hoàn thành |
-| 35 | Security Audit & Remediation (40+ fixes) | 08/08/2026 | 13/08/2026 | 12/08/2026 | Hoàn thành |
-| 36 | Redis Caching + PostgreSQL Tuning + Performance Optimization | 14/08/2026 | 18/08/2026 | — | Đang tiến hành |
+| 36 | VPS Deployment (Docker + Nginx + PM2 + aaPanel guide) | 10/04/2026 | 10/04/2026 | 10/04/2026 | Hoàn thành |
+| 37 | Type Safety Cleanup (65 files, eliminate `any` warnings) | 10/04/2026 | 10/04/2026 | 10/04/2026 | Hoàn thành |
+| 38 | SEED_PASSWORD security + GitHub Actions CI/CD | 10/04/2026 | 10/04/2026 | 10/04/2026 | Hoàn thành |
+| 39 | Payment Reconciliation Redesign (filters, expandable rows) | 11/04/2026 | 11/04/2026 | 11/04/2026 | Hoàn thành |
+| 40 | Lookup Tables (OrderFormat, ProductGroup, PaymentInstallment) | 11/04/2026 | 11/04/2026 | 11/04/2026 | Hoàn thành |
+| 41 | Numbered Pagination + Payment Excel Export/Import | 11/04/2026 | 11/04/2026 | 11/04/2026 | Hoàn thành |
+| 42 | AI Customer Rating (1-5 stars) + Activity by Department chart | 11/04/2026 | 11/04/2026 | 11/04/2026 | Hoàn thành |
+| 43 | VeloCRM Rebrand + Design System overhaul (Sky Blue + Cyan) | 12/04/2026 | 12/04/2026 | 12/04/2026 | Hoàn thành |
+| 44 | Landing Page + Split-screen Login + Mobile Sidebar | 12/04/2026 | 12/04/2026 | 12/04/2026 | Hoàn thành |
+| 45 | MCP Server + AI Agent REST API (18 tools) | 12/04/2026 | 12/04/2026 | 12/04/2026 | Hoàn thành |
+| 46 | User Profile Page + Settings Grouped Sidebar | 12/04/2026 | 12/04/2026 | 12/04/2026 | Hoàn thành |
+| 47 | Security Audit & Remediation (40+ fixes across 12 commits) | 12/04/2026 | 12/04/2026 | 12/04/2026 | Hoàn thành |
+| 48 | Redis Caching (lookup 10min + dashboard 30s TTL) | 12/04/2026 | 13/04/2026 | 12/04/2026 | Hoàn thành |
+| 49 | PrismaClient Singleton + Connection Pool + PostgreSQL Tuning | 12/04/2026 | 13/04/2026 | 12/04/2026 | Hoàn thành |
+| 50 | Streaming CSV Export (large datasets) | — | 15/04/2026 | — | Đang tiến hành |
 
 ---
 
@@ -108,23 +97,36 @@
 
 | Chỉ số | Giá trị |
 |--------|---------|
-| Tổng tính năng | 36 |
-| Hoàn thành | 35 |
+| Tổng tính năng | 50 |
+| Hoàn thành | 49 |
 | Đang tiến hành | 1 |
-| Tỷ lệ hoàn thành | 97.2% |
-| Thời gian thực tế | ~21 tuần (25/03 → 18/08/2026) |
-| Deadline ban đầu | 23/07/2026 |
-| Trễ deadline | ~4 tuần (do tính năng bổ sung GĐ6-7) |
+| Tỷ lệ hoàn thành | 98% |
+| Thời gian thực tế | 18 ngày (25/03 → 12/04/2026) |
+| Sprint hiện tại | Sprint 4 (Production) |
+| Ngày cập nhật báo cáo | 13/04/2026 |
 
-### Ghi chú
-- GĐ1-5 (Phase 01-21): Hoàn thành đúng deadline, effort ~210h
-- GĐ6 (Phase 22-30): Tính năng bổ sung theo yêu cầu kinh doanh, thêm ~80h
-- GĐ7 (Phase 31-36): Deployment, rebrand, security — thêm ~50h
-- Performance optimization (Phase 36) đang được thực hiện: PrismaClient singleton, Redis caching, PostgreSQL tuning
+### Phân bổ theo Sprint
+
+| Sprint | Thời gian | Số tính năng | Trọng tâm |
+|--------|-----------|-------------|-----------|
+| Sprint 1 | 25-28/03 (4 ngày) | 17 | Foundation — full backend + frontend + tests |
+| Sprint 2 | 30/03-03/04 (5 ngày) | 11 | Feature Enhancement — RBAC, AI, filters, dashboard |
+| Sprint 3 | 06-09/04 (4 ngày) | 7 | UX Redesign — detail pages, kanban, AI analysis |
+| Sprint 4 | 10-12/04 (3 ngày) | 15 | Production — deploy, rebrand, security, performance |
+
+### Còn tồn đọng
+- [ ] Streaming CSV export cho large datasets (PERF-M3 từ audit)
+- [ ] `@crm/types` package population (deferred)
+- [ ] Prisma migrations init (đang dùng db push)
 
 ### Rủi ro đã xử lý
-- Path traversal vulnerability → patched
-- Payment matching race condition → optimistic locking
-- IDOR trong findById → user role scoping
-- N+1 queries trong scoring (6000 queries/batch) → batch queries
-- CSV import memory leak → streaming + DI PrismaClient
+| Rủi ro | Mức độ | Giải pháp | Ngày |
+|--------|--------|-----------|------|
+| Path traversal file serving | Critical | Patched endpoint validation | 12/04 |
+| Payment matching race condition | Critical | Optimistic locking `updateMany` | 12/04 |
+| IDOR trong findById | High | User role scoping | 12/04 |
+| N+1 scoring queries (6000/batch) | High | 4 batch queries thay thế | 12/04 |
+| CSV import memory leak | High | Streaming + DI PrismaClient | 12/04 |
+| Webhook auth missing | High | HMAC-SHA256 signature | 12/04 |
+| No security headers | Medium | Helmet (CSP, HSTS, X-Frame) | 12/04 |
+| Zero caching layer | Medium | Redis cache (lookup 10min, dashboard 30s) | 12/04 |

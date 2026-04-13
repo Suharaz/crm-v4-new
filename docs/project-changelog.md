@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Security & Performance Audit Remediation — Round 2 (2026-04-13)
+- **Branch:** `audit/security-performance-260413` — 10 fixes across security and performance
+- **Audit scope:** 328 TypeScript files, 7 security areas + 3 performance areas scanned
+- **Results:** 1 critical, 12 high, 16 medium, 9 low findings; 44 prior controls verified
+- **Security (IDOR fixes):**
+  - Lead update IDOR bypass — `findById` now receives user context (H7)
+  - Pool department endpoint — USER restricted to own department only (H1)
+  - Payment list/findById — USER scoped to own orders (H3/H4)
+  - Payment create — order ownership check for USER role (H5)
+  - Task complete/cancel/update/remove — ownership check (assignee/creator/MANAGER+) (M8)
+  - Label attach/detach — ownership verified via `findById` on leads and customers (M10)
+  - Webhook signature guard — fail-closed in production, warn-only in dev (M1)
+- **Performance:**
+  - Distribution batchDistribute — score once + batch $transaction (~800 → ~7 queries) (CRIT-1)
+  - Lead assign — atomic $transaction with `updateMany` status guard prevents race (PH1)
+  - Task processReminders — batch `createMany`/`updateMany` for all 3 escalation levels (PH5)
+  - 2 new composite indexes: orders(status, created_at), payments(order_id, status) (PM3/PM4)
+- **Report:** `plans/reports/audit-260413-1048-security-performance-comprehensive.md`
+
 ### Settings Page Grouped Sidebar Navigation (2026-04-12)
 - **Layout:** Replaced 12 flat tabs with sidebar grouped into 4 categories
 - **Tổ chức:** Phòng ban & Team (combined view), Cấp bậc

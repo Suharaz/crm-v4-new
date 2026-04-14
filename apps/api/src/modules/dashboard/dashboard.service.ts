@@ -253,7 +253,18 @@ export class DashboardService {
     });
   }
 
-  /** Manager+: employee scorecard — all metrics needed for score calculation */
+  /**
+   * Manager+: employee scorecard — all metrics needed for score calculation.
+   *
+   * Counting rules (agreed with PM):
+   * - leads_assigned: COUNT of assignment_history records where to_user_id = NV in period.
+   *   → If lead transferred A→B, both A and B get +1 (counts each receive event).
+   * - leads_converted: COUNT of orders NV created in period (created_by + created_at).
+   * - revenue: SUM of VERIFIED payments verified in period, from orders NV created.
+   * - overdue_tasks: PENDING tasks past due (current state, not period-bound).
+   * - aging_leads_7d: leads currently held by NV, untouched 7+ days (current state).
+   * - tasks_total / tasks_completed: tasks created in period.
+   */
   async getEmployeeScores(dateFrom: Date, dateTo: Date, departmentId?: bigint) {
     const key = this.cacheKey('emp-scores', dateFrom, dateTo, departmentId);
     return this.cacheService.getOrSet(key, CACHE_TTL.DASHBOARD, async () => {
@@ -270,16 +281,30 @@ export class DashboardService {
         SELECT
           u.id as user_id, u.name,
           d.name as dept_name, d.id as dept_id,
-          COUNT(DISTINCT l.id)::bigint as leads_assigned,
-          COUNT(DISTINCT CASE WHEN l.status = 'CONVERTED' THEN l.id END)::bigint as leads_converted,
-          COALESCE(SUM(DISTINCT CASE WHEN p.status = 'VERIFIED' THEN p.amount ELSE 0 END), 0)::bigint as revenue,
+          -- Leads nhận trong kỳ: mỗi lần nhận = 1 count (transfer A→B → cả A và B đều +1)
+          (SELECT COUNT(*)::bigint FROM assignment_history ah
+           WHERE ah.entity_type = 'LEAD' AND ah.to_user_id = u.id
+             AND ah.created_at >= ${dateFrom} AND ah.created_at <= ${dateTo}) as leads_assigned,
+          -- Convert trong kỳ: orders NV tạo trong kỳ (last-touch attribution)
+          (SELECT COUNT(*)::bigint FROM orders o
+           WHERE o.created_by = u.id AND o.deleted_at IS NULL
+             AND o.created_at >= ${dateFrom} AND o.created_at <= ${dateTo}) as leads_converted,
+          -- Revenue: payments VERIFIED trong kỳ từ orders NV tạo
+          (SELECT COALESCE(SUM(p.amount), 0)::bigint FROM payments p
+           JOIN orders o2 ON o2.id = p.order_id
+           WHERE o2.created_by = u.id AND o2.deleted_at IS NULL
+             AND p.status = 'VERIFIED'
+             AND p.verified_at >= ${dateFrom} AND p.verified_at <= ${dateTo}) as revenue,
+          -- Tasks quá hạn (current state, không filter period)
           (SELECT COUNT(*)::bigint FROM tasks t
            WHERE t.assigned_to = u.id AND t.deleted_at IS NULL
              AND t.status = 'PENDING' AND t.due_date < NOW()) as overdue_tasks,
+          -- Leads aging: đang giữ + IN_PROGRESS/ASSIGNED + 7+ ngày không tương tác
           (SELECT COUNT(*)::bigint FROM leads al
            WHERE al.assigned_user_id = u.id AND al.deleted_at IS NULL
              AND al.status IN ('IN_PROGRESS', 'ASSIGNED')
              AND al.updated_at < NOW() - INTERVAL '7 days') as aging_leads_7d,
+          -- Tasks total/completed trong kỳ (cho task completion rate)
           (SELECT COUNT(*)::bigint FROM tasks t2
            WHERE t2.assigned_to = u.id AND t2.deleted_at IS NULL
              AND t2.created_at >= ${dateFrom} AND t2.created_at <= ${dateTo}) as tasks_total,
@@ -289,14 +314,8 @@ export class DashboardService {
              AND t3.created_at >= ${dateFrom} AND t3.created_at <= ${dateTo}) as tasks_completed
         FROM users u
         LEFT JOIN departments d ON d.id = u.department_id
-        LEFT JOIN leads l ON l.assigned_user_id = u.id AND l.deleted_at IS NULL
-          AND l.created_at >= ${dateFrom} AND l.created_at <= ${dateTo}
-        LEFT JOIN orders o ON o.created_by = u.id AND o.deleted_at IS NULL
-        LEFT JOIN payments p ON p.order_id = o.id
-          AND p.verified_at >= ${dateFrom} AND p.verified_at <= ${dateTo}
         WHERE u.deleted_at IS NULL AND u.role = 'USER' AND u.status = 'ACTIVE'
           ${deptFilter}
-        GROUP BY u.id, u.name, d.name, d.id
         ORDER BY revenue DESC
       `;
 

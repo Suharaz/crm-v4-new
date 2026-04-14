@@ -72,4 +72,16 @@ export class DashboardController {
     const { dateFrom, dateTo } = parseDates(from, to);
     return { data: await this.service.getTeamPerformance(dateFrom, dateTo) };
   }
+
+  @Get('employee-scores')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async getEmployeeScores(
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('deptId') deptId?: string,
+  ) {
+    const { dateFrom, dateTo } = parseDates(from, to);
+    const departmentId = deptId ? BigInt(deptId) : undefined;
+    return { data: await this.service.getEmployeeScores(dateFrom, dateTo, departmentId) };
+  }
 }

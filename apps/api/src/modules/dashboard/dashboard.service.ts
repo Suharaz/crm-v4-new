@@ -252,4 +252,67 @@ export class DashboardService {
       }));
     });
   }
+
+  /** Manager+: employee scorecard — all metrics needed for score calculation */
+  async getEmployeeScores(dateFrom: Date, dateTo: Date, departmentId?: bigint) {
+    const key = this.cacheKey('emp-scores', dateFrom, dateTo, departmentId);
+    return this.cacheService.getOrSet(key, CACHE_TTL.DASHBOARD, async () => {
+      const deptFilter = departmentId
+        ? Prisma.sql`AND u.department_id = ${departmentId}`
+        : Prisma.sql``;
+
+      const rows = await this.prisma.$queryRaw<{
+        user_id: bigint; name: string; dept_name: string | null; dept_id: bigint | null;
+        leads_assigned: bigint; leads_converted: bigint; revenue: bigint;
+        overdue_tasks: bigint; aging_leads_7d: bigint;
+        tasks_total: bigint; tasks_completed: bigint;
+      }[]>`
+        SELECT
+          u.id as user_id, u.name,
+          d.name as dept_name, d.id as dept_id,
+          COUNT(DISTINCT l.id)::bigint as leads_assigned,
+          COUNT(DISTINCT CASE WHEN l.status = 'CONVERTED' THEN l.id END)::bigint as leads_converted,
+          COALESCE(SUM(DISTINCT CASE WHEN p.status = 'VERIFIED' THEN p.amount ELSE 0 END), 0)::bigint as revenue,
+          (SELECT COUNT(*)::bigint FROM tasks t
+           WHERE t.assigned_to = u.id AND t.deleted_at IS NULL
+             AND t.status = 'PENDING' AND t.due_date < NOW()) as overdue_tasks,
+          (SELECT COUNT(*)::bigint FROM leads al
+           WHERE al.assigned_user_id = u.id AND al.deleted_at IS NULL
+             AND al.status IN ('IN_PROGRESS', 'ASSIGNED')
+             AND al.updated_at < NOW() - INTERVAL '7 days') as aging_leads_7d,
+          (SELECT COUNT(*)::bigint FROM tasks t2
+           WHERE t2.assigned_to = u.id AND t2.deleted_at IS NULL
+             AND t2.created_at >= ${dateFrom} AND t2.created_at <= ${dateTo}) as tasks_total,
+          (SELECT COUNT(*)::bigint FROM tasks t3
+           WHERE t3.assigned_to = u.id AND t3.deleted_at IS NULL
+             AND t3.status = 'COMPLETED'
+             AND t3.created_at >= ${dateFrom} AND t3.created_at <= ${dateTo}) as tasks_completed
+        FROM users u
+        LEFT JOIN departments d ON d.id = u.department_id
+        LEFT JOIN leads l ON l.assigned_user_id = u.id AND l.deleted_at IS NULL
+          AND l.created_at >= ${dateFrom} AND l.created_at <= ${dateTo}
+        LEFT JOIN orders o ON o.created_by = u.id AND o.deleted_at IS NULL
+        LEFT JOIN payments p ON p.order_id = o.id
+          AND p.verified_at >= ${dateFrom} AND p.verified_at <= ${dateTo}
+        WHERE u.deleted_at IS NULL AND u.role = 'USER' AND u.status = 'ACTIVE'
+          ${deptFilter}
+        GROUP BY u.id, u.name, d.name, d.id
+        ORDER BY revenue DESC
+      `;
+
+      return rows.map(r => ({
+        userId: r.user_id.toString(),
+        name: r.name,
+        deptName: r.dept_name || 'Chưa phân phòng',
+        deptId: r.dept_id?.toString() || null,
+        leadsAssigned: Number(r.leads_assigned),
+        leadsConverted: Number(r.leads_converted),
+        revenue: Number(r.revenue),
+        overdueTasks: Number(r.overdue_tasks),
+        agingLeads7d: Number(r.aging_leads_7d),
+        tasksTotal: Number(r.tasks_total),
+        tasksCompleted: Number(r.tasks_completed),
+      }));
+    });
+  }
 }

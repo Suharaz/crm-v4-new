@@ -6,6 +6,7 @@ import {
   LayoutDashboard, Users, UserCheck, ShoppingCart, Package,
   Phone, Settings, Upload, Waves, ChevronLeft, ChevronRight, ChevronDown,
   UserCog, CheckSquare, Zap, Inbox, RotateCcw, User, Building2, CreditCard, X,
+  BarChart3, DollarSign, UsersRound, ContactRound,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
@@ -16,6 +17,7 @@ interface NavChild {
   label: string;
   href: string;
   icon: React.ElementType;
+  roles?: string[];
 }
 
 interface NavItem {
@@ -23,12 +25,23 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   roles?: string[];
+  /** Static children (role-filtered via child.roles) */
+  children?: NavChild[];
+  /** Role-specific children (legacy pattern for Leads) */
   childRoles?: string[];
   childrenByRole?: Record<string, NavChild[]>;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Trang chủ', href: '/dashboard', icon: LayoutDashboard },
+  {
+    label: 'Trang chủ', href: '/dashboard', icon: LayoutDashboard,
+    children: [
+      { label: 'Tổng quát', href: '/dashboard', icon: BarChart3 },
+      { label: 'Doanh thu', href: '/dashboard/revenue', icon: DollarSign },
+      { label: 'Nhân viên', href: '/dashboard/employees', icon: UsersRound, roles: ['SUPER_ADMIN', 'MANAGER'] },
+      { label: 'Khách hàng', href: '/dashboard/customers', icon: ContactRound },
+    ],
+  },
   {
     label: 'Leads', href: '/leads', icon: Users,
     childRoles: ['MANAGER', 'USER'],
@@ -57,28 +70,34 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Cài đặt', href: '/settings', icon: Settings, roles: ['SUPER_ADMIN', 'MANAGER'] },
 ];
 
+// Paths that belong to collapsible groups
+const DASHBOARD_CHILD_PATHS = ['/dashboard', '/dashboard/revenue', '/dashboard/employees', '/dashboard/customers'];
+const LEADS_CHILD_PATHS = ['/leads', '/floating', '/leads/pool', '/leads/dept'];
+
 export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
   const { open: mobileOpen, close: closeMobile } = useMobileSidebar();
   const [collapsed, setCollapsed] = useState(false);
 
-  const leadsChildPaths = ['/leads', '/floating', '/leads/pool', '/leads/dept'];
-  const isLeadsActive = leadsChildPaths.some(p => pathname.startsWith(p));
+  const isDashboardActive = DASHBOARD_CHILD_PATHS.some(p => pathname === p || (p !== '/dashboard' && pathname.startsWith(p)));
+  const isLeadsActive = LEADS_CHILD_PATHS.some(p => pathname.startsWith(p));
+
+  const [dashboardOpen, setDashboardOpen] = useState(isDashboardActive);
   const [leadsOpen, setLeadsOpen] = useState(isLeadsActive);
 
-  // Close mobile sidebar on route change
   useEffect(() => { closeMobile(); }, [pathname, closeMobile]);
 
+  const role = user?.role || '';
   const visibleItems = NAV_ITEMS.filter((item) => {
     if (!item.roles || item.roles.length === 0) return true;
     return user && item.roles.includes(user.role);
   });
 
   function renderNavLink(item: { label: string; href: string; icon: React.ElementType }, indent = false) {
-    const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href) && item.href !== '/leads');
-    const isExactLeads = item.href === '/leads' && pathname === '/leads';
-    const active = item.href === '/leads' ? isExactLeads : isActive;
+    const isExactMatch = pathname === item.href;
+    const isPrefixMatch = item.href !== '/dashboard' && item.href !== '/leads' && pathname.startsWith(item.href);
+    const active = isExactMatch || isPrefixMatch;
     const showLabel = mobileOpen || !collapsed;
 
     return (
@@ -104,50 +123,63 @@ export function AppSidebar() {
     );
   }
 
-  /** Shared nav content rendered inside both desktop aside and mobile overlay */
+  /** Render a collapsible group (Dashboard or Leads) */
+  function renderCollapsible(
+    item: NavItem,
+    children: NavChild[],
+    isOpen: boolean,
+    toggle: () => void,
+    isGroupActive: boolean,
+  ) {
+    const showLabel = mobileOpen || !collapsed;
+    if (!showLabel) return renderNavLink(item);
+
+    return (
+      <div key={item.href}>
+        <button
+          onClick={toggle}
+          className={cn(
+            'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+            isGroupActive ? 'text-sky-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+          )}
+        >
+          <item.icon size={20} />
+          <span className="flex-1 text-left">{item.label}</span>
+          <ChevronDown size={16} className={cn('transition-transform', isOpen && 'rotate-180')} />
+        </button>
+        {isOpen && (
+          <div className="mt-0.5 space-y-0.5">
+            {children.map(child => renderNavLink(child, true))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   const navContent = (
-    <>
-      <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
-        {visibleItems.map((item) => {
-          const role = user?.role || '';
-          const roleChildren = item.childrenByRole?.[role];
-          const showChildren = roleChildren && item.childRoles?.includes(role);
-          const showLabel = mobileOpen || !collapsed;
+    <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
+      {visibleItems.map((item) => {
+        // Dashboard dropdown (new)
+        if (item.children) {
+          const visibleChildren = item.children.filter(c => !c.roles || c.roles.includes(role));
+          return renderCollapsible(item, visibleChildren, dashboardOpen, () => setDashboardOpen(!dashboardOpen), isDashboardActive);
+        }
 
-          if (showChildren && showLabel) {
-            return (
-              <div key={item.href}>
-                <button
-                  onClick={() => setLeadsOpen(!leadsOpen)}
-                  className={cn(
-                    'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                    isLeadsActive
-                      ? 'text-sky-600'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
-                  )}
-                >
-                  <item.icon size={20} />
-                  <span className="flex-1 text-left">{item.label}</span>
-                  <ChevronDown size={16} className={cn('transition-transform', leadsOpen && 'rotate-180')} />
-                </button>
-                {leadsOpen && (
-                  <div className="mt-0.5 space-y-0.5">
-                    {roleChildren.map(child => renderNavLink(child, true))}
-                  </div>
-                )}
-              </div>
-            );
-          }
+        // Leads dropdown (legacy childrenByRole pattern)
+        const roleChildren = item.childrenByRole?.[role];
+        const showChildren = roleChildren && item.childRoles?.includes(role);
+        if (showChildren && (mobileOpen || !collapsed)) {
+          return renderCollapsible(item, roleChildren, leadsOpen, () => setLeadsOpen(!leadsOpen), isLeadsActive);
+        }
 
-          return renderNavLink(item);
-        })}
-      </nav>
-    </>
+        return renderNavLink(item);
+      })}
+    </nav>
   );
 
   return (
     <>
-      {/* Desktop sidebar — hidden on mobile */}
+      {/* Desktop sidebar */}
       <aside className={cn(
         'hidden lg:flex flex-col border-r border-slate-200/80 bg-white transition-all duration-200',
         collapsed ? 'w-16' : 'w-60',
@@ -167,9 +199,7 @@ export function AppSidebar() {
       {/* Mobile sidebar overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop */}
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={closeMobile} />
-          {/* Drawer */}
           <aside className="absolute left-0 top-0 flex h-full w-72 flex-col bg-white shadow-xl animate-in slide-in-from-left duration-200">
             <div className="flex h-14 items-center justify-between border-b border-slate-200/80 px-4">
               <span className="text-lg font-extrabold text-gradient">VeloCRM</span>

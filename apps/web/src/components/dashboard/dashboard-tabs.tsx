@@ -14,14 +14,30 @@ interface DashboardTabsProps {
   isAdmin: boolean;
 }
 
+function TabError({ error }: { error: string | null }) {
+  if (!error) return null;
+  return (
+    <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+      {error}
+    </div>
+  );
+}
+
 const DEFAULT_TAB: TabKey = 'customers';
+const VALID_TABS: TabKey[] = ['customers', 'revenue', 'team'];
+
+function resolveTab(raw: string | null, isAdmin: boolean): TabKey {
+  if (!raw || !VALID_TABS.includes(raw as TabKey)) return DEFAULT_TAB;
+  if (raw === 'team' && !isAdmin) return DEFAULT_TAB;
+  return raw as TabKey;
+}
 
 export function DashboardTabs({ range, isAdmin }: DashboardTabsProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
-  const activeTab = (searchParams.get('tab') as TabKey) || DEFAULT_TAB;
+  const activeTab = resolveTab(searchParams.get('tab'), isAdmin);
 
   const onTabChange = useCallback((value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -56,15 +72,18 @@ export function DashboardTabs({ range, isAdmin }: DashboardTabsProps) {
       </TabsList>
 
       <TabsContent value="customers">
+        <TabError error={customers.error} />
         <TabCustomers data={customers.data} loading={customers.loading} isAdmin={isAdmin} />
       </TabsContent>
 
       <TabsContent value="revenue">
+        <TabError error={revenue.error} />
         <TabRevenue data={revenue.data} loading={revenue.loading} isAdmin={isAdmin} />
       </TabsContent>
 
       {isAdmin && (
         <TabsContent value="team">
+          <TabError error={team.error} />
           <TabTeam data={team.data} loading={team.loading} />
         </TabsContent>
       )}

@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Dashboard Full Redesign — Smart Dashboard + Domain Tabs (2026-04-14)
+- **Architecture:** Replaced monolithic 452-line component with 14 modular files (all <200 lines)
+- **Layout:** Main overview (4 KPI + 2 mini charts) + 3 domain tabs (Khách hàng, Doanh thu, Nhân viên)
+- **KPI Cards:** Reduced from 8 to 4 primary metrics with ↑↓% trend arrows (vs previous period)
+- **Tabs:** Radix UI tabs with URL state sync (`?tab=customers`), lazy-loaded data per tab
+- **Role-based:** Staff sees 2 tabs (KH + DT), Manager+ sees 3 tabs (+ Nhân viên)
+- **Mobile:** KPI horizontal scroll-snap (70vw), time range dropdown, hidden scrollbar
+- **Data hooks:** `useDashboardStats` (main section) + `useTabData` (lazy per tab with cache)
+- **Error handling:** Per-section errors instead of empty catch block; loading skeletons
+- **Removed:** `dashboard-client-with-charts.tsx` (452 lines), `dashboard-kpi-stats-grid.tsx` (129 lines)
+- **New structure:**
+  - `dashboard-page.tsx` — orchestrator (42 lines)
+  - `dashboard-header.tsx` — title + time range selector (mobile dropdown)
+  - `dashboard-kpi-section.tsx` — 4 KPI cards with scroll-snap
+  - `dashboard-main-charts.tsx` — revenue + funnel mini charts
+  - `dashboard-tabs.tsx` — tab container with URL sync
+  - `tabs/tab-customers.tsx` — funnel, aging, conversion trend, sources
+  - `tabs/tab-revenue.tsx` — revenue trend, dept revenue
+  - `tabs/tab-team.tsx` — top performers, dept + team performance
+  - `hooks/` — data fetching with proper error handling
+  - `widgets/` — reusable KPI card, chart card, tooltip
+  - `constants.ts` — design tokens, formatters, types
+
 ### Security & Performance Audit Remediation — Round 2 (2026-04-13)
 - **Branch:** `audit/security-performance-260413` — 10 fixes across security and performance
 - **Audit scope:** 328 TypeScript files, 7 security areas + 3 performance areas scanned

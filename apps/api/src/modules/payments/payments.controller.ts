@@ -57,15 +57,15 @@ export class PaymentsController {
   @Get('export')
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
   async exportExcel(
+    @CurrentUser() user: any,
+    @Res() res: Response,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
-    @CurrentUser() user: any,
-    @Res() res?: Response,
   ) {
     const buffer = await this.service.exportVerified(dateFrom, dateTo, user);
-    res!.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res!.setHeader('Content-Disposition', 'attachment; filename=payments-verified.xlsx');
-    res!.send(buffer);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=payments-verified.xlsx');
+    res.send(buffer);
   }
 
   @Get('import-template')

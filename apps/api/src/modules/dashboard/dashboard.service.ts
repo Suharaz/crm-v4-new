@@ -102,25 +102,33 @@ export class DashboardService {
     });
   }
 
-  /** Manager+: top performers by converted leads in period */
+  /**
+   * Manager+: top performers by orders + revenue in period.
+   * Converted = orders created by user (last-touch). Cartesian-product fixed.
+   */
   async getTopPerformers(dateFrom: Date, dateTo: Date) {
     const key = this.cacheKey('top', dateFrom, dateTo);
     return this.cacheService.getOrSet(key, CACHE_TTL.DASHBOARD, async () => {
-    const rows = await this.prisma.$queryRaw<{ user_id: bigint; name: string; converted: bigint; revenue: bigint }[]>`
-      SELECT u.id as user_id, u.name,
-        COUNT(DISTINCT CASE WHEN l.status = 'CONVERTED' THEN l.id END)::bigint as converted,
-        COALESCE(SUM(CASE WHEN p.status = 'VERIFIED' THEN p.amount ELSE 0 END), 0)::bigint as revenue
-      FROM users u
-      LEFT JOIN leads l ON l.assigned_user_id = u.id AND l.deleted_at IS NULL AND l.updated_at >= ${dateFrom} AND l.updated_at <= ${dateTo}
-      LEFT JOIN orders o ON o.created_by = u.id AND o.deleted_at IS NULL
-      LEFT JOIN payments p ON p.order_id = o.id AND p.verified_at >= ${dateFrom} AND p.verified_at <= ${dateTo}
-      WHERE u.deleted_at IS NULL AND u.role = 'USER'
-      GROUP BY u.id, u.name
-      HAVING COUNT(DISTINCT CASE WHEN l.status = 'CONVERTED' THEN l.id END) > 0 OR COALESCE(SUM(CASE WHEN p.status = 'VERIFIED' THEN p.amount ELSE 0 END), 0) > 0
-      ORDER BY revenue DESC
-      LIMIT 10
-    `;
-    return rows.map(r => ({ userId: r.user_id.toString(), name: r.name, converted: Number(r.converted), revenue: Number(r.revenue) }));
+      const rows = await this.prisma.$queryRaw<{ user_id: bigint; name: string; converted: bigint; revenue: bigint }[]>`
+        SELECT u.id as user_id, u.name,
+          (SELECT COUNT(*)::bigint FROM orders o
+           WHERE o.created_by = u.id AND o.deleted_at IS NULL
+             AND o.created_at >= ${dateFrom} AND o.created_at <= ${dateTo}) as converted,
+          (SELECT COALESCE(SUM(p.amount), 0)::bigint
+           FROM payments p
+           JOIN orders o2 ON o2.id = p.order_id AND o2.deleted_at IS NULL
+           WHERE o2.created_by = u.id
+             AND p.status = 'VERIFIED'
+             AND p.verified_at >= ${dateFrom} AND p.verified_at <= ${dateTo}) as revenue
+        FROM users u
+        WHERE u.deleted_at IS NULL AND u.role = 'USER'
+        ORDER BY revenue DESC
+        LIMIT 10
+      `;
+      // Filter out zero-activity users (HAVING-equivalent)
+      return rows
+        .filter(r => Number(r.converted) > 0 || Number(r.revenue) > 0)
+        .map(r => ({ userId: r.user_id.toString(), name: r.name, converted: Number(r.converted), revenue: Number(r.revenue) }));
     });
   }
 
@@ -201,22 +209,36 @@ export class DashboardService {
     });
   }
 
-  /** Manager+: revenue + leads per department */
+  /**
+   * Manager+: revenue + leads per department.
+   *
+   * Uses correlated subqueries to avoid Cartesian product (previous version
+   * had `JOIN leads + JOIN orders + JOIN payments` which inflated revenue
+   * by the number of leads per user).
+   */
   async getDeptPerformance(dateFrom: Date, dateTo: Date) {
     const key = this.cacheKey('dept', dateFrom, dateTo);
     return this.cacheService.getOrSet(key, CACHE_TTL.DASHBOARD, async () => {
       const rows = await this.prisma.$queryRaw<{ dept_id: bigint; dept_name: string; revenue: bigint; leads: bigint; converted: bigint }[]>`
         SELECT d.id as dept_id, d.name as dept_name,
-          COALESCE(SUM(CASE WHEN p.status = 'VERIFIED' AND p.verified_at >= ${dateFrom} AND p.verified_at <= ${dateTo} THEN p.amount ELSE 0 END), 0)::bigint as revenue,
-          COUNT(DISTINCT CASE WHEN l.created_at >= ${dateFrom} AND l.created_at <= ${dateTo} THEN l.id END)::bigint as leads,
-          COUNT(DISTINCT CASE WHEN l.status = 'CONVERTED' AND l.updated_at >= ${dateFrom} AND l.updated_at <= ${dateTo} THEN l.id END)::bigint as converted
+          (SELECT COALESCE(SUM(p.amount), 0)::bigint
+           FROM payments p
+           JOIN orders o ON o.id = p.order_id AND o.deleted_at IS NULL
+           JOIN users u ON u.id = o.created_by AND u.department_id = d.id AND u.deleted_at IS NULL
+           WHERE p.status = 'VERIFIED'
+             AND p.verified_at >= ${dateFrom} AND p.verified_at <= ${dateTo}) as revenue,
+          (SELECT COUNT(*)::bigint
+           FROM leads l
+           JOIN users u2 ON u2.id = l.assigned_user_id AND u2.department_id = d.id AND u2.deleted_at IS NULL
+           WHERE l.deleted_at IS NULL
+             AND l.created_at >= ${dateFrom} AND l.created_at <= ${dateTo}) as leads,
+          (SELECT COUNT(*)::bigint
+           FROM orders o3
+           JOIN users u3 ON u3.id = o3.created_by AND u3.department_id = d.id AND u3.deleted_at IS NULL
+           WHERE o3.deleted_at IS NULL
+             AND o3.created_at >= ${dateFrom} AND o3.created_at <= ${dateTo}) as converted
         FROM departments d
-        LEFT JOIN users u ON u.department_id = d.id AND u.deleted_at IS NULL
-        LEFT JOIN leads l ON l.assigned_user_id = u.id AND l.deleted_at IS NULL
-        LEFT JOIN orders o ON o.created_by = u.id AND o.deleted_at IS NULL
-        LEFT JOIN payments p ON p.order_id = o.id
         WHERE d.deleted_at IS NULL
-        GROUP BY d.id, d.name
         ORDER BY revenue DESC
       `;
       return rows.map(r => ({
@@ -226,24 +248,36 @@ export class DashboardService {
     });
   }
 
-  /** Manager+: revenue + leads per team within a department (or all) */
+  /**
+   * Manager+: revenue + leads per team within a department (or all).
+   * Same Cartesian-product fix as getDeptPerformance — uses correlated subqueries.
+   */
   async getTeamPerformance(dateFrom: Date, dateTo: Date) {
     const key = this.cacheKey('team', dateFrom, dateTo);
     return this.cacheService.getOrSet(key, CACHE_TTL.DASHBOARD, async () => {
       const rows = await this.prisma.$queryRaw<{ team_id: bigint; team_name: string; dept_name: string; revenue: bigint; leads: bigint; converted: bigint; members: bigint }[]>`
         SELECT t.id as team_id, t.name as team_name, d.name as dept_name,
-          COALESCE(SUM(CASE WHEN p.status = 'VERIFIED' AND p.verified_at >= ${dateFrom} AND p.verified_at <= ${dateTo} THEN p.amount ELSE 0 END), 0)::bigint as revenue,
-          COUNT(DISTINCT CASE WHEN l.created_at >= ${dateFrom} AND l.created_at <= ${dateTo} THEN l.id END)::bigint as leads,
-          COUNT(DISTINCT CASE WHEN l.status = 'CONVERTED' AND l.updated_at >= ${dateFrom} AND l.updated_at <= ${dateTo} THEN l.id END)::bigint as converted,
-          COUNT(DISTINCT u.id)::bigint as members
+          (SELECT COUNT(*)::bigint FROM users u
+           WHERE u.team_id = t.id AND u.deleted_at IS NULL) as members,
+          (SELECT COALESCE(SUM(p.amount), 0)::bigint
+           FROM payments p
+           JOIN orders o ON o.id = p.order_id AND o.deleted_at IS NULL
+           JOIN users u ON u.id = o.created_by AND u.team_id = t.id AND u.deleted_at IS NULL
+           WHERE p.status = 'VERIFIED'
+             AND p.verified_at >= ${dateFrom} AND p.verified_at <= ${dateTo}) as revenue,
+          (SELECT COUNT(*)::bigint
+           FROM leads l
+           JOIN users u2 ON u2.id = l.assigned_user_id AND u2.team_id = t.id AND u2.deleted_at IS NULL
+           WHERE l.deleted_at IS NULL
+             AND l.created_at >= ${dateFrom} AND l.created_at <= ${dateTo}) as leads,
+          (SELECT COUNT(*)::bigint
+           FROM orders o3
+           JOIN users u3 ON u3.id = o3.created_by AND u3.team_id = t.id AND u3.deleted_at IS NULL
+           WHERE o3.deleted_at IS NULL
+             AND o3.created_at >= ${dateFrom} AND o3.created_at <= ${dateTo}) as converted
         FROM teams t
         JOIN departments d ON d.id = t.department_id
-        LEFT JOIN users u ON u.team_id = t.id AND u.deleted_at IS NULL
-        LEFT JOIN leads l ON l.assigned_user_id = u.id AND l.deleted_at IS NULL
-        LEFT JOIN orders o ON o.created_by = u.id AND o.deleted_at IS NULL
-        LEFT JOIN payments p ON p.order_id = o.id
         WHERE t.deleted_at IS NULL
-        GROUP BY t.id, t.name, d.name
         ORDER BY revenue DESC
       `;
       return rows.map(r => ({

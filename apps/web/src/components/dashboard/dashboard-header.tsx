@@ -6,15 +6,17 @@ interface DashboardHeaderProps {
   isAdmin: boolean;
   range: RangeKey;
   onRangeChange: (key: RangeKey) => void;
+  title?: string;
+  subtitle?: string;
 }
 
-export function DashboardHeader({ isAdmin, range, onRangeChange }: DashboardHeaderProps) {
+export function DashboardHeader({ isAdmin, range, onRangeChange, title, subtitle }: DashboardHeaderProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Trang chủ</h1>
+        <h1 className="text-2xl font-bold text-slate-900">{title || 'Tổng quát'}</h1>
         <p className="text-sm text-slate-500">
-          {isAdmin ? 'Tổng quan hệ thống VeloCRM' : 'Thống kê cá nhân'}
+          {subtitle || (isAdmin ? 'Tổng quan hệ thống VeloCRM' : 'Thống kê cá nhân')}
         </p>
       </div>
 

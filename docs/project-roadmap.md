@@ -59,6 +59,7 @@ Phase 14 (Testing/Deploy) ← runs LAST ─────────┘
 | 19 | Full Project Audit & Quality Fixes | 4h | Complete | 100% |
 | 20 | Comprehensive Test Suites (E2E + API + Unit) | 8h | Complete | 100% |
 | 21 | Test Execution & Bug Fixes | 4h | Complete | 100% |
+| 22 | Dashboard Redesign — Smart Tabs | 4h | Complete | 100% |
 
 ## Milestones
 
@@ -96,6 +97,12 @@ Phase 14 (Testing/Deploy) ← runs LAST ─────────┘
 ## Changelog
 
 > Updated after each phase completion
+
+### 2026-04-13
+- Security & Performance Audit Round 2: 38 findings (1 critical, 12 high, 16 medium, 9 low)
+- 10 fixes implemented: IDOR (5), race conditions (2), N+1 (2), webhook hardening (1)
+- 2 new composite indexes added (orders status+date, payments order+status)
+- 44 prior security/performance controls verified as working
 
 ### 2026-03-28
 - Phase 15-18: CRUD, gap fill, polish, tasks enhancement — all complete

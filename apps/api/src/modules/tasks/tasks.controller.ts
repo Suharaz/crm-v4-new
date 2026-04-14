@@ -36,14 +36,14 @@ export class TasksController {
 
   @Post(':id/complete')
   @HttpCode(200)
-  async complete(@Param('id', ParseBigIntPipe) id: bigint) {
-    return { data: await this.service.complete(id) };
+  async complete(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
+    return { data: await this.service.complete(id, user.id, user.role) };
   }
 
   @Post(':id/cancel')
   @HttpCode(200)
-  async cancel(@Param('id', ParseBigIntPipe) id: bigint) {
-    return { data: await this.service.cancel(id) };
+  async cancel(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
+    return { data: await this.service.cancel(id, user.id, user.role) };
   }
 
   @Patch(':id')
@@ -52,12 +52,12 @@ export class TasksController {
     @Body() body: any,
     @CurrentUser() user: any,
   ) {
-    return { data: await this.service.update(id, body, user.id) };
+    return { data: await this.service.update(id, body, user.id, user.role) };
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseBigIntPipe) id: bigint) {
-    await this.service.remove(id);
+  async remove(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
+    await this.service.remove(id, user.id, user.role);
     return { data: { success: true } };
   }
 }

@@ -1,5 +1,5 @@
-import { DashboardClientWithCharts } from '@/components/dashboard/dashboard-client-with-charts';
+import { DashboardPage as DashboardContent } from '@/components/dashboard/dashboard-page';
 
-export default function DashboardPage() {
-  return <DashboardClientWithCharts />;
+export default function DashboardRoute() {
+  return <DashboardContent />;
 }

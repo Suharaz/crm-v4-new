@@ -53,7 +53,7 @@ export class DistributionService {
     return { leadId, assignedUserId: userId };
   }
 
-  /** Batch distribute leads from department pool. */
+  /** Batch distribute leads from department pool — scores once, batch writes. */
   async batchDistribute(departmentId: bigint, assignedBy: bigint) {
     const leads = await this.prisma.lead.findMany({
       where: { status: 'POOL', departmentId, assignedUserId: null, deletedAt: null },
@@ -61,13 +61,56 @@ export class DistributionService {
       take: 100,
     });
 
-    const results = [];
-    for (const lead of leads) {
-      const result = await this.distributeLead(lead.id, departmentId, assignedBy);
-      if (result) results.push(result);
-    }
+    if (leads.length === 0) return { distributed: 0, total: 0 };
 
-    return { distributed: results.length, total: leads.length };
+    // Score users ONCE (instead of per-lead)
+    const scores = await this.scoring.scoreUsers(departmentId);
+    if (scores.length === 0) return { distributed: 0, total: leads.length };
+
+    // Round-robin assignment across top users
+    const assignments = leads.map((lead, i) => ({
+      leadId: lead.id,
+      userId: scores[i % scores.length].userId,
+    }));
+
+    // Batch all writes in a single transaction
+    await this.prisma.$transaction(async (tx) => {
+      // Group leads by assigned user for batch updateMany
+      const byUser = new Map<string, bigint[]>();
+      for (const a of assignments) {
+        const key = a.userId.toString();
+        if (!byUser.has(key)) byUser.set(key, []);
+        byUser.get(key)!.push(a.leadId);
+      }
+
+      for (const [userId, leadIds] of byUser) {
+        await tx.lead.updateMany({
+          where: { id: { in: leadIds } },
+          data: { assignedUserId: BigInt(userId), departmentId, status: 'ASSIGNED' },
+        });
+      }
+
+      // Batch create assignment history
+      await tx.assignmentHistory.createMany({
+        data: assignments.map(a => ({
+          entityType: 'LEAD' as const, entityId: a.leadId,
+          toUserId: a.userId, toDepartmentId: departmentId,
+          assignedBy, reason: 'Phân phối tự động (AI)',
+        })),
+      });
+
+      // Batch create activities
+      await tx.activity.createMany({
+        data: assignments.map(a => ({
+          entityType: 'LEAD' as const, entityId: a.leadId, userId: assignedBy,
+          type: 'ASSIGNMENT' as const,
+          content: 'Phân phối tự động',
+          metadata: { auto: true, toUserId: a.userId.toString() },
+        })),
+      });
+    });
+
+    return { distributed: assignments.length, total: leads.length };
   }
 
   /** Get score preview for a department. */

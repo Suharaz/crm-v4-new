@@ -106,3 +106,16 @@ CREATE INDEX IF NOT EXISTS idx_tasks_remind_active
 -- DB-M4: assignment history 72h window query (kho mới monitoring)
 CREATE INDEX IF NOT EXISTS idx_assignment_history_type_created
   ON assignment_history(entity_type, created_at DESC) WHERE from_department_id IS NULL;
+
+-- ══════════════════════════════════════════════════════════════════════════
+-- AUDIT REMEDIATION INDEXES (2026-04-13)
+-- Added per audit findings PM3, PM4
+-- ══════════════════════════════════════════════════════════════════════════
+
+-- PM3: orders by status+date range (order list, dashboard filters)
+CREATE INDEX IF NOT EXISTS idx_orders_status_date
+  ON orders(status, created_at DESC) WHERE deleted_at IS NULL;
+
+-- PM4: payments composite order+status (conversion trigger, validation)
+CREATE INDEX IF NOT EXISTS idx_payments_order_status
+  ON payments(order_id, status);

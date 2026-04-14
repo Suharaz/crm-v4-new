@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Dashboard v2 — Sidebar Sub-pages + Employee Scorecard (2026-04-14)
+- **Navigation:** "Trang chủ" now dropdown in sidebar with 4 sub-pages (Tổng quát, Doanh thu, Nhân viên, Khách hàng)
+- **Routing:** Each section is a separate page (`/dashboard/revenue`, `/dashboard/employees`, `/dashboard/customers`)
+- **Employee Scorecard (`/dashboard/employees`):**
+  - Weighted score 0-100 per employee: conversion (40%), revenue (30%), aging (20%), tasks (10%)
+  - Color-coded: green ≥70, amber ≥40, red <40 with tinted card backgrounds
+  - Metrics: leads assigned/converted, revenue, overdue tasks, aging leads 7+ days
+  - Comparison vs department average (±% TB phòng ban)
+  - Summary: total employees, KPI achieved %, needs help count
+  - Department filter dropdown + time range selector
+- **Backend:** New `/dashboard/employee-scores` endpoint with dept filter, cached 30s
+- **Sidebar:** Extended `NavItem` with `children` array pattern (reuses existing dropdown UI)
+- **Main dashboard:** Simplified to overview only (no tabs), focused KPI + charts
+
 ### Dashboard Full Redesign — Smart Dashboard + Domain Tabs (2026-04-14)
 - **Architecture:** Replaced monolithic 452-line component with 14 modular files (all <200 lines)
 - **Layout:** Main overview (4 KPI + 2 mini charts) + 3 domain tabs (Khách hàng, Doanh thu, Nhân viên)

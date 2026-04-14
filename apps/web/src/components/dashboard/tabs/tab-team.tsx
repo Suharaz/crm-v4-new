@@ -22,6 +22,9 @@ function LoadingSkeleton() {
 export function TabTeam({ data, loading }: TabTeamProps) {
   if (loading || !data) return <LoadingSkeleton />;
 
+  const maxDeptRev = data.depts.length > 0 ? Math.max(...data.depts.map(x => x.revenue), 1) : 1;
+  const maxTeamRev = data.teams.length > 0 ? Math.max(...data.teams.map(x => x.revenue), 1) : 1;
+
   return (
     <div className="space-y-4">
       {/* Top Performers */}
@@ -68,8 +71,7 @@ export function TabTeam({ data, loading }: TabTeamProps) {
           <ChartCard title="Hiệu suất phòng ban">
             <div className="space-y-3">
               {data.depts.map(d => {
-                const maxRev = Math.max(...data.depts.map(x => x.revenue), 1);
-                const barW = Math.max(d.revenue / maxRev * 100, 4);
+                const barW = Math.max(d.revenue / maxDeptRev * 100, 4);
                 return (
                   <div key={d.deptId} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
@@ -100,8 +102,7 @@ export function TabTeam({ data, loading }: TabTeamProps) {
           <ChartCard title="Hiệu suất team">
             <div className="space-y-3">
               {data.teams.map(t => {
-                const maxRev = Math.max(...data.teams.map(x => x.revenue), 1);
-                const barW = Math.max(t.revenue / maxRev * 100, 4);
+                const barW = Math.max(t.revenue / maxTeamRev * 100, 4);
                 return (
                   <div key={t.teamId} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">

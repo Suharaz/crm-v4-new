@@ -124,9 +124,10 @@ export function useTabData<T extends TabData>(
     if (isActive) fetchTab();
   }, [isActive, fetchTab]);
 
-  // Reset cache when range changes
+  // Reset cache + clear stale data when range changes
   useEffect(() => {
     fetchedRef.current = '';
+    setData(null);
   }, [range]);
 
   return { data, loading, error };

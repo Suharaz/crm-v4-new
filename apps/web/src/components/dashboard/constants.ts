@@ -51,6 +51,9 @@ export const RANGE_LABELS: Record<RangeKey, string> = {
   year: 'Năm nay',
 };
 
+/** Monday offset: getDay() returns 0=Sun,1=Mon..6=Sat. We want Monday=start. */
+function mondayOffset(dow: number) { return dow === 0 ? -6 : 1 - dow; }
+
 export function getDateRange(key: RangeKey): { from: string; to: string } {
   const now = new Date();
   const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
@@ -58,7 +61,7 @@ export function getDateRange(key: RangeKey): { from: string; to: string } {
   const to = fmt(now);
   switch (key) {
     case 'today': return { from: to, to };
-    case 'week': { const start = new Date(y, m, d - now.getDay() + 1); return { from: fmt(start), to }; }
+    case 'week': { const start = new Date(y, m, d + mondayOffset(now.getDay())); return { from: fmt(start), to }; }
     case 'month': return { from: fmt(new Date(y, m, 1)), to };
     case 'quarter': { const qm = Math.floor(m / 3) * 3; return { from: fmt(new Date(y, qm, 1)), to }; }
     case 'year': return { from: fmt(new Date(y, 0, 1)), to };
@@ -76,8 +79,9 @@ export function getPreviousPeriodRange(key: RangeKey): { from: string; to: strin
       return { from: fmt(yesterday), to: fmt(yesterday) };
     }
     case 'week': {
-      const start = new Date(y, m, d - now.getDay() + 1 - 7);
-      const end = new Date(y, m, d - now.getDay());
+      const off = mondayOffset(now.getDay());
+      const start = new Date(y, m, d + off - 7);
+      const end = new Date(y, m, d + off - 1);
       return { from: fmt(start), to: fmt(end) };
     }
     case 'month': {

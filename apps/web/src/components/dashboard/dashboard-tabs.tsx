@@ -53,7 +53,7 @@ export function DashboardTabs({ range, isAdmin }: DashboardTabsProps) {
   // Lazy-load data per tab — only fetches when active
   const customers = useTabData<CustomersTabData>('customers', range, isAdmin, activeTab === 'customers');
   const revenue = useTabData<RevenueTabData>('revenue', range, isAdmin, activeTab === 'revenue');
-  const team = useTabData<TeamTabData>('team', range, isAdmin, activeTab === 'team');
+  const team = useTabData<TeamTabData>('team', range, isAdmin, isAdmin && activeTab === 'team');
 
   return (
     <Tabs value={activeTab} onValueChange={onTabChange}>

@@ -27,6 +27,10 @@ function LoadingSkeleton() {
 export function TabRevenue({ data, loading, isAdmin }: TabRevenueProps) {
   if (loading || !data) return <LoadingSkeleton />;
 
+  const maxDeptRev = isAdmin && data.depts.length > 0
+    ? Math.max(...data.depts.map(x => x.revenue), 1)
+    : 1;
+
   return (
     <div className="space-y-4">
       {/* Full-size Revenue Trend */}
@@ -61,8 +65,7 @@ export function TabRevenue({ data, loading, isAdmin }: TabRevenueProps) {
         <ChartCard title="Doanh số theo phòng ban">
           <div className="space-y-3">
             {data.depts.map(d => {
-              const maxRev = Math.max(...data.depts.map(x => x.revenue), 1);
-              const barW = Math.max(d.revenue / maxRev * 100, 4);
+              const barW = Math.max(d.revenue / maxDeptRev * 100, 4);
               return (
                 <div key={d.deptId} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">

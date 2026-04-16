@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Customer CSV Import — Extended Columns (2026-04-16)
+- **New optional columns:** `companyName`/`Công ty`, `facebookUrl`/`Facebook`, `instagramUrl`/`Instagram`, `zaloUrl`/`Zalo`, `linkedinUrl`/`LinkedIn`, `shortDescription`/`Mô tả ngắn`, `description`/`Mô tả`, `labels`/`Nhãn`
+- **Labels:** Comma-separated names (e.g. "VIP,Quan tâm"), matched case-insensitive against DB labels, attached via `customerLabel` junction table. Unmatched labels reported as `[Warning]` in error CSV (row vẫn success)
+- **Bilingual headers:** All columns accept both English (camelCase) and Vietnamese names
+- **Labels preloaded:** Added to lookup preload alongside sources/products for O(1) matching
+- **FE template:** `mau-import-khach-hang.csv` updated from 3 cols → 11 cols (bilingual, BOM UTF-8)
+
 ### Bank Transaction CSV Import — 7-col template, dedup, auto-match (2026-04-22)
 - **Feature:** Thay webhook bank bằng flow upload CSV sao kê (bank ngừng push webhook). SA upload CSV → parse → dedup `externalId` → auto-match payment PENDING. Tab mới "Import sao kê CSV" trong `/payments` (chỉ SA thấy).
 - **Backend:**

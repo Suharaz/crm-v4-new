@@ -38,12 +38,14 @@ export class ImportProcessor extends WorkerHost {
 
     try {
       // Preload lookup tables to avoid N+1 queries per row (PERF-H4)
-      const [allSources, allProducts] = await Promise.all([
+      const [allSources, allProducts, allLabels] = await Promise.all([
         this.prisma.leadSource.findMany({ select: { id: true, name: true, skipPool: true } }),
         this.prisma.product.findMany({ where: { deletedAt: null }, select: { id: true, name: true } }),
+        this.prisma.label.findMany({ where: { deletedAt: null }, select: { id: true, name: true } }),
       ]);
       const sourceMap = new Map(allSources.map(s => [s.name.toLowerCase(), s]));
       const productMap = new Map(allProducts.map(p => [p.name.toLowerCase(), p]));
+      const labelMap = new Map(allLabels.map(l => [l.name.toLowerCase(), l]));
       const phoneCache = new Map<string, { id: bigint }>(); // phone → customer
 
       // Stream CSV instead of loading entire file into memory
@@ -59,7 +61,7 @@ export class ImportProcessor extends WorkerHost {
           if (type === 'leads') {
             await this.processLeadRow(row, rowIndex + 1, sourceMap, productMap, phoneCache);
           } else {
-            await this.processCustomerRow(row, rowIndex + 1);
+            await this.processCustomerRow(row, rowIndex + 1, labelMap);
           }
           successCount++;
         } catch (e: unknown) {
@@ -194,7 +196,11 @@ export class ImportProcessor extends WorkerHost {
     }
   }
 
-  private async processCustomerRow(row: Record<string, string>, rowNum: number) {
+  private async processCustomerRow(
+    row: Record<string, string>,
+    rowNum: number,
+    labelMap: Map<string, { id: bigint; name: string }>,
+  ) {
     const phone = normalizePhone(row.phone || row['Số điện thoại'] || '');
     const name = row.name || row['Họ tên'] || '';
     if (!phone || !name) throw new Error('Thiếu phone hoặc name');
@@ -203,8 +209,42 @@ export class ImportProcessor extends WorkerHost {
     const existing = await this.prisma.customer.findFirst({ where: { phone, deletedAt: null } });
     if (existing) throw new Error(`Trùng khách hàng: SĐT ${phone}`);
 
-    await this.prisma.customer.create({
-      data: { phone, name, email: row.email || null },
+    // Optional fields — support both English and Vietnamese column names
+    const email = row.email || row['Email'] || null;
+    const companyName = row.companyName || row['Công ty'] || null;
+    const facebookUrl = row.facebookUrl || row['Facebook'] || null;
+    const instagramUrl = row.instagramUrl || row['Instagram'] || null;
+    const zaloUrl = row.zaloUrl || row['Zalo'] || null;
+    const linkedinUrl = row.linkedinUrl || row['LinkedIn'] || null;
+    const shortDescription = row.shortDescription || row['Mô tả ngắn'] || null;
+    const description = row.description || row['Mô tả'] || null;
+
+    const customer = await this.prisma.customer.create({
+      data: {
+        phone, name, email,
+        ...(companyName ? { companyName } : {}),
+        ...(facebookUrl ? { facebookUrl } : {}),
+        ...(instagramUrl ? { instagramUrl } : {}),
+        ...(zaloUrl ? { zaloUrl } : {}),
+        ...(linkedinUrl ? { linkedinUrl } : {}),
+        ...(shortDescription ? { shortDescription } : {}),
+        ...(description ? { description } : {}),
+      },
     });
+
+    // Attach labels (comma-separated names, matched case-insensitive from DB)
+    const labelsRaw = row.labels || row['Nhãn'] || '';
+    if (labelsRaw.trim()) {
+      const labelNames = labelsRaw.split(',').map(l => l.trim().toLowerCase()).filter(Boolean);
+      const matchedLabels = labelNames
+        .map(name => labelMap.get(name))
+        .filter((l): l is { id: bigint; name: string } => l !== undefined);
+      if (matchedLabels.length > 0) {
+        await this.prisma.customerLabel.createMany({
+          data: matchedLabels.map(l => ({ customerId: customer.id, labelId: l.id })),
+          skipDuplicates: true,
+        });
+      }
+    }
   }
 }

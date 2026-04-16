@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Upload, CheckCircle2, XCircle, Loader2, FileText, Download } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/api/v1';
 
 interface ImportJob {
   id: string;
@@ -37,7 +35,7 @@ function UploadZone({ label, endpoint, onJobCreated }: UploadZoneProps) {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch(`${API_BASE}${endpoint}`, {
+      const res = await fetch(`/api/proxy${endpoint}`, {
         method: 'POST',
         credentials: 'include',
         body: formData,
@@ -113,31 +111,28 @@ const JOB_STATUS_LABELS: Record<string, string> = {
 
 function JobStatusRow({ job, onUpdate }: { job: ImportJob; onUpdate: (updated: ImportJob) => void }) {
   const polling = job.status === 'PROCESSING';
+  const onUpdateRef = useRef(onUpdate);
+  onUpdateRef.current = onUpdate;
 
-  // Poll every 3s while processing
-  const polledRef = useRef(false);
-  const poll = useCallback(async () => {
-    if (!polling || polledRef.current) return;
-    polledRef.current = true;
+  // Poll every 3s while processing — useEffect ensures cleanup on unmount
+  useEffect(() => {
+    if (!polling) return;
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`${API_BASE}/imports/${job.id}/status`, { credentials: 'include' });
+        const res = await fetch(`/api/proxy/imports/${job.id}/status`, { credentials: 'include' });
         if (res.ok) {
           const updated = await res.json();
-          onUpdate(updated);
+          onUpdateRef.current(updated);
           if (updated.status !== 'PROCESSING') {
             clearInterval(interval);
             if (updated.status === 'COMPLETED') toast.success(`Import hoàn thành: ${updated.processed} bản ghi`);
             else toast.error(`Import thất bại: ${updated.failed} lỗi`);
           }
         }
-      } catch { /* ignore */ }
+      } catch { /* ignore network errors during polling */ }
     }, 3000);
     return () => clearInterval(interval);
-  }, [job.id, polling, onUpdate]);
-
-  // Start polling on mount if processing
-  useState(() => { if (polling) poll(); });
+  }, [job.id, polling]);
 
   return (
     <tr className="border-b border-slate-100 last:border-0 hover:bg-slate-50">

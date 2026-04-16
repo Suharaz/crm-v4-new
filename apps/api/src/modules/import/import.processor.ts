@@ -2,7 +2,7 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Inject } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { PrismaClient } from '@prisma/client';
-import { normalizePhone, isValidVNPhone } from '@crm/utils';
+import { normalizePhone, isValidVNPhone, sanitizeCsvCell } from '@crm/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 import { parse } from 'csv-parse';
@@ -87,7 +87,7 @@ export class ImportProcessor extends WorkerHost {
       let errorFileUrl: string | null = null;
       if (errors.length > 0) {
         const errorCsv = 'row,field,message\n' +
-          errors.map((e) => `${e.row},"${e.field}","${e.message}"`).join('\n');
+          errors.map((e) => `${e.row},"${sanitizeCsvCell(e.field).replace(/"/g, '""')}","${sanitizeCsvCell(e.message).replace(/"/g, '""')}"`).join('\n');
         const errorDir = path.join(this.uploadDir, 'imports', 'errors');
         fs.mkdirSync(errorDir, { recursive: true });
         const errorFile = `error-${importJobId}.csv`;

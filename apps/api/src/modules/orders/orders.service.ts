@@ -139,7 +139,7 @@ export class OrdersService {
     if (!customerId && data.leadId) {
       const lead = await this.prisma.lead.findFirst({
         where: { id: BigInt(data.leadId), deletedAt: null },
-        select: { id: true, phone: true, name: true, email: true, companyName: true, facebookUrl: true, instagramUrl: true, zaloUrl: true, linkedinUrl: true, customerId: true, assignedUserId: true, departmentId: true },
+        select: { id: true, phone: true, name: true, email: true, companyName: true, facebookUrl: true, instagramUrl: true, zaloUrl: true, linkedinUrl: true, customerId: true, assignedUserId: true, departmentId: true, status: true },
       });
       if (!lead) throw new NotFoundException('Lead không tồn tại');
 
@@ -156,10 +156,16 @@ export class OrdersService {
           },
         });
         customerId = customer.id;
-        // Link customer to lead + convert lead
+
+        // Link customer to lead; only convert if state machine allows
+        // Valid conversion: IN_PROGRESS → CONVERTED, or ASSIGNED → CONVERTED (auto-triggers via order)
+        const convertible = ['IN_PROGRESS', 'ASSIGNED'];
         await this.prisma.lead.update({
           where: { id: lead.id },
-          data: { customerId: customer.id, status: 'CONVERTED' },
+          data: {
+            customerId: customer.id,
+            ...(convertible.includes(lead.status) ? { status: 'CONVERTED' as const } : {}),
+          },
         });
       }
     }

@@ -4,6 +4,50 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Comprehensive Security & Performance Audit — Round 5 (2026-04-16)
+- **Audit scope:** 94 raw findings from 4 parallel agents (backend security, backend perf, frontend, DB+infra). 12 eliminated as by-design/accepted risks. 82 genuine issues fixed.
+- **Branch:** `fix/audit-round5-260416`
+
+#### CRITICAL fixes (5)
+- **Soft-delete extension:** `findUnique`/`aggregate`/`groupBy` now filter `deletedAt:null`. Previously 24 `findUnique` calls could return deleted records
+- **Proxy token refresh body loss:** Buffered request body before first fetch. POST/PATCH/PUT during token refresh previously sent empty payload
+- **CSV export/import auth bypass:** Routed through `/api/proxy` instead of calling NestJS directly. httpOnly cookie was not sent cross-origin — features broken in production
+- **AI API key masking:** `GET /system-settings` now masks `ai_api_key` (first 8 chars + ••••••). Previously returned plaintext
+- **Profile page useState misuse:** Replaced `useState(callback)` with `useEffect` for data fetching
+
+#### HIGH fixes (10)
+- **Bulk operation limits:** `bulkAssign`, `bulkRecall`, `applyTemplate` capped at 500 items (DoS prevention)
+- **Redis KEYS → SCAN:** `delByPrefix` now uses non-blocking `scanStream` instead of blocking `KEYS` command
+- **ReactMarkdown XSS:** Sanitize `javascript:` URLs in AI-generated markdown content
+- **localStorage cache TTL:** 24h → 5min (3 components). Prevents stale prices/data
+- **Polling on hidden tab:** NotificationBell + LeadPoolTable pause polling via `visibilitychange`
+- **Error boundary:** Always shows generic message (no `error.message` leak)
+- **Metadata editor:** Blocks `__proto__`/`constructor`/`prototype` keys
+- **.env.example:** Redis URL now includes password (fixes new dev setup NOAUTH error)
+
+#### MEDIUM fixes (17)
+- **Third-party API:** Throw proper HTTP errors (was returning error as 200 OK). Honor `skipPool` flag for ZOOM status
+- **searchByPhone:** Added 10/min burst rate limit alongside daily 100 limit
+- **Notification markAsRead:** BigInt comparison via `.toString()` (safe cross-type)
+- **SystemSettings cache:** 5-min in-memory cache on `get()`, invalidate on `set()`
+- **RecallConfig:** Validate `entityType` must be LEAD or CUSTOMER
+- **Database indexes:** Added `leads.phone`, `customers.phone`, `payments.status`, `leads(phone,source_id,product_id)` composite dedup index
+- **Customer.phone unique:** Partial unique index `WHERE deleted_at IS NULL`
+- **Order.vatRate:** Added `@default(0)` (was missing unlike Product.vatRate)
+- **Docker:** Added healthcheck for PostgreSQL + Redis
+- **Schema comment:** Documented `@@unique([email, deletedAt])` is misleading — raw index is real enforcement
+- **Search AbortController:** Cancel stale search requests on new input
+- **lead-form deps:** Fixed stale closure — added `form.name`/`form.email` to useEffect deps
+- **Password change:** Now requires current password
+- **AI settings frontend:** Mask API key, skip save if masked value unchanged
+
+#### LOW fixes (3)
+- **Pool endpoints:** Limit capped to max 100 (was uncapped)
+- **poolNewFiltered:** Distributed leads query capped at 200
+- **Error toasts:** Note save failures now show toast instead of silent catch
+
+- **Report:** `plans/reports/audit-synthesis-260416-1620-comprehensive-filtered.md`
+
 ### Security Audit & Fixes — Round 4 (2026-04-16)
 - **Audit scope:** 43 findings from 3 parallel agents (backend, frontend, DB+infra)
 - **CSV error report injection:** Import error CSV wrote user-supplied values without sanitization → Excel formula injection. Applied `sanitizeCsvCell()` + quote escaping

@@ -92,11 +92,11 @@ pnpm install --frozen-lockfile --prod=false
 # ── Step 4: Build all (BEFORE db migration) ──────────────────────────
 echo ">>> [4/6] Building..."
 pnpm db:generate
-# Clear stale build artifacts to prevent HTML/chunk hash mismatch.
+# Clear stale build artifacts AND Turborepo cache to prevent HTML/chunk hash mismatch.
 # Turborepo cache HIT can serve old prerendered HTML referencing chunks
 # that were regenerated with new hashes — causing 404 on chunk fetch.
-rm -rf apps/web/.next apps/api/dist .turbo
-pnpm build
+rm -rf apps/web/.next apps/api/dist .turbo node_modules/.cache/turbo
+pnpm build --force
 
 # ── Step 5: Database migration (AFTER successful build) ──────────────
 echo ">>> [5/6] Database migration..."

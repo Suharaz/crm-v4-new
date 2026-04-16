@@ -1,7 +1,6 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
   // Security headers — use :path* (not /(.*)) to avoid parens conflicting
   // with route group paths like /_next/static/chunks/app/(auth)/login/...
   async headers() {

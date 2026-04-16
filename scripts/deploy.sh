@@ -104,8 +104,10 @@ pnpm db:push
 
 # ── Step 6: Restart PM2 ─────────────────────────────────────────────
 echo ">>> [6/6] Starting PM2 apps..."
+# Use restart (full kill+start) instead of reload (graceful) to ensure
+# Next.js process drops in-memory prerender cache and reads fresh .next/
 if pm2 describe crm-api > /dev/null 2>&1; then
-  pm2 reload ecosystem.config.cjs
+  pm2 restart ecosystem.config.cjs --update-env
 else
   pm2 start ecosystem.config.cjs
 fi

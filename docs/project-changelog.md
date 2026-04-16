@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 - **Import polling memory leak:** `setInterval` in `useState` initializer never cleaned up on unmount. Replaced with `useEffect` + cleanup
 - **Prototype pollution:** CSV column headers stored as JSONB metadata keys without filtering `__proto__`/`constructor`/`prototype`. Added guard
 - **File size validation:** Upload UI showed "tối đa 10MB" but didn't validate. Added client-side 10MB check
-- **Claim error message:** Fixed misleading error text (removed ZOOM from message — ZOOM leads are not claimable)
+- **ZOOM claim bug:** ZOOM leads were not claimable — guard check and WHERE clause only had POOL+FLOATING. Added ZOOM to both (ZOOM → IN_PROGRESS is valid per ALLOWED_TRANSITIONS)
 - **Report:** `plans/reports/code-review-260416-1512-comprehensive-audit-round4.md`
 
 ### Customer CSV Import — Extended Columns (2026-04-16)

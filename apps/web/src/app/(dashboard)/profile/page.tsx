@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/providers/auth-provider';
 import { api } from '@/lib/api-client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -28,13 +28,13 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
 
   // Fetch full user data (including phone) on mount
-  useState(() => {
+  useEffect(() => {
     if (!user) return;
     api.get<{ data: { phone?: string } }>(`/users/${user.id}`).then((res) => {
       setPhone(res.data.phone || '');
       setPhoneFetched(true);
     }).catch(() => setPhoneFetched(true));
-  });
+  }, [user]);
 
   async function handleSaveInfo(e: React.FormEvent) {
     e.preventDefault();

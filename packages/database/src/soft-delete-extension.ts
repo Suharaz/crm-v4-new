@@ -46,11 +46,27 @@ export const softDeleteExtension = Prisma.defineExtension({
         }
         return query(args);
       },
-      async findUnique({ args, query }) {
-        // findUnique can't add arbitrary where clauses, delegate to query as-is
+      async findUnique({ model, args, query }) {
+        // Convert to findFirst with deletedAt filter for soft-delete models
+        if (isSoftDeleteModel(model)) {
+          const { where, ...rest } = args as any;
+          return (query as any)({ ...rest, where: { ...where, deletedAt: null } });
+        }
         return query(args);
       },
       async count({ model, args, query }) {
+        if (isSoftDeleteModel(model)) {
+          args.where = { ...args.where, deletedAt: null };
+        }
+        return query(args);
+      },
+      async aggregate({ model, args, query }) {
+        if (isSoftDeleteModel(model)) {
+          args.where = { ...args.where, deletedAt: null };
+        }
+        return query(args);
+      },
+      async groupBy({ model, args, query }) {
         if (isSoftDeleteModel(model)) {
           args.where = { ...args.where, deletedAt: null };
         }

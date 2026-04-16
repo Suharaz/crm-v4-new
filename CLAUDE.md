@@ -133,11 +133,13 @@ crm-v4/
 ### Lead Status Flow
 ```
 POOL → ASSIGNED → IN_PROGRESS → CONVERTED | LOST → FLOATING
-                                    ↓
-                               Customer created
+ZOOM ↗ (skipPool sources)        ↓
+                             Customer created
 ```
+- **ZOOM:** Lead từ nguồn có `skipPool=true` → bỏ qua POOL, vào ZOOM trực tiếp. User có thể claim ZOOM lead (→ IN_PROGRESS)
 - IN_PROGRESS: auto-trigger khi sale tạo note/gọi điện/tạo order đầu tiên
 - LOST → FLOATING (kho thả nổi, ai cũng claim)
+- Order creation: auto-convert lead → CONVERTED (bất kể status hiện tại)
 - Transfer: DEPARTMENT / FLOATING / UNASSIGN
 
 ### Customer Status

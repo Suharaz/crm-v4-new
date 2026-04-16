@@ -15,10 +15,10 @@ export default function LoginPage() {
   );
 }
 
-/** Only allow relative paths starting with / — block protocol-relative and absolute URLs */
+/** Only allow relative paths starting with / — block protocol-relative, absolute URLs, and dangerous protocols */
 function sanitizeRedirect(raw: string | null): string {
   if (!raw) return '/dashboard';
-  // Block protocol-relative (//evil.com), absolute (http://), and data: URIs
+  // Block protocol-relative (//evil.com), absolute (http://), data: and javascript: URIs
   if (/^[a-z]+:/i.test(raw) || raw.startsWith('//') || !raw.startsWith('/')) {
     return '/dashboard';
   }

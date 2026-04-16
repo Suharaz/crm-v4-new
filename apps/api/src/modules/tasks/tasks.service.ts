@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ConflictException, ForbiddenException, L
 import { PrismaClient, Prisma, TaskStatus, UserRole } from '@prisma/client';
 import { Cron } from '@nestjs/schedule';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import { buildAccessFilter, AccessFilterUser } from '../../common/filters/build-access-filter';
 
 const TASK_SELECT = {
   id: true, title: true, description: true,
@@ -58,14 +59,13 @@ export class TasksService {
   }
 
   /** Verify task exists and user has ownership (assignee, creator, or MANAGER+) */
-  private async findTaskWithOwnershipCheck(id: bigint, userId: bigint, userRole: UserRole) {
-    const task = await this.prisma.task.findFirst({ where: { id, deletedAt: null } });
-    if (!task) throw new NotFoundException('Không tìm thấy công việc');
-    if (userRole !== UserRole.SUPER_ADMIN && userRole !== UserRole.MANAGER) {
-      if (task.assignedTo.toString() !== userId.toString() && task.createdBy.toString() !== userId.toString()) {
-        throw new ForbiddenException('Bạn không có quyền thao tác công việc này');
-      }
-    }
+  private async findTaskWithOwnershipCheck(id: bigint, userId: bigint, userRole: UserRole, departmentId?: bigint | null) {
+    const user: AccessFilterUser = { id: userId, role: userRole, departmentId: departmentId ?? null };
+    const accessFilter = buildAccessFilter(user, 'task');
+    const task = await this.prisma.task.findFirst({
+      where: { id, deletedAt: null, ...accessFilter },
+    });
+    if (!task) throw new NotFoundException('Không tìm thấy công việc hoặc bạn không có quyền');
     return task;
   }
 

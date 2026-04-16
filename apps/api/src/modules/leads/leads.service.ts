@@ -3,6 +3,7 @@ import { PrismaClient, Prisma, LeadStatus, UserRole } from '@prisma/client';
 import { normalizePhone, isValidVNPhone } from '@crm/utils';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { LeadListQueryDto } from './dto/lead-list-query.dto';
+import { buildAccessFilter, AccessFilterUser } from '../../common/filters/build-access-filter';
 
 // Valid status transitions
 const ALLOWED_TRANSITIONS: Record<LeadStatus, LeadStatus[]> = {
@@ -38,11 +39,7 @@ const LEAD_SELECT = {
   },
 } satisfies Prisma.LeadSelect;
 
-interface CurrentUser {
-  id: bigint;
-  role: UserRole;
-  departmentId: bigint | null;
-}
+type CurrentUser = AccessFilterUser;
 
 @Injectable()
 export class LeadsService {
@@ -51,12 +48,10 @@ export class LeadsService {
   // ── List with filters + role-based access ────────────────────────────────
   async list(query: LeadListQueryDto, user?: CurrentUser) {
     const limit = query.limit ?? 20;
-    const where: Prisma.LeadWhereInput = { deletedAt: null };
-
-    // USER role: only sees leads assigned to them
-    if (user && user.role === UserRole.USER) {
-      where.assignedUserId = user.id;
-    }
+    const where: Prisma.LeadWhereInput = {
+      deletedAt: null,
+      ...(user ? buildAccessFilter(user, 'lead') : {}),
+    };
 
     if (query.status) where.status = query.status;
     if (query.sourceId) where.sourceId = BigInt(query.sourceId);
@@ -242,11 +237,10 @@ export class LeadsService {
 
   // ── Find by ID ──────────────────────────────────────────────────────────
   async findById(id: bigint, user?: CurrentUser) {
-    const where: Prisma.LeadWhereInput = { id, deletedAt: null };
-    // IDOR prevention: USER role can only view their own leads
-    if (user && user.role === UserRole.USER) {
-      where.assignedUserId = user.id;
-    }
+    const where: Prisma.LeadWhereInput = {
+      id, deletedAt: null,
+      ...(user ? buildAccessFilter(user, 'lead') : {}),
+    };
     const lead = await this.prisma.lead.findFirst({
       where, select: LEAD_SELECT,
     });

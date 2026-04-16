@@ -1,12 +1,9 @@
 import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaClient, Prisma, OrderStatus, UserRole } from '@prisma/client';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import { buildAccessFilter, AccessFilterUser } from '../../common/filters/build-access-filter';
 
-interface CurrentUser {
-  id: bigint;
-  role: UserRole;
-  departmentId: bigint | null;
-}
+type CurrentUser = AccessFilterUser;
 
 const ALLOWED_ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   PENDING: ['CONFIRMED', 'CANCELLED'],
@@ -104,11 +101,10 @@ export class OrdersService {
   }
 
   async findById(id: bigint, user?: CurrentUser) {
-    const where: Prisma.OrderWhereInput = { id, deletedAt: null };
-    // IDOR prevention: USER role can only view their own orders
-    if (user && user.role === UserRole.USER) {
-      where.createdBy = user.id;
-    }
+    const where: Prisma.OrderWhereInput = {
+      id, deletedAt: null,
+      ...(user ? buildAccessFilter(user, 'order') : {}),
+    };
     const order = await this.prisma.order.findFirst({
       where, select: ORDER_SELECT,
     });

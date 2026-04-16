@@ -215,3 +215,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3010/api/v1
 FRONTEND_URL=http://localhost:3011
 REDIS_URL=redis://localhost:6380
 ```
+
+# hãy sử dụng sequential-thinking  và các skill khác liên quan cho từng phase tương ứng (điều  này là bắt buộc)
+# Quan trọng nhất: Phải luôn đọc file claude.md để hiểu rõ cấu trúc dự án, đọc thư mục docs và cập nhật liên tục các file changelog, todo
+# Cực kì quan trong: Mỗi khi hoàn thành 1 tính năng cần commit và push luôn nếu không lỗi gì. 

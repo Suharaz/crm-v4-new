@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Security Hardening — Dependency Updates + IDOR Prevention (2026-04-16)
+- **file-type** 19.6.0 → 21.3.2: Fix CVE-2026-31808 (DoS via infinite loop on crafted file upload)
+- **@nestjs/core** 11.1.17 → 11.1.19: Fix CVE-2026-35515 (SSE injection) + pulls patched path-to-regexp
+- **pnpm overrides:** lodash → 4.18.0 (CVE-2026-4800 code injection), defu → 6.1.7 (CVE-2026-35209 prototype pollution)
+- **buildAccessFilter utility** (`common/filters/build-access-filter.ts`): Shared IDOR prevention filter replacing ad-hoc inline checks in leads, orders, tasks services
+- **Verified:** httpOnly cookie auth already implemented via Next.js BFF proxy pattern
+
 ### Dashboard v2 — Sidebar Sub-pages + Employee Scorecard (2026-04-14)
 - **Navigation:** "Trang chủ" now dropdown in sidebar with 4 sub-pages (Tổng quát, Doanh thu, Nhân viên, Khách hàng)
 - **Routing:** Each section is a separate page (`/dashboard/revenue`, `/dashboard/employees`, `/dashboard/customers`)

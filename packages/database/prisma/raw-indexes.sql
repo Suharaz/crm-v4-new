@@ -119,3 +119,23 @@ CREATE INDEX IF NOT EXISTS idx_orders_status_date
 -- PM4: payments composite order+status (conversion trigger, validation)
 CREATE INDEX IF NOT EXISTS idx_payments_order_status
   ON payments(order_id, status);
+
+-- ══════════════════════════════════════════════════════════════════════════
+-- AUDIT REMEDIATION INDEXES (2026-04-16)
+-- Added per audit findings SEC-M2, PERF-M7, PERF-M8, DB-M1
+-- ══════════════════════════════════════════════════════════════════════════
+
+-- PERF-M7: plain phone lookup on leads (non-partial, covers all statuses)
+CREATE INDEX IF NOT EXISTS idx_leads_phone ON leads(phone);
+
+-- PERF-M8: plain phone lookup on customers (non-partial, covers all statuses)
+CREATE INDEX IF NOT EXISTS idx_customers_phone ON customers(phone);
+
+-- PERF: payments status index (general status queries)
+CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status);
+
+-- SEC-M2 / dedup: leads dedup index (phone+source+product, active only)
+CREATE INDEX IF NOT EXISTS idx_leads_dedup ON leads(phone, source_id, product_id) WHERE deleted_at IS NULL;
+
+-- DB-M1: customers unique active phone (enforce one active customer per phone)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_phone_unique_active ON customers(phone) WHERE deleted_at IS NULL;

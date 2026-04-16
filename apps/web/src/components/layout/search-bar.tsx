@@ -40,33 +40,37 @@ export function SearchBar() {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Debounced search
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
     if (!query.trim()) {
       setResults(null);
       setOpen(false);
       return;
     }
 
-    debounceRef.current = setTimeout(async () => {
+    const controller = new AbortController();
+
+    const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await api.get<SearchResponse>(`/search?q=${encodeURIComponent(query.trim())}`);
+        const res = await api.get<SearchResponse>(
+          `/search?q=${encodeURIComponent(query.trim())}`,
+          { signal: controller.signal },
+        );
         setResults(res.data);
         setOpen(true);
       } catch {
-        setResults(null);
+        // Ignore aborted requests; clear results on real errors
+        if (!controller.signal.aborted) setResults(null);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }, 300);
 
     return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      clearTimeout(timer);
+      controller.abort();
     };
   }, [query]);
 

@@ -22,6 +22,7 @@ export default function ProfilePage() {
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState('');
   const [phoneFetched, setPhoneFetched] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -59,8 +60,9 @@ export default function ProfilePage() {
     }
     setSaving(true);
     try {
-      await api.patch('/users/profile', { password });
+      await api.patch('/users/profile', { currentPassword, password });
       toast.success('Đổi mật khẩu thành công. Vui lòng đăng nhập lại.');
+      setCurrentPassword('');
       // Password change revokes tokens — redirect to login
       setTimeout(() => { window.location.href = '/login'; }, 1500);
     } catch (err) {
@@ -156,6 +158,14 @@ export default function ProfilePage() {
         <CardContent>
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div className="space-y-1.5">
+              <Label htmlFor="current-password">Mật khẩu hiện tại</Label>
+              <Input
+                id="current-password" type={showPassword ? 'text' : 'password'}
+                value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Nhập mật khẩu hiện tại" required className="h-11"
+              />
+            </div>
+            <div className="space-y-1.5">
               <Label htmlFor="new-password">Mật khẩu mới</Label>
               <div className="relative">
                 <Input
@@ -179,7 +189,7 @@ export default function ProfilePage() {
                 placeholder="Nhập lại mật khẩu mới" required minLength={8} className="h-11"
               />
             </div>
-            <Button type="submit" disabled={saving || !password} variant="outline" className="h-10">
+            <Button type="submit" disabled={saving || !currentPassword || !password} variant="outline" className="h-10">
               {saving ? 'Đang đổi...' : 'Đổi mật khẩu'}
             </Button>
           </form>

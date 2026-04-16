@@ -25,7 +25,7 @@ export class CustomersController {
   }
 
   @Get('search')
-  @Throttle({ daily: { ttl: 86400000, limit: 100 } })
+  @Throttle({ default: { ttl: 60000, limit: 10 }, daily: { ttl: 86400000, limit: 100 } })
   async searchByPhone(@Query('phone') phone: string) {
     return this.customersService.searchByPhone(phone);
   }

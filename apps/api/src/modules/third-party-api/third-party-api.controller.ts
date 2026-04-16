@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { normalizePhone, isValidVNPhone } from '@crm/utils';
 import { Public } from '../auth/decorators/public-route.decorator';
@@ -18,19 +18,25 @@ export class ThirdPartyApiController {
   }) {
     const phone = normalizePhone(body.phone);
     if (!isValidVNPhone(phone)) {
-      return { error: 'Số điện thoại không hợp lệ' };
+      throw new BadRequestException('Số điện thoại không hợp lệ');
     }
 
     // Find or create source
     let sourceId: bigint | null = null;
+    let skipPool = false;
     if (body.source) {
       let source = await this.prisma.leadSource.findFirst({
         where: { name: body.source },
+        select: { id: true, skipPool: true },
       });
       if (!source) {
-        source = await this.prisma.leadSource.create({ data: { name: body.source } });
+        source = await this.prisma.leadSource.create({
+          data: { name: body.source },
+          select: { id: true, skipPool: true },
+        });
       }
       sourceId = source.id;
+      skipPool = source.skipPool;
     }
 
     // Find or create customer
@@ -48,13 +54,13 @@ export class ThirdPartyApiController {
     if (body.metadata) {
       const metaStr = JSON.stringify(body.metadata);
       if (metaStr.length > 10_000) {
-        return { error: 'metadata quá lớn (tối đa 10KB)' };
+        throw new BadRequestException('metadata quá lớn (tối đa 10KB)');
       }
       // Reject prototype pollution keys
       const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
       const keys = Object.keys(body.metadata);
       if (keys.some(k => dangerousKeys.includes(k))) {
-        return { error: 'metadata chứa key không hợp lệ' };
+        throw new BadRequestException('metadata chứa key không hợp lệ');
       }
       validatedMetadata = body.metadata as object;
     }
@@ -63,7 +69,7 @@ export class ThirdPartyApiController {
     const lead = await this.prisma.lead.create({
       data: {
         phone, name: body.name, email: body.email,
-        status: 'POOL',
+        status: skipPool ? 'ZOOM' : 'POOL',
         customerId: customer.id,
         sourceId,
         ...(validatedMetadata ? { metadata: validatedMetadata } : {}),

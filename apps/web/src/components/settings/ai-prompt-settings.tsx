@@ -110,13 +110,17 @@ export function AiPromptSettings({ initialSettings }: Props) {
             type="password"
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
-            placeholder="sk-or-v1-..."
+            placeholder={initialSettings.ai_api_key ? 'API key đã được lưu' : 'sk-or-v1-...'}
             className="flex-1"
           />
           <Button
             size="sm"
             disabled={saving === 'ai_api_key'}
-            onClick={() => save('ai_api_key', apiKey, 'API key')}
+            onClick={() => {
+              // Don't send back the masked value (contains ••••••)
+              if (apiKey.includes('••••••')) return;
+              save('ai_api_key', apiKey, 'API key');
+            }}
           >
             {saving === 'ai_api_key' ? 'Đang lưu...' : 'Lưu'}
           </Button>

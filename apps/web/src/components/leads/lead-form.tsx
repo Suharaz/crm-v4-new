@@ -73,7 +73,7 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
       } catch { setPhoneDuplicate(null); }
     }, 500);
     return () => clearTimeout(timer);
-  }, [form.phone, isEdit]);
+  }, [form.phone, form.name, form.email, isEdit]);
 
   function update(key: string, value: string) {
     setForm(prev => ({ ...prev, [key]: value }));

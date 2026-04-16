@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, BadRequestException } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { RecallConfigService } from './recall-config.service';
 import { Roles } from '../auth/decorators/roles-required.decorator';
@@ -25,6 +25,9 @@ export class RecallConfigController {
     @Body() body: { entityType: string; maxDaysInPool: number; autoLabelIds?: string[] },
     @CurrentUser() user: { id: bigint },
   ) {
+    if (!['LEAD', 'CUSTOMER'].includes(body.entityType)) {
+      throw new BadRequestException('entityType phải là LEAD hoặc CUSTOMER');
+    }
     const autoLabelIds = (body.autoLabelIds ?? []).map((id) => BigInt(id));
     return this.service.create(
       { entityType: body.entityType, maxDaysInPool: body.maxDaysInPool, autoLabelIds },

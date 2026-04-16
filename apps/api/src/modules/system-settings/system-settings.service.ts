@@ -11,12 +11,19 @@ export const SETTING_KEYS = {
 
 @Injectable()
 export class SystemSettingsService {
+  private cache = new Map<string, { value: string | null; expiry: number }>();
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
   constructor(private readonly prisma: PrismaClient) {}
 
   /** Get a setting value by key. Returns null if not found. */
   async get(key: string): Promise<string | null> {
+    const cached = this.cache.get(key);
+    if (cached && cached.expiry > Date.now()) return cached.value;
     const row = await this.prisma.systemSetting.findUnique({ where: { key } });
-    return row?.value ?? null;
+    const value = row?.value ?? null;
+    this.cache.set(key, { value, expiry: Date.now() + this.CACHE_TTL });
+    return value;
   }
 
   /** Sensitive keys that should be masked in API responses. */
@@ -42,5 +49,6 @@ export class SystemSettingsService {
       create: { key, value },
       update: { value },
     });
+    this.cache.delete(key);
   }
 }

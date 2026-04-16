@@ -163,6 +163,8 @@ model User {
   // Template membership
   templateMemberships AssignmentTemplateMember[]
 
+  // NOTE: This does NOT enforce unique active emails (NULL != NULL in PG).
+  // Real enforcement: raw-indexes.sql → idx_users_email_active (partial unique)
   @@unique([email, deletedAt])
   @@index([departmentId])
   @@index([teamId])
@@ -364,7 +366,7 @@ model Order {
   customerId      BigInt      @map("customer_id")
   productId       BigInt?     @map("product_id")
   amount          Decimal     @db.Decimal(12, 2)
-  vatRate         Decimal     @map("vat_rate") @db.Decimal(5, 2)
+  vatRate         Decimal     @default(0) @map("vat_rate") @db.Decimal(5, 2)
   vatAmount       Decimal     @map("vat_amount") @db.Decimal(12, 2)
   totalAmount     Decimal     @map("total_amount") @db.Decimal(12, 2)
   status          OrderStatus @default(PENDING)

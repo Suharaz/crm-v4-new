@@ -29,7 +29,7 @@ export class NotificationsService {
   async markAsRead(id: bigint, userId: bigint) {
     const notification = await this.prisma.notification.findFirst({ where: { id } });
     if (!notification) throw new NotFoundException('Không tìm thấy thông báo');
-    if (notification.userId !== userId) throw new ForbiddenException('Không có quyền đọc thông báo này');
+    if (notification.userId.toString() !== userId.toString()) throw new ForbiddenException('Không có quyền đọc thông báo này');
     return this.prisma.notification.update({
       where: { id },
       data: { isRead: true },

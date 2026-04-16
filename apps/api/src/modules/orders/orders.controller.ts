@@ -67,7 +67,7 @@ export class OrdersController {
     const createdByFilter = user.role === UserRole.USER ? BigInt(user.id) : (query.createdBy ? BigInt(query.createdBy) : undefined);
     const formatId = query.formatId ? BigInt(query.formatId) : undefined;
     const productGroupId = query.productGroupId ? BigInt(query.productGroupId) : undefined;
-    return this.service.list({ ...query, createdByFilter, formatId, productGroupId });
+    return this.service.list({ ...query, createdByFilter, formatId, productGroupId }, user);
   }
 
   @Get(':id')

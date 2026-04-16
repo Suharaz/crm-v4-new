@@ -49,8 +49,8 @@ export class ImportController {
   }
 
   @Get(':id/status')
-  async getStatus(@Param('id', ParseBigIntPipe) id: bigint) {
-    const data = await this.service.getStatus(id);
+  async getStatus(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
+    const data = await this.service.getStatus(id, user);
     return { data };
   }
 }

@@ -3,6 +3,7 @@ import { PrismaClient, Prisma, UserRole } from '@prisma/client';
 import { normalizePhone, isValidVNPhone } from '@crm/utils';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CustomerListQueryDto } from './dto/customer-list-query.dto';
+import { buildAccessFilter, AccessFilterUser } from '../../common/filters/build-access-filter';
 
 const CUSTOMER_SELECT = {
   id: true,
@@ -28,19 +29,18 @@ const CUSTOMER_SELECT = {
   labels: { include: { label: true } },
 } satisfies Prisma.CustomerSelect;
 
-interface CurrentUser {
-  id: bigint;
-  role: UserRole;
-  departmentId: bigint | null;
-}
+type CurrentUser = AccessFilterUser;
 
 @Injectable()
 export class CustomersService {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async list(query: CustomerListQueryDto) {
+  async list(query: CustomerListQueryDto, user?: CurrentUser) {
     const limit = query.limit ?? 20;
-    const where: Prisma.CustomerWhereInput = { deletedAt: null };
+    const where: Prisma.CustomerWhereInput = {
+      deletedAt: null,
+      ...(user ? buildAccessFilter(user, 'customer') : {}),
+    };
 
     if (query.status) where.status = query.status;
     if (query.departmentId) where.assignedDepartmentId = BigInt(query.departmentId);
@@ -164,7 +164,7 @@ export class CustomersService {
   }
 
   async update(id: bigint, data: Record<string, unknown>, user: CurrentUser) {
-    const customer = await this.findById(id);
+    const customer = await this.findById(id, user);
 
     // Phone field-level permission: manager+ only
     if (data.phone && !([UserRole.SUPER_ADMIN, UserRole.MANAGER] as UserRole[]).includes(user.role)) {

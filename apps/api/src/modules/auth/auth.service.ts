@@ -70,6 +70,15 @@ export class AuthService {
     });
 
     if (!storedToken) {
+      // Token reuse detection: if token was previously revoked, someone is replaying it
+      const revokedToken = await this.prisma.refreshToken.findFirst({
+        where: { tokenHash, revokedAt: { not: null } },
+        select: { userId: true },
+      });
+      if (revokedToken) {
+        // Potential token theft — revoke ALL user's tokens as precaution
+        await this.revokeAllUserTokens(revokedToken.userId);
+      }
       throw new UnauthorizedException('Refresh token không hợp lệ');
     }
 

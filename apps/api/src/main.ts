@@ -29,7 +29,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
   app.useLogger(app.get(Logger));
-  app.use(helmet());
+  app.use(helmet({
+    hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+    contentSecurityPolicy: false, // CSP managed by frontend (Next.js)
+  }));
   app.setGlobalPrefix('api/v1');
 
   // CORS: require FRONTEND_URL in production to prevent silent fallback

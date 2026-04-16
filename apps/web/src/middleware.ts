@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-/** Decode JWT payload without verification to check expiry. */
+/**
+ * Check JWT structural validity + expiry without signature verification.
+ * NOTE: This is routing-only — real auth happens on NestJS backend.
+ * Edge middleware cannot access JWT_SECRET for full verification.
+ */
 function isTokenExpired(token: string): boolean {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const parts = token.split('.');
+    if (parts.length !== 3) return true; // Invalid JWT structure
+    const payload = JSON.parse(atob(parts[1]));
+    if (!payload.exp || !payload.sub) return true; // Missing required claims
     // 30s buffer to avoid edge-case race
     return payload.exp * 1000 < Date.now() - 30_000;
   } catch {

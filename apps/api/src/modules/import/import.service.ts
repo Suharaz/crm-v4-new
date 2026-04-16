@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { PrismaClient, Prisma, UserRole } from '@prisma/client';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { FileUploadService } from '../file-upload/file-upload.service';
@@ -42,9 +42,13 @@ export class ImportService {
     return job;
   }
 
-  async getStatus(id: bigint) {
+  async getStatus(id: bigint, user: { id: bigint; role: UserRole }) {
     const job = await this.prisma.importJob.findUnique({ where: { id } });
     if (!job) throw new NotFoundException('Không tìm thấy import job');
+    // Ownership check: only the creator or admin/manager can view
+    if (user.role === UserRole.USER && job.createdBy !== user.id) {
+      throw new ForbiddenException('Không có quyền xem import job này');
+    }
     return job;
   }
 

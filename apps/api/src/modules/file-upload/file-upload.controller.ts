@@ -11,7 +11,15 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+import * as path from 'path';
 import { FileUploadService } from './file-upload.service';
+
+const MIME_MAP: Record<string, string> = {
+  '.pdf': 'application/pdf', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp',
+  '.csv': 'text/csv', '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+};
 
 @Controller('files')
 export class FileUploadController {
@@ -51,6 +59,11 @@ export class FileUploadController {
 
     // getSecurePath: kiểm tra path traversal + whitelist UUID pattern
     const absolutePath = this.service.getSecurePath(filePath);
+    const ext = path.extname(absolutePath).toLowerCase();
+    res.setHeader('Content-Type', MIME_MAP[ext] || 'application/octet-stream');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Disposition', 'inline');
+    res.setHeader('Cache-Control', 'private, max-age=3600');
     res.sendFile(absolutePath);
   }
 }

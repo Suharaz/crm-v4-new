@@ -15,9 +15,19 @@ export default function LoginPage() {
   );
 }
 
+/** Only allow relative paths starting with / — block protocol-relative and absolute URLs */
+function sanitizeRedirect(raw: string | null): string {
+  if (!raw) return '/dashboard';
+  // Block protocol-relative (//evil.com), absolute (http://), and data: URIs
+  if (/^[a-z]+:/i.test(raw) || raw.startsWith('//') || !raw.startsWith('/')) {
+    return '/dashboard';
+  }
+  return raw;
+}
+
 function LoginForm() {
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/dashboard';
+  const redirect = sanitizeRedirect(searchParams.get('redirect'));
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

@@ -46,9 +46,12 @@ export class OrdersService {
     status?: OrderStatus; customerId?: string; leadId?: string; createdByFilter?: bigint;
     search?: string; productId?: string; format?: string; groupType?: string;
     dateFrom?: string; dateTo?: string; formatId?: bigint; productGroupId?: bigint;
-  }) {
+  }, user?: CurrentUser) {
     const limit = query.limit ?? 20;
-    const where: Prisma.OrderWhereInput = { deletedAt: null };
+    const where: Prisma.OrderWhereInput = {
+      deletedAt: null,
+      ...(user ? buildAccessFilter(user, 'order') : {}),
+    };
     if (query.status) where.status = query.status;
     if (query.customerId) where.customerId = BigInt(query.customerId);
     if (query.leadId) where.leadId = BigInt(query.leadId);

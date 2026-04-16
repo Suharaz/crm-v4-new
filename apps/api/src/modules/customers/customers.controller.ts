@@ -18,9 +18,8 @@ export class CustomersController {
   ) {}
 
   @Get()
-  @Roles(UserRole.SUPER_ADMIN, UserRole.MANAGER)
-  async list(@Query() query: CustomerListQueryDto) {
-    return this.customersService.list(query);
+  async list(@Query() query: CustomerListQueryDto, @CurrentUser() user: any) {
+    return this.customersService.list(query, user);
   }
 
   @Get('search')

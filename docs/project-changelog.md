@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Customer CSV Import — Extended Columns (2026-04-16)
+- **New optional columns:** `companyName`/`Công ty`, `facebookUrl`/`Facebook`, `instagramUrl`/`Instagram`, `zaloUrl`/`Zalo`, `linkedinUrl`/`LinkedIn`, `shortDescription`/`Mô tả ngắn`, `description`/`Mô tả`, `labels`/`Nhãn`
+- **Labels:** Comma-separated names (e.g. "VIP,Quan tâm"), matched case-insensitive against DB labels, attached via `customerLabel` junction table
+- **Bilingual headers:** All columns accept both English (camelCase) and Vietnamese names
+- **Labels preloaded:** Added to lookup preload alongside sources/products for O(1) matching
+
 ### Security Audit Remediation — Round 3 (2026-04-16)
 - **Audit scope:** 25 findings reviewed with product owner; 11 fixed, 14 accepted as non-issues (internal app context)
 - **Auth hardening:**

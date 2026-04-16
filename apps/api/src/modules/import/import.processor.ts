@@ -168,9 +168,10 @@ export class ImportProcessor extends WorkerHost {
 
     // Extra columns → metadata JSONB (any column not in known fields)
     const knownKeys = new Set(['phone', 'Số điện thoại', 'name', 'Họ tên', 'email', 'Email', 'source', 'Nguồn', 'product', 'Sản phẩm']);
+    const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
     const metadata: Record<string, string> = {};
     for (const [key, val] of Object.entries(row)) {
-      if (!knownKeys.has(key) && val && val.trim()) {
+      if (!knownKeys.has(key) && !dangerousKeys.has(key) && val && val.trim()) {
         metadata[key] = val.trim();
       }
     }

@@ -31,6 +31,10 @@ function UploadZone({ label, endpoint, onJobCreated }: UploadZoneProps) {
       toast.error('Chỉ hỗ trợ file CSV');
       return;
     }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File vượt quá 10MB');
+      return;
+    }
     setUploading(true);
     try {
       const formData = new FormData();

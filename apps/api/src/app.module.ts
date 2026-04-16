@@ -59,6 +59,7 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     ThrottlerModule.forRoot([
       { name: 'short', ttl: 60000, limit: parseInt(process.env.THROTTLE_LIMIT || '100', 10) },
       { name: 'auth', ttl: 60000, limit: parseInt(process.env.THROTTLE_AUTH_LIMIT || '5', 10) },
+      { name: 'daily', ttl: 86400000, limit: 100 }, // 100 requests per day — for phone search
     ]),
     ScheduleModule.forRoot(),
     BullModule.forRoot({
@@ -81,7 +82,11 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
           process.env.NODE_ENV !== 'production'
             ? { target: 'pino-pretty', options: { colorize: true } }
             : undefined,
-        redact: ['req.headers.authorization', 'req.body.password', 'req.body.refreshToken'],
+        redact: [
+          'req.headers.authorization', 'req.headers.cookie', 'req.headers["x-api-key"]',
+          'req.body.password', 'req.body.refreshToken',
+          'res.headers["set-cookie"]',
+        ],
       },
     }),
     PrismaModule,

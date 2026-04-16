@@ -196,16 +196,25 @@ export class CustomersService {
   }
 
   async claim(id: bigint, user: CurrentUser) {
-    // Atomic claim: only if unassigned
+    // Department isolation: FLOATING → anyone can claim; dept-assigned → same dept only
+    const where: Prisma.CustomerWhereInput = {
+      id, assignedUserId: null, deletedAt: null,
+      OR: [
+        { status: 'FLOATING' },
+        // ACTIVE + same department (or no department assigned)
+        { status: 'ACTIVE', assignedDepartmentId: user.departmentId },
+        { status: 'ACTIVE', assignedDepartmentId: null },
+      ],
+    };
     const result = await this.prisma.customer.updateMany({
-      where: { id, assignedUserId: null, deletedAt: null, status: { in: ['ACTIVE', 'FLOATING'] } },
+      where,
       data: {
         assignedUserId: user.id,
         assignedDepartmentId: user.departmentId,
         status: 'ACTIVE',
       },
     });
-    if (result.count === 0) throw new ConflictException('Không thể claim khách hàng này');
+    if (result.count === 0) throw new ConflictException('Không thể claim khách hàng này (sai phòng ban hoặc đã có người nhận)');
 
     // Log assignment history
     await this.prisma.assignmentHistory.create({

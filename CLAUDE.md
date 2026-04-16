@@ -104,13 +104,24 @@ crm-v4/
 ### Security Checklist
 - bcrypt cost 12 for passwords
 - JWT secrets in env vars only
-- Refresh tokens hashed (SHA-256) before DB storage
-- Rate limiting: auth 5/min, API 100/min, 3rd party 100/min per key
+- Refresh tokens hashed (SHA-256) before DB storage, reuse detection enabled
+- Rate limiting: auth 5/min (enforced on login/refresh), API 100/min, searchByPhone 100/day
 - No user enumeration (generic error messages)
 - API keys hashed in DB, shown ONCE on creation
 - CSV export sanitization (formula injection prevention)
 - File uploads: UUID filenames, MIME validation, 10MB max
-- httpOnly + Secure + SameSite cookies for JWT
+- httpOnly + Secure + SameSite=Strict cookies for JWT
+- Helmet with CSP, HSTS, strict referrer policy
+- Docker: ports bound to 127.0.0.1, Redis requires password
+- Exception filter: generic error names in production (no class name leak)
+- Pino: redact authorization, cookies, x-api-key, set-cookie headers
+
+### Security — Accepted Risks (Internal App)
+- **File serving:** JWT + UUID path is sufficient. No per-file ownership check needed (internal employees only)
+- **Cross-user entity editing:** Any authenticated user can edit any customer/lead — this is BY DESIGN (collaborative CRM). Activity logs track all changes
+- **MCP/AI endpoints:** Full DB access allowed for AI agents. No data scoping
+- **Webhook HMAC:** Bank/call webhooks processed in separate external system; CRM receives pre-processed data only
+- **API key scoping:** All API keys have broad access — distribution controlled internally
 
 ## Business Logic — Key Decisions
 

@@ -78,10 +78,10 @@ export async function handler(request: NextRequest, { params }: { params: Promis
           const response = NextResponse.json(retryData, { status: retryRes.status });
           const isProd = process.env.NODE_ENV === 'production';
           response.cookies.set('access_token', newToken, {
-            httpOnly: true, secure: isProd, sameSite: 'lax', path: '/', maxAge: 15 * 60,
+            httpOnly: true, secure: isProd, sameSite: 'strict', path: '/', maxAge: 15 * 60,
           });
           response.cookies.set('refresh_token', refreshData.data.refreshToken, {
-            httpOnly: true, secure: isProd, sameSite: 'lax', path: '/', maxAge: 7 * 24 * 60 * 60,
+            httpOnly: true, secure: isProd, sameSite: 'strict', path: '/', maxAge: 7 * 24 * 60 * 60,
           });
           return response;
         }

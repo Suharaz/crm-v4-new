@@ -35,10 +35,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const response = NextResponse.json({ data: { message: 'Đăng nhập thành công' } });
 
     response.headers.append('Set-Cookie', buildCookie('access_token', data.data.accessToken, {
-      httpOnly: true, secure: isProd, sameSite: 'Lax', path: '/', maxAge: 15 * 60,
+      httpOnly: true, secure: isProd, sameSite: 'Strict', path: '/', maxAge: 15 * 60,
     }));
     response.headers.append('Set-Cookie', buildCookie('refresh_token', data.data.refreshToken, {
-      httpOnly: true, secure: isProd, sameSite: 'Lax', path: '/', maxAge: 7 * 24 * 60 * 60,
+      httpOnly: true, secure: isProd, sameSite: 'Strict', path: '/', maxAge: 7 * 24 * 60 * 60,
     }));
 
     return response;
@@ -66,10 +66,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const response = NextResponse.json({ data: { message: 'Token refreshed' } });
     response.headers.append('Set-Cookie', buildCookie('access_token', data.data.accessToken, {
-      httpOnly: true, secure: isProd, sameSite: 'Lax', path: '/', maxAge: 15 * 60,
+      httpOnly: true, secure: isProd, sameSite: 'Strict', path: '/', maxAge: 15 * 60,
     }));
     response.headers.append('Set-Cookie', buildCookie('refresh_token', data.data.refreshToken, {
-      httpOnly: true, secure: isProd, sameSite: 'Lax', path: '/', maxAge: 7 * 24 * 60 * 60,
+      httpOnly: true, secure: isProd, sameSite: 'Strict', path: '/', maxAge: 7 * 24 * 60 * 60,
     }));
     return response;
   }

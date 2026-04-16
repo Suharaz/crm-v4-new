@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { UserRole } from '@prisma/client';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -24,6 +25,7 @@ export class CustomersController {
   }
 
   @Get('search')
+  @Throttle({ daily: { ttl: 86400000, limit: 100 } })
   async searchByPhone(@Query('phone') phone: string) {
     return this.customersService.searchByPhone(phone);
   }

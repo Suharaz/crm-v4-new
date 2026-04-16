@@ -29,7 +29,19 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
   app.useLogger(app.get(Logger));
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:'],
+        connectSrc: ["'self'"],
+      },
+    },
+    hsts: { maxAge: 31536000, includeSubDomains: true },
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  }));
   app.setGlobalPrefix('api/v1');
 
   // CORS: require FRONTEND_URL in production to prevent silent fallback

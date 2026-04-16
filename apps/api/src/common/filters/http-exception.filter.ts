@@ -29,7 +29,10 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
           message = resp.message.join(', ');
         }
       }
-      error = exception.name || error;
+      // In production, use generic error to avoid leaking framework/DB class names
+      error = process.env.NODE_ENV === 'production'
+        ? (exception.getStatus() >= 500 ? 'Internal Server Error' : exception.message)
+        : (exception.name || error);
     }
 
     response.status(statusCode).json({

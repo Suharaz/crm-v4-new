@@ -50,6 +50,12 @@ export class ThirdPartyApiController {
       if (metaStr.length > 10_000) {
         return { error: 'metadata quá lớn (tối đa 10KB)' };
       }
+      // Reject prototype pollution keys
+      const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
+      const keys = Object.keys(body.metadata);
+      if (keys.some(k => dangerousKeys.includes(k))) {
+        return { error: 'metadata chứa key không hợp lệ' };
+      }
       validatedMetadata = body.metadata as object;
     }
 

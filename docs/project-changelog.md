@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Security Audit Remediation — Round 3 (2026-04-16)
+- **Audit scope:** 25 findings reviewed with product owner; 11 fixed, 14 accepted as non-issues (internal app context)
+- **Auth hardening:**
+  - `@Throttle({ auth: 5/min })` enforced on login + refresh endpoints (was falling back to global 100/min)
+  - Refresh token reuse detection — revokes ALL user sessions if stolen token replayed
+  - Account lockout: skip counter increment when already locked (prevent perpetual DoS)
+- **Department isolation:** Customer claim now checks department membership (FLOATING: anyone; dept-assigned: same dept only)
+- **Rate limiting:** searchByPhone rate-limited to 100/day per user (new `daily` throttler group)
+- **Helmet:** CSP, HSTS (1yr + includeSubDomains), strict referrer policy configured
+- **Docker:** Ports bound to `127.0.0.1` (not 0.0.0.0). Redis requires password via `REDIS_PASSWORD` env var. Postgres creds via env vars
+- **Cookie security:** SameSite upgraded from Lax to Strict (auth + proxy routes)
+- **Exception filter:** Production mode returns generic error names (no PrismaClient class leak)
+- **Pino logging:** Redact list expanded: `x-api-key`, `cookie`, `set-cookie` headers
+- **Metadata validation:** Reject `__proto__`/`constructor`/`prototype` keys in third-party API metadata
+- **CLAUDE.md:** Added "Security — Accepted Risks" section documenting intentional design decisions
+- **Accepted risks (by product owner):** File serving by UUID, cross-user entity editing (collaborative CRM), MCP full access, webhook HMAC (external processing), API key broad scoping
+
 ### Dashboard v2 — Sidebar Sub-pages + Employee Scorecard (2026-04-14)
 - **Navigation:** "Trang chủ" now dropdown in sidebar with 4 sub-pages (Tổng quát, Doanh thu, Nhân viên, Khách hàng)
 - **Routing:** Each section is a separate page (`/dashboard/revenue`, `/dashboard/employees`, `/dashboard/customers`)

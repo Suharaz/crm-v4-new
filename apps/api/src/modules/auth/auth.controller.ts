@@ -1,4 +1,5 @@
 import { Controller, Post, Get, Body, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login-credentials.dto';
@@ -12,6 +13,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @Throttle({ auth: { ttl: 60000, limit: 5 } })
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto, @Req() req: Request) {
     const tokens = await this.authService.login(
@@ -25,6 +27,7 @@ export class AuthController {
 
   @Public()
   @Post('refresh')
+  @Throttle({ auth: { ttl: 60000, limit: 5 } })
   @HttpCode(HttpStatus.OK)
   async refresh(@Body() dto: RefreshTokenDto, @Req() req: Request) {
     const tokens = await this.authService.refreshTokens(

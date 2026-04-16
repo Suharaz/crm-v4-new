@@ -40,13 +40,15 @@ export class AuthService {
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
-      // Increment failed login count
-      const newCount = user.failedLoginCount + 1;
-      const updateData: Record<string, unknown> = { failedLoginCount: newCount };
-      if (newCount >= MAX_FAILED_ATTEMPTS) {
-        updateData.lockedUntil = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000);
+      // Skip increment if account is already locked — prevent perpetual lockout extension
+      if (!user.lockedUntil || user.lockedUntil <= new Date()) {
+        const newCount = user.failedLoginCount + 1;
+        const updateData: Record<string, unknown> = { failedLoginCount: newCount };
+        if (newCount >= MAX_FAILED_ATTEMPTS) {
+          updateData.lockedUntil = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000);
+        }
+        await this.prisma.user.update({ where: { id: user.id }, data: updateData });
       }
-      await this.prisma.user.update({ where: { id: user.id }, data: updateData });
       throw new UnauthorizedException(genericError);
     }
 
@@ -63,6 +65,17 @@ export class AuthService {
 
   async refreshTokens(refreshToken: string, userAgent?: string, ipAddress?: string) {
     const tokenHash = this.hashToken(refreshToken);
+
+    // Check if this is a reused (already revoked) token — potential theft
+    const revokedToken = await this.prisma.refreshToken.findFirst({
+      where: { tokenHash, revokedAt: { not: null } },
+      select: { userId: true },
+    });
+    if (revokedToken) {
+      // Token was already used/revoked → revoke ALL tokens for this user (security measure)
+      await this.revokeAllUserTokens(revokedToken.userId);
+      throw new UnauthorizedException('Phiên đăng nhập bị thu hồi vì nghi ngờ bảo mật');
+    }
 
     const storedToken = await this.prisma.refreshToken.findFirst({
       where: { tokenHash, revokedAt: null },

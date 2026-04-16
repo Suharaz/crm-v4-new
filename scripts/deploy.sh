@@ -113,6 +113,24 @@ else
 fi
 pm2 save
 
+# ── Auto-purge Cloudflare cache (skip if env vars missing) ───────────
+# Set CF_ZONE_ID and CF_API_TOKEN in .env.production to enable.
+# Without this, CF caches old HTML for s-maxage=31536000 (1 year) → stale chunks → 404
+if [ -n "${CF_ZONE_ID:-}" ] && [ -n "${CF_API_TOKEN:-}" ]; then
+  echo ">>> Purging Cloudflare cache..."
+  curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache" \
+    -H "Authorization: Bearer ${CF_API_TOKEN}" \
+    -H "Content-Type: application/json" \
+    --data '{"purge_everything":true}' > /tmp/cf-purge.json
+  if grep -q '"success":true' /tmp/cf-purge.json; then
+    echo "✓ Cloudflare cache purged"
+  else
+    echo "✗ Cloudflare purge failed: $(cat /tmp/cf-purge.json)"
+  fi
+else
+  echo ">>> Skipping Cloudflare purge (CF_ZONE_ID and CF_API_TOKEN not set)"
+fi
+
 # ── Health check ─────────────────────────────────────────────────────
 echo ""
 echo ">>> Health check..."

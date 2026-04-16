@@ -19,10 +19,20 @@ export class SystemSettingsService {
     return row?.value ?? null;
   }
 
-  /** Get all settings as key-value object. */
+  /** Sensitive keys that should be masked in API responses. */
+  private static readonly REDACTED_KEYS: Set<string> = new Set([SETTING_KEYS.AI_API_KEY]);
+
+  /** Get all settings as key-value object. Sensitive keys are masked. */
   async getAll(): Promise<Record<string, string>> {
     const rows = await this.prisma.systemSetting.findMany();
-    return Object.fromEntries(rows.map(r => [r.key, r.value]));
+    return Object.fromEntries(
+      rows.map(r => [
+        r.key,
+        SystemSettingsService.REDACTED_KEYS.has(r.key) && r.value
+          ? r.value.slice(0, 8) + '••••••'
+          : r.value,
+      ]),
+    );
   }
 
   /** Upsert a setting. */

@@ -5,7 +5,8 @@ import { toast } from 'sonner';
 import { Upload, CheckCircle2, XCircle, Loader2, FileText, Download } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/api/v1';
+// Route through Next.js proxy for auth cookie forwarding
+const PROXY_BASE = '/api/proxy';
 
 interface ImportJob {
   id: string;
@@ -41,9 +42,8 @@ function UploadZone({ label, endpoint, onJobCreated }: UploadZoneProps) {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch(`${API_BASE}${endpoint}`, {
+      const res = await fetch(`${PROXY_BASE}${endpoint}`, {
         method: 'POST',
-        credentials: 'include',
         body: formData,
       });
       if (!res.ok) {
@@ -125,7 +125,7 @@ function JobStatusRow({ job, onUpdate }: { job: ImportJob; onUpdate: (updated: I
     if (!polling) return;
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`${API_BASE}/imports/${job.id}/status`, { credentials: 'include' });
+        const res = await fetch(`${PROXY_BASE}/imports/${job.id}/status`);
         if (res.ok) {
           const updated = await res.json();
           onUpdateRef.current(updated);

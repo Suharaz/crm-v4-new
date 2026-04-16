@@ -20,7 +20,7 @@ interface DetailRecord extends Omit<LeadRecord, 'orders'> {
 }
 
 const CACHE_PREFIX = 'crm_preview_';
-const CACHE_TTL = 24 * 60 * 60 * 1000;
+const CACHE_TTL = 5 * 60 * 1000;
 
 /** Deduplicate array by id (prevents React duplicate key warnings from stale cache or race conditions). */
 function dedupeById<T extends { id: string | number }>(arr: T[]): T[] {

@@ -28,7 +28,7 @@ const CACHE_KEY_BA = 'crm_order_bank_accounts';
 const CACHE_KEY_FORMATS = 'crm_order_formats';
 const CACHE_KEY_GROUPS = 'crm_order_product_groups';
 const CACHE_KEY_INSTALLMENTS = 'crm_order_installments';
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 /** Invalidate order dialog caches — call after adding/editing products, payment types, bank accounts */
 export function invalidateOrderCaches() {

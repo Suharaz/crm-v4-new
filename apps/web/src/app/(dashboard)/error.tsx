@@ -21,7 +21,7 @@ export default function DashboardError({
           Đã xảy ra lỗi
         </h2>
         <p className="mb-4 text-sm text-red-600">
-          {error.message || 'Không thể tải trang. Vui lòng thử lại.'}
+          Không thể tải trang. Vui lòng thử lại.
         </p>
         <Button onClick={reset} variant="outline" className="border-red-300 text-red-700 hover:bg-red-100">
           Thử lại

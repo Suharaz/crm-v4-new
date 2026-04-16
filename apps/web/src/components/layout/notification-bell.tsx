@@ -70,11 +70,23 @@ export function NotificationBell() {
     }
   }, []);
 
-  // Poll unread count every 30s
+  // Poll unread count every 30s — paused when tab is hidden
   useEffect(() => {
     fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 30_000);
-    return () => clearInterval(interval);
+    let interval = setInterval(fetchUnreadCount, 30_000);
+    function handleVisibility() {
+      if (document.hidden) {
+        clearInterval(interval);
+      } else {
+        fetchUnreadCount();
+        interval = setInterval(fetchUnreadCount, 30_000);
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [fetchUnreadCount]);
 
   // Fetch notifications when dropdown opens

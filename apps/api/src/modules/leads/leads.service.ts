@@ -468,6 +468,7 @@ export class LeadsService {
 
   /** Bulk assign multiple leads to a single user in one transaction */
   async bulkAssign(leadIds: bigint[], targetUserId: bigint, user: CurrentUser) {
+    if (leadIds.length > 500) throw new BadRequestException('Tối đa 500 leads mỗi lần');
     const targetUser = await this.prisma.user.findFirst({
       where: { id: targetUserId, deletedAt: null, status: 'ACTIVE' },
       select: { id: true, departmentId: true, name: true },
@@ -543,6 +544,7 @@ export class LeadsService {
   }
 
   async bulkRecall(leadIds: bigint[], user: CurrentUser) {
+    if (leadIds.length > 500) throw new BadRequestException('Tối đa 500 leads mỗi lần');
     const leads = await this.prisma.lead.findMany({
       where: { id: { in: leadIds }, assignedUserId: { not: null }, deletedAt: null },
       select: { id: true, assignedUserId: true, departmentId: true },

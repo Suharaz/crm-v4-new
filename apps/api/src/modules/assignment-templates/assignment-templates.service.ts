@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 const MEMBER_SELECT = {
@@ -86,6 +86,7 @@ export class AssignmentTemplatesService {
   }
 
   async applyTemplate(templateId: bigint, leadIds: bigint[], assignedBy: bigint) {
+    if (leadIds.length > 500) throw new BadRequestException('Tối đa 500 leads mỗi lần');
     const template = await this.getById(templateId);
     const members = template.members;
 

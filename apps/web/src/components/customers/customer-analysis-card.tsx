@@ -81,7 +81,16 @@ export function CustomerAnalysisCard({ customerId, shortDescription, description
                 <div className="mt-3 pt-3 border-t border-slate-100">
                   <h4 className="text-sm font-bold text-slate-800 mb-2">Phân tích chi tiết chân dung khách hàng</h4>
                   <div className="prose prose-sm prose-gray max-w-none text-sm text-slate-600 [&_strong]:text-slate-800 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_p]:my-1 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_h1]:font-bold [&_h2]:font-semibold [&_h3]:font-medium">
-                    <ReactMarkdown>{description}</ReactMarkdown>
+                    <ReactMarkdown
+                      components={{
+                        a: ({ href, children }) => {
+                          const safe = href && /^https?:\/\//i.test(href);
+                          return safe
+                            ? <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+                            : <span>{children}</span>;
+                        },
+                      }}
+                    >{description}</ReactMarkdown>
                   </div>
                 </div>
               )}

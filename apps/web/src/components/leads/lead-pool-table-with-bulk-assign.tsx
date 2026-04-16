@@ -73,7 +73,19 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
   useEffect(() => {
     if (poolMode !== 'new') return;
     intervalRef.current = setInterval(fetchLeads, 30_000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    function handleVisibility() {
+      if (document.hidden) {
+        if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+      } else {
+        fetchLeads();
+        intervalRef.current = setInterval(fetchLeads, 30_000);
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [poolMode, fetchLeads]);
 
   // Sync with SSR data on initial render + set client-only timestamp

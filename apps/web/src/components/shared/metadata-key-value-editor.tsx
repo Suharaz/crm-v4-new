@@ -38,9 +38,16 @@ export function MetadataKeyValueEditor({ entityType, entityId, metadata, canEdit
     }
   }
 
+  const BLOCKED_KEYS = new Set(['__proto__', 'constructor', 'prototype', 'toString', 'valueOf']);
+
   function handleAdd() {
-    if (!newKey.trim()) return;
-    const updated = { ...(metadata || {}), [newKey.trim()]: newValue.trim() };
+    const trimmedKey = newKey.trim();
+    if (!trimmedKey) return;
+    if (BLOCKED_KEYS.has(trimmedKey)) {
+      toast.error('Tên trường không hợp lệ');
+      return;
+    }
+    const updated = { ...(metadata || {}), [trimmedKey]: newValue.trim() };
     saveMetadata(updated);
     setAdding(false);
     setNewKey('');

@@ -66,7 +66,7 @@ interface PreviewDialogProps {
 }
 
 const CACHE_PREFIX = 'crm_preview_';
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 /** Read from localStorage with TTL check. */
 function readCache(key: string) {

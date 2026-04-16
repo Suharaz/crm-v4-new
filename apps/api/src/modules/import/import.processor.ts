@@ -41,7 +41,7 @@ export class ImportProcessor extends WorkerHost {
       const [allSources, allProducts, allLabels] = await Promise.all([
         this.prisma.leadSource.findMany({ select: { id: true, name: true, skipPool: true } }),
         this.prisma.product.findMany({ where: { deletedAt: null }, select: { id: true, name: true } }),
-        this.prisma.label.findMany({ where: { deletedAt: null }, select: { id: true, name: true } }),
+        this.prisma.label.findMany({ where: { isActive: true }, select: { id: true, name: true } }),
       ]);
       const sourceMap = new Map(allSources.map(s => [s.name.toLowerCase(), s]));
       const productMap = new Map(allProducts.map(p => [p.name.toLowerCase(), p]));
@@ -61,7 +61,11 @@ export class ImportProcessor extends WorkerHost {
           if (type === 'leads') {
             await this.processLeadRow(row, rowIndex + 1, sourceMap, productMap, phoneCache);
           } else {
-            await this.processCustomerRow(row, rowIndex + 1, labelMap);
+            const warnings = await this.processCustomerRow(row, rowIndex + 1, labelMap);
+            // Row succeeds but report unmatched labels as warnings
+            for (const w of warnings) {
+              errors.push({ row: rowIndex + 1, field: 'labels', message: `[Warning] ${w}` });
+            }
           }
           successCount++;
         } catch (e: unknown) {
@@ -196,11 +200,13 @@ export class ImportProcessor extends WorkerHost {
     }
   }
 
+  /** Returns array of warning messages (e.g. unmatched labels). Row still counts as success. */
   private async processCustomerRow(
     row: Record<string, string>,
     rowNum: number,
     labelMap: Map<string, { id: bigint; name: string }>,
-  ) {
+  ): Promise<string[]> {
+    const warnings: string[] = [];
     const phone = normalizePhone(row.phone || row['Số điện thoại'] || '');
     const name = row.name || row['Họ tên'] || '';
     if (!phone || !name) throw new Error('Thiếu phone hoặc name');
@@ -235,10 +241,16 @@ export class ImportProcessor extends WorkerHost {
     // Attach labels (comma-separated names, matched case-insensitive from DB)
     const labelsRaw = row.labels || row['Nhãn'] || '';
     if (labelsRaw.trim()) {
-      const labelNames = labelsRaw.split(',').map(l => l.trim().toLowerCase()).filter(Boolean);
-      const matchedLabels = labelNames
-        .map(name => labelMap.get(name))
-        .filter((l): l is { id: bigint; name: string } => l !== undefined);
+      const labelNames = labelsRaw.split(',').map(l => l.trim()).filter(Boolean);
+      const matchedLabels: { id: bigint }[] = [];
+      for (const name of labelNames) {
+        const found = labelMap.get(name.toLowerCase());
+        if (found) {
+          matchedLabels.push(found);
+        } else {
+          warnings.push(`Nhãn "${name}" không tồn tại trong hệ thống — bỏ qua`);
+        }
+      }
       if (matchedLabels.length > 0) {
         await this.prisma.customerLabel.createMany({
           data: matchedLabels.map(l => ({ customerId: customer.id, labelId: l.id })),
@@ -246,5 +258,7 @@ export class ImportProcessor extends WorkerHost {
         });
       }
     }
+
+    return warnings;
   }
 }

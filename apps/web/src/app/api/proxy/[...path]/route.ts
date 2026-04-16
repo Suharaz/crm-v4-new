@@ -26,16 +26,16 @@ export async function handler(request: NextRequest, { params }: { params: Promis
     headers,
   };
 
-  // Forward body for non-GET/HEAD methods
+  // Buffer body ONCE for non-GET/HEAD — reusable across retries
+  let bodyBuffer: ArrayBuffer | string | undefined;
   if (!['GET', 'HEAD'].includes(request.method)) {
-    // Handle both JSON and FormData
     if (contentType?.includes('multipart/form-data')) {
-      // For file uploads, pass the raw body and remove Content-Type so fetch sets boundary
       delete headers['Content-Type'];
-      fetchOptions.body = await request.arrayBuffer();
+      bodyBuffer = await request.arrayBuffer();
     } else {
-      fetchOptions.body = await request.text();
+      bodyBuffer = await request.text();
     }
+    fetchOptions.body = bodyBuffer;
   }
 
   try {
@@ -70,9 +70,10 @@ export async function handler(request: NextRequest, { params }: { params: Promis
           const refreshData = await refreshRes.json();
           const newToken = refreshData.data.accessToken;
 
-          // Retry original request with new token
+          // Retry original request with new token + re-attach buffered body
           headers['Authorization'] = `Bearer ${newToken}`;
-          const retryRes = await fetch(`${API_BASE}${apiPath}${queryString}`, fetchOptions);
+          const retryOpts: RequestInit = { method: request.method, headers, body: bodyBuffer };
+          const retryRes = await fetch(`${API_BASE}${apiPath}${queryString}`, retryOpts);
           const retryData = await retryRes.json();
 
           const response = NextResponse.json(retryData, { status: retryRes.status });

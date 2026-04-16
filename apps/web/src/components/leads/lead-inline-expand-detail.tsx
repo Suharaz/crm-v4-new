@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { api } from '@/lib/api-client';
+import { toast } from 'sonner';
 import { cn, formatDate, formatVND } from '@/lib/utils';
 import { ExternalLink, Building, Loader2, MessageSquarePlus, Tags, ArrowRightLeft, CreditCard } from 'lucide-react';
 import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
@@ -129,7 +130,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
       const actRes = await api.get<{ data: ActivityRecord[] }>(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`).catch(() => ({ data: [] as ActivityRecord[] }));
       setActivities(dedupeById(actRes.data || []));
       router.refresh();
-    } catch { /* */ }
+    } catch { toast.error('Lỗi lưu ghi chú'); }
     setNoteSaving(false);
   }
 

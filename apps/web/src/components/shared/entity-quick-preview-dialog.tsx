@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { api } from '@/lib/api-client';
+import { toast } from 'sonner';
 import { formatDate } from '@/lib/utils';
 import { ExternalLink, Phone, Mail, User, Building, Tag, Calendar, Package, Loader2, MessageSquarePlus, Tags, CreditCard } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -158,7 +159,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
       const actRes = await api.get<{ data: PreviewActivity[] }>(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`).catch(() => ({ data: [] as PreviewActivity[] }));
       setActivities(actRes.data || []);
       router.refresh();
-    } catch { /* */ }
+    } catch { toast.error('Lỗi lưu ghi chú'); }
     setNoteSaving(false);
   }
 

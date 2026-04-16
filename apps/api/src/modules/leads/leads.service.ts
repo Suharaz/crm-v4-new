@@ -147,6 +147,7 @@ export class LeadsService {
       select: { entityId: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
       distinct: ['entityId'],
+      take: 200,
     });
 
     const distributedLeadIds = recentAssignments.map(a => a.entityId);
@@ -205,7 +206,7 @@ export class LeadsService {
 
   async poolZoom(limit: number, cursor?: string) {
     // Kho Zoom: ZOOM status, chưa assign
-    const take = (limit ?? 20) + 1;
+    const take = Math.min(limit ?? 20, 100) + 1;
     const leads = await this.prisma.lead.findMany({
       where: { status: 'ZOOM', deletedAt: null },
       select: LEAD_SELECT, orderBy: { id: 'desc' }, take,
@@ -217,7 +218,7 @@ export class LeadsService {
   }
 
   async poolDepartment(deptId: bigint, limit: number, cursor?: string) {
-    const take = (limit ?? 20) + 1;
+    const take = Math.min(limit ?? 20, 100) + 1;
     const leads = await this.prisma.lead.findMany({
       where: { status: 'POOL', departmentId: deptId, assignedUserId: null, deletedAt: null },
       select: LEAD_SELECT, orderBy: { id: 'desc' }, take,
@@ -229,7 +230,7 @@ export class LeadsService {
   }
 
   async poolFloating(limit: number, cursor?: string) {
-    const take = (limit ?? 20) + 1;
+    const take = Math.min(limit ?? 20, 100) + 1;
     const leads = await this.prisma.lead.findMany({
       where: { status: 'FLOATING', deletedAt: null },
       select: LEAD_SELECT, orderBy: { id: 'desc' }, take,

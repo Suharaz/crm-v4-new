@@ -14,6 +14,16 @@ const nextConfig: NextConfig = {
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
         ],
       },
+      // Prevent CDN caching of HTML to avoid stale chunk references after deploy
+      // Use has: missing _next/static matcher is not supported, so use path patterns:
+      {
+        source: '/login',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }],
+      },
+      {
+        source: '/dashboard/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }],
+      },
     ];
   },
   // Proxy API calls to NestJS backend (exclude Next.js API routes like /api/auth)

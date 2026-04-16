@@ -590,14 +590,14 @@ export class LeadsService {
       }
     }
 
-    // Only POOL, ZOOM, FLOATING can be claimed
-    if (!['POOL', 'ZOOM', 'FLOATING'].includes(lead.status)) {
-      throw new ConflictException('Chỉ claim lead ở trạng thái POOL, ZOOM hoặc FLOATING');
+    // Floating: any user can claim
+    if (lead.status !== 'POOL' && lead.status !== 'FLOATING') {
+      throw new ConflictException('Chỉ claim lead ở trạng thái POOL hoặc FLOATING');
     }
 
     // Atomic claim → auto IN_PROGRESS
     const result = await this.prisma.lead.updateMany({
-      where: { id, assignedUserId: null, deletedAt: null, status: { in: ['POOL', 'ZOOM', 'FLOATING'] } },
+      where: { id, assignedUserId: null, deletedAt: null, status: { in: ['POOL', 'FLOATING'] } },
       data: {
         assignedUserId: user.id,
         departmentId: user.departmentId,

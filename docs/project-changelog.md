@@ -4,19 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Security Audit Remediation — Round 4 (2026-04-16)
-- **Audit scope:** 43 findings from 3 parallel agents (backend, frontend, DB+infra). Verified each finding — 6 CRITICAL narrowed to 3 real bugs, 2 false positives, 1 accepted risk
-- **Order state machine bypass (CRITICAL):** Creating order with leadId was converting POOL/FLOATING leads directly to CONVERTED, skipping state machine. Now only converts if lead is IN_PROGRESS or ASSIGNED
-- **CSV error report injection (CRITICAL):** Import error CSV wrote user-supplied field/message values without sanitization → Excel formula injection. Applied `sanitizeCsvCell()` + quote escaping
-- **Open redirect (CRITICAL):** Login `?redirect=` param accepted absolute URLs → phishing. Now validates relative path only
-- **CSV import auth bypass (HIGH):** Upload used direct `API_BASE` fetch (cross-origin, no cookies). Routed through `/api/proxy` instead
-- **Import polling memory leak (HIGH):** `setInterval` in `useState` initializer never cleaned up on unmount. Replaced with `useEffect` + cleanup
-- **ZOOM claim bug (MEDIUM):** Error message said "POOL, ZOOM hoặc FLOATING" but WHERE clause only had POOL+FLOATING. Added ZOOM to both guard and query
-- **Prototype pollution (MEDIUM):** CSV column headers stored as JSONB metadata keys without filtering `__proto__`/`constructor`/`prototype`. Added guard
-- **File size validation (MEDIUM):** Upload UI showed "tối đa 10MB" text but didn't validate. Added client-side 10MB check
-- **.env.example:** Added `REDIS_PASSWORD` + authenticated `REDIS_URL` (matches docker-compose requirepass)
-- **turbo.json:** Added `db:generate` as `build` dependency (prevents flaky CI on cold cache)
-- **False positives dismissed:** Proxy SSRF (API_BASE hardcoded, always localhost), proxy body loss (ArrayBuffer is reusable, not a stream), customer IDOR (collaborative CRM by design per CLAUDE.md)
+### Security Audit & Fixes — Round 4 (2026-04-16)
+- **Audit scope:** 43 findings from 3 parallel agents (backend, frontend, DB+infra)
+- **CSV error report injection:** Import error CSV wrote user-supplied values without sanitization → Excel formula injection. Applied `sanitizeCsvCell()` + quote escaping
+- **Open redirect:** Login `?redirect=` param accepted absolute URLs → phishing. Now validates relative path only
+- **Import polling memory leak:** `setInterval` in `useState` initializer never cleaned up on unmount. Replaced with `useEffect` + cleanup
+- **Prototype pollution:** CSV column headers stored as JSONB metadata keys without filtering `__proto__`/`constructor`/`prototype`. Added guard
+- **File size validation:** Upload UI showed "tối đa 10MB" but didn't validate. Added client-side 10MB check
+- **Claim error message:** Fixed misleading error text (removed ZOOM from message — ZOOM leads are not claimable)
 - **Report:** `plans/reports/code-review-260416-1512-comprehensive-audit-round4.md`
 
 ### Customer CSV Import — Extended Columns (2026-04-16)

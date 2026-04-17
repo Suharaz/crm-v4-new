@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Labels — Missing DELETE endpoint (2026-04-17)
+- **Bug:** Settings → Nhãn: clicking delete hit 404 (`/api/proxy/labels/:id`). `LabelsController` only had `GET/POST/PATCH`.
+- **Fix:** Added `DELETE /labels/:id` → soft-deactivate (`isActive=false`) matching `lead-sources`/`payment-types` pattern. Preserves `LeadLabel`/`CustomerLabel` history; `list()` already filters `isActive:true` and invalidates `LOOKUP_LABELS` cache.
+- **Files:** `apps/api/src/modules/labels/labels.{controller,service}.ts`
+
 ### Security Hardening — Dependency Updates + IDOR Prevention (2026-04-16)
 - **file-type** 19.6.0 → 21.3.2: Fix CVE-2026-31808 (DoS via infinite loop on crafted file upload)
 - **@nestjs/core** 11.1.17 → 11.1.19: Fix CVE-2026-35515 (SSE injection) + pulls patched path-to-regexp

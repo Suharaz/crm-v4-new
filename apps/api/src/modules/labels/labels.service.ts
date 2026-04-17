@@ -34,6 +34,14 @@ export class LabelsService {
     return result;
   }
 
+  async deactivate(id: bigint) {
+    const label = await this.prisma.label.findUnique({ where: { id } });
+    if (!label) throw new NotFoundException('Không tìm thấy nhãn');
+    const result = await this.prisma.label.update({ where: { id }, data: { isActive: false } });
+    await this.cacheService.del(CACHE_KEYS.LOOKUP_LABELS);
+    return result;
+  }
+
   // Attach labels to lead
   async attachToLead(leadId: bigint, labelIds: bigint[]) {
     const data = labelIds.map((labelId) => ({ leadId, labelId }));

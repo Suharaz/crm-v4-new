@@ -77,7 +77,8 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
       body.role = form.role;
       body.status = form.status;
       if (form.departmentId) body.departmentId = form.departmentId;
-      if (form.teamId) body.teamId = form.teamId;
+      // teamId: always send (empty string triggers disconnect in backend)
+      body.teamId = form.teamId;
       if (form.employeeLevelId) body.employeeLevelId = form.employeeLevelId;
       await execute('patch', `/users/${user.id}`, body);
     } else {
@@ -184,9 +185,13 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
 
         {teams.length > 0 && (
           <FormField label="Team">
-            <Select value={form.teamId} onValueChange={v => update('teamId', v)}>
+            <Select
+              value={form.teamId || '__none__'}
+              onValueChange={v => update('teamId', v === '__none__' ? '' : v)}
+            >
               <SelectTrigger><SelectValue placeholder="Chọn team" /></SelectTrigger>
               <SelectContent>
+                <SelectItem value="__none__">— Không thuộc team —</SelectItem>
                 {teams.map(t => (
                   <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                 ))}

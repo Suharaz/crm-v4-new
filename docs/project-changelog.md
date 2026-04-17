@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Teams — Unable to delete team (2026-04-17)
 - **Bug:** Settings → Team: xóa team luôn trả 409 "Không thể xóa team đang có thành viên". Leader được auto-attach khi tạo team (`teamId=team.id, isLeader=true`) nên count members luôn ≥ 1, kể cả khi UI hiển thị 0 sales.
-- **Fix (Approach 2 — strict, no orphan):** Giữ logic chặn xóa khi còn bất kỳ user nào (bao gồm leader), nhưng message cụ thể hơn để hướng dẫn admin. Thêm option "— Không thuộc team —" trong user-form để admin chủ động detach user khỏi team trước khi xóa. Backend `users.service` đã support `teamId=''` → `{ disconnect: true }`.
+- **Fix v2 (cascade auto-detach):** Xóa team = transaction atomic: (1) `updateMany` tất cả members (`teamId=null, isLeader=false`), (2) soft-delete team. UX 1-click, không cần admin detach thủ công. Giữ option "— Không thuộc team —" trong user-form để admin vẫn có thể detach riêng khi cần.
+- **Fix v1 (deprecated, Approach 2 strict):** Trước đó chặn xóa nếu còn member + yêu cầu admin detach từng người. User feedback: quá cồng kềnh cho trường hợp xóa team không còn sử dụng.
 - **Files:** `apps/api/src/modules/teams/teams.service.ts`, `apps/web/src/components/users/user-form.tsx`
 
 ### Labels — Missing DELETE endpoint (2026-04-17)

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
@@ -106,17 +106,18 @@ export class TeamsService {
 
   async delete(id: bigint) {
     await this.findById(id);
-    const memberCount = await this.prisma.user.count({
-      where: { teamId: id, deletedAt: null },
-    });
-    if (memberCount > 0) {
-      throw new ConflictException(
-        `Team còn ${memberCount} thành viên (bao gồm leader). Vui lòng chuyển họ sang team khác hoặc bỏ team trong trang quản lý nhân viên trước khi xóa.`,
-      );
-    }
-    return this.prisma.team.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
+
+    // Cascade detach: gỡ tất cả members (bao gồm leader) khỏi team rồi soft-delete
+    // Transaction đảm bảo atomic: không để team bị xóa mà members vẫn giữ teamId cũ
+    await this.prisma.$transaction([
+      this.prisma.user.updateMany({
+        where: { teamId: id },
+        data: { teamId: null, isLeader: false },
+      }),
+      this.prisma.team.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      }),
+    ]);
   }
 }

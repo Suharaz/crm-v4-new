@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { LabelsService } from './labels.service';
 import { Roles } from '../auth/decorators/roles-required.decorator';
@@ -28,5 +28,12 @@ export class LabelsController {
   ) {
     const data = await this.service.update(id, body);
     return { data };
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async deactivate(@Param('id', ParseBigIntPipe) id: bigint) {
+    await this.service.deactivate(id);
+    return { data: { message: 'Đã vô hiệu hóa nhãn' } };
   }
 }

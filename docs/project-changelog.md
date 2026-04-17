@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Labels — Missing DELETE endpoint (2026-04-17)
+- **Bug:** Settings → Nhãn: clicking delete hit 404 (`/api/proxy/labels/:id`). `LabelsController` only had `GET/POST/PATCH`.
+- **Fix:** Added `DELETE /labels/:id` → soft-deactivate (`isActive=false`) matching `lead-sources`/`payment-types` pattern. Preserves `LeadLabel`/`CustomerLabel` history; `list()` already filters `isActive:true` and invalidates `LOOKUP_LABELS` cache.
+- **Files:** `apps/api/src/modules/labels/labels.{controller,service}.ts`
+
 ### Comprehensive Security & Performance Audit — Round 5 (2026-04-16)
 - **Audit scope:** 94 raw findings from 4 parallel agents (backend security, backend perf, frontend, DB+infra). 12 eliminated as by-design/accepted risks. 82 genuine issues fixed.
 - **Branch:** `fix/audit-round5-260416`

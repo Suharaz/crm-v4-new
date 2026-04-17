@@ -119,3 +119,11 @@ CREATE INDEX IF NOT EXISTS idx_orders_status_date
 -- PM4: payments composite order+status (conversion trigger, validation)
 CREATE INDEX IF NOT EXISTS idx_payments_order_status
   ON payments(order_id, status);
+
+-- ══════════════════════════════════════════════════════════════════════════
+-- TEAMS: partial unique on leader_id (2026-04-17)
+-- Cho phép reuse leader khi team cũ đã bị soft-delete
+-- Thay thế @unique (full unique) bị bỏ khỏi schema.prisma
+-- ══════════════════════════════════════════════════════════════════════════
+CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_leader_active
+  ON teams(leader_id) WHERE deleted_at IS NULL;

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Teams — Partial unique on leader_id (2026-04-17)
+- **Rationale:** Full `@unique` trên `Team.leaderId` chặn tạo team mới nếu leader từng là leader của team đã soft-delete (ghost row blocking). Không khớp với soft-delete pattern toàn project.
+- **DB change:** Swap `teams_leader_id_key UNIQUE (leader_id)` → `idx_teams_leader_active UNIQUE (leader_id) WHERE deleted_at IS NULL`. Applied via manual SQL; raw-indexes.sql updated cho tham chiếu tương lai.
+- **Schema change:** Bỏ `@unique` khỏi `Team.leaderId`; đổi `User.leadingTeam Team?` → `leadingTeams Team[]` (Prisma yêu cầu khi relation không còn unique side). Nghiệp vụ vẫn là "1 leader cho 1 active team" — enforce bởi partial unique + `create()` service.
+- **Files:** `packages/database/prisma/schema.prisma`, `packages/database/prisma/raw-indexes.sql`
+
 ### Teams — Unable to delete team (2026-04-17)
 - **Bug:** Settings → Team: xóa team luôn trả 409 "Không thể xóa team đang có thành viên". Leader được auto-attach khi tạo team (`teamId=team.id, isLeader=true`) nên count members luôn ≥ 1, kể cả khi UI hiển thị 0 sales.
 - **Fix v2 (cascade auto-detach):** Xóa team = transaction atomic: (1) `updateMany` tất cả members (`teamId=null, isLeader=false`), (2) soft-delete team. UX 1-click, không cần admin detach thủ công. Giữ option "— Không thuộc team —" trong user-form để admin vẫn có thể detach riêng khi cần.

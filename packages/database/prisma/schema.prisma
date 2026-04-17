@@ -124,7 +124,10 @@ model User {
   department    Department?    @relation(fields: [departmentId], references: [id])
   team          Team?          @relation("TeamMembers", fields: [teamId], references: [id])
   employeeLevel EmployeeLevel? @relation(fields: [employeeLevelId], references: [id])
-  leadingTeam   Team?          @relation("TeamLeader")
+  // leadingTeams: Type-level many (Prisma cần khi bỏ @unique để support partial unique trên leader_id).
+  // Về mặt nghiệp vụ: 1 user chỉ lead 1 team active tại 1 thời điểm — enforced bởi partial unique index
+  // `idx_teams_leader_active` trong raw-indexes.sql (WHERE deleted_at IS NULL).
+  leadingTeams  Team[]         @relation("TeamLeader")
   managedDepts  ManagerDepartment[] @relation("ManagedDepartments")
 
   // Leads & Customers assigned to user
@@ -210,7 +213,9 @@ model Team {
   id           BigInt    @id @default(autoincrement())
   name         String
   departmentId BigInt    @map("department_id")
-  leaderId     BigInt    @unique @map("leader_id")
+  // leaderId: partial unique index (WHERE deleted_at IS NULL) trong raw-indexes.sql
+  // Cho phép reuse leader sau khi team cũ đã bị soft-delete
+  leaderId     BigInt    @map("leader_id")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")

@@ -619,7 +619,9 @@ model Document {
 
 model CallLog {
   id                BigInt      @id @default(autoincrement())
-  externalId        String      @unique @map("external_id")
+  // externalId: partial unique (WHERE deleted_at IS NULL) trong raw-indexes.sql
+  // Cho phép ingest lại call_log nếu row cũ đã soft-delete
+  externalId        String      @map("external_id")
   phoneNumber       String      @map("phone_number")
   callType          CallType    @map("call_type")
   callTime          DateTime    @map("call_time")

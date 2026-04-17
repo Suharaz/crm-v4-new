@@ -136,6 +136,59 @@ apps/web/src/
 - Partial indexes: `WHERE deleted_at IS NULL`
 - Prisma extension auto-filters `deletedAt: null`
 
+### Unique Constraints on Soft-Delete Tables
+
+**Problem:** `@unique` tạo full unique index trên toàn bảng, kể cả row đã soft-delete. Khi tạo row mới với value đã tồn tại (ở row đã xóa) → ghost-row blocking → lỗi UNIQUE violation.
+
+**Ba pattern được dùng trong project (chọn 1):**
+
+**Pattern A — Partial unique trong raw-indexes.sql (preferred)**
+
+Phù hợp khi trường unique có back-relation one-to-one hoặc đơn thuần là unique business-level.
+
+```prisma
+// schema.prisma — BỎ @unique
+model Team {
+  leaderId  BigInt    @map("leader_id")  // không @unique
+  deletedAt DateTime? @map("deleted_at")
+}
+```
+
+```sql
+-- raw-indexes.sql
+CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_leader_active
+  ON teams(leader_id) WHERE deleted_at IS NULL;
+```
+
+**Lưu ý Prisma relation one-to-one:** Nếu bỏ `@unique` mà field có back-relation `Xxx?`, Prisma sẽ fail validation (P1012). Đổi back-relation thành `Xxx[]` (many) — business rule đơn lẻ vẫn enforce ở partial unique + service logic.
+
+**Pattern B — Composite `@@unique([field, deletedAt])`**
+
+Phù hợp khi không muốn đụng raw SQL và chấp nhận constraint chặt hơn một chút.
+
+```prisma
+model User {
+  email     String
+  deletedAt DateTime?
+  @@unique([email, deletedAt])  // 2 active users không được cùng email; 2 soft-deleted cùng email + cùng timestamp sẽ fail
+}
+```
+
+Rủi ro: 2 row soft-delete trong cùng millisecond sẽ conflict (rare but possible).
+
+**Pattern C — Dùng `isActive` flag, không soft-delete**
+
+Phù hợp với lookup tables (LeadSource, PaymentType, BankAccount, Label...). Không có `deletedAt` → không có ghost-row → tạo mới cùng tên vẫn OK.
+
+```prisma
+model LeadSource {
+  name     String   // không unique, không soft-delete
+  isActive Boolean  @default(true)
+}
+```
+
+**Khi code review, kiểm tra:** mọi `@unique` trên model có `deletedAt` cần 1 trong 3 pattern trên. Không để `@unique` đơn thuần.
+
 ### Indexes
 
 - Prisma `@@index` for FK and common queries

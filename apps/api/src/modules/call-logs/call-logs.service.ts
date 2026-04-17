@@ -50,9 +50,10 @@ export class CallLogsService {
     externalId: string; phoneNumber: string; callType: string;
     callTime: string; duration?: number; content?: string;
   }) {
-    // Dedup by external_id
-    const existing = await this.prisma.callLog.findUnique({
-      where: { externalId: data.externalId },
+    // Dedup by external_id (chỉ check row active — cho phép re-ingest nếu row cũ đã soft-delete)
+    const existing = await this.prisma.callLog.findFirst({
+      where: { externalId: data.externalId, deletedAt: null },
+      select: { id: true },
     });
     if (existing) throw new ConflictException('Cuộc gọi đã tồn tại (trùng external_id)');
 

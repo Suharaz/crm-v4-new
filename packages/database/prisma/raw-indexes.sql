@@ -127,3 +127,10 @@ CREATE INDEX IF NOT EXISTS idx_payments_order_status
 -- ══════════════════════════════════════════════════════════════════════════
 CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_leader_active
   ON teams(leader_id) WHERE deleted_at IS NULL;
+
+-- ══════════════════════════════════════════════════════════════════════════
+-- CALL_LOGS: partial unique on external_id (2026-04-17)
+-- Cho phép ingest lại nếu row cũ đã soft-delete (vendor retry)
+-- ══════════════════════════════════════════════════════════════════════════
+CREATE UNIQUE INDEX IF NOT EXISTS idx_call_logs_external_active
+  ON call_logs(external_id) WHERE deleted_at IS NULL;

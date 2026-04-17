@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### CallLog — Partial unique on external_id + docs pattern (2026-04-17)
+- **Audit result:** Chỉ còn `CallLog.externalId` bị ghost-row risk (3 soft-delete models có `@unique`: User đã có `@@unique([email, deletedAt])` + partial, Team vừa fix, CallLog còn lại).
+- **DB change:** Swap `call_logs_external_id_key` → `idx_call_logs_external_active ... WHERE deleted_at IS NULL`. Cho phép re-ingest nếu row cũ đã soft-delete.
+- **Code change:** `call-logs.service.ts` ingest đổi `findUnique` → `findFirst({ deletedAt: null })` vì bỏ `@unique` nên Prisma không còn cho dùng làm unique lookup.
+- **Docs:** Thêm section *"Unique Constraints on Soft-Delete Tables"* trong `code-standards.md`: 3 pattern (A-partial unique, B-composite `@@unique`, C-isActive flag) + decision guide cho reviewer.
+- **Files:** `packages/database/prisma/schema.prisma`, `packages/database/prisma/raw-indexes.sql`, `apps/api/src/modules/call-logs/call-logs.service.ts`, `docs/code-standards.md`
+
 ### Teams — Partial unique on leader_id (2026-04-17)
 - **Rationale:** Full `@unique` trên `Team.leaderId` chặn tạo team mới nếu leader từng là leader của team đã soft-delete (ghost row blocking). Không khớp với soft-delete pattern toàn project.
 - **DB change:** Swap `teams_leader_id_key UNIQUE (leader_id)` → `idx_teams_leader_active UNIQUE (leader_id) WHERE deleted_at IS NULL`. Applied via manual SQL; raw-indexes.sql updated cho tham chiếu tương lai.

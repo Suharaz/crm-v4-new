@@ -110,7 +110,9 @@ export class TeamsService {
       where: { teamId: id, deletedAt: null },
     });
     if (memberCount > 0) {
-      throw new ConflictException('Không thể xóa team đang có thành viên');
+      throw new ConflictException(
+        `Team còn ${memberCount} thành viên (bao gồm leader). Vui lòng chuyển họ sang team khác hoặc bỏ team trong trang quản lý nhân viên trước khi xóa.`,
+      );
     }
     return this.prisma.team.update({
       where: { id },

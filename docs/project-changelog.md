@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Teams — Unable to delete team (2026-04-17)
+- **Bug:** Settings → Team: xóa team luôn trả 409 "Không thể xóa team đang có thành viên". Leader được auto-attach khi tạo team (`teamId=team.id, isLeader=true`) nên count members luôn ≥ 1, kể cả khi UI hiển thị 0 sales.
+- **Fix (Approach 2 — strict, no orphan):** Giữ logic chặn xóa khi còn bất kỳ user nào (bao gồm leader), nhưng message cụ thể hơn để hướng dẫn admin. Thêm option "— Không thuộc team —" trong user-form để admin chủ động detach user khỏi team trước khi xóa. Backend `users.service` đã support `teamId=''` → `{ disconnect: true }`.
+- **Files:** `apps/api/src/modules/teams/teams.service.ts`, `apps/web/src/components/users/user-form.tsx`
+
 ### Labels — Missing DELETE endpoint (2026-04-17)
 - **Bug:** Settings → Nhãn: clicking delete hit 404 (`/api/proxy/labels/:id`). `LabelsController` only had `GET/POST/PATCH`.
 - **Fix:** Added `DELETE /labels/:id` → soft-deactivate (`isActive=false`) matching `lead-sources`/`payment-types` pattern. Preserves `LeadLabel`/`CustomerLabel` history; `list()` already filters `isActive:true` and invalidates `LOOKUP_LABELS` cache.

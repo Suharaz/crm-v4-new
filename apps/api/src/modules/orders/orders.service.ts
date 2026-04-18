@@ -219,18 +219,15 @@ export class OrdersService {
   }
 
   async softDelete(id: bigint) {
-    const order = await this.findById(id);
-    if (order.status !== 'PENDING') {
-      throw new ConflictException('Chỉ xóa đơn hàng PENDING');
-    }
+    await this.findById(id);
     return this.prisma.order.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
-  /** Bulk soft-delete — chỉ xóa đơn PENDING, skip còn lại. SA-only ở controller. */
+  /** Bulk soft-delete — SA override mọi status. `skipped` = đã soft-delete trước đó. */
   async bulkSoftDelete(ids: bigint[]): Promise<{ deleted: number; skipped: number }> {
     if (ids.length === 0) return { deleted: 0, skipped: 0 };
     const result = await this.prisma.order.updateMany({
-      where: { id: { in: ids }, deletedAt: null, status: 'PENDING' },
+      where: { id: { in: ids }, deletedAt: null },
       data: { deletedAt: new Date() },
     });
     return { deleted: result.count, skipped: ids.length - result.count };

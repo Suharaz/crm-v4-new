@@ -84,7 +84,6 @@ export function OrderListWithInlineExpand({ orders, enableBulkDelete = false }: 
           ids={sel.selectedIds}
           endpoint="/orders/bulk-delete"
           entityLabel="đơn hàng"
-          hint="Chỉ đơn PENDING sẽ bị xóa — đơn đã xác nhận sẽ bỏ qua."
           onClear={sel.clear}
         />
       )}

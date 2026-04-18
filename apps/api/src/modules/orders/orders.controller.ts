@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode, BadRequestException } from '@nestjs/common';
 import { IsOptional, IsString, IsEnum } from 'class-validator';
 import { UserRole, OrderStatus } from '@prisma/client';
 import { OrdersService } from './orders.service';
@@ -104,6 +104,16 @@ export class OrdersController {
     @Body() body: { status: OrderStatus },
   ) {
     return { data: await this.service.updateStatus(id, body.status) };
+  }
+
+  @Post('bulk-delete')
+  @HttpCode(200)
+  @Roles(UserRole.SUPER_ADMIN)
+  async bulkDelete(@Body() body: { ids: string[] }) {
+    if (!body.ids?.length) throw new BadRequestException('ids là bắt buộc');
+    if (body.ids.length > 100) throw new BadRequestException('Tối đa 100 đơn hàng mỗi lần');
+    const result = await this.service.bulkSoftDelete(body.ids.map(id => BigInt(id)));
+    return { data: result };
   }
 
   @Delete(':id')

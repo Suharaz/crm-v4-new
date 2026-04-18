@@ -1,4 +1,4 @@
-import { serverFetch } from '@/lib/auth';
+import { serverFetch, getCurrentUser } from '@/lib/auth';
 import type { UserRecord, ApiListResponse } from '@/types/entities';
 import { UserTable } from '@/components/users/user-table';
 import { PaginationControls } from '@/components/shared/pagination-controls';
@@ -12,6 +12,9 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
   const qp = new URLSearchParams(params);
   qp.delete('cursor');
   const query = qp.toString();
+
+  const currentUser = await getCurrentUser();
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
 
   let users: UserRecord[] = [];
   let meta: ApiListResponse<UserRecord>['meta'] = {};
@@ -36,7 +39,11 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
         </Link>
       </div>
       <div className="mt-4">
-        <UserTable users={users} />
+        <UserTable
+          users={users}
+          enableBulkDelete={isSuperAdmin}
+          currentUserId={currentUser ? String(currentUser.id) : undefined}
+        />
       </div>
       <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} />
     </div>

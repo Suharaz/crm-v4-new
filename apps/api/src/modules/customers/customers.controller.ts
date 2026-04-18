@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode, BadRequestException } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -74,6 +74,16 @@ export class CustomersController {
   async reactivate(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
     const data = await this.customersService.reactivate(id, user);
     return { data };
+  }
+
+  @Post('bulk-delete')
+  @HttpCode(200)
+  @Roles(UserRole.SUPER_ADMIN)
+  async bulkDelete(@Body() body: { ids: string[] }) {
+    if (!body.ids?.length) throw new BadRequestException('ids là bắt buộc');
+    if (body.ids.length > 100) throw new BadRequestException('Tối đa 100 khách hàng mỗi lần');
+    const result = await this.customersService.bulkSoftDelete(body.ids.map(id => BigInt(id)));
+    return { data: result };
   }
 
   @Delete(':id')

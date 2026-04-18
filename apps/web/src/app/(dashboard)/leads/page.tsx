@@ -16,6 +16,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
 
   const currentUser = await getCurrentUser();
   const isManager = ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
 
   let data: LeadRecord[] = [];
   let meta: ApiListResponse<LeadRecord>['meta'] = {};
@@ -62,7 +63,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         />
       </Suspense>
 
-      <LeadListWithViewToggle leads={data} allLabels={labels} />
+      <LeadListWithViewToggle leads={data} allLabels={labels} enableBulkDelete={isSuperAdmin} />
       <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} />
     </div>
   );

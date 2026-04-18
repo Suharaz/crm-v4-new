@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode, BadRequestException } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -65,5 +65,21 @@ export class UsersController {
     @CurrentUser() currentUser: { id: bigint },
   ) {
     return this.usersService.deactivate(id, currentUser.id);
+  }
+
+  @Post('bulk-delete')
+  @HttpCode(200)
+  @Roles(UserRole.SUPER_ADMIN)
+  async bulkDelete(
+    @Body() body: { ids: string[] },
+    @CurrentUser() currentUser: { id: bigint },
+  ) {
+    if (!body.ids?.length) throw new BadRequestException('ids là bắt buộc');
+    if (body.ids.length > 100) throw new BadRequestException('Tối đa 100 người dùng mỗi lần');
+    const result = await this.usersService.bulkDeactivate(
+      body.ids.map(id => BigInt(id)),
+      currentUser.id,
+    );
+    return { data: result };
   }
 }

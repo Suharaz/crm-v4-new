@@ -292,6 +292,16 @@ export class CustomersService {
     });
   }
 
+  /** Bulk soft-delete. SA-only enforced at controller. */
+  async bulkSoftDelete(ids: bigint[]): Promise<{ deleted: number; skipped: number }> {
+    if (ids.length === 0) return { deleted: 0, skipped: 0 };
+    const result = await this.prisma.customer.updateMany({
+      where: { id: { in: ids }, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
+    return { deleted: result.count, skipped: ids.length - result.count };
+  }
+
   private async checkTransferPermission(customer: Record<string, unknown>, user: CurrentUser) {
     if (user.role === UserRole.SUPER_ADMIN) return;
     if (customer.assignedUserId === user.id) return;

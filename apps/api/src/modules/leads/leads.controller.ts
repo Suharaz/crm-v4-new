@@ -170,6 +170,16 @@ export class LeadsController {
     return { data };
   }
 
+  @Post('bulk-delete')
+  @HttpCode(200)
+  @Roles(UserRole.SUPER_ADMIN)
+  async bulkDelete(@Body() body: { ids: string[] }) {
+    if (!body.ids?.length) throw new BadRequestException('ids là bắt buộc');
+    if (body.ids.length > 100) throw new BadRequestException('Tối đa 100 lead mỗi lần');
+    const result = await this.leadsService.bulkSoftDelete(body.ids.map(id => BigInt(id)));
+    return { data: result };
+  }
+
   @Delete(':id')
   @Roles(UserRole.SUPER_ADMIN)
   async delete(@Param('id', ParseBigIntPipe) id: bigint) {

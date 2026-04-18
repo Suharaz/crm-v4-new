@@ -14,10 +14,12 @@ type ViewMode = 'table' | 'kanban';
 interface Props {
   leads: LeadRecord[];
   allLabels?: LabelEntity[];
+  /** SA-only bulk delete toggle — caller passes result of role check. */
+  enableBulkDelete?: boolean;
 }
 
 /** Leads list with toggle between table and kanban views. Persists choice in localStorage. */
-export function LeadListWithViewToggle({ leads, allLabels }: Props) {
+export function LeadListWithViewToggle({ leads, allLabels, enableBulkDelete = false }: Props) {
   const [view, setView] = useState<ViewMode>('table');
   const [previewId, setPreviewId] = useState<string | null>(null);
 
@@ -57,7 +59,7 @@ export function LeadListWithViewToggle({ leads, allLabels }: Props) {
       {/* View content — child components use stricter local Lead interfaces; cast is safe as shapes are compatible */}
       {view === 'table' ? (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        <LeadTable leads={leads as any} />
+        <LeadTable leads={leads as any} enableBulkDelete={enableBulkDelete} />
       ) : (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <LeadKanbanViewByLabel leads={leads as any} allLabels={allLabels} onLeadClick={setPreviewId} />

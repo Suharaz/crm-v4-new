@@ -1,4 +1,4 @@
-import { serverFetch } from '@/lib/auth';
+import { serverFetch, getCurrentUser } from '@/lib/auth';
 import type { OrderRecord, NamedEntity, ApiListResponse } from '@/types/entities';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import { CsvExportButton } from '@/components/shared/csv-export-button';
@@ -11,6 +11,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const qp = new URLSearchParams(params);
   qp.delete('cursor');
   const query = qp.toString();
+
+  const currentUser = await getCurrentUser();
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
 
   let data: OrderRecord[] = [];
   let meta: ApiListResponse<OrderRecord>['meta'] = {};
@@ -55,7 +58,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       </div>
 
       <div className="mt-4">
-        <OrderListWithInlineExpand orders={data} />
+        <OrderListWithInlineExpand orders={data} enableBulkDelete={isSuperAdmin} />
       </div>
       <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} />
     </div>

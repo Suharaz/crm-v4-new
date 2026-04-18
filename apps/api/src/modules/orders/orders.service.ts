@@ -226,6 +226,16 @@ export class OrdersService {
     return this.prisma.order.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
+  /** Bulk soft-delete — chỉ xóa đơn PENDING, skip còn lại. SA-only ở controller. */
+  async bulkSoftDelete(ids: bigint[]): Promise<{ deleted: number; skipped: number }> {
+    if (ids.length === 0) return { deleted: 0, skipped: 0 };
+    const result = await this.prisma.order.updateMany({
+      where: { id: { in: ids }, deletedAt: null, status: 'PENDING' },
+      data: { deletedAt: new Date() },
+    });
+    return { deleted: result.count, skipped: ids.length - result.count };
+  }
+
   private async triggerLeadInProgress(leadId: bigint, userId: bigint) {
     const lead = await this.prisma.lead.findFirst({
       where: { id: leadId, status: 'ASSIGNED', deletedAt: null },

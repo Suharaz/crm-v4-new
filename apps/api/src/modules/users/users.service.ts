@@ -197,4 +197,29 @@ export class UsersService {
 
     return { message: 'Đã vô hiệu hóa người dùng' };
   }
+
+  /**
+   * Bulk deactivate — loop `deactivate()` để giữ cascade (leads/customers về dept pool, refresh token revoke).
+   * Skip nếu id là chính performedBy hoặc user đã soft-delete.
+   */
+  async bulkDeactivate(
+    ids: bigint[],
+    performedBy: bigint,
+  ): Promise<{ deleted: number; skipped: number }> {
+    let deleted = 0;
+    let skipped = 0;
+    for (const id of ids) {
+      if (id === performedBy) {
+        skipped++;
+        continue;
+      }
+      try {
+        await this.deactivate(id, performedBy);
+        deleted++;
+      } catch {
+        skipped++;
+      }
+    }
+    return { deleted, skipped };
+  }
 }

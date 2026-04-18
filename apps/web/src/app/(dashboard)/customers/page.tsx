@@ -17,6 +17,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
 
   const currentUser = await getCurrentUser();
   const isManager = ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
 
   let data: CustomerRecord[] = [];
   let meta: ApiListResponse<CustomerRecord>['meta'] = {};
@@ -60,7 +61,10 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
       </div>
 
       <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
-        <CustomerTableWithPreview customers={data as unknown as Parameters<typeof CustomerTableWithPreview>[0]['customers']} />
+        <CustomerTableWithPreview
+          customers={data as unknown as Parameters<typeof CustomerTableWithPreview>[0]['customers']}
+          enableBulkDelete={isSuperAdmin}
+        />
       </div>
       <PaginationControls total={meta?.total} page={meta?.page} limit={meta?.limit} totalPages={meta?.totalPages} />
     </div>

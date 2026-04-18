@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Bulk Delete — Orders / Customers / Leads / Users (2026-04-18)
+- **Feature:** SA-only bulk soft-delete với checkbox cho 4 entity. Cap 100/lần. Bar fixed-bottom hiện khi có item được chọn.
+- **Backend (8 file):**
+  - `POST /leads/bulk-delete`, `/customers/bulk-delete`, `/orders/bulk-delete`, `/users/bulk-delete` — tất cả `@Roles(SUPER_ADMIN)`.
+  - Services: `bulkSoftDelete(ids)` dùng `updateMany` 1-shot cho leads/customers. Orders filter `status=PENDING` (skip đơn đã xác nhận). Users loop `deactivate()` để giữ cascade (leads/customers về dept pool + refresh token revoke).
+  - Response: `{ deleted: number; skipped: number }` — skipped = đã xóa trước / không đủ điều kiện / self.
+- **Frontend (6 file mới/sửa):**
+  - `hooks/use-bulk-selection.ts` — reusable Set-based selection (toggleOne/toggleAll/clear + indeterminate state).
+  - `components/shared/bulk-delete-bar.tsx` — fixed-bottom floating bar với confirm dialog + toast. Dùng `api.post` + `router.refresh`.
+  - 4 table wired: `lead-table.tsx`, `customer-table-with-preview.tsx`, `order-list-with-inline-expand.tsx`, `user-table.tsx` — nhận prop `enableBulkDelete`.
+  - 4 page truyền `isSuperAdmin = currentUser?.role === 'SUPER_ADMIN'`.
+- **UX decisions:** deactivate users (không hard delete — giữ audit), cap 100, Y/N confirm đơn giản, có nút "Bỏ chọn", orders hint "chỉ PENDING sẽ xóa", users skip self + row đã INACTIVE.
+- **Files:** leads/customers/orders/users × {controller, service}; `apps/web/src/hooks/use-bulk-selection.ts`, `apps/web/src/components/shared/bulk-delete-bar.tsx`, 4 table, 4 page.
+
 ### CallLog — Partial unique on external_id + docs pattern (2026-04-17)
 - **Audit result:** Chỉ còn `CallLog.externalId` bị ghost-row risk (3 soft-delete models có `@unique`: User đã có `@@unique([email, deletedAt])` + partial, Team vừa fix, CallLog còn lại).
 - **DB change:** Swap `call_logs_external_id_key` → `idx_call_logs_external_active ... WHERE deleted_at IS NULL`. Cho phép re-ingest nếu row cũ đã soft-delete.

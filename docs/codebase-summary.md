@@ -1,62 +1,214 @@
 # Codebase Summary
 
 > Auto-updated document. Reflects current state of implementation.
+> Last verified: 2026-04-17
 
-## Status: Pre-Implementation
+## Status: Shipped & Hardened
 
-Codebase chưa có code. Chỉ có plans và docs.
+23/23 phase đã đóng. Đang ở giai đoạn maintenance: security round 2 (2026-04-13) + dashboard v2 + soft-delete unique pattern (2026-04-17). Không còn phase mở trong roadmap.
+
+## Scale Snapshot
+
+| Metric | Value |
+|--------|-------|
+| Backend modules | **36** (NestJS) |
+| Backend files (.ts) | 154 |
+| Backend LOC | ~11.4K |
+| Frontend routes | **31** pages |
+| Frontend files (.ts/.tsx) | 145 |
+| Frontend LOC | ~15.8K |
+| DB tables | **31** (schema 841 dòng Prisma) |
+| Enums | 14 |
+| Total LOC | ~27.2K |
 
 ## Structure
 
 ```
 crm-v4/
 ├── apps/
-│   ├── api/                    # NestJS 11 — chưa tạo
-│   └── web/                    # Next.js 16 — chưa tạo
+│   ├── api/                    NestJS 11 — :3010, prefix /api/v1
+│   │   └── src/modules/        36 module (xem bảng dưới)
+│   └── web/                    Next.js 16 App Router — :3011
+│       └── src/
+│           ├── app/
+│           │   ├── (auth)/     /login
+│           │   ├── (dashboard)/ 30 page có sidebar
+│           │   └── api/proxy/* BFF proxy → NestJS (cookie → Bearer)
+│           ├── components/     16 domain folder
+│           ├── lib/            api-client.ts, auth.ts, utils.ts, zod schemas
+│           ├── hooks/          use-form-action.ts
+│           ├── providers/      auth-provider.tsx
+│           └── middleware.ts   Auth redirect (Edge-side JWT exp check)
 ├── packages/
-│   ├── database/               # Prisma — chưa tạo
-│   ├── types/                  # Shared types — chưa tạo
-│   └── utils/                  # Utilities — chưa tạo
-├── docs/                       # Documentation ✅
-├── plans/                      # Implementation plans ✅
-├── CLAUDE.md                   # Project instructions ✅
-└── (package.json, turbo.json, etc. — chưa tạo)
+│   ├── database/               Prisma 6 (schema.prisma, migrations, raw-indexes.sql, seed)
+│   ├── types/                  DTO + enums shared giữa BE/FE
+│   └── utils/                  Phone normalize, CSV sanitize, formatters
+├── docker-compose.yml          PostgreSQL 16 + Redis 7
+├── docker-compose.prod.yml     Production variant
+├── nginx/                      Reverse proxy config
+├── ecosystem.config.cjs        PM2 (aaPanel deployment)
+├── scripts/                    Deploy, backup, migration helpers
+├── tests/                      E2E + API + unit
+├── uploads/                    File upload dest (local FS)
+├── docs/                       Documentation ✅
+├── plans/                      Historical plans + reports
+└── turbo.json, pnpm-workspace.yaml
 ```
 
-## Implementation Progress
+## Backend Modules (36)
 
-| Phase | Name | Status | Progress |
-|-------|------|--------|----------|
-| 01 | Monorepo Setup | Pending | 0% |
-| 02 | Database Schema | Pending | 0% |
-| 03 | Auth & User Management | Pending | 0% |
-| 04 | Core CRM: Leads & Customers | Pending | 0% |
-| 05 | Products, Orders & Payments | Pending | 0% |
-| 06 | Activity Timeline & Call Integration | Pending | 0% |
-| 07 | Data Import & Third-Party API | Pending | 0% |
-| 08 | Frontend Layout & Auth UI | Pending | 0% |
-| 09 | Frontend Leads & Customers | Pending | 0% |
-| 10 | Frontend Orders, Payments & Settings | Pending | 0% |
-| 11 | Frontend Analytics Dashboard | Pending | 0% |
-| 12 | AI Lead Distribution | Pending | 0% |
-| 13 | Tasks, Transfer & Advanced Features | Pending | 0% |
-| 14 | Testing & Deployment | Pending | 0% |
+### Auth & User (5)
+| Module | Controller prefix | Vai trò |
+|--------|-------------------|---------|
+| `auth` | `/auth` | Login, refresh, logout, /me |
+| `users` | `/users` | CRUD user, self-profile update |
+| `departments` | `/departments` | CRUD phòng ban |
+| `teams` | `/teams` | CRUD team (với cascade detach members) |
+| `employee-levels` | `/employee-levels` | Cấp bậc + maxLeads cap |
 
-## Key Files (to be created)
+### CRM Core (5)
+| Module | Controller prefix | Vai trò |
+|--------|-------------------|---------|
+| `leads` | `/leads` | Lead CRUD + claim/transfer/recall/convert + 3 kho (new, zoom, dept, floating) |
+| `customers` | `/customers` | Customer CRUD + claim/transfer/reactivate + labels + AI analyze |
+| `lead-sources` | `/lead-sources` | Lookup + skipPool flag |
+| `labels` | `/labels` | Lookup nhãn + color + category |
+| `activities` | `/leads|customers/:id/activities` | Timeline: note/call/status/assignment |
 
-### Backend
-- `apps/api/src/main.ts` — NestJS entry point
-- `apps/api/src/app.module.ts` — Root module
-- `apps/api/src/common/` — Guards, interceptors, filters, pipes
-- `apps/api/src/modules/` — Feature modules
+### Commerce (8)
+| Module | Controller prefix | Vai trò |
+|--------|-------------------|---------|
+| `products` | `/products` | Product CRUD |
+| `product-categories` | `/product-categories` | Lookup danh mục |
+| `product-groups` | `/product-groups` | Lookup nhóm (Online/Tool/Offline) |
+| `order-formats` | `/order-formats` | Lookup hình thức (Zoom Live, Replay...) |
+| `orders` | `/orders` | Order CRUD + status transition |
+| `payments` | `/payments` | Payment tạo/verify/reject + CSV import/export |
+| `payment-types` | `/payment-types` | Lookup loại thanh toán |
+| `payment-installments` | `/payment-installments` | Lookup CK lần 1/2/Full |
 
-### Frontend
-- `apps/web/src/app/layout.tsx` — Root layout
-- `apps/web/src/middleware.ts` — Auth middleware
-- `apps/web/src/lib/api-client.ts` — API client
-- `apps/web/src/components/` — UI components
+### Banking & Verification (3)
+| Module | Controller prefix | Vai trò |
+|--------|-------------------|---------|
+| `bank-accounts` | `/bank-accounts` | Lookup tài khoản nhận |
+| `bank-transactions` | `/bank-transactions`, `/webhooks/bank-transactions` | Webhook + list unmatched + manual match |
+| `call-logs` | `/call-logs` | Ingest tổng đài + auto-match + AI summarize |
 
-### Shared
-- `packages/database/prisma/schema.prisma` — Database schema
-- `packages/types/src/index.ts` — Shared types
-- `packages/utils/src/phone.ts` — Phone normalization
+### Import/Export/Integration (4)
+| Module | Controller prefix | Vai trò |
+|--------|-------------------|---------|
+| `import` | `/imports` | BullMQ-based CSV import leads/customers |
+| `export` | `/exports` | CSV leads/customers/orders với formula sanitization |
+| `file-upload` | `/files` | Upload + stream file (JWT protected) |
+| `third-party-api` | `/external` | Public (API key) — tạo lead từ website/FB |
+
+### Distribution & Assignment (4)
+| Module | Controller prefix | Vai trò |
+|--------|-------------------|---------|
+| `distribution` | `/distribution` | AI distribution config + scores + run |
+| `assignment-templates` | `/assignment-templates` | Round-robin template, apply lên POOL/FLOATING |
+| `recall-config` | `/recall-configs` | Auto-recall ngày + nhãn mặc định |
+| `search` | `/search` | Global search (FTS) |
+
+### Productivity & System (7)
+| Module | Controller prefix | Vai trò |
+|--------|-------------------|---------|
+| `tasks` | `/tasks` | Todo + reminder + escalation |
+| `notifications` | `/notifications` | In-app polling + read tracking |
+| `dashboard` | `/dashboard` | 10 endpoint analytics (stats/funnel/revenue/...) |
+| `api-keys` | `/api-keys` | Super admin tạo & quản lý 3rd-party key |
+| `system-settings` | `/system-settings` | Key-value config |
+| `ai-summary` | (service only) | Gemini wrapper — gọi từ call-logs/customers |
+| `mcp-agent` | `/mcp`, `/ai-agent` | MCP server + REST fallback (read-only, API key) |
+
+**Common (non-module):** `main.ts`, `app.module.ts`, `common/` (guards, interceptors, filters, pipes, cron, buildAccessFilter).
+
+## Frontend Routes (31)
+
+### Public / Auth
+- `/` — Landing page
+- `/login` — Login (force-dynamic, split server shell + client form)
+
+### Dashboard Group (sidebar layout)
+**Analytics:**
+- `/dashboard` — Tổng quan (4 KPI + 2 mini chart)
+- `/dashboard/revenue`, `/dashboard/customers`, `/dashboard/employees` — Sub-pages
+
+**Leads (6):**
+- `/leads`, `/leads/new`, `/leads/[id]`, `/leads/[id]/edit`
+- `/leads/dept` — Kho phòng ban
+- `/leads/pool/new`, `/leads/pool/zoom` — 2 nhóm kho mới
+- `/floating` — Kho thả nổi (lead + customer)
+
+**Customers (4):** `/customers`, `/customers/new`, `/customers/[id]`, `/customers/[id]/edit`
+
+**Commerce:**
+- `/orders`, `/orders/[id]`
+- `/payments`
+- `/products`
+
+**Ops:**
+- `/call-logs`, `/tasks`, `/import`
+
+**Admin/Settings:**
+- `/users`, `/users/new`, `/users/[id]/edit`
+- `/profile`
+- `/settings` (8 tab: departments, teams, levels, labels, sources, products, payment-types, api-keys, etc.)
+- `/settings/distribution` — AI distribution per dept
+
+## Frontend Component Folders (16)
+
+```
+components/
+├── ui/                 shadcn/ui primitives (NO barrel import)
+├── layout/             Sidebar, header, breadcrumb, nav
+├── shared/             DataTable, timeline, search bar, etc.
+├── landing/            Landing page sections
+├── leads/              Lead list, form, kanban, kho components
+├── customers/          Customer list, form, timeline
+├── orders/             Order list, form, line items
+├── payments/           Payment form, verify modal, installment picker
+├── bank-transactions/  Unmatched list, manual match
+├── call-logs/          List, summary viewer, manual match
+├── products/           Product list + form
+├── import/             Upload wizard, progress, error display
+├── tasks/              Quick add, list, detail
+├── settings/           Department/team/label/source forms
+├── users/              User list, form, role picker
+└── dashboard/          hooks/, tabs/, widgets/ — KPI, charts, scorecard
+```
+
+## Database — 31 Tables
+
+Xem `docs/data-model.md` để chi tiết. Nhóm:
+
+- **Auth (3):** users, refresh_tokens, api_keys
+- **Organization (4):** departments, teams, manager_departments, employee_levels
+- **CRM core (6):** customers, leads, lead_sources, labels, lead_labels, customer_labels
+- **Commerce (8):** products, product_categories, product_groups, order_formats, orders, payments, payment_types, payment_installments, bank_accounts — (thực tế 9 nếu tính bank_accounts)
+- **Banking/Verification (1):** bank_transactions
+- **Activity (4):** activities, activity_attachments, documents, call_logs
+- **Assignment (3):** assignment_history, assignment_templates, assignment_template_members
+- **Config (3):** ai_distribution_configs, recall_configs, system_settings
+- **Productivity (3):** tasks, notifications, import_jobs
+
+## Key Conventions
+
+- **Auth flow:** Browser → Next.js `/api/proxy/*` (BFF) → reads httpOnly cookie → Bearer → NestJS. No direct browser ↔ NestJS call.
+- **IDOR prevention:** Mọi repo query qua `buildAccessFilter(user)` (xem `common/filters/build-access-filter.ts`).
+- **Soft delete:** `deletedAt` + partial indexes. Xem 3 pattern trong `code-standards.md` (A: partial unique, B: composite `@@unique`, C: `isActive` flag).
+- **BigInt:** Global interceptor serialize → string trong response.
+- **Cursor pagination:** Tất cả list endpoint.
+- **Cron jobs:** 6 job (refresh token cleanup, payment batch, auto-recall, task reminder, task escalation, notification cleanup).
+
+## Related Docs
+
+- `project-overview-pdr.md` — Business context, roles, NFR
+- `system-architecture.md` — High-level diagram + data flow
+- `data-model.md` — Chi tiết 31 table + ERD
+- `api-reference.md` — Full endpoint inventory
+- `frontend-guide.md` — Route + component + data-fetching pattern
+- `business-flows.md` — Sequence diagrams nghiệp vụ
+- `code-standards.md` — Conventions + security checklist
+- `api-integration-guide.md` — 3rd-party integration (external API key)
+- `deployment-guide.md`, `aapanel-deployment-guide.md` — Ops

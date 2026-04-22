@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Bank Transaction CSV Import — 7-col template, dedup, auto-match (2026-04-22)
+- **Feature:** Thay webhook bank bằng flow upload CSV sao kê (bank ngừng push webhook). SA upload CSV → parse → dedup `externalId` → auto-match payment PENDING. Tab mới "Import sao kê CSV" trong `/payments` (chỉ SA thấy).
+- **Backend:**
+  - `POST /bank-transactions/import` (multipart, 10MB max, `@Roles(SUPER_ADMIN)`) — parse CSV 7 cột, ignore cột thừa, return `{ total, imported, skipped_duplicate, auto_matched, errors[] }`.
+  - `GET /bank-transactions/import/template` — CSV template UTF-8 BOM, 7 header tiếng Việt + 1 row mẫu.
+  - `bank-transaction-import.service.ts` (~230 lines) — dùng `csv-parse/sync`, helpers `parseVNAmount` (1.000.000 / 1,000,000 / plain), `parseFlexDate` (ISO, dd/MM/yyyy), `generateExternalId` (sha1 hash fallback khi bank không cung cấp mã GD).
+  - Sửa `BankTransactionsService.ingest()`: bỏ throw `transactionTime required`, fallback `new Date()` → webhook cũ gửi thiếu field vẫn OK (backward-compat).
+  - Validate `bankAccount` match `BankAccount.name` (case-insensitive) — row sai tên TK → errors[], không abort batch.
+  - Catch `ConflictException` từ unique constraint → đếm `skipped_duplicate`, continue loop.
+- **Frontend:**
+  - `bank-import-tab.tsx` — client component: hướng dẫn 3 bước, tải template, upload CSV, result panel 4 metric card + errors table.
+  - `payment-reconciliation-client.tsx` — thêm tab thứ 3 (conditional render SA) vào Tabs hiện có. Không phá regression 2 tab cũ.
+  - Upload qua `/api/proxy/bank-transactions/import` (FormData multipart), download via `window.location.href` cho template.
+- **Decisions locked:** Không migrate schema (`transactionTime` giữ NOT NULL, fallback ở service). CSV template chung 1 format (không per-bank parser). Test data tự sinh từ template (parser ignore unknown cols).
+- **Files:** `apps/api/src/modules/bank-transactions/{bank-transactions.service,controller,module}.ts`, mới `bank-transaction-import.service.ts`; `apps/web/src/components/payments/bank-import-tab.tsx`, sửa `payment-reconciliation-client.tsx`; `docs/{api-reference,project-changelog,project-roadmap,business-flows}.md`.
+
 ### Bulk Delete — Orders / Customers / Leads / Users (2026-04-18)
 - **Feature:** SA-only bulk soft-delete với checkbox cho 4 entity. Cap 100/lần. Bar fixed-bottom hiện khi có item được chọn.
 - **Backend (8 file):**

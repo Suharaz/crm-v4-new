@@ -13,6 +13,7 @@ import { formatDate, formatVND, cn } from '@/lib/utils';
 import { CheckCircle, XCircle, Loader2, ChevronDown, ChevronRight, Search, Calendar, Download, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import type { PaymentRecord, BankTransactionRecord, NamedEntity } from '@/types/entities';
+import { BankImportTab } from './bank-import-tab';
 
 // ─── Import result type ───────────────────────────────────────────────────────
 interface ImportResult {
@@ -335,6 +336,7 @@ export function PaymentReconciliationClient({
   const router = useRouter();
   const { user } = useAuth();
   const isManager = user?.role === 'MANAGER' || user?.role === 'SUPER_ADMIN';
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const [pending, setPending] = useState(initPending);
   const [unmatched, setUnmatched] = useState(initTx);
@@ -467,6 +469,7 @@ export function PaymentReconciliationClient({
         <TabsList>
           <TabsTrigger value="reconcile">Chờ xử lý ({pending.length + unmatched.length})</TabsTrigger>
           <TabsTrigger value="verified">Đã xác minh ({verifiedPayments.length})</TabsTrigger>
+          {isSuperAdmin && <TabsTrigger value="bank-import">Import sao kê CSV</TabsTrigger>}
         </TabsList>
 
         {/* ── Tab: Chờ xử lý ── */}
@@ -742,6 +745,12 @@ export function PaymentReconciliationClient({
             </div>
           )}
         </TabsContent>
+
+        {isSuperAdmin && (
+          <TabsContent value="bank-import">
+            <BankImportTab />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

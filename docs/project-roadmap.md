@@ -99,6 +99,12 @@ Phase 14 (Testing/Deploy) ← runs LAST ─────────┘
 
 > Updated after each phase completion
 
+### 2026-04-22
+- Bank Transaction CSV Import (Phase 24): thay webhook bằng CSV upload vì bank ngừng push API
+- 2 endpoints mới: `POST /bank-transactions/import` + `GET /bank-transactions/import/template` (SA-only)
+- Tab thứ 3 "Import sao kê CSV" trong `/payments` — conditional render cho SA
+- Auto-match reuse 100% `tryMatchBankTransaction()`; dedup `externalId` + hash fallback
+
 ### 2026-04-13
 - Security & Performance Audit Round 2: 38 findings (1 critical, 12 high, 16 medium, 9 low)
 - 10 fixes implemented: IDOR (5), race conditions (2), N+1 (2), webhook hardening (1)

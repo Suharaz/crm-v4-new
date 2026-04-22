@@ -38,21 +38,17 @@ export class BankTransactionsService {
     return this.list({ limit, cursor, matchStatus: 'UNMATCHED' });
   }
 
-  /** Ingest bank transaction from webhook. Dedup by externalId. */
+  /** Ingest bank transaction from webhook OR CSV import. Dedup by externalId. */
   async ingest(data: {
     externalId: string; amount: number; content: string;
     bankAccount?: string; senderName?: string; senderAccount?: string;
-    transactionTime: string; rawData?: Record<string, unknown>;
+    transactionTime?: string; rawData?: Record<string, unknown>;
   }) {
     if (!data.externalId) {
       throw new BadRequestException('externalId là bắt buộc');
     }
-    // Validate externalId format — prevent malformed strings
     if (typeof data.externalId !== 'string' || data.externalId.length > 255 || !/^[\w\-.]+$/.test(data.externalId)) {
       throw new BadRequestException('externalId không hợp lệ (chỉ chấp nhận chữ, số, dấu gạch, tối đa 255 ký tự)');
-    }
-    if (!data.transactionTime) {
-      throw new BadRequestException('transactionTime là bắt buộc');
     }
     if (!data.amount || data.amount <= 0) {
       throw new BadRequestException('Số tiền giao dịch phải lớn hơn 0');
@@ -72,7 +68,7 @@ export class BankTransactionsService {
         bankAccount: data.bankAccount,
         senderName: data.senderName,
         senderAccount: data.senderAccount,
-        transactionTime: new Date(data.transactionTime),
+        transactionTime: data.transactionTime ? new Date(data.transactionTime) : new Date(),
         rawData: data.rawData as any ?? undefined,
       },
       select: BANK_TX_SELECT,

@@ -104,9 +104,11 @@ sequenceDiagram
 
 ## 2. Payment Hybrid Verification
 
-3 nguồn verify: **sale tạo → webhook match**, **webhook đến → payment match**, **manager thủ công**, với **cron 2h** retry fuzzy.
+3 nguồn verify: **sale tạo → bank TX match**, **CSV import sao kê → payment match**, **manager thủ công**, với **cron 2h** retry fuzzy.
 
-### Flow A: Sale tạo trước, webhook đến sau
+> **Update 2026-04-22:** Bank ngừng push webhook API. Kế toán tải CSV sao kê định kỳ, SA upload qua `/payments → tab "Import sao kê CSV"` (`POST /bank-transactions/import`). Logic auto-match `tryMatchBankTransaction()` GIỮ NGUYÊN — chỉ thay nguồn ingest. Webhook cũ vẫn giữ (backward-compat).
+
+### Flow A: Sale tạo trước, CSV import đến sau
 
 ```mermaid
 sequenceDiagram

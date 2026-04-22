@@ -236,7 +236,9 @@
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
-| POST | `/webhooks/bank-transactions` | 🌐 `WebhookSignatureGuard` | Ingest webhook ngân hàng → auto-match payment |
+| POST | `/webhooks/bank-transactions` | 🌐 `WebhookSignatureGuard` | Ingest webhook ngân hàng → auto-match payment (legacy; `transactionTime` optional, fallback `now()`) |
+| POST | `/bank-transactions/import` | 👑 SA | Multipart CSV import — dedup `externalId`, auto-match, resp: `{ total, imported, skipped_duplicate, auto_matched, errors[] }` |
+| GET | `/bank-transactions/import/template` | 👑 SA | Download CSV template 7 cột (UTF-8 BOM): Mã GD / Số tiền / Nội dung / Thời gian / TK nhận / Người gửi / TK gửi |
 | GET | `/bank-transactions` | 👔 | List |
 | GET | `/bank-transactions/unmatched` | 👔 | Queue UNMATCHED để manager xử lý |
 | POST | `/bank-transactions/:id/match` | 👔 | Thủ công match với payment |

@@ -173,7 +173,7 @@ function JobStatusRow({ job, onUpdate }: { job: ImportJob; onUpdate: (updated: I
       <td className="px-4 py-3">
         {job.errorFileUrl ? (
           <a
-            href={`${API_BASE}/uploads/${job.errorFileUrl}`}
+            href={`${API_BASE}/imports/${job.id}/error-file`}
             download
             className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100"
           >

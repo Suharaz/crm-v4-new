@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Param, Query, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, UseInterceptors, UploadedFile, BadRequestException, Res, StreamableFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserRole } from '@prisma/client';
 import { ImportService } from './import.service';
 import { Roles } from '../auth/decorators/roles-required.decorator';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
+import { createReadStream } from 'fs';
+import type { Response } from 'express';
 
 @Controller('imports')
 @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
@@ -52,5 +54,23 @@ export class ImportController {
   async getStatus(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
     const data = await this.service.getStatus(id, user);
     return { data };
+  }
+
+  /**
+   * Download the error CSV for an import job.
+   * Guarded by role (manager+) at class level and by ownership check in service.
+   */
+  @Get(':id/error-file')
+  async downloadErrorFile(
+    @Param('id', ParseBigIntPipe) id: bigint,
+    @CurrentUser() user: any,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const { absolutePath, downloadName } = await this.service.getErrorFilePath(id, user);
+    res.set({
+      'Content-Type': 'text/csv; charset=utf-8',
+      'Content-Disposition': `attachment; filename="${downloadName}"`,
+    });
+    return new StreamableFile(createReadStream(absolutePath));
   }
 }

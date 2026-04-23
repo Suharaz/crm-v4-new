@@ -375,14 +375,14 @@ Polling 30s từ frontend.
 Index: `(userId, isRead, createdAt)`. Cleanup cron: read > 90d, all > 180d.
 
 ### `import_jobs`
-BullMQ CSV import status.
+BullMQ CSV import status. CSV format (columns, bilingual headers, dedup rules) xem `api-reference.md` §28.
 
 | Column | Ghi chú |
 |--------|---------|
 | type | "leads" | "customers" |
 | status | PROCESSING / COMPLETED / FAILED |
-| totalRows, successCount, errorCount | Progress |
-| errorFileUrl | CSV lỗi để user download fix |
+| totalRows, successCount, errorCount | Progress (warning rows vẫn tính `successCount`) |
+| errorFileUrl | CSV lỗi `row,field,message` để user download fix. Warning label-không-match cũng xuất hiện với prefix `[Warning]` |
 
 ---
 

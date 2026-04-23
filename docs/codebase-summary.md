@@ -97,7 +97,7 @@ crm-v4/
 ### Import/Export/Integration (4)
 | Module | Controller prefix | Vai trò |
 |--------|-------------------|---------|
-| `import` | `/imports` | BullMQ-based CSV import leads/customers |
+| `import` | `/imports` | BullMQ-based CSV import leads (5 cols + metadata JSONB) / customers (11 cols + labels). Bilingual header EN/VN. Xem `api-reference.md` §28 để biết CSV format |
 | `export` | `/exports` | CSV leads/customers/orders với formula sanitization |
 | `file-upload` | `/files` | Upload + stream file (JWT protected) |
 | `third-party-api` | `/external` | Public (API key) — tạo lead từ website/FB |

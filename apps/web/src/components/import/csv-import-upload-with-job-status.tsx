@@ -5,7 +5,9 @@ import { toast } from 'sonner';
 import { Upload, CheckCircle2, XCircle, Loader2, FileText, Download } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/api/v1';
+// Route through Next.js proxy (same-origin) so auth cookie → Bearer token forwarding works.
+// Calling NEXT_PUBLIC_API_URL directly is cross-origin and loses auth → 401.
+const API_BASE = '/api/proxy';
 
 interface ImportJob {
   id: string;

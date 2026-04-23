@@ -176,8 +176,13 @@ function downloadTemplate(type: 'lead' | 'customer') {
     },
     customer: {
       filename: 'mau-import-khach-hang.csv',
-      header: 'Số điện thoại,Họ tên,Email',
-      sample: '0912345678,Nguyễn Văn A,a@email.com\n0987654321,Trần Thị B,b@email.com',
+      // 11 cols: 2 bắt buộc (Số điện thoại, Họ tên) + 8 optional + Nhãn (comma-separated)
+      header: 'Số điện thoại,Họ tên,Email,Công ty,Facebook,Instagram,Zalo,LinkedIn,Mô tả ngắn,Mô tả,Nhãn',
+      sample: [
+        '0912345678,Nguyễn Văn A,a@email.com,Công ty ABC,https://facebook.com/a,https://instagram.com/a,https://zalo.me/0912345678,https://linkedin.com/in/a,Khách VIP đã mua khóa Sales Pro,Khách thân thiết từ 2024 đã mua nhiều sản phẩm,"VIP,Quan tâm"',
+        '0987654321,Trần Thị B,b@email.com,,,,,,,,',
+        '0911222333,Lê Văn C,,,,,,,,Note ngắn về khách,,VIP',
+      ].join('\n'),
     },
   };
   const t = templates[type];

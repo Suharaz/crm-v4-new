@@ -328,6 +328,60 @@
 | GET | `/imports` | 👔 | List job history |
 | GET | `/imports/:id/status` | 👔 | Poll progress + errorFileUrl |
 
+**CSV requirements:** UTF-8 BOM khuyến nghị (Excel VN), header row bắt buộc, streaming parse (`csv-parse`), progress update mỗi 100 rows. Parser accept cả **header tiếng Anh (camelCase) lẫn tiếng Việt** — khớp 1 trong 2 là OK.
+
+### CSV — Leads (5 cols + metadata JSONB)
+
+| Header VN | Header EN | Required | Ghi chú |
+|---|---|---|---|
+| Số điện thoại | `phone` | ✅ | Normalize VN (bỏ +84, thêm 0). `isValidVNPhone` check |
+| Họ tên | `name` | ❌ | Fallback = phone nếu rỗng |
+| Email | `email` | ❌ | |
+| Nguồn | `source` | ❌ | Match `LeadSource.name` (case-insensitive). Nguồn có `skipPool=true` → lead vào `ZOOM` thay `POOL` |
+| Sản phẩm | `product` | ❌ | Match `Product.name` (exact trước → substring fallback) |
+
+- **Dedup:** `phone + sourceId + productId + deletedAt=null`. Trùng → error row `Trùng lead`
+- **Auto-create customer** theo `phone` (hoặc reuse nếu đã có). Labels của customer merge sang lead mới
+- **Metadata JSONB:** Mọi cột **không thuộc** 5 header trên (cả EN và VN) đều auto-map vào `lead.metadata` key=header, value=cell
+
+### CSV — Customers (11 cols)
+
+| Header VN | Header EN | Required | Ghi chú |
+|---|---|---|---|
+| Số điện thoại | `phone` | ✅ | |
+| Họ tên | `name` | ✅ | Rỗng → error row |
+| Email | `email` | ❌ | |
+| Công ty | `companyName` | ❌ | |
+| Facebook | `facebookUrl` | ❌ | |
+| Instagram | `instagramUrl` | ❌ | |
+| Zalo | `zaloUrl` | ❌ | |
+| LinkedIn | `linkedinUrl` | ❌ | |
+| Mô tả ngắn | `shortDescription` | ❌ | |
+| Mô tả | `description` | ❌ | |
+| Nhãn | `labels` | ❌ | Comma-separated (`"VIP,Quan tâm"`). Match case-insensitive với `Label.name`. Label chưa có trong DB → ghi `[Warning]` vào error CSV, row vẫn **success** (không tự tạo label mới) |
+
+- **Dedup:** `phone + deletedAt=null`. Trùng → error row `Trùng khách hàng`
+- **Template download:** FE sinh file `mau-import-khach-hang.csv` với BOM UTF-8 + 3 sample rows (full / chỉ bắt buộc / partial)
+
+### Response — `GET /imports/:id/status`
+
+```json
+{
+  "id": "123",
+  "type": "customers",
+  "status": "COMPLETED",   // PENDING | PROCESSING | COMPLETED | FAILED
+  "totalRows": 500,
+  "successCount": 487,
+  "errorCount": 13,
+  "errorFileUrl": "imports/errors/error-123.csv",  // null nếu không có error
+  "fileName": "<uuid>.csv",
+  "createdAt": "...",
+  "completedAt": "..."
+}
+```
+
+Error CSV columns: `row, field, message`. Warning rows (label không match) cũng xuất hiện ở đây với `field=general, message=[Warning] Nhãn "..." không tồn tại trong hệ thống — bỏ qua`.
+
 ## 29. Export — `/exports`
 
 | Method | Path | Role | Mô tả |

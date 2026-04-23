@@ -1,4 +1,4 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, StreamableFile } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -16,6 +16,10 @@ export class BigIntTransformInterceptor implements NestInterceptor {
     if (data === null || data === undefined) return data;
     if (typeof data === 'bigint') return data.toString();
     if (data instanceof Date) return data;
+    // Skip binary / stream payloads — iterating their props would break NestJS
+    // streaming (StreamableFile) or corrupt Buffers.
+    if (data instanceof StreamableFile) return data;
+    if (Buffer.isBuffer(data)) return data;
     // Handle Prisma Decimal objects (have toNumber/toFixed methods and {s, e, d} shape)
     if (typeof data === 'object' && data !== null && 'toFixed' in data && 'd' in data) {
       return Number((data as { toFixed: (n: number) => string }).toFixed(2));

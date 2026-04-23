@@ -15,7 +15,7 @@ export class PaginationQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(100)
+  @Max(1000)
   limit?: number = 20;
 
   /** Offset-based page number (1-indexed). When set (and no cursor), uses skip/count. */

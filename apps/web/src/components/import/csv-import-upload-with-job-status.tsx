@@ -16,6 +16,7 @@ interface ImportJob {
   totalRows?: number;
   successCount?: number;
   errorCount?: number;
+  errorFileUrl?: string;
   createdAt: string;
 }
 
@@ -169,6 +170,17 @@ function JobStatusRow({ job, onUpdate }: { job: ImportJob; onUpdate: (updated: I
           </span>
         ) : '—'}
       </td>
+      <td className="px-4 py-3">
+        {job.errorFileUrl ? (
+          <a
+            href={`${API_BASE}/uploads/${job.errorFileUrl}`}
+            download
+            className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100"
+          >
+            <Download className="h-3 w-3" />Tải lỗi
+          </a>
+        ) : '—'}
+      </td>
       <td className="px-4 py-3 text-sm text-slate-400">{formatDateTime(job.createdAt)}</td>
     </tr>
   );
@@ -260,6 +272,7 @@ export function CsvImportPageClient({ initialHistory }: { initialHistory: Import
                   <th className="px-4 py-3 text-left font-medium text-slate-500">Loại</th>
                   <th className="px-4 py-3 text-left font-medium text-slate-500">Trạng thái</th>
                   <th className="px-4 py-3 text-left font-medium text-slate-500">Tiến độ</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500">Lỗi</th>
                   <th className="px-4 py-3 text-left font-medium text-slate-500">Thời gian</th>
                 </tr>
               </thead>

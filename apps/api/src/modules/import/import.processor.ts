@@ -154,6 +154,9 @@ export class ImportProcessor extends WorkerHost {
       // Try exact match first, then substring match (same as original ILIKE '%name%')
       product = productMap.get(key) ||
         [...productMap.values()].find(p => p.name.toLowerCase().includes(key)) || null;
+      if (!product) {
+        throw new Error(`Sản phẩm "${productName}" không tồn tại trong hệ thống`);
+      }
     }
     const productId = product?.id || null;
 

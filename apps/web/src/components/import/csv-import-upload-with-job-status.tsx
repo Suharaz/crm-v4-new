@@ -13,9 +13,9 @@ interface ImportJob {
   id: string;
   type: string;
   status: 'PROCESSING' | 'COMPLETED' | 'FAILED';
-  total?: number;
-  processed?: number;
-  failed?: number;
+  totalRows?: number;
+  successCount?: number;
+  errorCount?: number;
   createdAt: string;
 }
 
@@ -129,8 +129,8 @@ function JobStatusRow({ job, onUpdate }: { job: ImportJob; onUpdate: (updated: I
           onUpdate(updated);
           if (updated.status !== 'PROCESSING') {
             clearInterval(interval);
-            if (updated.status === 'COMPLETED') toast.success(`Import hoàn thành: ${updated.processed} bản ghi`);
-            else toast.error(`Import thất bại: ${updated.failed} lỗi`);
+            if (updated.status === 'COMPLETED') toast.success(`Import hoàn thành: ${updated.successCount} thành công, ${updated.errorCount} lỗi`);
+            else toast.error(`Import thất bại: ${updated.errorCount} lỗi`);
           }
         }
       } catch { /* ignore */ }
@@ -160,8 +160,13 @@ function JobStatusRow({ job, onUpdate }: { job: ImportJob; onUpdate: (updated: I
         </span>
       </td>
       <td className="px-4 py-3 text-sm text-slate-600">
-        {job.total != null ? (
-          <span>{job.processed ?? 0}/{job.total} <span className="text-red-500">({job.failed ?? 0} lỗi)</span></span>
+        {job.totalRows != null ? (
+          <span>
+            <span className="text-green-600">{job.successCount ?? 0}</span>
+            {' / '}
+            {job.totalRows}
+            {job.errorCount ? <span className="text-red-500"> ({job.errorCount} lỗi)</span> : null}
+          </span>
         ) : '—'}
       </td>
       <td className="px-4 py-3 text-sm text-slate-400">{formatDateTime(job.createdAt)}</td>

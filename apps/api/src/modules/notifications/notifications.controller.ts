@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Query, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Query, HttpCode } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
@@ -30,5 +30,12 @@ export class NotificationsController {
   async markAllAsRead(@CurrentUser() user: any) {
     await this.service.markAllAsRead(user.id);
     return { data: { message: 'Đã đọc tất cả' } };
+  }
+
+  @Delete('read')
+  @HttpCode(200)
+  async deleteRead(@CurrentUser() user: any) {
+    const result = await this.service.deleteRead(user.id);
+    return { data: { deleted: result.count, message: 'Đã xoá thông báo đã đọc' } };
   }
 }

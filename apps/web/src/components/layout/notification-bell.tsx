@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, Check, Info, AlertCircle, CheckCircle, Clock, Package, CreditCard, Users } from 'lucide-react';
+import { Bell, Check, Info, AlertCircle, CheckCircle, Clock, Package, CreditCard, Users, Trash2 } from 'lucide-react';
 import { api } from '@/lib/api-client';
 import { getNotificationUrl } from '@/lib/notification-navigation';
 
@@ -130,6 +130,18 @@ export function NotificationBell() {
     }
   };
 
+  const deleteRead = async () => {
+    if (!confirm('Xoá tất cả thông báo đã đọc?')) return;
+    try {
+      await api.delete('/notifications/read');
+      setNotifications((prev) => prev.filter((n) => !n.isRead));
+    } catch {
+      // silent fail
+    }
+  };
+
+  const hasRead = notifications.some((n) => n.isRead);
+
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.isRead) markAsRead(notification.id);
     if (notification.entityType && notification.entityId) {
@@ -162,16 +174,29 @@ export function NotificationBell() {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <span className="font-semibold text-slate-800 text-sm">Thông báo</span>
-            {unreadCount > 0 && (
-              <button
-                type="button"
-                onClick={markAllAsRead}
-                className="flex items-center gap-1 text-sm text-sky-500 hover:text-sky-600 transition-colors"
-              >
-                <Check size={14} />
-                Đánh dấu tất cả đã đọc
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {unreadCount > 0 && (
+                <button
+                  type="button"
+                  onClick={markAllAsRead}
+                  className="flex items-center gap-1 text-sm text-sky-500 hover:text-sky-600 transition-colors"
+                >
+                  <Check size={14} />
+                  Đánh dấu đã đọc
+                </button>
+              )}
+              {hasRead && (
+                <button
+                  type="button"
+                  onClick={deleteRead}
+                  className="flex items-center gap-1 text-sm text-slate-500 hover:text-red-500 transition-colors"
+                  title="Xoá thông báo đã đọc"
+                >
+                  <Trash2 size={14} />
+                  Xoá đã đọc
+                </button>
+              )}
+            </div>
           </div>
 
           {/* List */}

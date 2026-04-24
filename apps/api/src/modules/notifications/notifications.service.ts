@@ -43,6 +43,13 @@ export class NotificationsService {
     });
   }
 
+  /** Xoá tất cả thông báo đã đọc của user (hard delete). */
+  async deleteRead(userId: bigint) {
+    return this.prisma.notification.deleteMany({
+      where: { userId, isRead: true },
+    });
+  }
+
   /** Create notification (called by other services). */
   async create(userId: bigint, title: string, content?: string, type = 'SYSTEM', entityType?: EntityType, entityId?: bigint) {
     return this.prisma.notification.create({

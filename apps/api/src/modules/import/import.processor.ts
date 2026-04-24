@@ -90,7 +90,7 @@ export class ImportProcessor extends WorkerHost {
           const rowWarnings =
             type === 'leads'
               ? await this.processLeadRow(row, rowIndex + 1, sourceMap, productMap, labelMap, phoneCache, createdBy)
-              : await this.processCustomerRow(row, rowIndex + 1, labelMap);
+              : await this.processCustomerRow(row, rowIndex + 1, labelMap, createdBy);
           successCount++;
           if (rowWarnings.length > 0) {
             warnings.push({ row: rowIndex + 1, originalRow: row, messages: rowWarnings });
@@ -305,6 +305,7 @@ export class ImportProcessor extends WorkerHost {
     row: Record<string, string>,
     rowNum: number,
     labelMap: Map<string, { id: bigint; name: string }>,
+    createdBy: bigint | null,
   ): Promise<string[]> {
     const warnings: string[] = [];
     const phone = normalizePhone(row.phone || row['Số điện thoại'] || '');
@@ -324,6 +325,7 @@ export class ImportProcessor extends WorkerHost {
     const linkedinUrl = row.linkedinUrl || row['LinkedIn'] || null;
     const shortDescription = row.shortDescription || row['Mô tả ngắn'] || null;
     const description = row.description || row['Mô tả'] || null;
+    const noteRaw = (row.note || row['Ghi chú'] || '').trim();
 
     const customer = await this.prisma.customer.create({
       data: {
@@ -343,12 +345,12 @@ export class ImportProcessor extends WorkerHost {
     if (labelsRaw.trim()) {
       const labelNames = labelsRaw.split(',').map(l => l.trim()).filter(Boolean);
       const matchedLabels: { id: bigint }[] = [];
-      for (const name of labelNames) {
-        const found = labelMap.get(name.toLowerCase());
+      for (const labelName of labelNames) {
+        const found = labelMap.get(labelName.toLowerCase());
         if (found) {
           matchedLabels.push(found);
         } else {
-          warnings.push(`Nhãn "${name}" không tồn tại trong hệ thống — bỏ qua`);
+          warnings.push(`Nhãn "${labelName}" không tồn tại trong hệ thống — bỏ qua`);
         }
       }
       if (matchedLabels.length > 0) {
@@ -356,6 +358,23 @@ export class ImportProcessor extends WorkerHost {
           data: matchedLabels.map(l => ({ customerId: customer.id, labelId: l.id })),
           skipDuplicates: true,
         });
+      }
+    }
+
+    // Note: create Activity(type=NOTE) attributed to the uploader so it appears on the customer timeline.
+    if (noteRaw) {
+      if (createdBy) {
+        await this.prisma.activity.create({
+          data: {
+            entityType: 'CUSTOMER',
+            entityId: customer.id,
+            userId: createdBy,
+            type: 'NOTE',
+            content: noteRaw,
+          },
+        });
+      } else {
+        warnings.push('Không xác định được người upload — note bị bỏ qua');
       }
     }
 

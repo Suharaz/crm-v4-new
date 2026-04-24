@@ -2,8 +2,9 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
-import { Upload, CheckCircle2, XCircle, Loader2, FileText, Download } from 'lucide-react';
+import { Upload, CheckCircle2, XCircle, Loader2, FileText, Download, Eye } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
+import { ImportTemplateDialog } from './import-template-dialog';
 
 // Route through Next.js proxy (same-origin) so auth cookie → Bearer token forwarding works.
 // Calling NEXT_PUBLIC_API_URL directly is cross-origin and loses auth → 401.
@@ -186,35 +187,9 @@ function JobStatusRow({ job, onUpdate }: { job: ImportJob; onUpdate: (updated: I
   );
 }
 
-function downloadTemplate(type: 'lead' | 'customer') {
-  const templates = {
-    lead: {
-      filename: 'mau-import-leads.csv',
-      header: 'Số điện thoại,Họ tên,Email,Nguồn,Sản phẩm',
-      sample: '0912345678,Nguyễn Văn A,a@email.com,Facebook,Khóa học Sales Pro\n0987654321,Trần Thị B,,Website,\n0911222333,,,Cold Call,Tư vấn Marketing',
-    },
-    customer: {
-      filename: 'mau-import-khach-hang.csv',
-      // 11 cols: 2 bắt buộc (Số điện thoại, Họ tên) + 8 optional + Nhãn (comma-separated)
-      header: 'Số điện thoại,Họ tên,Email,Công ty,Facebook,Instagram,Zalo,LinkedIn,Mô tả ngắn,Mô tả,Nhãn',
-      sample: [
-        '0912345678,Nguyễn Văn A,a@email.com,Công ty ABC,https://facebook.com/a,https://instagram.com/a,https://zalo.me/0912345678,https://linkedin.com/in/a,Khách VIP đã mua khóa Sales Pro,Khách thân thiết từ 2024 đã mua nhiều sản phẩm,"VIP,Quan tâm"',
-        '0987654321,Trần Thị B,b@email.com,,,,,,,,',
-        '0911222333,Lê Văn C,,,,,,,,Note ngắn về khách,,VIP',
-      ].join('\n'),
-    },
-  };
-  const t = templates[type];
-  const bom = '\uFEFF'; // UTF-8 BOM for Excel
-  const blob = new Blob([bom + t.header + '\n' + t.sample], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = t.filename; a.click();
-  URL.revokeObjectURL(url);
-}
-
 export function CsvImportPageClient({ initialHistory }: { initialHistory: ImportJob[] }) {
   const [jobs, setJobs] = useState<ImportJob[]>(initialHistory);
+  const [templateType, setTemplateType] = useState<'lead' | 'customer' | null>(null);
 
   function handleJobCreated(job: ImportJob) {
     setJobs(prev => [job, ...prev]);
@@ -226,24 +201,26 @@ export function CsvImportPageClient({ initialHistory }: { initialHistory: Import
 
   return (
     <div className="space-y-6">
-      {/* Template downloads */}
+      {/* Template preview */}
       <div className="rounded-xl border border-slate-200 bg-white p-5">
-        <h3 className="font-semibold text-slate-900 mb-3">Tải file mẫu</h3>
-        <div className="flex gap-3">
+        <h3 className="font-semibold text-slate-900 mb-3">Xem cấu trúc file mẫu</h3>
+        <div className="flex gap-3 flex-wrap">
           <button
-            onClick={() => downloadTemplate('lead')}
+            onClick={() => setTemplateType('lead')}
             className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
           >
-            <Download className="h-4 w-4 text-sky-500" />Mẫu import leads
+            <Eye className="h-4 w-4 text-sky-500" />Xem mẫu Leads
           </button>
           <button
-            onClick={() => downloadTemplate('customer')}
+            onClick={() => setTemplateType('customer')}
             className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
           >
-            <Download className="h-4 w-4 text-emerald-500" />Mẫu import khách hàng
+            <Eye className="h-4 w-4 text-emerald-500" />Xem mẫu Khách hàng
           </button>
         </div>
       </div>
+
+      <ImportTemplateDialog type={templateType} onClose={() => setTemplateType(null)} />
 
       {/* Upload zones */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

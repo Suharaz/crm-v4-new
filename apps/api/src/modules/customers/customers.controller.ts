@@ -81,7 +81,7 @@ export class CustomersController {
   @Roles(UserRole.SUPER_ADMIN)
   async bulkDelete(@Body() body: { ids: string[] }) {
     if (!body.ids?.length) throw new BadRequestException('ids là bắt buộc');
-    if (body.ids.length > 100) throw new BadRequestException('Tối đa 100 khách hàng mỗi lần');
+    if (body.ids.length > 1000) throw new BadRequestException('Tối đa 1000 khách hàng mỗi lần');
     const result = await this.customersService.bulkSoftDelete(body.ids.map(id => BigInt(id)));
     return { data: result };
   }

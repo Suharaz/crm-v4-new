@@ -184,6 +184,33 @@ export class LeadsService {
       activityCount: 0,
     }));
 
+    // Latest NOTE activity per lead (for "Ghi chú" column in pool table)
+    const allLeadIds = [
+      ...poolLeads.map(l => l.id),
+      ...enrichedDistributed.map(l => l.id),
+    ];
+    const latestNoteMap = new Map<string, { content: string | null; createdAt: Date }>();
+    if (allLeadIds.length > 0) {
+      const latestNotes = await this.prisma.activity.findMany({
+        where: {
+          entityType: 'LEAD',
+          entityId: { in: allLeadIds },
+          type: 'NOTE',
+          deletedAt: null,
+        },
+        select: { entityId: true, content: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+        distinct: ['entityId'],
+      });
+      for (const n of latestNotes) {
+        latestNoteMap.set(n.entityId.toString(), { content: n.content, createdAt: n.createdAt });
+      }
+    }
+    const attachNote = <T extends { id: bigint }>(lead: T) => ({
+      ...lead,
+      latestNote: latestNoteMap.get(lead.id.toString()) || null,
+    });
+
     // Pool leads first, then distributed (sorted by assignedAt desc)
     enrichedDistributed.sort((a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime());
 
@@ -194,7 +221,7 @@ export class LeadsService {
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
-    });
+    }).map(attachNote);
     return { data: merged };
   }
 

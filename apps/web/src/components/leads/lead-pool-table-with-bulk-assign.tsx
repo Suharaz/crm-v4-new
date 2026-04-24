@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 interface Lead {
   id: string; name: string; phone: string; email?: string | null;
   status: string; source?: { name: string } | null;
+  product?: { id: string; name: string } | null;
   assignedUser?: { id: string; name: string } | null;
   department?: { name: string } | null;
   customerId?: string | null;
@@ -23,6 +24,7 @@ interface Lead {
   labels?: { label: { id: string; name: string; color: string } }[];
   activityCount?: number;
   assignedAt?: string | null;
+  latestNote?: { content: string | null; createdAt: string } | null;
   createdAt: string;
 }
 
@@ -240,7 +242,8 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
               <th className="px-4 py-3 text-left font-medium text-slate-500">Họ tên</th>
               <th className="px-4 py-3 text-left font-medium text-slate-500">SĐT</th>
               <th className="px-4 py-3 text-left font-medium text-slate-500">Trạng thái</th>
-              <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-slate-500">Nguồn</th>
+              <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-slate-500">Sản phẩm</th>
+              <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-slate-500">Ghi chú</th>
               {isNewPool && (
                 <>
                   <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-slate-500">Phân cho</th>
@@ -264,13 +267,10 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                     </td>
                   )}
                   <td className="px-4 py-3">
-                    <div>
-                      <button type="button" onClick={() => setPreviewId(lead.id)}
-                        className="font-medium text-sky-600 hover:underline text-left">
-                        {lead.name}
-                      </button>
+                    <div className="flex items-center gap-1">
+                      <span className="font-medium text-slate-800">{lead.name}</span>
                       {lead.orders && lead.orders.length > 0 && (
-                        <span className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Đã mua</span>
+                        <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Đã mua</span>
                       )}
                     </div>
                     {lead.labels && lead.labels.length > 0 && (
@@ -282,9 +282,19 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{lead.phone}</td>
+                  <td className="px-4 py-3">
+                    <button type="button" onClick={() => setPreviewId(lead.id)}
+                      className="font-medium text-sky-600 hover:underline text-left">
+                      {lead.phone}
+                    </button>
+                  </td>
                   <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
-                  <td className="hidden md:table-cell px-4 py-3 text-slate-600">{lead.source?.name || '—'}</td>
+                  <td className="hidden md:table-cell px-4 py-3 text-slate-600">{lead.product?.name || '—'}</td>
+                  <td className="hidden lg:table-cell px-4 py-3 text-slate-600 max-w-[220px]">
+                    {lead.latestNote?.content ? (
+                      <span className="line-clamp-2 text-xs" title={lead.latestNote.content}>{lead.latestNote.content}</span>
+                    ) : '—'}
+                  </td>
                   {isNewPool && (
                     <>
                       <td className="hidden lg:table-cell px-4 py-3 text-slate-600">

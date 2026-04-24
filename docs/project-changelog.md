@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Task Reminders + Shared Note Dialog — Flexible scheduling (2026-04-24)
+- **Feature:** 3 new components + cron refactor for task reminder notifications with custom scheduling.
+- **Database:** New `TaskReminder` table (1-N with Task). Tracks `remindAt`, `remindedAt` flag, optional label. Max 5 reminders/task. Cascade delete with task. Replaced old `Task.remindAt`/`Task.remindedAt` columns.
+- **Backend:**
+  - `POST /tasks` accepts `reminders[]` with `remindAt`/`label`. Auto-computes 3 defaults (1d/1h/30min before deadline) if `dueDate` supplied, filters past reminders.
+  - `PATCH /tasks/:id` supports full reminder replacement via transaction.
+  - Cron `processReminders` (every 5 min) queries `TaskReminder` table, sends `TASK_REMIND` notification with correct `entityType`/`entityId` per task. Prevents double-send via `remindedAt` flag.
+- **Frontend:**
+  - `<ReminderList />` component: add/edit/delete reminders (max 5), warns if past/after-due, auto-computes defaults when dueDate changes.
+  - `<NoteDialog />` shared component: unified note creation across 3 locations (lead-actions, lead-inline-expand, entity-quick-preview). Checkbox "Create task from note" expands task form with deadline + ReminderList. Submits note + task (if selected) in parallel, shows partial-success toast if note succeeds but task fails.
+  - `notification-bell` updated: Clock icon for `TASK_REMIND` type, click navigates to lead/customer/task detail via new `getNotificationUrl()` helper.
+- **Integration:** Replaced 3 inline note dialogs with single shared component. 2 critical bugs from code review: backend cron payload field rename (referenceType→entityType), frontend notification interface alignment.
+- **Files:** `packages/database/schema.prisma`, `apps/api/tasks/tasks.service.ts` (cron refactor), `apps/web/components/shared/{reminder-list,note-dialog}.tsx` + notification integration.
+
 ### Customer CSV Import — Extended Columns (2026-04-16)
 - **New optional columns:** `companyName`/`Công ty`, `facebookUrl`/`Facebook`, `instagramUrl`/`Instagram`, `zaloUrl`/`Zalo`, `linkedinUrl`/`LinkedIn`, `shortDescription`/`Mô tả ngắn`, `description`/`Mô tả`, `labels`/`Nhãn`
 - **Labels:** Comma-separated names (e.g. "VIP,Quan tâm"), matched case-insensitive against DB labels, attached via `customerLabel` junction table. Unmatched labels reported as `[Warning]` in error CSV (row vẫn success)

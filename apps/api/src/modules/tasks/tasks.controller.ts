@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode } from '@nestjs/common';
 import { IsOptional, IsEnum } from 'class-validator';
 import { TaskStatus } from '@prisma/client';
 import { TasksService } from './tasks.service';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
@@ -25,13 +27,12 @@ export class TasksController {
   }
 
   @Post()
-  async create(@Body() body: any, @CurrentUser() user: any) {
-    if (!body.title || typeof body.title !== 'string' || body.title.trim() === '') {
-      throw new BadRequestException('Tiêu đề công việc không được để trống');
-    }
+  async create(@Body() dto: CreateTaskDto, @CurrentUser() user: any) {
     // Default assignedTo to current user if not provided
-    const bodyWithDefaults = { ...body, assignedTo: body.assignedTo ?? user.id.toString() };
-    return { data: await this.service.create(bodyWithDefaults, user.id) };
+    if (!dto.assignedTo) {
+      dto.assignedTo = user.id.toString();
+    }
+    return { data: await this.service.create(dto, user.id) };
   }
 
   @Post(':id/complete')
@@ -49,10 +50,10 @@ export class TasksController {
   @Patch(':id')
   async update(
     @Param('id', ParseBigIntPipe) id: bigint,
-    @Body() body: any,
+    @Body() dto: UpdateTaskDto,
     @CurrentUser() user: any,
   ) {
-    return { data: await this.service.update(id, body, user.id, user.role) };
+    return { data: await this.service.update(id, dto, user.id, user.role) };
   }
 
   @Delete(':id')

@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge } from '@/components/shared/status-badge';
+import NoteDialog from '@/components/shared/note-dialog';
 import { api } from '@/lib/api-client';
 import { cn, formatDate, formatVND } from '@/lib/utils';
 import { ExternalLink, Building, Loader2, MessageSquarePlus, Tags, ArrowRightLeft, CreditCard } from 'lucide-react';
@@ -64,8 +64,6 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
 
   // Quick actions
   const [noteOpen, setNoteOpen] = useState(false);
-  const [noteText, setNoteText] = useState('');
-  const [noteSaving, setNoteSaving] = useState(false);
   const [labelPickerOpen, setLabelPickerOpen] = useState(false);
   const [allLabels, setAllLabels] = useState<LabelEntity[]>([]);
   const [labelSaving, setLabelSaving] = useState(false);
@@ -118,20 +116,6 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
 
   const labels = data?.labels || [];
   const currentLabelIds = new Set(labels.map((ll) => String(('label' in ll ? ll.label : ll).id)));
-
-  async function submitNote() {
-    if (!noteText.trim()) return;
-    setNoteSaving(true);
-    try {
-      await api.post(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`, { type: 'NOTE', content: noteText.trim() });
-      setNoteText(''); setNoteOpen(false);
-      invalidateCache(entityType, entityId);
-      const actRes = await api.get<{ data: ActivityRecord[] }>(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`).catch(() => ({ data: [] as ActivityRecord[] }));
-      setActivities(dedupeById(actRes.data || []));
-      router.refresh();
-    } catch { /* */ }
-    setNoteSaving(false);
-  }
 
   async function toggleLabel(labelId: string) {
     setLabelSaving(true);
@@ -320,7 +304,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
           <div className="space-y-2">
             <h4 className="font-semibold text-slate-700 text-xs uppercase">Thao tác nhanh</h4>
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant={noteOpen ? 'default' : 'outline'} onClick={() => { setNoteOpen(!noteOpen); setLabelPickerOpen(false); }}>
+              <Button size="sm" variant={noteOpen ? 'default' : 'outline'} onClick={() => { setNoteOpen(true); setLabelPickerOpen(false); }}>
                 <MessageSquarePlus className="h-3.5 w-3.5 mr-1" />Ghi chú
               </Button>
               <Button size="sm" variant={labelPickerOpen ? 'default' : 'outline'} onClick={() => { setLabelPickerOpen(!labelPickerOpen); setNoteOpen(false); }}>
@@ -344,16 +328,19 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
               </Link>
             </div>
 
-            {/* Inline note */}
-            {noteOpen && (
-              <div className="space-y-2">
-                <Textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="Nhập ghi chú..." rows={2} className="text-sm" autoFocus />
-                <div className="flex justify-end gap-2">
-                  <Button size="sm" variant="ghost" onClick={() => setNoteOpen(false)}>Hủy</Button>
-                  <Button size="sm" onClick={submitNote} disabled={noteSaving || !noteText.trim()}>{noteSaving ? 'Lưu...' : 'Lưu'}</Button>
-                </div>
-              </div>
-            )}
+            <NoteDialog
+              open={noteOpen}
+              onOpenChange={setNoteOpen}
+              entityType={entityType}
+              entityId={entityId}
+              onSuccess={() => {
+                invalidateCache(entityType, entityId);
+                api.get<{ data: ActivityRecord[] }>(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`)
+                  .then(r => setActivities(dedupeById(r.data || [])))
+                  .catch(() => {});
+                router.refresh();
+              }}
+            />
 
             {/* Inline label picker */}
             {labelPickerOpen && (

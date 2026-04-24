@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Bell, Check, Info, AlertCircle, CheckCircle, Package, CreditCard, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Bell, Check, Info, AlertCircle, CheckCircle, Clock, Package, CreditCard, Users } from 'lucide-react';
 import { api } from '@/lib/api-client';
+import { getNotificationUrl } from '@/lib/notification-navigation';
 
 interface Notification {
   id: string;
@@ -11,8 +13,8 @@ interface Notification {
   message?: string;
   isRead: boolean;
   createdAt: string;
-  referenceId?: string;
-  referenceType?: string;
+  entityId?: string;
+  entityType?: string;
 }
 
 interface NotificationsResponse {
@@ -34,6 +36,7 @@ function timeAgo(date: string): string {
 
 function NotificationIcon({ type }: { type: string }) {
   const cls = 'w-5 h-5 flex-shrink-0';
+  if (type.includes('TASK_REMIND') || type.includes('task_remind')) return <Clock className={`${cls} text-orange-500`} />;
   if (type.includes('ORDER') || type.includes('order')) return <Package className={`${cls} text-blue-500`} />;
   if (type.includes('PAYMENT') || type.includes('payment')) return <CreditCard className={`${cls} text-green-500`} />;
   if (type.includes('LEAD') || type.includes('CUSTOMER') || type.includes('lead') || type.includes('customer')) return <Users className={`${cls} text-purple-500`} />;
@@ -43,6 +46,7 @@ function NotificationIcon({ type }: { type: string }) {
 }
 
 export function NotificationBell() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -128,6 +132,10 @@ export function NotificationBell() {
 
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.isRead) markAsRead(notification.id);
+    if (notification.entityType && notification.entityId) {
+      const url = getNotificationUrl(notification.entityType, notification.entityId);
+      if (url) router.push(url);
+    }
     setOpen(false);
   };
 

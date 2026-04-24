@@ -133,7 +133,7 @@ AppModule
 | Refresh token cleanup | Daily 3 AM | Delete expired/revoked tokens >30 days |
 | Payment batch match | Every 2h | Fuzzy match PENDING payments ↔ UNMATCHED bank TX |
 | Auto-recall | Daily 1 AM | Dept pool leads/customers >X days → FLOATING + labels |
-| Task reminder | Every 5 min | Send notification for due tasks (1 time via remindedAt flag) |
+| Task reminder | Every 5 min | Query `TaskReminder` table, send TASK_REMIND notification when `remindAt <= now AND remindedAt IS NULL`. Max 5 reminders/task, cascade delete with task. |
 | Task escalation | Every 30 min | Overdue 1h → notify user, 24h → notify manager |
 | Notification cleanup | Daily 4 AM | Delete read >90 days, all >180 days |
 
@@ -147,8 +147,8 @@ AppModule
 - **Commerce:** Product, ProductCategory, Order, Payment, PaymentType, BankTransaction (6)
 - **Activity:** Activity, ActivityAttachment, Document, CallLog, AssignmentHistory (5)
 - **Distribution:** AiDistributionConfig, AssignmentTemplate, AssignmentTemplateMember, RecallConfig (4)
-- **System:** ImportJob, Notification, Task (3)
-- **Total: 31 tables**
+- **System:** ImportJob, Notification, Task, TaskReminder (4)
+- **Total: 32 tables**
 
 ### Enums (10)
 

@@ -735,8 +735,6 @@ model Task {
   assignedTo    BigInt       @map("assigned_to")
   createdBy     BigInt       @map("created_by")
   dueDate       DateTime?    @map("due_date")
-  remindAt      DateTime?    @map("remind_at")
-  remindedAt    DateTime?    @map("reminded_at")
   escalation1At DateTime?    @map("escalation_1_at")
   escalation2At DateTime?    @map("escalation_2_at")
   status        TaskStatus   @default(PENDING)
@@ -746,12 +744,27 @@ model Task {
   updatedAt     DateTime     @updatedAt @map("updated_at")
   deletedAt     DateTime?    @map("deleted_at")
 
-  assignee User @relation("TaskAssignee", fields: [assignedTo], references: [id])
-  creator  User @relation("TaskCreator", fields: [createdBy], references: [id])
+  assignee  User           @relation("TaskAssignee", fields: [assignedTo], references: [id])
+  creator   User           @relation("TaskCreator", fields: [createdBy], references: [id])
+  reminders TaskReminder[]
 
   @@index([assignedTo, status, dueDate])
-  @@index([remindAt, remindedAt, status])
   @@map("tasks")
+}
+
+model TaskReminder {
+  id         BigInt    @id @default(autoincrement())
+  taskId     BigInt    @map("task_id")
+  remindAt   DateTime  @map("remind_at")
+  label      String?   @db.VarChar(50)
+  remindedAt DateTime? @map("reminded_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([remindAt, remindedAt])
+  @@index([taskId])
+  @@map("task_reminders")
 }
 
 // ─── AUTH ────────────────────────────────────────────────────────────────────

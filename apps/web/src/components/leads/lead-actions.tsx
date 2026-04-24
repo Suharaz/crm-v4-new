@@ -4,11 +4,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import NoteDialog from '@/components/shared/note-dialog';
 import { useFormAction } from '@/hooks/use-form-action';
 import { useAuth } from '@/providers/auth-provider';
-import { api } from '@/lib/api-client';
 import { UserPlus, ArrowRightLeft, Trash2, Tag, MessageSquarePlus } from 'lucide-react';
 import type { LeadRecord, NamedEntity, LabelEntity } from '@/types/entities';
 
@@ -35,16 +34,12 @@ export function LeadActions({ lead, users, departments, labels }: LeadActionsPro
   const [transferDeptId, setTransferDeptId] = useState('');
   const [newStatus, setNewStatus] = useState('');
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
-  const [noteContent, setNoteContent] = useState('');
-  const [createTaskFromNote, setCreateTaskFromNote] = useState(false);
-
   const assignAction = useFormAction({ successMessage: 'Đã phân lead' });
   const claimAction = useFormAction({ successMessage: 'Đã nhận lead' });
   const transferAction = useFormAction({ successMessage: 'Đã chuyển lead' });
   const statusAction = useFormAction({ successMessage: 'Đã đổi trạng thái' });
   const deleteAction = useFormAction({ successMessage: 'Đã xóa lead' });
   const labelAction = useFormAction({ successMessage: 'Đã gắn nhãn' });
-  const noteAction = useFormAction({ successMessage: 'Đã thêm ghi chú' });
 
   const canClaim = ['POOL', 'ZOOM', 'FLOATING'].includes(lead.status);
 
@@ -215,55 +210,12 @@ export function LeadActions({ lead, users, departments, labels }: LeadActionsPro
       <Button size="sm" variant="outline" onClick={() => setNoteOpen(true)}>
         <MessageSquarePlus className="h-4 w-4 mr-1" />Ghi chú
       </Button>
-      <Dialog open={noteOpen} onOpenChange={setNoteOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Thêm ghi chú</DialogTitle></DialogHeader>
-          <Textarea
-            value={noteContent}
-            onChange={e => setNoteContent(e.target.value)}
-            placeholder="Nội dung ghi chú..."
-            rows={4}
-          />
-          <label className="flex items-center gap-2 text-sm text-slate-600">
-            <input
-              type="checkbox"
-              checked={createTaskFromNote}
-              onChange={e => setCreateTaskFromNote(e.target.checked)}
-              className="rounded"
-            />
-            Tạo công việc từ ghi chú này
-          </label>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setNoteOpen(false)}>Hủy</Button>
-            <Button
-              disabled={!noteContent.trim() || noteAction.isLoading}
-              onClick={async () => {
-                const r = await noteAction.execute('post', `/leads/${lead.id}/activities`, { type: 'NOTE', content: noteContent });
-                if (r) {
-                  if (createTaskFromNote && user) {
-                    try {
-                      await api.post('/tasks', {
-                        title: noteContent.substring(0, 50),
-                        description: noteContent,
-                        entityType: 'LEAD',
-                        entityId: String(lead.id),
-                        assignedTo: String(user.id),
-                      });
-                    } catch {
-                      // task creation failure is non-blocking
-                    }
-                  }
-                  setNoteOpen(false);
-                  setNoteContent('');
-                  setCreateTaskFromNote(false);
-                }
-              }}
-            >
-              {noteAction.isLoading ? 'Đang xử lý...' : 'Thêm'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <NoteDialog
+        open={noteOpen}
+        onOpenChange={setNoteOpen}
+        entityType="lead"
+        entityId={lead.id}
+      />
 
       {/* Delete */}
       {isAdmin && (

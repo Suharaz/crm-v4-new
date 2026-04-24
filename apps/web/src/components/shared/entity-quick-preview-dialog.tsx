@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge } from '@/components/shared/status-badge';
+import NoteDialog from '@/components/shared/note-dialog';
 import { api } from '@/lib/api-client';
 import { formatDate } from '@/lib/utils';
 import { ExternalLink, Phone, Mail, User, Building, Tag, Calendar, Package, Loader2, MessageSquarePlus, Tags, CreditCard } from 'lucide-react';
@@ -96,9 +96,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
   const [loading, setLoading] = useState(false);
   const [activities, setActivities] = useState<PreviewActivity[]>([]);
   // Quick action states
-  const [noteOpen, setNoteOpen] = useState(false);
-  const [noteText, setNoteText] = useState('');
-  const [noteSaving, setNoteSaving] = useState(false);
+  const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [labelPickerOpen, setLabelPickerOpen] = useState(false);
   const [allLabels, setAllLabels] = useState<LabelEntity[]>([]);
   const [labelSaving, setLabelSaving] = useState(false);
@@ -144,23 +142,6 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
   const detailUrl = entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`;
   const labels: NestedOrFlatLabel[] = data?.labels || data?.leadLabels || data?.customerLabels || [];
   const currentLabelIds = new Set(labels.map((ll) => String((ll.label || ll).id)));
-
-  // Quick note submit
-  async function submitNote() {
-    if (!noteText.trim() || !entityId) return;
-    setNoteSaving(true);
-    try {
-      await api.post(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`, { type: 'NOTE', content: noteText.trim() });
-      setNoteText('');
-      setNoteOpen(false);
-      invalidatePreviewCache(entityType, entityId);
-      // Refresh activities in-place
-      const actRes = await api.get<{ data: PreviewActivity[] }>(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`).catch(() => ({ data: [] as PreviewActivity[] }));
-      setActivities(actRes.data || []);
-      router.refresh();
-    } catch { /* */ }
-    setNoteSaving(false);
-  }
 
   // Quick label toggle
   async function toggleLabel(labelId: string) {
@@ -308,14 +289,14 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
             {/* Quick Actions */}
             <div className="border-t border-slate-100 px-5 py-3 space-y-2">
               <div className="flex gap-2">
-                <Button size="sm" variant={noteOpen ? 'default' : 'outline'} onClick={() => { setNoteOpen(!noteOpen); setLabelPickerOpen(false); setPaymentOpen(false); }}>
+                <Button size="sm" variant="outline" onClick={() => { setNoteDialogOpen(true); setLabelPickerOpen(false); setPaymentOpen(false); }}>
                   <MessageSquarePlus className="h-3.5 w-3.5 mr-1" />Ghi chú
                 </Button>
-                <Button size="sm" variant={labelPickerOpen ? 'default' : 'outline'} onClick={() => { setLabelPickerOpen(!labelPickerOpen); setNoteOpen(false); setPaymentOpen(false); }}>
+                <Button size="sm" variant={labelPickerOpen ? 'default' : 'outline'} onClick={() => { setLabelPickerOpen(!labelPickerOpen); setPaymentOpen(false); }}>
                   <Tags className="h-3.5 w-3.5 mr-1" />Nhãn
                 </Button>
                 {entityType === 'lead' && (
-                  <Button size="sm" variant={paymentOpen ? 'default' : 'outline'} onClick={() => { setPaymentOpen(!paymentOpen); setNoteOpen(false); setLabelPickerOpen(false); }}>
+                  <Button size="sm" variant={paymentOpen ? 'default' : 'outline'} onClick={() => { setPaymentOpen(!paymentOpen); setLabelPickerOpen(false); }}>
                     <CreditCard className="h-3.5 w-3.5 mr-1" />Thêm giao dịch
                   </Button>
                 )}
@@ -324,17 +305,21 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                 )}
               </div>
 
-              {/* Inline note form */}
-              {noteOpen && (
-                <div className="space-y-2">
-                  <Textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="Nhập ghi chú..." rows={2} className="text-sm" autoFocus />
-                  <div className="flex justify-end gap-2">
-                    <Button size="sm" variant="ghost" onClick={() => setNoteOpen(false)}>Hủy</Button>
-                    <Button size="sm" onClick={submitNote} disabled={noteSaving || !noteText.trim()}>
-                      {noteSaving ? 'Đang lưu...' : 'Lưu'}
-                    </Button>
-                  </div>
-                </div>
+              {entityId && (
+                <NoteDialog
+                  open={noteDialogOpen}
+                  onOpenChange={setNoteDialogOpen}
+                  entityType={entityType}
+                  entityId={entityId}
+                  onSuccess={() => {
+                    if (!entityId) return;
+                    invalidatePreviewCache(entityType, entityId);
+                    api.get<{ data: PreviewActivity[] }>(`/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`)
+                      .then(r => setActivities(r.data || []))
+                      .catch(() => {});
+                    router.refresh();
+                  }}
+                />
               )}
 
               {/* Inline label picker */}

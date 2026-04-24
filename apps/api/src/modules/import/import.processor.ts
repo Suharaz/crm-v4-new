@@ -14,6 +14,20 @@ interface ImportJobData {
   filePath: string;
 }
 
+/**
+ * Escape a CSV cell per RFC 4180: wrap in quotes if value contains quote/comma/newline,
+ * and double up any internal quotes. Prevents row misalignment when error messages or
+ * original data contain commas/quotes.
+ */
+function escapeCsvCell(value: string | null | undefined): string {
+  if (value === null || value === undefined) return '';
+  const s = String(value);
+  if (s.includes('"') || s.includes(',') || s.includes('\n') || s.includes('\r')) {
+    return `"${s.replace(/"/g, '""')}"`;
+  }
+  return s;
+}
+
 @Processor('import')
 export class ImportProcessor extends WorkerHost {
   private readonly uploadDir: string;
@@ -34,7 +48,8 @@ export class ImportProcessor extends WorkerHost {
     let totalRows = 0;
     let successCount = 0;
     let errorCount = 0;
-    const errors: { row: number; field: string; message: string }[] = [];
+    const errors: { row: number; originalRow: Record<string, string>; message: string }[] = [];
+    let originalHeaders: string[] = [];
 
     try {
       // Preload lookup tables to avoid N+1 queries per row (PERF-H4)
@@ -57,21 +72,22 @@ export class ImportProcessor extends WorkerHost {
       for await (const row of parser) {
         rowIndex++;
         totalRows++;
+        // Capture headers from first row so error file preserves original columns
+        if (originalHeaders.length === 0) {
+          originalHeaders = Object.keys(row);
+        }
         try {
           if (type === 'leads') {
             await this.processLeadRow(row, rowIndex + 1, sourceMap, productMap, phoneCache);
           } else {
-            const warnings = await this.processCustomerRow(row, rowIndex + 1, labelMap);
-            // Row succeeds but report unmatched labels as warnings
-            for (const w of warnings) {
-              errors.push({ row: rowIndex + 1, field: 'labels', message: `[Warning] ${w}` });
-            }
+            // Warnings (unmatched labels) are silently ignored — row still counts as success
+            await this.processCustomerRow(row, rowIndex + 1, labelMap);
           }
           successCount++;
         } catch (e: unknown) {
           errorCount++;
           const message = e instanceof Error ? e.message : String(e);
-          errors.push({ row: rowIndex + 1, field: 'general', message });
+          errors.push({ row: rowIndex + 1, originalRow: row, message });
         }
 
         // Update progress every 100 rows
@@ -83,11 +99,20 @@ export class ImportProcessor extends WorkerHost {
         }
       }
 
-      // Generate error report if any
+      // Generate error report preserving original columns + row number + error message.
+      // User can fix inline and re-upload directly without cross-referencing original file.
       let errorFileUrl: string | null = null;
-      if (errors.length > 0) {
-        const errorCsv = 'row,field,message\n' +
-          errors.map((e) => `${e.row},"${e.field}","${e.message}"`).join('\n');
+      if (errors.length > 0 && originalHeaders.length > 0) {
+        const headerRow = [...originalHeaders, 'Dòng', 'Lỗi'];
+        const dataRows = errors.map((e) => {
+          const cells = originalHeaders.map((h) => escapeCsvCell(e.originalRow[h] ?? ''));
+          cells.push(escapeCsvCell(String(e.row)));
+          cells.push(escapeCsvCell(e.message));
+          return cells.join(',');
+        });
+        // UTF-8 BOM so Excel renders Vietnamese diacritics correctly
+        const bom = '﻿';
+        const errorCsv = bom + headerRow.map(escapeCsvCell).join(',') + '\n' + dataRows.join('\n');
         const errorDir = path.join(this.uploadDir, 'imports', 'errors');
         fs.mkdirSync(errorDir, { recursive: true });
         const errorFile = `error-${importJobId}.csv`;

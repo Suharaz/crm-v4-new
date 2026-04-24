@@ -49,9 +49,19 @@ export class ImportProcessor extends WorkerHost {
     let successCount = 0;
     let errorCount = 0;
     const errors: { row: number; originalRow: Record<string, string>; message: string }[] = [];
+    // Warnings: row succeeded but had non-fatal issues (e.g. label không tồn tại). Still counted as success.
+    const warnings: { row: number; originalRow: Record<string, string>; messages: string[] }[] = [];
     let originalHeaders: string[] = [];
 
     try {
+      // Load the owner (createdBy) of this import job — needed to attribute Activity NOTE rows
+      // created when a CSV row contains a `note`/`Ghi chú` column. Loaded once, not per row.
+      const jobRecord = await this.prisma.importJob.findUnique({
+        where: { id: jobId },
+        select: { createdBy: true },
+      });
+      const createdBy = jobRecord?.createdBy ?? null;
+
       // Preload lookup tables to avoid N+1 queries per row (PERF-H4)
       const [allSources, allProducts, allLabels] = await Promise.all([
         this.prisma.leadSource.findMany({ select: { id: true, name: true, skipPool: true } }),
@@ -77,13 +87,14 @@ export class ImportProcessor extends WorkerHost {
           originalHeaders = Object.keys(row);
         }
         try {
-          if (type === 'leads') {
-            await this.processLeadRow(row, rowIndex + 1, sourceMap, productMap, phoneCache);
-          } else {
-            // Warnings (unmatched labels) are silently ignored — row still counts as success
-            await this.processCustomerRow(row, rowIndex + 1, labelMap);
-          }
+          const rowWarnings =
+            type === 'leads'
+              ? await this.processLeadRow(row, rowIndex + 1, sourceMap, productMap, labelMap, phoneCache, createdBy)
+              : await this.processCustomerRow(row, rowIndex + 1, labelMap);
           successCount++;
+          if (rowWarnings.length > 0) {
+            warnings.push({ row: rowIndex + 1, originalRow: row, messages: rowWarnings });
+          }
         } catch (e: unknown) {
           errorCount++;
           const message = e instanceof Error ? e.message : String(e);
@@ -99,17 +110,29 @@ export class ImportProcessor extends WorkerHost {
         }
       }
 
-      // Generate error report preserving original columns + row number + error message.
+      // Generate issues report (errors + warnings) preserving original columns.
+      // Column "Loại" distinguishes fatal errors from non-fatal warnings so user can filter in Excel.
       // User can fix inline and re-upload directly without cross-referencing original file.
       let errorFileUrl: string | null = null;
-      if (errors.length > 0 && originalHeaders.length > 0) {
-        const headerRow = [...originalHeaders, 'Dòng', 'Lỗi'];
-        const dataRows = errors.map((e) => {
+      const hasIssues = errors.length > 0 || warnings.length > 0;
+      if (hasIssues && originalHeaders.length > 0) {
+        const headerRow = [...originalHeaders, 'Dòng', 'Loại', 'Thông điệp'];
+        const errorRows = errors.map((e) => {
           const cells = originalHeaders.map((h) => escapeCsvCell(e.originalRow[h] ?? ''));
           cells.push(escapeCsvCell(String(e.row)));
+          cells.push(escapeCsvCell('Lỗi'));
           cells.push(escapeCsvCell(e.message));
           return cells.join(',');
         });
+        const warningRows = warnings.map((w) => {
+          const cells = originalHeaders.map((h) => escapeCsvCell(w.originalRow[h] ?? ''));
+          cells.push(escapeCsvCell(String(w.row)));
+          cells.push(escapeCsvCell('Cảnh báo'));
+          // Join multiple warning messages for the same row with " | " so the CSV stays one row per source row
+          cells.push(escapeCsvCell(w.messages.join(' | ')));
+          return cells.join(',');
+        });
+        const dataRows = [...errorRows, ...warningRows];
         // UTF-8 BOM so Excel renders Vietnamese diacritics correctly
         const bom = '﻿';
         const errorCsv = bom + headerRow.map(escapeCsvCell).join(',') + '\n' + dataRows.join('\n');
@@ -139,13 +162,17 @@ export class ImportProcessor extends WorkerHost {
     }
   }
 
+  /** Returns array of non-fatal warning messages. Row still counts as success. */
   private async processLeadRow(
     row: Record<string, string>,
     rowNum: number,
     sourceMap: Map<string, { id: bigint; name: string; skipPool: boolean }>,
     productMap: Map<string, { id: bigint; name: string }>,
+    labelMap: Map<string, { id: bigint; name: string }>,
     phoneCache: Map<string, { id: bigint }>,
-  ) {
+    createdBy: bigint | null,
+  ): Promise<string[]> {
+    const warnings: string[] = [];
     const phone = normalizePhone(row.phone || row['Số điện thoại'] || '');
     const name = row.name || row['Họ tên'] || phone;
     if (!phone) throw new Error('Thiếu số điện thoại');
@@ -194,8 +221,20 @@ export class ImportProcessor extends WorkerHost {
     // Check skipPool on source (already preloaded)
     const status: 'POOL' | 'ZOOM' = source?.skipPool ? 'ZOOM' : 'POOL';
 
+    // Read labels + note first so they are excluded from the metadata bucket below.
+    const labelsRaw = row.labels || row['Nhãn'] || '';
+    const noteRaw = (row.note || row['Ghi chú'] || '').trim();
+
     // Extra columns → metadata JSONB (any column not in known fields)
-    const knownKeys = new Set(['phone', 'Số điện thoại', 'name', 'Họ tên', 'email', 'Email', 'source', 'Nguồn', 'product', 'Sản phẩm']);
+    const knownKeys = new Set([
+      'phone', 'Số điện thoại',
+      'name', 'Họ tên',
+      'email', 'Email',
+      'source', 'Nguồn',
+      'product', 'Sản phẩm',
+      'labels', 'Nhãn',
+      'note', 'Ghi chú',
+    ]);
     const metadata: Record<string, string> = {};
     for (const [key, val] of Object.entries(row)) {
       if (!knownKeys.has(key) && val && val.trim()) {
@@ -213,19 +252,52 @@ export class ImportProcessor extends WorkerHost {
       },
     });
 
-    // Merge labels from customer → new lead
+    // Labels: merge customer's existing labels + labels from CSV. Unknown label names → warning, not fatal.
+    const labelIds = new Set<string>(); // bigint → string for dedup in Set
     if (customer.id) {
       const custLabels = await this.prisma.customerLabel.findMany({
         where: { customerId: customer.id },
         select: { labelId: true },
       });
-      if (custLabels.length > 0) {
-        await this.prisma.leadLabel.createMany({
-          data: custLabels.map(cl => ({ leadId: lead.id, labelId: cl.labelId })),
-          skipDuplicates: true,
-        });
+      custLabels.forEach(cl => labelIds.add(cl.labelId.toString()));
+    }
+    if (labelsRaw.trim()) {
+      const labelNames = labelsRaw.split(',').map(l => l.trim()).filter(Boolean);
+      for (const labelName of labelNames) {
+        const found = labelMap.get(labelName.toLowerCase());
+        if (found) {
+          labelIds.add(found.id.toString());
+        } else {
+          warnings.push(`Nhãn "${labelName}" không tồn tại trong hệ thống — bỏ qua`);
+        }
       }
     }
+    if (labelIds.size > 0) {
+      await this.prisma.leadLabel.createMany({
+        data: [...labelIds].map(id => ({ leadId: lead.id, labelId: BigInt(id) })),
+        skipDuplicates: true,
+      });
+    }
+
+    // Note: create an Activity(type=NOTE) so it shows up in the lead timeline.
+    // Requires createdBy (uploader). If the uploader record is gone, silently skip with a warning.
+    if (noteRaw) {
+      if (createdBy) {
+        await this.prisma.activity.create({
+          data: {
+            entityType: 'LEAD',
+            entityId: lead.id,
+            userId: createdBy,
+            type: 'NOTE',
+            content: noteRaw,
+          },
+        });
+      } else {
+        warnings.push('Không xác định được người upload — note bị bỏ qua');
+      }
+    }
+
+    return warnings;
   }
 
   /** Returns array of warning messages (e.g. unmatched labels). Row still counts as success. */

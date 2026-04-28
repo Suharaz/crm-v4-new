@@ -5,8 +5,10 @@ import { PrismaClient } from '@prisma/client';
 import { normalizePhone, isValidVNPhone } from '@crm/utils';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Readable } from 'stream';
 import { parse } from 'csv-parse';
 import { ConfigService } from '@nestjs/config';
+import { decodeBufferAuto } from './csv-detect';
 
 interface ImportJobData {
   importJobId: string;
@@ -73,9 +75,13 @@ export class ImportProcessor extends WorkerHost {
       const labelMap = new Map(allLabels.map(l => [l.name.toLowerCase(), l]));
       const phoneCache = new Map<string, { id: bigint }>(); // phone → customer
 
-      // Stream CSV instead of loading entire file into memory
-      const parser = fs.createReadStream(absolutePath, 'utf-8').pipe(
-        parse({ columns: true, skip_empty_lines: true, trim: true, bom: true }),
+      // Auto-detect encoding (UTF-8 / UTF-16 / Windows-1258) and delimiter (',' / ';' / '\t' / '|')
+      // so users can upload Excel-saved CSVs without manual re-encoding.
+      // File size is capped at 10MB upstream — safe to read fully into memory.
+      const buf = await fs.promises.readFile(absolutePath);
+      const { text, delimiter } = decodeBufferAuto(buf);
+      const parser = Readable.from(text).pipe(
+        parse({ columns: true, skip_empty_lines: true, trim: true, bom: true, delimiter }),
       );
 
       let rowIndex = 0;
@@ -85,6 +91,22 @@ export class ImportProcessor extends WorkerHost {
         // Capture headers from first row so error file preserves original columns
         if (originalHeaders.length === 0) {
           originalHeaders = Object.keys(row);
+          // Both leads and customers require a phone column — if NONE of the canonical
+          // names are present, the CSV header is unreadable (most often because Excel
+          // saved as ANSI on a Vietnamese locale and substituted diacritics with '?').
+          // Fail the whole job with a clear message instead of producing N row-level errors.
+          const hasPhone = 'phone' in row || 'Số điện thoại' in row;
+          if (!hasPhone) {
+            // Mark all rows as a single global error and stop early. Most often caused
+            // by Excel saving as ANSI on a Vietnamese locale → diacritics replaced with '?'.
+            const guidance =
+              `Không nhận diện được cột "Số điện thoại". ` +
+              `Header đọc được: [${originalHeaders.join(', ')}]. ` +
+              `Hãy lưu lại file bằng "CSV UTF-8 (Comma delimited)" trong Excel rồi thử lại.`;
+            errors.push({ row: rowIndex + 1, originalRow: row, message: guidance });
+            errorCount++;
+            break;
+          }
         }
         try {
           const rowWarnings =

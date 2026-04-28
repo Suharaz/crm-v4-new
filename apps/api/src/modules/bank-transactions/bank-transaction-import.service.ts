@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { parse } from 'csv-parse/sync';
 import { createHash } from 'crypto';
 import { BankTransactionsService } from './bank-transactions.service';
+import { decodeBufferAuto } from '../import/csv-detect';
 
 const HEADER_MAP: Record<string, string> = {
   'mã giao dịch': 'externalId',
@@ -71,7 +72,9 @@ export class BankTransactionImportService {
   ) {}
 
   async importFromCsv(buffer: Buffer): Promise<ImportResult> {
-    const text = stripBOM(buffer.toString('utf8'));
+    // Auto-detect encoding (UTF-8 / UTF-16 / Windows-1258) and delimiter so
+    // Excel-saved CSVs from Vietnamese/EU locales work without manual fixing.
+    const { text, delimiter } = decodeBufferAuto(buffer);
     let rows: Record<string, string>[];
     try {
       rows = parse(text, {
@@ -80,6 +83,7 @@ export class BankTransactionImportService {
         skip_empty_lines: true,
         trim: true,
         relax_column_count: true,
+        delimiter,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Không đọc được file CSV';
@@ -175,10 +179,6 @@ export class BankTransactionImportService {
       .join(',');
     return Buffer.from(BOM + headerLine + '\r\n' + sampleRow + '\r\n', 'utf8');
   }
-}
-
-function stripBOM(s: string): string {
-  return s.charCodeAt(0) === 0xfeff ? s.slice(1) : s;
 }
 
 function normalizeText(v: unknown): string | undefined {

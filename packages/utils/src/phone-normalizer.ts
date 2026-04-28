@@ -2,6 +2,10 @@
  * Normalize Vietnamese phone numbers.
  * Strips +84 prefix, spaces, dashes, dots.
  * Ensures 10-11 digit VN format starting with 0.
+ *
+ * Recovers the leading '0' when Excel / Google Sheets has stripped it by
+ * treating the phone as a numeric value (very common when users paste a
+ * column of phones into Excel and save back to CSV).
  */
 export function normalizePhone(input: string): string {
   let phone = input.trim().replace(/[\s\-\.()]/g, '');
@@ -13,6 +17,14 @@ export function normalizePhone(input: string): string {
   // Convert 84 prefix (without +) to 0
   if (phone.startsWith('84') && phone.length >= 11) {
     phone = '0' + phone.slice(2);
+  }
+
+  // Restore missing leading '0' when input is exactly 9 digits and starts
+  // with a valid VN mobile prefix (3, 5, 7, 8, 9). Skips other 9-digit
+  // strings (e.g. landline-without-area-code, foreign numbers) to avoid
+  // false positives.
+  if (/^[35789]\d{8}$/.test(phone)) {
+    phone = '0' + phone;
   }
 
   return phone;

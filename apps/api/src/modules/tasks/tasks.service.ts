@@ -221,8 +221,8 @@ export class TasksService {
 
   // ── Cron ──
 
-  /** Every 5 minutes: process due reminders + escalation L1/L2. */
-  @Cron('*/5 * * * *')
+  /** Every 1 minute: process due reminders + escalation L1/L2. */
+  @Cron('*/1 * * * *')
   async processReminders() {
     try {
       const now = new Date();

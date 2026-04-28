@@ -1,6 +1,48 @@
 'use client';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import { sanitizeCsvCell } from '@crm/utils';
+
+/**
+ * Escape a single CSV field per RFC 4180: wrap in quotes if it contains
+ * a comma, double-quote, CR, or LF; double up internal quotes.
+ */
+function escapeCsvField(value: string): string {
+  if (/[",\r\n]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
+
+/**
+ * Build a CSV string from headers + rows.
+ * - Sanitizes each cell against formula injection (=, +, -, @, |)
+ * - Escapes RFC 4180 special chars
+ * - Prepends UTF-8 BOM so Excel renders Vietnamese diacritics correctly
+ */
+function buildCsv(headers: string[], rows: string[][]): string {
+  const allRows = [headers, ...rows];
+  const body = allRows
+    .map((row) => row.map((cell) => escapeCsvField(sanitizeCsvCell(cell))).join(','))
+    .join('\r\n');
+  // Prepend UTF-8 BOM (U+FEFF) so Excel detects UTF-8 and renders Vietnamese correctly
+  return '\uFEFF' + body;
+}
+
+/** Trigger a browser download for the given CSV content. */
+function downloadCsv(filename: string, content: string) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 /**
  * Schema of a single CSV column — drives both the documentation table and the
@@ -73,11 +115,31 @@ export function ImportTemplateDialog({ type, onClose }: Props) {
   const open = type !== null;
   const spec = type ? TEMPLATES[type] : null;
 
+  function handleDownload() {
+    if (!spec || !type) return;
+    const headers = spec.columns.map((c) => c.name);
+    const csv = buildCsv(headers, spec.sampleRows);
+    const filename = type === 'lead' ? 'mau-import-leads.csv' : 'mau-import-khach-hang.csv';
+    downloadCsv(filename, csv);
+  }
+
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="max-w-5xl">
         <DialogHeader>
-          <DialogTitle>{spec?.title ?? ''}</DialogTitle>
+          <div className="flex items-center justify-between gap-3 pr-8">
+            <DialogTitle>{spec?.title ?? ''}</DialogTitle>
+            {spec && (
+              <Button
+                size="sm"
+                onClick={handleDownload}
+                className="gap-1.5 bg-sky-600 hover:bg-sky-700 text-white"
+              >
+                <Download className="h-4 w-4" />
+                Tải file mẫu CSV
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
         {spec ? (

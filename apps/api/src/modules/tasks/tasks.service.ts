@@ -2,7 +2,7 @@ import {
   Injectable, NotFoundException, ConflictException,
   BadRequestException, Logger,
 } from '@nestjs/common';
-import { PrismaClient, Prisma, TaskStatus, UserRole } from '@prisma/client';
+import { PrismaClient, Prisma, TaskStatus, UserRole, EntityType } from '@prisma/client';
 import { Cron } from '@nestjs/schedule';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { buildAccessFilter, AccessFilterUser } from '../../common/filters/build-access-filter';
@@ -271,7 +271,7 @@ export class TasksService {
           status: 'PENDING',
           deletedAt: null,
         },
-        select: { id: true, title: true, assignedTo: true },
+        select: { id: true, title: true, assignedTo: true, entityType: true, entityId: true },
         take: 100,
       });
 
@@ -282,6 +282,9 @@ export class TasksService {
             title: 'Công việc quá hạn',
             content: `"${task.title}" đã quá hạn hơn 1 giờ`,
             type: 'TASK_OVERDUE',
+            // Propagate entity link so user can click thông báo → nhảy về lead/customer
+            entityType: task.entityType ?? null,
+            entityId: task.entityType ? task.entityId : null,
           })),
         });
         await this.prisma.task.updateMany({
@@ -301,6 +304,7 @@ export class TasksService {
         },
         select: {
           id: true, title: true, assignedTo: true,
+          entityType: true, entityId: true,
           assignee: { select: { departmentId: true, name: true } },
         },
         take: 100,
@@ -331,7 +335,14 @@ export class TasksService {
           managersByDept.get(key)!.push(m.id);
         }
 
-        const notifications: { userId: bigint; title: string; content: string; type: string }[] = [];
+        const notifications: {
+          userId: bigint;
+          title: string;
+          content: string;
+          type: string;
+          entityType: EntityType | null;
+          entityId: bigint | null;
+        }[] = [];
         const taskIdsToUpdate: bigint[] = [];
 
         for (const task of escalation2Tasks) {
@@ -343,6 +354,9 @@ export class TasksService {
                 title: 'Công việc nhân viên quá hạn',
                 content: `"${task.title}" của ${task.assignee.name} đã quá hạn hơn 24 giờ`,
                 type: 'TASK_ESCALATION',
+                // Manager click thông báo → nhảy về lead/customer của nhân viên
+                entityType: task.entityType ?? null,
+                entityId: task.entityType ? task.entityId : null,
               });
             }
           }
@@ -350,7 +364,7 @@ export class TasksService {
         }
 
         if (notifications.length > 0) {
-          await this.prisma.notification.createMany({ data: notifications as any });
+          await this.prisma.notification.createMany({ data: notifications });
         }
         if (taskIdsToUpdate.length > 0) {
           await this.prisma.task.updateMany({

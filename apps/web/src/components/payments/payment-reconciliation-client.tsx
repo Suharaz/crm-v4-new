@@ -447,20 +447,7 @@ export function PaymentReconciliationClient({
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div>
-      <div className="flex items-center justify-between mb-1">
-        <h1 className="text-2xl font-bold text-slate-900">Đối soát thanh toán</h1>
-        {isManager && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-sky-300 text-sky-700 hover:bg-sky-50 h-8 text-xs"
-            onClick={() => setImportOpen(true)}
-          >
-            <Upload className="h-3.5 w-3.5 mr-1.5" />
-            Tải lên Excel
-          </Button>
-        )}
-      </div>
+      <h1 className="text-2xl font-bold text-slate-900 mb-1">Đối soát thanh toán</h1>
       <p className="text-sm text-slate-500 mb-4">Tick 1 bên trái + 1 bên phải → Xác minh ghép cặp</p>
 
       <ImportExcelDialog open={importOpen} onClose={() => { setImportOpen(false); router.refresh(); }} />
@@ -474,25 +461,38 @@ export function PaymentReconciliationClient({
 
         {/* ── Tab: Chờ xử lý ── */}
         <TabsContent value="reconcile">
-          {/* Action bar */}
-          <div className="flex items-center gap-3 my-3 min-h-[40px]">
-            {processing ? (
-              <Loader2 className="h-5 w-5 animate-spin text-sky-500" />
-            ) : canMatch ? (
-              <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={handleMatch}>
-                <CheckCircle className="h-4 w-4 mr-1" />Xác minh ghép cặp
+          {/* Action bar — left: contextual actions, right: import Excel (manager+) */}
+          <div className="flex items-center justify-between gap-3 my-3 min-h-[40px]">
+            <div className="flex items-center gap-3">
+              {processing ? (
+                <Loader2 className="h-5 w-5 animate-spin text-sky-500" />
+              ) : canMatch ? (
+                <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={handleMatch}>
+                  <CheckCircle className="h-4 w-4 mr-1" />Xác minh ghép cặp
+                </Button>
+              ) : selectedLeft && !selectedRight ? (
+                <div className="flex gap-2">
+                  <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={handleVerifyOnly}>
+                    <CheckCircle className="h-4 w-4 mr-1" />Xác nhận (không cần match)
+                  </Button>
+                  <Button variant="outline" className="text-red-600 border-red-200" onClick={handleReject}>
+                    <XCircle className="h-4 w-4 mr-1" />Từ chối
+                  </Button>
+                </div>
+              ) : (
+                <span className="text-sm text-slate-400">Chọn khoản thanh toán để xử lý</span>
+              )}
+            </div>
+            {isManager && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-sky-300 text-sky-700 hover:bg-sky-50 h-8 text-xs"
+                onClick={() => setImportOpen(true)}
+              >
+                <Upload className="h-3.5 w-3.5 mr-1.5" />
+                Tải lên Excel
               </Button>
-            ) : selectedLeft && !selectedRight ? (
-              <div className="flex gap-2">
-                <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={handleVerifyOnly}>
-                  <CheckCircle className="h-4 w-4 mr-1" />Xác nhận (không cần match)
-                </Button>
-                <Button variant="outline" className="text-red-600 border-red-200" onClick={handleReject}>
-                  <XCircle className="h-4 w-4 mr-1" />Từ chối
-                </Button>
-              </div>
-            ) : (
-              <span className="text-sm text-slate-400">Chọn khoản thanh toán để xử lý</span>
             )}
           </div>
 

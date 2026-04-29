@@ -8,21 +8,25 @@ import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
 import { createReadStream } from 'fs';
 import type { Response } from 'express';
 
+const CSV_UPLOAD_OPTIONS = {
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req: any, file: any, cb: any) => {
+    const okMime = ['text/csv', 'text/plain', 'application/vnd.ms-excel', 'application/octet-stream'].includes(file.mimetype);
+    const okExt = /\.csv$/i.test(file.originalname);
+    if (!okMime && !okExt) {
+      return cb(new BadRequestException('Chỉ chấp nhận file CSV (.csv)'), false);
+    }
+    cb(null, true);
+  },
+};
+
 @Controller('imports')
 @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
 export class ImportController {
   constructor(private readonly service: ImportService) {}
 
   @Post('leads')
-  @UseInterceptors(FileInterceptor('file', {
-    limits: { fileSize: 10 * 1024 * 1024 },
-    fileFilter: (_req: any, file: any, cb: any) => {
-      if (!file.originalname.endsWith('.csv')) {
-        return cb(new BadRequestException('Chỉ chấp nhận file CSV'), false);
-      }
-      cb(null, true);
-    },
-  }))
+  @UseInterceptors(FileInterceptor('file', CSV_UPLOAD_OPTIONS))
   async importLeads(@UploadedFile() file: Express.Multer.File, @CurrentUser() user: any) {
     if (!file) throw new BadRequestException('Vui lòng upload file CSV');
     const data = await this.service.createImportJob('leads', file, user.id);
@@ -30,15 +34,7 @@ export class ImportController {
   }
 
   @Post('customers')
-  @UseInterceptors(FileInterceptor('file', {
-    limits: { fileSize: 10 * 1024 * 1024 },
-    fileFilter: (_req: any, file: any, cb: any) => {
-      if (!file.originalname.endsWith('.csv')) {
-        return cb(new BadRequestException('Chỉ chấp nhận file CSV'), false);
-      }
-      cb(null, true);
-    },
-  }))
+  @UseInterceptors(FileInterceptor('file', CSV_UPLOAD_OPTIONS))
   async importCustomers(@UploadedFile() file: Express.Multer.File, @CurrentUser() user: any) {
     if (!file) throw new BadRequestException('Vui lòng upload file CSV');
     const data = await this.service.createImportJob('customers', file, user.id);

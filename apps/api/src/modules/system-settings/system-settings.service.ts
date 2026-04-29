@@ -42,7 +42,7 @@ export class SystemSettingsService {
   }
 
   /** Mask secret values with bullets + last 4 chars (e.g. `••••a3f2`). Non-secrets and empty values pass through. */
-  private maskIfSecret(key: string, value: string): string {
+  maskIfSecret(key: string, value: string): string {
     if (!SECRET_KEY_PATTERN.test(key) || !value) return value;
     return value.length <= 4 ? '••••' : `••••${value.slice(-4)}`;
   }

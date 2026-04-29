@@ -81,7 +81,15 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
           process.env.NODE_ENV !== 'production'
             ? { target: 'pino-pretty', options: { colorize: true } }
             : undefined,
-        redact: ['req.headers.authorization', 'req.body.password', 'req.body.refreshToken', 'req.body.value'],
+        redact: ['req.headers.authorization', 'req.body.password', 'req.body.refreshToken'],
+        serializers: {
+          req(req: any) {
+            if (req.url?.includes('/system-settings') && req.raw?.method === 'PUT' && req.body?.value) {
+              return { ...req, body: { ...req.body, value: '[Redacted]' } };
+            }
+            return req;
+          },
+        },
       },
     }),
     PrismaModule,

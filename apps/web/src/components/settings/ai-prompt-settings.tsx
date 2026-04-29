@@ -114,7 +114,7 @@ export function AiPromptSettings({ initialSettings }: Props) {
             type="password"
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
-            placeholder={apiKeyIsMasked ? `Đã có key (${initialApiKey}) — để trống nếu không đổi` : 'sk-or-v1-...'}
+            placeholder={apiKeyIsMasked ? 'Key đã được thiết lập — để trống nếu không đổi' : 'sk-or-v1-...'}
             className="flex-1"
           />
           <Button

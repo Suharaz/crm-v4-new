@@ -18,6 +18,6 @@ export class SystemSettingsController {
   @Roles('SUPER_ADMIN')
   async set(@Param('key') key: string, @Body() body: { value: string }) {
     await this.service.set(key, body.value);
-    return { data: { key, value: body.value } };
+    return { data: { key, value: this.service.maskIfSecret(key, body.value) } };
   }
 }

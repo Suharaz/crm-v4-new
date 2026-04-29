@@ -20,7 +20,11 @@ interface OpenRouterModel {
 
 /** Settings tab for AI config: API key, model, prompts (SUPER_ADMIN only). */
 export function AiPromptSettings({ initialSettings }: Props) {
-  const [apiKey, setApiKey] = useState(initialSettings.ai_api_key || '');
+  // Backend masks ai_api_key as "••••xxxx". Don't prefill input with masked value
+  // (would overwrite real key on save). Show mask as placeholder hint instead.
+  const initialApiKey = initialSettings.ai_api_key || '';
+  const apiKeyIsMasked = initialApiKey.startsWith('••••');
+  const [apiKey, setApiKey] = useState(apiKeyIsMasked ? '' : initialApiKey);
   const [model, setModel] = useState(initialSettings.ai_model || 'google/gemini-2.0-flash-exp:free');
   const [callPrompt, setCallPrompt] = useState(initialSettings.ai_call_analysis_prompt || '');
   const [customerPrompt, setCustomerPrompt] = useState(initialSettings.ai_customer_analysis_prompt || '');
@@ -110,12 +114,12 @@ export function AiPromptSettings({ initialSettings }: Props) {
             type="password"
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
-            placeholder="sk-or-v1-..."
+            placeholder={apiKeyIsMasked ? `Đã có key (${initialApiKey}) — để trống nếu không đổi` : 'sk-or-v1-...'}
             className="flex-1"
           />
           <Button
             size="sm"
-            disabled={saving === 'ai_api_key'}
+            disabled={saving === 'ai_api_key' || !apiKey.trim()}
             onClick={() => save('ai_api_key', apiKey, 'API key')}
           >
             {saving === 'ai_api_key' ? 'Đang lưu...' : 'Lưu'}

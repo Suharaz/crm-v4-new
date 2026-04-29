@@ -70,7 +70,7 @@ export function BankImportTab() {
 
   return (
     <div className="my-4 space-y-4">
-      {/* Hướng dẫn */}
+      {/* Hướng dẫn — chứa luôn nút tải file mẫu để gom 1 chỗ */}
       <div className="rounded-xl border border-sky-100 bg-sky-50/50 p-4">
         <h3 className="text-sm font-semibold text-sky-900 mb-2">Hướng dẫn import sao kê CSV</h3>
         <ol className="text-xs text-sky-800 space-y-1 list-decimal list-inside">
@@ -78,19 +78,18 @@ export function BankImportTab() {
           <li>Điền dữ liệu từ file sao kê bank vào template. Cột thừa sẽ bị bỏ qua, cột "Mã giao dịch" để trống sẽ tự sinh hash.</li>
           <li>Upload file — hệ thống tự dedup trùng, tự match với payment PENDING đang chờ.</li>
         </ol>
+        <button
+          type="button"
+          onClick={handleDownloadTemplate}
+          className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-sky-700 hover:text-sky-900 hover:underline"
+        >
+          <Download className="h-3.5 w-3.5" />
+          Tải file mẫu
+        </button>
       </div>
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button
-          variant="outline"
-          onClick={handleDownloadTemplate}
-          className="gap-2 border-sky-200 text-sky-700 hover:bg-sky-50"
-        >
-          <Download className="h-4 w-4" />
-          Tải template CSV
-        </Button>
-
         <div className="flex-1 flex items-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-white px-4 py-2.5 hover:border-sky-300 transition-colors">
           <FileSpreadsheet className="h-5 w-5 text-slate-400" />
           <input

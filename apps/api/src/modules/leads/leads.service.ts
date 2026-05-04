@@ -482,6 +482,12 @@ export class LeadsService {
           metadata: { toUserId: targetUserId.toString() },
         },
       });
+
+      // Reset recall timer khi assign cho user mới
+      await tx.leadLabel.updateMany({
+        where: { leadId: id },
+        data: { recallStartAt: new Date() },
+      });
     });
 
     return this.findById(id);
@@ -526,6 +532,12 @@ export class LeadsService {
           content: `Phân hàng loạt cho ${targetUser.name}`,
           metadata: { toUserId: targetUserId.toString(), bulk: true },
         })),
+      });
+
+      // Reset recall timer khi bulk assign
+      await tx.leadLabel.updateMany({
+        where: { leadId: { in: leads.map(l => l.id) } },
+        data: { recallStartAt: new Date() },
       });
     });
 
@@ -676,6 +688,14 @@ export class LeadsService {
         reason: `Chuyển: ${targetType}`,
       },
     });
+
+    // Reset recall timer khi chuyển phòng ban hoặc assign mới
+    if (targetType === 'DEPARTMENT') {
+      await this.prisma.leadLabel.updateMany({
+        where: { leadId: id },
+        data: { recallStartAt: new Date() },
+      });
+    }
 
     return this.findById(id);
   }

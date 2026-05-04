@@ -151,6 +151,7 @@ model User {
   // Config & templates
   assignmentTemplatesCreated AssignmentTemplate[]
   recallConfigsCreated       RecallConfig[]
+  labelRecallConfigsCreated  LabelRecallConfig[]
   apiKeysCreated             ApiKey[]
 
   // Tasks
@@ -530,14 +531,16 @@ model Label {
 
   leadLabels     LeadLabel[]
   customerLabels CustomerLabel[]
+  recallConfig   LabelRecallConfig?
 
   @@map("labels")
 }
 
 model LeadLabel {
-  leadId    BigInt   @map("lead_id")
-  labelId   BigInt   @map("label_id")
-  createdAt DateTime @default(now()) @map("created_at")
+  leadId        BigInt   @map("lead_id")
+  labelId       BigInt   @map("label_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  recallStartAt DateTime @default(now()) @map("recall_start_at")
 
   lead  Lead  @relation(fields: [leadId], references: [id])
   label Label @relation(fields: [labelId], references: [id])
@@ -722,6 +725,21 @@ model RecallConfig {
   creator User @relation(fields: [createdBy], references: [id])
 
   @@map("recall_configs")
+}
+
+model LabelRecallConfig {
+  id        BigInt   @id @default(autoincrement())
+  labelId   BigInt   @unique @map("label_id")
+  days      Int
+  isActive  Boolean  @default(true) @map("is_active")
+  createdBy BigInt   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  label   Label @relation(fields: [labelId], references: [id])
+  creator User  @relation(fields: [createdBy], references: [id])
+
+  @@map("label_recall_configs")
 }
 
 // ─── TASKS / TODO ───────────────────────────────────────────────────────────

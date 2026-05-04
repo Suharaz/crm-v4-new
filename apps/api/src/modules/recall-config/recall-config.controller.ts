@@ -54,4 +54,38 @@ export class RecallConfigController {
   runNow() {
     return this.service.runAutoRecall();
   }
+
+  // ── Label Recall Config CRUD ─────────────────────────────────────────────
+
+  @Get('labels')
+  listLabelConfigs() {
+    return this.service.listLabelConfigs();
+  }
+
+  @Post('labels')
+  createLabelConfig(
+    @Body() body: { labelId: string; days: number },
+    @CurrentUser() user: { id: bigint },
+  ) {
+    return this.service.createLabelConfig(
+      { labelId: BigInt(body.labelId), days: body.days },
+      user.id,
+    );
+  }
+
+  @Patch('labels/:id')
+  updateLabelConfig(
+    @Param('id', ParseBigIntPipe) id: bigint,
+    @Body() body: { days?: number; isActive?: boolean },
+  ) {
+    return this.service.updateLabelConfig(id, {
+      days: body.days,
+      isActive: body.isActive,
+    });
+  }
+
+  @Delete('labels/:id')
+  removeLabelConfig(@Param('id', ParseBigIntPipe) id: bigint) {
+    return this.service.removeLabelConfig(id);
+  }
 }

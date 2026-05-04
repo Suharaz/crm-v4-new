@@ -292,3 +292,175 @@ describe('getCutoffDate — tính ngày cắt', () => {
     expect(cutoff.toISOString().slice(0, 10)).toBe('2026-02-26');
   });
 });
+
+// ─── Label-based recall — thu hồi theo nhãn ─────────────────────────────────
+
+interface LeadWithLabels {
+  id: bigint;
+  status: LeadStatus;
+  departmentId: bigint | null;
+  assignedUserId: bigint | null;
+  labels: { labelId: bigint; recallStartAt: Date }[];
+}
+
+interface LabelRecallConfig {
+  labelId: bigint;
+  days: number;
+  isActive: boolean;
+}
+
+/**
+ * Kiểm tra lead có đủ điều kiện recall theo nhãn không.
+ * Điều kiện: đã assign, status không phải CONVERTED/LOST,
+ * có nhãn với recallStartAt quá hạn config.days
+ */
+function isLeadEligibleForLabelRecall(
+  lead: LeadWithLabels,
+  config: LabelRecallConfig,
+  now = new Date(),
+): boolean {
+  if (!config.isActive) return false;
+  if (lead.assignedUserId === null) return false;
+  if (['CONVERTED', 'LOST'].includes(lead.status)) return false;
+
+  const cutoff = getCutoffDate(config.days, now);
+  return lead.labels.some(
+    (l) => l.labelId === config.labelId && l.recallStartAt < cutoff,
+  );
+}
+
+/** Simulate reset recallStartAt khi chuyển dept */
+function resetRecallStartAt(lead: LeadWithLabels, now = new Date()): LeadWithLabels {
+  return {
+    ...lead,
+    labels: lead.labels.map((l) => ({ ...l, recallStartAt: now })),
+  };
+}
+
+describe('Label-based recall — thu hồi theo nhãn', () => {
+  const HOT_LABEL = BigInt(100);
+  const config: LabelRecallConfig = { labelId: HOT_LABEL, days: 7, isActive: true };
+  const now = new Date('2026-05-04T12:00:00Z');
+
+  it('lead assigned, có nhãn "Nóng" gắn >7 ngày → đủ điều kiện recall', () => {
+    const lead: LeadWithLabels = {
+      id: BigInt(1), status: 'IN_PROGRESS',
+      departmentId: BigInt(10), assignedUserId: BigInt(5),
+      labels: [{ labelId: HOT_LABEL, recallStartAt: daysAgo(10) }],
+    };
+    expect(isLeadEligibleForLabelRecall(lead, config, now)).toBe(true);
+  });
+
+  it('lead assigned, nhãn gắn <7 ngày → chưa đủ điều kiện', () => {
+    const lead: LeadWithLabels = {
+      id: BigInt(2), status: 'IN_PROGRESS',
+      departmentId: BigInt(10), assignedUserId: BigInt(5),
+      labels: [{ labelId: HOT_LABEL, recallStartAt: daysAgo(3) }],
+    };
+    expect(isLeadEligibleForLabelRecall(lead, config, now)).toBe(false);
+  });
+
+  it('lead CONVERTED có nhãn quá hạn → bỏ qua', () => {
+    const lead: LeadWithLabels = {
+      id: BigInt(3), status: 'CONVERTED',
+      departmentId: BigInt(10), assignedUserId: BigInt(5),
+      labels: [{ labelId: HOT_LABEL, recallStartAt: daysAgo(30) }],
+    };
+    expect(isLeadEligibleForLabelRecall(lead, config, now)).toBe(false);
+  });
+
+  it('lead LOST có nhãn quá hạn → bỏ qua', () => {
+    const lead: LeadWithLabels = {
+      id: BigInt(4), status: 'LOST',
+      departmentId: BigInt(10), assignedUserId: BigInt(5),
+      labels: [{ labelId: HOT_LABEL, recallStartAt: daysAgo(30) }],
+    };
+    expect(isLeadEligibleForLabelRecall(lead, config, now)).toBe(false);
+  });
+
+  it('lead chưa assign (POOL, assignedUserId=null) → bỏ qua', () => {
+    const lead: LeadWithLabels = {
+      id: BigInt(5), status: 'POOL',
+      departmentId: BigInt(10), assignedUserId: null,
+      labels: [{ labelId: HOT_LABEL, recallStartAt: daysAgo(30) }],
+    };
+    expect(isLeadEligibleForLabelRecall(lead, config, now)).toBe(false);
+  });
+
+  it('config isActive=false → bỏ qua', () => {
+    const inactiveConfig: LabelRecallConfig = { labelId: HOT_LABEL, days: 7, isActive: false };
+    const lead: LeadWithLabels = {
+      id: BigInt(6), status: 'IN_PROGRESS',
+      departmentId: BigInt(10), assignedUserId: BigInt(5),
+      labels: [{ labelId: HOT_LABEL, recallStartAt: daysAgo(30) }],
+    };
+    expect(isLeadEligibleForLabelRecall(lead, inactiveConfig, now)).toBe(false);
+  });
+
+  it('lead có nhiều nhãn, chỉ nhãn config recall có hiệu lực', () => {
+    const lead: LeadWithLabels = {
+      id: BigInt(7), status: 'ASSIGNED',
+      departmentId: BigInt(10), assignedUserId: BigInt(5),
+      labels: [
+        { labelId: BigInt(99), recallStartAt: daysAgo(30) },
+        { labelId: HOT_LABEL, recallStartAt: daysAgo(10) },
+      ],
+    };
+    expect(isLeadEligibleForLabelRecall(lead, config, now)).toBe(true);
+  });
+
+  it('lead có nhãn khác quá hạn nhưng không match config labelId → bỏ qua', () => {
+    const lead: LeadWithLabels = {
+      id: BigInt(8), status: 'ASSIGNED',
+      departmentId: BigInt(10), assignedUserId: BigInt(5),
+      labels: [{ labelId: BigInt(99), recallStartAt: daysAgo(30) }],
+    };
+    expect(isLeadEligibleForLabelRecall(lead, config, now)).toBe(false);
+  });
+});
+
+// ─── recallStartAt reset ─────────────────────────────────────────────────────
+
+describe('recallStartAt reset — khi chuyển dept/assign', () => {
+  const HOT_LABEL = BigInt(100);
+
+  it('transfer DEPARTMENT → recallStartAt reset về now', () => {
+    const resetTime = new Date('2026-05-04T12:00:00Z');
+    const lead: LeadWithLabels = {
+      id: BigInt(1), status: 'IN_PROGRESS',
+      departmentId: BigInt(10), assignedUserId: BigInt(5),
+      labels: [{ labelId: HOT_LABEL, recallStartAt: daysAgo(10) }],
+    };
+
+    const resetLead = resetRecallStartAt(lead, resetTime);
+    expect(resetLead.labels[0].recallStartAt).toEqual(resetTime);
+  });
+
+  it('reset áp dụng cho tất cả labels trên lead', () => {
+    const resetTime = new Date('2026-05-04T12:00:00Z');
+    const lead: LeadWithLabels = {
+      id: BigInt(1), status: 'IN_PROGRESS',
+      departmentId: BigInt(10), assignedUserId: BigInt(5),
+      labels: [
+        { labelId: BigInt(100), recallStartAt: daysAgo(10) },
+        { labelId: BigInt(200), recallStartAt: daysAgo(20) },
+      ],
+    };
+
+    const resetLead = resetRecallStartAt(lead, resetTime);
+    expect(resetLead.labels.every((l) => l.recallStartAt.getTime() === resetTime.getTime())).toBe(true);
+  });
+
+  it('sau reset, lead với config 7 ngày → chưa đủ điều kiện recall', () => {
+    const config: LabelRecallConfig = { labelId: HOT_LABEL, days: 7, isActive: true };
+    const resetTime = new Date('2026-05-04T12:00:00Z');
+    const lead: LeadWithLabels = {
+      id: BigInt(1), status: 'IN_PROGRESS',
+      departmentId: BigInt(20), assignedUserId: BigInt(5),
+      labels: [{ labelId: HOT_LABEL, recallStartAt: daysAgo(10) }],
+    };
+
+    const resetLead = resetRecallStartAt(lead, resetTime);
+    expect(isLeadEligibleForLabelRecall(resetLead, config, resetTime)).toBe(false);
+  });
+});

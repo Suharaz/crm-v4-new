@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { PrismaClient, LeadStatus, CustomerStatus } from '@prisma/client';
 import { Cron } from '@nestjs/schedule';
 
@@ -60,6 +60,66 @@ export class RecallConfigService {
     return { data: { success: true } };
   }
 
+  // ── Label Recall Config CRUD ─────────────────────────────────────────────
+
+  async listLabelConfigs() {
+    const configs = await this.prisma.labelRecallConfig.findMany({
+      orderBy: { createdAt: 'asc' },
+      include: {
+        label: { select: { id: true, name: true, color: true } },
+        creator: { select: { id: true, name: true } },
+      },
+    });
+    return { data: configs };
+  }
+
+  async getLabelConfigById(id: bigint) {
+    const config = await this.prisma.labelRecallConfig.findUnique({
+      where: { id },
+      include: {
+        label: { select: { id: true, name: true, color: true } },
+        creator: { select: { id: true, name: true } },
+      },
+    });
+    if (!config) throw new NotFoundException('Cấu hình recall theo nhãn không tồn tại');
+    return { data: config };
+  }
+
+  async createLabelConfig(data: { labelId: bigint; days: number }, createdBy: bigint) {
+    const existing = await this.prisma.labelRecallConfig.findUnique({
+      where: { labelId: data.labelId },
+    });
+    if (existing) throw new ConflictException('Nhãn này đã có cấu hình recall');
+
+    const config = await this.prisma.labelRecallConfig.create({
+      data: { labelId: data.labelId, days: data.days, createdBy },
+      include: {
+        label: { select: { id: true, name: true, color: true } },
+        creator: { select: { id: true, name: true } },
+      },
+    });
+    return { data: config };
+  }
+
+  async updateLabelConfig(id: bigint, data: { days?: number; isActive?: boolean }) {
+    await this.getLabelConfigById(id);
+    const config = await this.prisma.labelRecallConfig.update({
+      where: { id },
+      data,
+      include: {
+        label: { select: { id: true, name: true, color: true } },
+        creator: { select: { id: true, name: true } },
+      },
+    });
+    return { data: config };
+  }
+
+  async removeLabelConfig(id: bigint) {
+    await this.getLabelConfigById(id);
+    await this.prisma.labelRecallConfig.delete({ where: { id } });
+    return { data: { success: true } };
+  }
+
   @Cron('0 */2 * * *')
   async runAutoRecall() {
     try {
@@ -78,6 +138,8 @@ export class RecallConfigService {
           totalRecalled += await this._recallCustomers(config, cutoffDate);
         }
       }
+
+      totalRecalled += await this._recallLeadsByLabel();
 
       this.logger.log(`Auto-recall hoàn thành. Tổng số entities đã thu hồi: ${totalRecalled}`);
       return { recalled: totalRecalled };
@@ -175,6 +237,59 @@ export class RecallConfigService {
     }
 
     if (totalRecalled > 0) this.logger.log(`Đã thu hồi ${totalRecalled} customers về kho thả nổi`);
+    return totalRecalled;
+  }
+
+  private async _recallLeadsByLabel(): Promise<number> {
+    const configs = await this.prisma.labelRecallConfig.findMany({ where: { isActive: true } });
+    if (configs.length === 0) return 0;
+
+    const CHUNK_SIZE = 500;
+    let totalRecalled = 0;
+
+    for (const config of configs) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - config.days);
+
+      let configRecalled = 0;
+      while (true) {
+        const leads = await this.prisma.lead.findMany({
+          where: {
+            assignedUserId: { not: null },
+            deletedAt: null,
+            status: { notIn: [LeadStatus.CONVERTED, LeadStatus.LOST] },
+            labels: {
+              some: {
+                labelId: config.labelId,
+                recallStartAt: { lt: cutoffDate },
+              },
+            },
+          },
+          select: { id: true },
+          take: CHUNK_SIZE,
+        });
+
+        if (leads.length === 0) break;
+
+        const leadIds = leads.map((l) => l.id);
+
+        await this.prisma.lead.updateMany({
+          where: { id: { in: leadIds } },
+          data: { status: LeadStatus.POOL, departmentId: null, assignedUserId: null },
+        });
+
+        configRecalled += leads.length;
+        if (leads.length < CHUNK_SIZE) break;
+      }
+
+      if (configRecalled > 0) {
+        this.logger.log(
+          `Đã thu hồi ${configRecalled} leads theo nhãn (labelId=${config.labelId}, ${config.days} ngày)`,
+        );
+      }
+      totalRecalled += configRecalled;
+    }
+
     return totalRecalled;
   }
 }

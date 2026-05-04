@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Customer Multi-Phone — Số điện thoại phụ (2026-05-04)
+- **Feature:** Mỗi Customer có thể có nhiều số phụ (1 chính + N phụ) với dedup cross-table và search match toàn diện.
+- **Database:** Bảng mới `customer_phones` (id, customer_id, phone, label, note, created_by, soft delete). 3 index: `customer_id`, `phone`, `(phone, deleted_at)`. FK CASCADE qua app-level. Migration `20260504070357_add_customer_phones`.
+- **Backend:**
+  - `CustomerPhonesService` — single source of truth: `findCustomerByAnyPhone()`, `assertPhoneNotExists()` (cross-table), `addPhone`, `updatePhone`, `softDeletePhone`, `listPhones`.
+  - 4 endpoints CRUD: `GET/POST/PATCH/DELETE /customers/:id/phones[/:phoneId]` — mutating chỉ MANAGER+ qua `@Roles`.
+  - `findById` include `phones` (FE 1 round-trip).
+  - Tất cả nơi dedup/search/findOrCreate dùng helper: `customers.service`, `search.service`, `import.processor` (CSV lead+customer), `third-party-api.controller`, `call-logs.service`, `leads.service`.
+- **Frontend:**
+  - `CustomerPhonesSection` component trên trang chi tiết KH: list + add/edit/delete dialog, ConfirmDialog cho xóa, role-gated UI (MANAGER+ thấy nút edit).
+  - API client `lib/api/customer-phones.ts`.
+  - `CustomerRecord.phones` thêm vào types.
+- **Behavior:**
+  - Search SĐT (global + searchByPhone) match cả số chính lẫn số phụ — silent return (không phân biệt nguồn).
+  - Tạo customer với phone trùng số phụ KH cũ → 409.
+  - CSV import lead/customer: phone trùng số phụ KH cũ → reuse customer (không tạo mới).
+- **Tests:** 16 integration test pass (`tests/api/customers/customer-multi-phone-crud-and-cross-table-dedup.test.ts`) — RBAC, cross-table dedup, search match, soft delete + reuse.
+
 ### Task Reminders + Shared Note Dialog — Flexible scheduling (2026-04-24)
 - **Feature:** 3 new components + cron refactor for task reminder notifications with custom scheduling.
 - **Database:** New `TaskReminder` table (1-N with Task). Tracks `remindAt`, `remindedAt` flag, optional label. Max 5 reminders/task. Cascade delete with task. Replaced old `Task.remindAt`/`Task.remindedAt` columns.

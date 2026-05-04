@@ -6,6 +6,7 @@ import { CreateOrderDialog } from '@/components/orders/create-order-dialog';
 import { CustomerAnalysisCard } from '@/components/customers/customer-analysis-card';
 import { CustomerActivityByDepartment } from '@/components/customers/customer-activity-by-department';
 import { CustomerOrderList } from '@/components/customers/customer-order-list';
+import { CustomerPhonesSection } from '@/components/customers/customer-phones-section';
 import { formatDate } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -149,6 +150,9 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
               </div>
             </div>
           </div>
+
+          {/* Số điện thoại phụ — đặt liền kề thông tin liên hệ */}
+          <CustomerPhonesSection customerId={id} phones={customer.phones ?? []} />
 
           {/* Customer analysis card */}
           <CustomerAnalysisCard

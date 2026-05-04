@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { PrismaClient, Prisma, UserRole } from '@prisma/client';
-import { normalizePhone, isValidVNPhone } from '@crm/utils';
+import { normalizePhone } from '@crm/utils';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CustomerListQueryDto } from './dto/customer-list-query.dto';
+import { CustomerPhonesService } from './customer-phones.service';
 import { buildAccessFilter, AccessFilterUser } from '../../common/filters/build-access-filter';
 
 const CUSTOMER_SELECT = {
@@ -33,7 +34,10 @@ type CurrentUser = AccessFilterUser;
 
 @Injectable()
 export class CustomersService {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly customerPhonesService: CustomerPhonesService,
+  ) {}
 
   async list(query: CustomerListQueryDto, user?: CurrentUser) {
     const limit = query.limit ?? 20;
@@ -90,12 +94,31 @@ export class CustomersService {
 
   async searchByPhone(phone: string) {
     const normalized = normalizePhone(phone);
-    const data = await this.prisma.customer.findMany({
+
+    // 1) Match số chính
+    const primary = await this.prisma.customer.findMany({
       where: { phone: normalized, deletedAt: null },
       select: { id: true, phone: true, name: true, email: true, status: true },
-      take: 10,
     });
-    return { data };
+
+    // 2) Match số phụ → lấy customerId, exclude những id đã match số chính, fetch customer info
+    const altPhones = await this.prisma.customerPhone.findMany({
+      where: { phone: normalized, deletedAt: null },
+      select: { customerId: true },
+    });
+    const altIds = altPhones
+      .map(p => p.customerId)
+      .filter(id => !primary.some(c => c.id === id));
+
+    const fromAlt = altIds.length
+      ? await this.prisma.customer.findMany({
+          where: { id: { in: altIds }, deletedAt: null },
+          select: { id: true, phone: true, name: true, email: true, status: true },
+        })
+      : [];
+
+    // QĐ 3A: silent return — không phân biệt match số chính/phụ.
+    return { data: [...primary, ...fromAlt].slice(0, 10) };
   }
 
   async findById(id: bigint, user?: CurrentUser) {
@@ -126,6 +149,10 @@ export class CustomersService {
           take: 50,
           orderBy: { createdAt: 'desc' },
         },
+        phones: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
     if (!customer) throw new NotFoundException('Không tìm thấy khách hàng');
@@ -134,15 +161,8 @@ export class CustomersService {
 
   async create(dto: CreateCustomerDto, user: CurrentUser) {
     const phone = normalizePhone(dto.phone);
-    if (!isValidVNPhone(phone)) {
-      throw new ConflictException('Số điện thoại không hợp lệ');
-    }
-
-    // Check existing
-    const existing = await this.prisma.customer.findFirst({
-      where: { phone, deletedAt: null },
-    });
-    if (existing) throw new ConflictException('Số điện thoại đã tồn tại');
+    // Helper validates format AND deduplicates cross-table (số chính + phụ).
+    await this.customerPhonesService.assertPhoneNotExists(phone);
 
     return this.prisma.customer.create({
       data: {
@@ -176,12 +196,8 @@ export class CustomersService {
     if (data.email !== undefined) updateData.email = data.email as string | null;
     if (data.phone) {
       const phone = normalizePhone(data.phone as string);
-      if (!isValidVNPhone(phone)) throw new ConflictException('Số điện thoại không hợp lệ');
-      // Dedup check
-      const existing = await this.prisma.customer.findFirst({
-        where: { phone, deletedAt: null, id: { not: id } },
-      });
-      if (existing) throw new ConflictException('Số điện thoại đã tồn tại');
+      // Helper validates format AND dedupes cross-table, excluding chính KH này.
+      await this.customerPhonesService.assertPhoneNotExists(phone, id);
       updateData.phone = phone;
     }
     if (data.companyName !== undefined) updateData.companyName = data.companyName as string | null;

@@ -76,6 +76,15 @@ export interface LeadMetadata {
 
 // ─── Customer ──────────────────────────────────────────────────────────────
 
+export interface CustomerPhoneRecord {
+  id: string;
+  customerId: string;
+  phone: string;
+  label?: string | null;
+  note?: string | null;
+  createdAt: string;
+}
+
 export interface CustomerRecord {
   id: string;
   name: string;
@@ -97,6 +106,7 @@ export interface CustomerRecord {
   labels?: NestedLabel[];
   leads?: LeadRecord[];
   orders?: OrderRecord[];
+  phones?: CustomerPhoneRecord[];
   metadata?: Record<string, unknown> | null;
   createdAt: string;
 }

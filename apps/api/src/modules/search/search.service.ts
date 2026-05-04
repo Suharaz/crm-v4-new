@@ -43,6 +43,8 @@ export class SearchService {
             { name: { contains: query, mode: 'insensitive' } },
             { phone: { contains: query } },
             { email: { contains: query, mode: 'insensitive' } },
+            // Match số phụ qua relation `phones` (active only)
+            { phones: { some: { phone: { contains: query }, deletedAt: null } } },
           ],
         },
         select: { id: true, name: true, phone: true, status: true },
@@ -56,6 +58,7 @@ export class SearchService {
             OR: [
               { name: { contains: query, mode: 'insensitive' } },
               { phone: { contains: query } },
+              { phones: { some: { phone: { contains: query }, deletedAt: null } } },
             ],
           },
         },

@@ -158,6 +158,9 @@ model User {
   tasksAssigned Task[] @relation("TaskAssignee")
   tasksCreated  Task[] @relation("TaskCreator")
 
+  // Customer alternate phones (audit who added)
+  createdCustomerPhones CustomerPhone[] @relation("CustomerPhoneCreator")
+
   // Notifications
   notifications Notification[]
 
@@ -271,10 +274,33 @@ model Customer {
   leads  Lead[]
   orders Order[]
   labels CustomerLabel[]
+  phones CustomerPhone[]
 
   @@index([assignedUserId])
   @@index([assignedDepartmentId, assignedUserId])
   @@map("customers")
+}
+
+/// Số điện thoại phụ của Customer. Số chính vẫn lưu ở Customer.phone.
+/// Dedup cross-table: 1 phone không thể trùng (chính HOẶC phụ) giữa 2 customer.
+model CustomerPhone {
+  id         BigInt    @id @default(autoincrement())
+  customerId BigInt    @map("customer_id")
+  phone      String    /// đã normalize trước khi lưu (qua normalizePhone util)
+  label      String?   /// "Vợ", "Thư ký", "Công ty"...
+  note       String?   /// ghi chú tự do
+  createdBy  BigInt?   @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  creator  User?    @relation("CustomerPhoneCreator", fields: [createdBy], references: [id])
+
+  @@index([customerId])
+  @@index([phone])
+  @@index([phone, deletedAt])
+  @@map("customer_phones")
 }
 
 model Lead {

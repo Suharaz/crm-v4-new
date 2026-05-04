@@ -3,11 +3,15 @@ import { PrismaClient } from '@prisma/client';
 import { normalizePhone, isValidVNPhone } from '@crm/utils';
 import { Public } from '../auth/decorators/public-route.decorator';
 import { ApiKeyAuth } from '../auth/decorators/api-key-auth.decorator';
+import { CustomerPhonesService } from '../customers/customer-phones.service';
 
 /** External lead ingestion API — requires x-api-key header. */
 @Controller('external')
 export class ThirdPartyApiController {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly customerPhonesService: CustomerPhonesService,
+  ) {}
 
   @Public()
   @ApiKeyAuth()
@@ -33,10 +37,8 @@ export class ThirdPartyApiController {
       sourceId = source.id;
     }
 
-    // Find or create customer
-    let customer = await this.prisma.customer.findFirst({
-      where: { phone, deletedAt: null },
-    });
+    // Find or create customer — match cả số chính lẫn số phụ.
+    let customer = await this.customerPhonesService.findCustomerByAnyPhone(phone);
     if (!customer) {
       customer = await this.prisma.customer.create({
         data: { phone, name: body.name, email: body.email },

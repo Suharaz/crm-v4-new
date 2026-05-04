@@ -3,6 +3,7 @@ import { PrismaClient, Prisma, EntityType } from '@prisma/client';
 import { normalizePhone } from '@crm/utils';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { AiSummaryService } from '../ai-summary/ai-summary.service';
+import { CustomerPhonesService } from '../customers/customer-phones.service';
 
 const CALL_LOG_SELECT = {
   id: true, externalId: true, phoneNumber: true, callType: true,
@@ -16,6 +17,7 @@ export class CallLogsService {
   constructor(
     private readonly prisma: PrismaClient,
     private readonly aiSummary: AiSummaryService,
+    private readonly customerPhonesService: CustomerPhonesService,
   ) {}
 
   async list(query: PaginationQueryDto & { matchStatus?: string; matchedUserFilter?: bigint; dateFrom?: string; dateTo?: string }) {
@@ -78,11 +80,8 @@ export class CallLogsService {
       matchedUserId = lead.assignedUserId;
       matchStatus = 'AUTO_MATCHED';
     } else {
-      // Try match customer
-      const customer = await this.prisma.customer.findFirst({
-        where: { phone, deletedAt: null },
-        select: { id: true, assignedUserId: true },
-      });
+      // Try match customer — match cả số chính lẫn số phụ.
+      const customer = await this.customerPhonesService.findCustomerByAnyPhone(phone);
       if (customer) {
         matchedEntityType = 'CUSTOMER';
         matchedEntityId = customer.id;

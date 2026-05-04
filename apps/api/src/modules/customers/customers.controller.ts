@@ -1,8 +1,10 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode, BadRequestException } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { CustomersService } from './customers.service';
+import { CustomerPhonesService } from './customer-phones.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CustomerListQueryDto } from './dto/customer-list-query.dto';
+import { AddCustomerPhoneDto, UpdateCustomerPhoneDto } from './dto/customer-phone.dto';
 import { Roles } from '../auth/decorators/roles-required.decorator';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
@@ -13,6 +15,7 @@ import { AiSummaryService } from '../ai-summary/ai-summary.service';
 export class CustomersController {
   constructor(
     private readonly customersService: CustomersService,
+    private readonly customerPhonesService: CustomerPhonesService,
     private readonly labelsService: LabelsService,
     private readonly aiSummary: AiSummaryService,
   ) {}
@@ -123,5 +126,51 @@ export class CustomersController {
     const result = await this.aiSummary.analyzeCustomer(id);
     if (!result) return { data: { message: 'Không thể phân tích (thiếu AI_API_KEY hoặc dữ liệu)' } };
     return { data: result };
+  }
+
+  // ── Số điện thoại phụ (multi-phone) ─────────────────────────────────────
+  // GET allowed cho mọi role có quyền xem customer (ownership check qua findById).
+  // POST/PATCH/DELETE chỉ MANAGER+ — giống quyền sửa số chính.
+
+  @Get(':id/phones')
+  async listPhones(
+    @Param('id', ParseBigIntPipe) id: bigint,
+    @CurrentUser() user: any,
+  ) {
+    await this.customersService.findById(id, user); // ownership check
+    const data = await this.customerPhonesService.listPhones(id);
+    return { data };
+  }
+
+  @Post(':id/phones')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async addPhone(
+    @Param('id', ParseBigIntPipe) id: bigint,
+    @Body() dto: AddCustomerPhoneDto,
+    @CurrentUser() user: any,
+  ) {
+    const data = await this.customerPhonesService.addPhone(id, dto, user.id);
+    return { data };
+  }
+
+  @Patch(':id/phones/:phoneId')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async updatePhone(
+    @Param('id', ParseBigIntPipe) _id: bigint,
+    @Param('phoneId', ParseBigIntPipe) phoneId: bigint,
+    @Body() dto: UpdateCustomerPhoneDto,
+  ) {
+    const data = await this.customerPhonesService.updatePhone(phoneId, dto);
+    return { data };
+  }
+
+  @Delete(':id/phones/:phoneId')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async deletePhone(
+    @Param('id', ParseBigIntPipe) _id: bigint,
+    @Param('phoneId', ParseBigIntPipe) phoneId: bigint,
+  ) {
+    await this.customerPhonesService.softDeletePhone(phoneId);
+    return { data: { message: 'Đã xóa số phụ' } };
   }
 }

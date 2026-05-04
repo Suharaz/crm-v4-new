@@ -9,6 +9,7 @@ import { Readable } from 'stream';
 import { parse } from 'csv-parse';
 import { ConfigService } from '@nestjs/config';
 import { decodeBufferAuto } from './csv-detect';
+import { CustomerPhonesService } from '../customers/customer-phones.service';
 
 interface ImportJobData {
   importJobId: string;
@@ -37,6 +38,7 @@ export class ImportProcessor extends WorkerHost {
   constructor(
     @Inject(PrismaClient) private readonly prisma: PrismaClient,
     configService: ConfigService,
+    private readonly customerPhonesService: CustomerPhonesService,
   ) {
     super();
     this.uploadDir = configService.get('UPLOAD_DIR', './uploads');
@@ -200,10 +202,11 @@ export class ImportProcessor extends WorkerHost {
     if (!phone) throw new Error('Thiếu số điện thoại');
     if (!isValidVNPhone(phone)) throw new Error(`SĐT không hợp lệ: ${phone}`);
 
-    // Find or create customer (with in-memory cache)
+    // Find or create customer (with in-memory cache).
+    // Match cả số chính lẫn số phụ — nếu phone trùng số phụ KH cũ → reuse, không tạo KH mới.
     let customer = phoneCache.get(phone) || null;
     if (!customer) {
-      const dbCustomer = await this.prisma.customer.findFirst({ where: { phone, deletedAt: null } });
+      const dbCustomer = await this.customerPhonesService.findCustomerByAnyPhone(phone);
       if (dbCustomer) {
         customer = { id: dbCustomer.id };
       } else {
@@ -335,8 +338,12 @@ export class ImportProcessor extends WorkerHost {
     if (!phone || !name) throw new Error('Thiếu phone hoặc name');
     if (!isValidVNPhone(phone)) throw new Error(`SĐT không hợp lệ: ${phone}`);
 
-    const existing = await this.prisma.customer.findFirst({ where: { phone, deletedAt: null } });
-    if (existing) throw new Error(`Trùng khách hàng: SĐT ${phone}`);
+    // Cross-table dedup: throw nếu phone trùng số chính HOẶC số phụ KH khác.
+    try {
+      await this.customerPhonesService.assertPhoneNotExists(phone);
+    } catch {
+      throw new Error(`Trùng khách hàng: SĐT ${phone}`);
+    }
 
     // Optional fields — support both English and Vietnamese column names
     const email = row.email || row['Email'] || null;

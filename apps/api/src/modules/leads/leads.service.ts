@@ -3,6 +3,7 @@ import { PrismaClient, Prisma, LeadStatus, UserRole } from '@prisma/client';
 import { normalizePhone, isValidVNPhone } from '@crm/utils';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { LeadListQueryDto } from './dto/lead-list-query.dto';
+import { CustomerPhonesService } from '../customers/customer-phones.service';
 import { buildAccessFilter, AccessFilterUser } from '../../common/filters/build-access-filter';
 
 // Valid status transitions
@@ -43,7 +44,10 @@ type CurrentUser = AccessFilterUser;
 
 @Injectable()
 export class LeadsService {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly customerPhonesService: CustomerPhonesService,
+  ) {}
 
   // ── List with filters + role-based access ────────────────────────────────
   async list(query: LeadListQueryDto, user?: CurrentUser) {
@@ -280,11 +284,15 @@ export class LeadsService {
     const phone = normalizePhone(dto.phone);
     if (!isValidVNPhone(phone)) throw new BadRequestException('Số điện thoại không hợp lệ');
 
-    // Find or create customer by phone + gather duplicate info
-    let customer = await this.prisma.customer.findFirst({
-      where: { phone, deletedAt: null },
-      include: { labels: { select: { labelId: true } } },
-    });
+    // Find or create customer — match cả số chính lẫn số phụ.
+    // Helper trả về Customer minimal; nếu found → re-fetch kèm labels để merge xuống lead.
+    const matched = await this.customerPhonesService.findCustomerByAnyPhone(phone);
+    let customer = matched
+      ? await this.prisma.customer.findUnique({
+          where: { id: matched.id },
+          include: { labels: { select: { labelId: true } } },
+        })
+      : null;
     const isDuplicate = !!customer;
     if (!customer) {
       customer = await this.prisma.customer.create({

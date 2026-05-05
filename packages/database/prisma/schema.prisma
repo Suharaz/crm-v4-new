@@ -170,6 +170,9 @@ model User {
   // Template membership
   templateMemberships AssignmentTemplateMember[]
 
+  // Audit logs (system trace)
+  auditLogs AuditLog[] @relation("AuditLogUser")
+
   @@unique([email, deletedAt])
   @@index([departmentId])
   @@index([teamId])
@@ -899,4 +902,50 @@ model SystemSetting {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("system_settings")
+}
+
+// ─── AUDIT & TRACE ──────────────────────────────────────────────────────────
+
+/// Mọi mutation request (POST/PUT/PATCH/DELETE) + login/logout.
+/// Retention 60 ngày qua audit-log-retention cron. Sanitize trước khi insert.
+model AuditLog {
+  id         BigInt   @id @default(autoincrement())
+  userId     BigInt?  @map("user_id")
+  action     String                              // "LEAD_TRANSFER" | "USER_LOGIN" | ...
+  entityType String?  @map("entity_type")        // "LEAD" | "CUSTOMER" | "ORDER" | ...
+  entityId   BigInt?  @map("entity_id")
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  method     String?
+  path       String?
+  statusCode Int?     @map("status_code")
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User? @relation("AuditLogUser", fields: [userId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([action, createdAt(sort: Desc)])
+  @@index([entityType, entityId])
+  @@index([createdAt(sort: Desc)])
+  @@index([ipAddress])
+  @@map("audit_logs")
+}
+
+/// Lịch sử chạy cron job: status RUNNING -> SUCCESS/FAILED, affected count, error stack.
+model CronRun {
+  id         BigInt    @id @default(autoincrement())
+  jobName    String    @map("job_name")
+  startedAt  DateTime  @map("started_at")
+  finishedAt DateTime? @map("finished_at")
+  status     String                              // "RUNNING" | "SUCCESS" | "FAILED"
+  affected   Int       @default(0)
+  errorMsg   String?   @map("error_msg")
+  metadata   Json?
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([jobName, startedAt(sort: Desc)])
+  @@index([status, startedAt(sort: Desc)])
+  @@index([startedAt(sort: Desc)])
+  @@map("cron_runs")
 }

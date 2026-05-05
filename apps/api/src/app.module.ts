@@ -43,6 +43,8 @@ import { AppCacheModule } from './common/cache/cache.module';
 import { ApiKeysModule } from './modules/api-keys/api-keys.module';
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module';
 import { McpAgentModule } from './modules/mcp-agent/mcp-agent.module';
+import { AuditLogModule } from './modules/audit-log/audit-log.module';
+import { CronRunModule } from './modules/cron-run/cron-run.module';
 import { ApiKeyAuthGuard } from './modules/auth/guards/api-key-auth.guard';
 import { BullModule } from '@nestjs/bullmq';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -129,6 +131,8 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     ApiKeysModule,
     SystemSettingsModule,
     McpAgentModule,
+    AuditLogModule,
+    CronRunModule,
   ],
   controllers: [AppController],
   providers: [

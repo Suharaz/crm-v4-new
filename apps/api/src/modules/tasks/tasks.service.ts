@@ -8,6 +8,7 @@ import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { buildAccessFilter, AccessFilterUser } from '../../common/filters/build-access-filter';
 import { CreateTaskDto, TaskReminderDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { CronRunService } from '../cron-run/cron-run.service';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -41,7 +42,10 @@ const TASK_SELECT = {
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly cronRunService: CronRunService,
+  ) {}
 
   // ── helpers ──
 
@@ -225,9 +229,21 @@ export class TasksService {
   @Cron('*/1 * * * *')
   async processReminders() {
     try {
-      const now = new Date();
+      await this.cronRunService.track('task-reminder', async (ctx) => {
+        const result = await this._processRemindersImpl();
+        ctx.affected = result.totalAffected;
+        ctx.metadata = result.breakdown;
+      });
+    } catch (error) {
+      this.logger.error('Lỗi khi xử lý reminders/escalations', error instanceof Error ? error.stack : error);
+    }
+  }
 
-      // ── Main reminders (task_reminders table) ──
+  private async _processRemindersImpl(): Promise<{ totalAffected: number; breakdown: Record<string, number> }> {
+    const now = new Date();
+    const breakdown = { reminders: 0, escalation1: 0, escalation2: 0 };
+
+    // ── Main reminders (task_reminders table) ──
       const dueReminders = await this.prisma.taskReminder.findMany({
         where: {
           remindAt: { lte: now },
@@ -259,6 +275,7 @@ export class TasksService {
           }),
         ]);
 
+        breakdown.reminders = dueReminders.length;
         this.logger.log(`Đã gửi ${dueReminders.length} nhắc nhở`);
       }
 
@@ -291,6 +308,7 @@ export class TasksService {
           where: { id: { in: escalation1Tasks.map(t => t.id) } },
           data: { escalation1At: now },
         });
+        breakdown.escalation1 = escalation1Tasks.length;
       }
 
       // ── Escalation L2: overdue > 24 hours, escalation2At IS NULL, PENDING → notify manager ──
@@ -372,9 +390,10 @@ export class TasksService {
             data: { escalation2At: now },
           });
         }
+        breakdown.escalation2 = escalation2Tasks.length;
       }
-    } catch (error) {
-      this.logger.error('Lỗi khi xử lý reminders/escalations', error instanceof Error ? error.stack : error);
-    }
+
+    const totalAffected = breakdown.reminders + breakdown.escalation1 + breakdown.escalation2;
+    return { totalAffected, breakdown };
   }
 }

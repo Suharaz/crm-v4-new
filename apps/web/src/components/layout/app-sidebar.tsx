@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, UserCheck, ShoppingCart, Package,
   Phone, Settings, Upload, Waves, ChevronLeft, ChevronRight, ChevronDown,
   UserCog, CheckSquare, Zap, Inbox, RotateCcw, User, Building2, CreditCard, X,
-  BarChart3, DollarSign, UsersRound, ContactRound,
+  BarChart3, DollarSign, UsersRound, ContactRound, Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
@@ -68,6 +68,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Đối soát CK', href: '/payments', icon: CreditCard, roles: ['SUPER_ADMIN', 'MANAGER'] },
   { label: 'Phân phối AI', href: '/settings/distribution', icon: Zap, roles: ['SUPER_ADMIN', 'MANAGER'] },
   { label: 'Cài đặt', href: '/settings', icon: Settings, roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { label: 'Trace hệ thống', href: '/trace', icon: Activity, roles: ['SUPER_ADMIN'] },
 ];
 
 // Paths that belong to collapsible groups

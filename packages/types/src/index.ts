@@ -15,6 +15,41 @@ export interface ApiErrorResponse {
   error: string;
 }
 
+// ── Trace (audit_logs + cron_runs) ───────────────────────────────────────────
+
+export interface AuditLogResponse {
+  id: BigIntString;
+  userId: BigIntString | null;
+  user: {
+    id: BigIntString;
+    name: string;
+    email: string;
+    departmentName: string | null;
+  } | null;
+  action: string;
+  entityType: string | null;
+  entityId: BigIntString | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  method: string | null;
+  path: string | null;
+  statusCode: number | null;
+  metadata: unknown;
+  createdAt: string;
+}
+
+export interface CronRunResponse {
+  id: BigIntString;
+  jobName: string;
+  startedAt: string;
+  finishedAt: string | null;
+  status: 'RUNNING' | 'SUCCESS' | 'FAILED';
+  affected: number;
+  errorMsg: string | null;
+  metadata: unknown;
+  durationMs: number | null;
+}
+
 // ── Tasks ────────────────────────────────────────────────────────────────────
 
 export interface TaskReminderDto {

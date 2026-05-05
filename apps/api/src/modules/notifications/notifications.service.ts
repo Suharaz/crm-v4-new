@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaClient, Prisma, EntityType } from '@prisma/client';
+import { CronRunService } from '../cron-run/cron-run.service';
 
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
 
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly cronRunService: CronRunService,
+  ) {}
 
   async list(userId: bigint, limit = 20, cursor?: string) {
     const take = limit + 1;
@@ -61,13 +65,17 @@ export class NotificationsService {
   @Cron('0 3 * * *')
   async cleanupOldNotifications() {
     try {
-      const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-      const result = await this.prisma.notification.deleteMany({
-        where: { createdAt: { lt: cutoff } },
+      await this.cronRunService.track('notification-cleanup', async (ctx) => {
+        const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+        const result = await this.prisma.notification.deleteMany({
+          where: { createdAt: { lt: cutoff } },
+        });
+        ctx.affected = result.count;
+        ctx.metadata = { cutoff: cutoff.toISOString(), retentionDays: 90 };
+        if (result.count > 0) {
+          this.logger.log(`Đã xóa ${result.count} thông báo cũ (>90 ngày)`);
+        }
       });
-      if (result.count > 0) {
-        this.logger.log(`Đã xóa ${result.count} thông báo cũ (>90 ngày)`);
-      }
     } catch (error) {
       this.logger.error('Lỗi cleanup thông báo:', error);
     }

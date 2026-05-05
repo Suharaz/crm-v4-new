@@ -1,7 +1,27 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { PrismaClient, UserRole } from '@prisma/client';
 import { CacheService } from '../../common/cache/cache.service';
 import { CACHE_KEYS, CACHE_TTL } from '../../common/cache/cache.constants';
+
+interface LabelInput {
+  name?: string;
+  color?: string;
+  category?: string;
+  isActive?: boolean;
+  /**
+   * Auto-recall days for this label.
+   * - `undefined` → don't touch existing config
+   * - `null` → delete existing config (turn off recall)
+   * - `number > 0` → upsert config
+   * Only SUPER_ADMIN may set this field.
+   */
+  recallDays?: number | null;
+}
+
+interface ActingUser {
+  id: bigint;
+  role: UserRole;
+}
 
 @Injectable()
 export class LabelsService {
@@ -20,16 +40,48 @@ export class LabelsService {
     return { data };
   }
 
-  async create(data: { name: string; color?: string; category?: string }) {
-    const result = await this.prisma.label.create({ data });
+  async create(data: LabelInput & { name: string }, user: ActingUser) {
+    this._assertCanSetRecall(data, user);
+    if (data.recallDays !== undefined && data.recallDays !== null && data.recallDays <= 0) {
+      throw new ForbiddenException('Số ngày recall phải > 0');
+    }
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      const label = await tx.label.create({
+        data: { name: data.name, color: data.color, category: data.category },
+      });
+      if (data.recallDays != null) {
+        await tx.labelRecallConfig.create({
+          data: { labelId: label.id, days: data.recallDays, createdBy: user.id },
+        });
+      }
+      return label;
+    });
     await this.cacheService.del(CACHE_KEYS.LOOKUP_LABELS);
     return result;
   }
 
-  async update(id: bigint, data: { name?: string; color?: string; category?: string; isActive?: boolean }) {
+  async update(id: bigint, data: LabelInput, user: ActingUser) {
+    this._assertCanSetRecall(data, user);
     const label = await this.prisma.label.findUnique({ where: { id } });
     if (!label) throw new NotFoundException('Không tìm thấy nhãn');
-    const result = await this.prisma.label.update({ where: { id }, data });
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.label.update({
+        where: { id },
+        data: {
+          name: data.name,
+          color: data.color,
+          category: data.category,
+          isActive: data.isActive,
+        },
+      });
+
+      if (data.recallDays !== undefined) {
+        await this._syncRecallConfig(tx, id, data.recallDays, user.id);
+      }
+      return updated;
+    });
     await this.cacheService.del(CACHE_KEYS.LOOKUP_LABELS);
     return result;
   }
@@ -40,6 +92,40 @@ export class LabelsService {
     const result = await this.prisma.label.update({ where: { id }, data: { isActive: false } });
     await this.cacheService.del(CACHE_KEYS.LOOKUP_LABELS);
     return result;
+  }
+
+  /** Reject if non-SUPER_ADMIN tries to set recallDays — surface clearly, not silently ignore. */
+  private _assertCanSetRecall(data: LabelInput, user: ActingUser) {
+    if (data.recallDays !== undefined && user.role !== UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Chỉ super admin được cấu hình auto-recall theo nhãn');
+    }
+  }
+
+  /** Upsert/delete LabelRecallConfig within an existing transaction client. */
+  private async _syncRecallConfig(
+    tx: Parameters<Parameters<PrismaClient['$transaction']>[0]>[0],
+    labelId: bigint,
+    newDays: number | null,
+    actingUserId: bigint,
+  ) {
+    const existing = await tx.labelRecallConfig.findUnique({ where: { labelId } });
+    if (newDays === null) {
+      if (existing) await tx.labelRecallConfig.delete({ where: { id: existing.id } });
+      return;
+    }
+    if (newDays <= 0) throw new ForbiddenException('Số ngày recall phải > 0');
+    if (existing) {
+      if (existing.days !== newDays || !existing.isActive) {
+        await tx.labelRecallConfig.update({
+          where: { id: existing.id },
+          data: { days: newDays, isActive: true },
+        });
+      }
+    } else {
+      await tx.labelRecallConfig.create({
+        data: { labelId, days: newDays, createdBy: actingUserId },
+      });
+    }
   }
 
   // Attach labels to lead

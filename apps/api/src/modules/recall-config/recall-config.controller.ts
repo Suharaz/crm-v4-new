@@ -10,9 +10,52 @@ import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
 export class RecallConfigController {
   constructor(private readonly service: RecallConfigService) {}
 
+  // ── Label Recall Config CRUD ─────────────────────────────────────────────
+  // IMPORTANT: declare literal-path routes BEFORE ':id' routes so NestJS
+  // doesn't match e.g. GET /recall-configs/labels against @Get(':id').
+
+  @Get('labels')
+  listLabelConfigs() {
+    return this.service.listLabelConfigs();
+  }
+
+  @Post('labels')
+  createLabelConfig(
+    @Body() body: { labelId: string; days: number },
+    @CurrentUser() user: { id: bigint },
+  ) {
+    return this.service.createLabelConfig(
+      { labelId: BigInt(body.labelId), days: body.days },
+      user.id,
+    );
+  }
+
+  @Patch('labels/:id')
+  updateLabelConfig(
+    @Param('id', ParseBigIntPipe) id: bigint,
+    @Body() body: { days?: number; isActive?: boolean },
+  ) {
+    return this.service.updateLabelConfig(id, {
+      days: body.days,
+      isActive: body.isActive,
+    });
+  }
+
+  @Delete('labels/:id')
+  removeLabelConfig(@Param('id', ParseBigIntPipe) id: bigint) {
+    return this.service.removeLabelConfig(id);
+  }
+
+  // ── Generic Recall Config CRUD (entity-level: LEAD/CUSTOMER pool expiry) ─
+
   @Get()
   list() {
     return this.service.list();
+  }
+
+  @Post('run-now')
+  runNow() {
+    return this.service.runAutoRecall();
   }
 
   @Get(':id')
@@ -48,44 +91,5 @@ export class RecallConfigController {
   @Delete(':id')
   remove(@Param('id', ParseBigIntPipe) id: bigint) {
     return this.service.remove(id);
-  }
-
-  @Post('run-now')
-  runNow() {
-    return this.service.runAutoRecall();
-  }
-
-  // ── Label Recall Config CRUD ─────────────────────────────────────────────
-
-  @Get('labels')
-  listLabelConfigs() {
-    return this.service.listLabelConfigs();
-  }
-
-  @Post('labels')
-  createLabelConfig(
-    @Body() body: { labelId: string; days: number },
-    @CurrentUser() user: { id: bigint },
-  ) {
-    return this.service.createLabelConfig(
-      { labelId: BigInt(body.labelId), days: body.days },
-      user.id,
-    );
-  }
-
-  @Patch('labels/:id')
-  updateLabelConfig(
-    @Param('id', ParseBigIntPipe) id: bigint,
-    @Body() body: { days?: number; isActive?: boolean },
-  ) {
-    return this.service.updateLabelConfig(id, {
-      days: body.days,
-      isActive: body.isActive,
-    });
-  }
-
-  @Delete('labels/:id')
-  removeLabelConfig(@Param('id', ParseBigIntPipe) id: bigint) {
-    return this.service.removeLabelConfig(id);
   }
 }

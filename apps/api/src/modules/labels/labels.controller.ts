@@ -2,7 +2,17 @@ import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestj
 import { UserRole } from '@prisma/client';
 import { LabelsService } from './labels.service';
 import { Roles } from '../auth/decorators/roles-required.decorator';
+import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
+
+interface LabelBody {
+  name?: string;
+  color?: string;
+  category?: string;
+  isActive?: boolean;
+  /** Auto-recall days. null = remove config, number = upsert. SUPER_ADMIN only. */
+  recallDays?: number | null;
+}
 
 @Controller('labels')
 export class LabelsController {
@@ -15,8 +25,11 @@ export class LabelsController {
 
   @Post()
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
-  async create(@Body() body: { name: string; color?: string; category?: string }) {
-    const data = await this.service.create(body);
+  async create(
+    @Body() body: LabelBody & { name: string },
+    @CurrentUser() user: { id: bigint; role: UserRole },
+  ) {
+    const data = await this.service.create(body, user);
     return { data };
   }
 
@@ -24,9 +37,10 @@ export class LabelsController {
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
   async update(
     @Param('id', ParseBigIntPipe) id: bigint,
-    @Body() body: { name?: string; color?: string; category?: string; isActive?: boolean },
+    @Body() body: LabelBody,
+    @CurrentUser() user: { id: bigint; role: UserRole },
   ) {
-    const data = await this.service.update(id, body);
+    const data = await this.service.update(id, body, user);
     return { data };
   }
 

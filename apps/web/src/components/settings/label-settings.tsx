@@ -77,25 +77,24 @@ export function LabelSettings({ data, recallConfigs, canEdit, canEditRecall }: L
   async function handleSubmit() {
     if (!validate()) return;
     setIsLoading(true);
-    const newDays = form.days === '' ? undefined : Number(form.days);
-    const labelBody = { name: form.name, color: form.color, category: form.category || undefined };
+
+    // Single-request payload: backend wraps label + recall config in $transaction.
+    // recallDays semantics: undefined = don't touch (manager edit), null = remove, number = upsert.
+    const body: Record<string, unknown> = {
+      name: form.name,
+      color: form.color,
+      category: form.category || undefined,
+    };
+    if (canEditRecall) {
+      body.recallDays = form.days === '' ? null : Number(form.days);
+    }
 
     try {
-      let labelId: string;
       if (editingLabel) {
-        await api.patch(`/labels/${editingLabel.id}`, labelBody);
-        labelId = editingLabel.id;
+        await api.patch(`/labels/${editingLabel.id}`, body);
       } else {
-        const created = await api.post<{ data: { id: string } }>('/labels', labelBody);
-        labelId = created.data.id;
+        await api.post('/labels', body);
       }
-
-      // Recall config diff (only super admin can change this)
-      if (canEditRecall) {
-        const currentConfig = editingLabel ? configByLabelId.get(editingLabel.id) : undefined;
-        await syncRecallConfig(labelId, currentConfig, newDays, editingLabel?.name || form.name);
-      }
-
       toast.success(editingLabel ? 'Đã cập nhật nhãn' : 'Đã tạo nhãn');
       setDialogOpen(false);
       router.refresh();
@@ -104,27 +103,6 @@ export function LabelSettings({ data, recallConfigs, canEdit, canEditRecall }: L
       toast.error(msg);
     } finally {
       setIsLoading(false);
-    }
-  }
-
-  async function syncRecallConfig(
-    labelId: string,
-    current: LabelRecallConfigItem | undefined,
-    newDays: number | undefined,
-    labelName: string,
-  ) {
-    try {
-      if (!current && newDays) {
-        await api.post('/recall-configs/labels', { labelId, days: newDays });
-      } else if (current && !newDays) {
-        await api.delete(`/recall-configs/labels/${current.id}`);
-      } else if (current && newDays && current.days !== newDays) {
-        await api.patch(`/recall-configs/labels/${current.id}`, { days: newDays });
-      }
-    } catch (err) {
-      // Label CRUD already succeeded — surface partial failure clearly
-      const msg = err instanceof Error ? err.message : 'Lỗi không xác định';
-      toast.warning(`Đã lưu nhãn "${labelName}" nhưng cấu hình recall thất bại: ${msg}`);
     }
   }
 

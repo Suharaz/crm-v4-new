@@ -100,6 +100,10 @@ pnpm build --force
 
 # ── Step 5: Database migration (AFTER successful build) ──────────────
 echo ">>> [5/6] Database migration..."
+# Pre-push: idempotent SQL for data-aware changes (renames, backfills)
+# that `prisma db push` cannot perform on its own. See
+# packages/database/prisma/pre-push-migrations.sql for the running log.
+pnpm db:pre-push
 pnpm db:push
 
 # ── Step 6: Restart PM2 ─────────────────────────────────────────────

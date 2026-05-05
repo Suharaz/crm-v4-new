@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc",
     "db:generate": "prisma generate",
+    "db:pre-push": "dotenv -e ../../.env -- prisma db execute --file ./prisma/pre-push-migrations.sql --schema ./prisma/schema.prisma",
     "db:push": "dotenv -e ../../.env -- prisma db push",
     "db:migrate": "dotenv -e ../../.env -- prisma migrate dev",
     "db:seed": "dotenv -e ../../.env -- tsx prisma/seed.ts",

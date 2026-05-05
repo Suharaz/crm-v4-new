@@ -6,6 +6,13 @@ import { toast } from 'sonner';
 import { Pencil, Trash2, Plus, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { api } from '@/lib/api-client';
@@ -16,19 +23,46 @@ interface LabelSettingsProps {
   data: LabelEntity[];
   recallConfigs: LabelRecallConfigItem[];
   canEdit: boolean;        // manager + admin: edit name/color/category
-  canEditRecall: boolean;  // super admin only: edit recall days
+  canEditRecall: boolean;  // super admin only: edit recall window
 }
+
+type RecallUnit = 'minute' | 'hour' | 'day';
 
 interface FormState {
   name: string;
   color: string;
   category: string;
-  days: string;  // empty string = no recall
+  // Empty string in `value` = no recall configured.
+  value: string;
+  unit: RecallUnit;
 }
 
-const EMPTY_FORM: FormState = { name: '', color: '#6b7280', category: '', days: '' };
+const EMPTY_FORM: FormState = { name: '', color: '#6b7280', category: '', value: '', unit: 'day' };
 
-/** Label settings with integrated auto-recall config (per-label day timer). */
+// Cron runs every 5 minutes — anything below 5 min would race or be silently delayed.
+const MIN_MINUTES = 5;
+// Cap = 1 year (365 days). Per-unit caps below keep the input form sane.
+const PER_UNIT_LIMITS: Record<RecallUnit, { min: number; max: number; minutesPerUnit: number; label: string }> = {
+  minute: { min: 5, max: 1440, minutesPerUnit: 1, label: 'Phút' },        // up to 24h
+  hour:   { min: 1, max: 168,  minutesPerUnit: 60, label: 'Giờ' },        // up to 7 days
+  day:    { min: 1, max: 365,  minutesPerUnit: 1440, label: 'Ngày' },     // up to 1 year
+};
+
+/** Pick the largest unit that divides cleanly so the form pre-fills with the most natural value. */
+function decomposeMinutes(minutes: number): { value: number; unit: RecallUnit } {
+  if (minutes % 1440 === 0) return { value: minutes / 1440, unit: 'day' };
+  if (minutes % 60 === 0) return { value: minutes / 60, unit: 'hour' };
+  return { value: minutes, unit: 'minute' };
+}
+
+/** Human-readable summary used in the badge next to each label. */
+function humanizeMinutes(minutes: number): string {
+  const { value, unit } = decomposeMinutes(minutes);
+  const labelMap: Record<RecallUnit, string> = { minute: 'phút', hour: 'giờ', day: 'ngày' };
+  return `${value} ${labelMap[unit]}`;
+}
+
+/** Label settings with integrated auto-recall config (per-label timer in minutes). */
 export function LabelSettings({ data, recallConfigs, canEdit, canEditRecall }: LabelSettingsProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -49,12 +83,20 @@ export function LabelSettings({ data, recallConfigs, canEdit, canEditRecall }: L
 
   function openEdit(label: LabelEntity) {
     const config = configByLabelId.get(label.id);
+    let value = '';
+    let unit: RecallUnit = 'day';
+    if (config) {
+      const decomposed = decomposeMinutes(config.recallMinutes);
+      value = String(decomposed.value);
+      unit = decomposed.unit;
+    }
     setEditingLabel(label);
     setForm({
       name: label.name,
       color: label.color || '#6b7280',
       category: label.category || '',
-      days: config ? String(config.days) : '',
+      value,
+      unit,
     });
     setErrors({});
     setDialogOpen(true);
@@ -64,10 +106,19 @@ export function LabelSettings({ data, recallConfigs, canEdit, canEditRecall }: L
     const next: Record<string, string> = {};
     const nameParsed = settingsNameSchema.safeParse({ name: form.name });
     if (!nameParsed.success) Object.assign(next, parseZodErrors(nameParsed.error));
-    if (form.days !== '') {
-      const n = Number(form.days);
-      if (!Number.isInteger(n) || n < 1 || n > 365) {
-        next.days = 'Số ngày phải là số nguyên từ 1 đến 365';
+
+    if (form.value !== '') {
+      const n = Number(form.value);
+      const limits = PER_UNIT_LIMITS[form.unit];
+      if (!Number.isInteger(n) || n < limits.min || n > limits.max) {
+        next.value = `Giá trị phải là số nguyên từ ${limits.min} đến ${limits.max} ${limits.label.toLowerCase()}`;
+      } else {
+        // Final guard: even if user picks "minute" with value < 5 we already block via limits,
+        // but double-check the resulting minute count is ≥ MIN_MINUTES.
+        const totalMinutes = n * limits.minutesPerUnit;
+        if (totalMinutes < MIN_MINUTES) {
+          next.value = `Tối thiểu ${MIN_MINUTES} phút (cron chạy mỗi 5 phút)`;
+        }
       }
     }
     setErrors(next);
@@ -79,14 +130,18 @@ export function LabelSettings({ data, recallConfigs, canEdit, canEditRecall }: L
     setIsLoading(true);
 
     // Single-request payload: backend wraps label + recall config in $transaction.
-    // recallDays semantics: undefined = don't touch (manager edit), null = remove, number = upsert.
+    // recallMinutes semantics: undefined = don't touch (manager edit), null = remove, number = upsert.
     const body: Record<string, unknown> = {
       name: form.name,
       color: form.color,
       category: form.category || undefined,
     };
     if (canEditRecall) {
-      body.recallDays = form.days === '' ? null : Number(form.days);
+      if (form.value === '') {
+        body.recallMinutes = null;
+      } else {
+        body.recallMinutes = Number(form.value) * PER_UNIT_LIMITS[form.unit].minutesPerUnit;
+      }
     }
 
     try {
@@ -143,7 +198,7 @@ export function LabelSettings({ data, recallConfigs, canEdit, canEditRecall }: L
                   {config && (
                     <span className="inline-flex items-center gap-1 rounded bg-amber-50 px-1.5 py-0.5 text-xs text-amber-700">
                       <Clock className="h-3 w-3" />
-                      Recall {config.days} ngày
+                      Recall {humanizeMinutes(config.recallMinutes)}
                     </span>
                   )}
                 </div>
@@ -201,18 +256,34 @@ export function LabelSettings({ data, recallConfigs, canEdit, canEditRecall }: L
             </Field>
             {canEditRecall && (
               <Field
-                label="Số ngày auto-recall"
-                error={errors.days}
-                hint="Để trống nếu không cần auto-recall. Lead có nhãn này quá X ngày sẽ về kho POOL."
+                label="Thời gian auto-recall"
+                error={errors.value}
+                hint={`Để trống nếu không cần auto-recall. Tối thiểu ${MIN_MINUTES} phút (cron chạy mỗi 5 phút). Lead có nhãn này quá hạn sẽ về kho POOL.`}
               >
-                <Input
-                  type="number"
-                  min={1}
-                  max={365}
-                  placeholder="VD: 7"
-                  value={form.days}
-                  onChange={(e) => setForm(p => ({ ...p, days: e.target.value }))}
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    min={PER_UNIT_LIMITS[form.unit].min}
+                    max={PER_UNIT_LIMITS[form.unit].max}
+                    placeholder={form.unit === 'minute' ? 'VD: 30' : form.unit === 'hour' ? 'VD: 4' : 'VD: 7'}
+                    value={form.value}
+                    onChange={(e) => setForm(p => ({ ...p, value: e.target.value }))}
+                    className="flex-1"
+                  />
+                  <Select
+                    value={form.unit}
+                    onValueChange={(v) => setForm(p => ({ ...p, unit: v as RecallUnit }))}
+                  >
+                    <SelectTrigger className="w-[110px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="minute">Phút</SelectItem>
+                      <SelectItem value="hour">Giờ</SelectItem>
+                      <SelectItem value="day">Ngày</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </Field>
             )}
           </div>

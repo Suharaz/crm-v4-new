@@ -572,7 +572,9 @@ model LeadLabel {
   label Label @relation(fields: [labelId], references: [id])
 
   @@id([leadId, labelId])
-  @@index([labelId])
+  // Composite index covers both (labelId) lookups and the cron's
+  // "labelId + recallStartAt < cutoff" scan when recall runs every 5 min.
+  @@index([labelId, recallStartAt])
   @@map("lead_labels")
 }
 
@@ -754,13 +756,15 @@ model RecallConfig {
 }
 
 model LabelRecallConfig {
-  id        BigInt   @id @default(autoincrement())
-  labelId   BigInt   @unique @map("label_id")
-  days      Int
-  isActive  Boolean  @default(true) @map("is_active")
-  createdBy BigInt   @map("created_by")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            BigInt   @id @default(autoincrement())
+  labelId       BigInt   @unique @map("label_id")
+  // Stored in minutes (was previously stored in days). UI exposes a unit
+  // selector (min/hour/day) but the API and DB always normalize to minutes.
+  recallMinutes Int      @map("recall_minutes")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdBy     BigInt   @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   label   Label @relation(fields: [labelId], references: [id])
   creator User  @relation(fields: [createdBy], references: [id])

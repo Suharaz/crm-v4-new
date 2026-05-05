@@ -10,8 +10,8 @@ interface LabelBody {
   color?: string;
   category?: string;
   isActive?: boolean;
-  /** Auto-recall days. null = remove config, number = upsert. SUPER_ADMIN only. */
-  recallDays?: number | null;
+  /** Auto-recall window in MINUTES. null = remove config, number = upsert. SUPER_ADMIN only. */
+  recallMinutes?: number | null;
 }
 
 @Controller('labels')

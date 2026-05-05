@@ -85,14 +85,14 @@ export class RecallConfigService {
     return { data: config };
   }
 
-  async createLabelConfig(data: { labelId: bigint; days: number }, createdBy: bigint) {
+  async createLabelConfig(data: { labelId: bigint; recallMinutes: number }, createdBy: bigint) {
     const existing = await this.prisma.labelRecallConfig.findUnique({
       where: { labelId: data.labelId },
     });
     if (existing) throw new ConflictException('Nhãn này đã có cấu hình recall');
 
     const config = await this.prisma.labelRecallConfig.create({
-      data: { labelId: data.labelId, days: data.days, createdBy },
+      data: { labelId: data.labelId, recallMinutes: data.recallMinutes, createdBy },
       include: {
         label: { select: { id: true, name: true, color: true } },
         creator: { select: { id: true, name: true } },
@@ -101,7 +101,7 @@ export class RecallConfigService {
     return { data: config };
   }
 
-  async updateLabelConfig(id: bigint, data: { days?: number; isActive?: boolean }) {
+  async updateLabelConfig(id: bigint, data: { recallMinutes?: number; isActive?: boolean }) {
     await this.getLabelConfigById(id);
     const config = await this.prisma.labelRecallConfig.update({
       where: { id },
@@ -120,7 +120,11 @@ export class RecallConfigService {
     return { data: { success: true } };
   }
 
-  @Cron('0 */2 * * *')
+  // Runs every 5 minutes — label-based recall now supports minute-level
+  // granularity (min 5 min). The pool/customer recall (day-based) is also
+  // re-evaluated each tick; that's cheap because the cutoff only shifts
+  // meaningfully on a daily timescale.
+  @Cron('*/5 * * * *')
   async runAutoRecall() {
     try {
       this.logger.log('Bắt đầu chạy auto-recall...');
@@ -251,8 +255,9 @@ export class RecallConfigService {
     let totalRecalled = 0;
 
     for (const config of configs) {
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - config.days);
+      // Cutoff = now - recallMinutes. Date arithmetic in ms keeps minute
+      // granularity exact (setMinutes would also work but ms is clearer).
+      const cutoffDate = new Date(Date.now() - config.recallMinutes * 60_000);
 
       let configRecalled = 0;
       while (true) {
@@ -287,7 +292,7 @@ export class RecallConfigService {
 
       if (configRecalled > 0) {
         this.logger.log(
-          `Đã thu hồi ${configRecalled} leads theo nhãn (labelId=${config.labelId}, ${config.days} ngày)`,
+          `Đã thu hồi ${configRecalled} leads theo nhãn (labelId=${config.labelId}, ${config.recallMinutes} phút)`,
         );
       }
       totalRecalled += configRecalled;

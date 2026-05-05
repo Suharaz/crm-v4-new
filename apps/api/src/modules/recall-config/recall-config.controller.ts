@@ -21,11 +21,11 @@ export class RecallConfigController {
 
   @Post('labels')
   createLabelConfig(
-    @Body() body: { labelId: string; days: number },
+    @Body() body: { labelId: string; recallMinutes: number },
     @CurrentUser() user: { id: bigint },
   ) {
     return this.service.createLabelConfig(
-      { labelId: BigInt(body.labelId), days: body.days },
+      { labelId: BigInt(body.labelId), recallMinutes: body.recallMinutes },
       user.id,
     );
   }
@@ -33,10 +33,10 @@ export class RecallConfigController {
   @Patch('labels/:id')
   updateLabelConfig(
     @Param('id', ParseBigIntPipe) id: bigint,
-    @Body() body: { days?: number; isActive?: boolean },
+    @Body() body: { recallMinutes?: number; isActive?: boolean },
   ) {
     return this.service.updateLabelConfig(id, {
-      days: body.days,
+      recallMinutes: body.recallMinutes,
       isActive: body.isActive,
     });
   }

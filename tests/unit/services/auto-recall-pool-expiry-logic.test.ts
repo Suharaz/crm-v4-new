@@ -305,14 +305,20 @@ interface LeadWithLabels {
 
 interface LabelRecallConfig {
   labelId: bigint;
-  days: number;
+  // Stored as minutes (was previously days). Tests below use minutes directly.
+  recallMinutes: number;
   isActive: boolean;
+}
+
+/** Cutoff for minute-grained label recall — mirrors prod cron formula. */
+function getCutoffDateMinutes(minutes: number, now = new Date()): Date {
+  return new Date(now.getTime() - minutes * 60_000);
 }
 
 /**
  * Kiểm tra lead có đủ điều kiện recall theo nhãn không.
  * Điều kiện: đã assign, status không phải CONVERTED/LOST,
- * có nhãn với recallStartAt quá hạn config.days
+ * có nhãn với recallStartAt quá hạn config.recallMinutes
  */
 function isLeadEligibleForLabelRecall(
   lead: LeadWithLabels,
@@ -323,7 +329,7 @@ function isLeadEligibleForLabelRecall(
   if (lead.assignedUserId === null) return false;
   if (['CONVERTED', 'LOST'].includes(lead.status)) return false;
 
-  const cutoff = getCutoffDate(config.days, now);
+  const cutoff = getCutoffDateMinutes(config.recallMinutes, now);
   return lead.labels.some(
     (l) => l.labelId === config.labelId && l.recallStartAt < cutoff,
   );
@@ -339,7 +345,7 @@ function resetRecallStartAt(lead: LeadWithLabels, now = new Date()): LeadWithLab
 
 describe('Label-based recall — thu hồi theo nhãn', () => {
   const HOT_LABEL = BigInt(100);
-  const config: LabelRecallConfig = { labelId: HOT_LABEL, days: 7, isActive: true };
+  const config: LabelRecallConfig = { labelId: HOT_LABEL, recallMinutes: 7 * 1440, isActive: true };
   const now = new Date('2026-05-04T12:00:00Z');
 
   it('lead assigned, có nhãn "Nóng" gắn >7 ngày → đủ điều kiện recall', () => {
@@ -388,7 +394,7 @@ describe('Label-based recall — thu hồi theo nhãn', () => {
   });
 
   it('config isActive=false → bỏ qua', () => {
-    const inactiveConfig: LabelRecallConfig = { labelId: HOT_LABEL, days: 7, isActive: false };
+    const inactiveConfig: LabelRecallConfig = { labelId: HOT_LABEL, recallMinutes: 7 * 1440, isActive: false };
     const lead: LeadWithLabels = {
       id: BigInt(6), status: 'IN_PROGRESS',
       departmentId: BigInt(10), assignedUserId: BigInt(5),
@@ -452,7 +458,7 @@ describe('recallStartAt reset — khi chuyển dept/assign', () => {
   });
 
   it('sau reset, lead với config 7 ngày → chưa đủ điều kiện recall', () => {
-    const config: LabelRecallConfig = { labelId: HOT_LABEL, days: 7, isActive: true };
+    const config: LabelRecallConfig = { labelId: HOT_LABEL, recallMinutes: 7 * 1440, isActive: true };
     const resetTime = new Date('2026-05-04T12:00:00Z');
     const lead: LeadWithLabels = {
       id: BigInt(1), status: 'IN_PROGRESS',

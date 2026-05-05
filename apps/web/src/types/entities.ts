@@ -25,7 +25,8 @@ export interface NestedLabel {
 export interface LabelRecallConfigItem {
   id: string;
   labelId: string;
-  days: number;
+  // Window stored as raw MINUTES. UI decomposes into value+unit (min/hour/day) for display/edit.
+  recallMinutes: number;
   isActive: boolean;
   label?: { id: string; name: string; color: string };
 }

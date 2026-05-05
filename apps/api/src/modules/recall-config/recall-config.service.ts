@@ -241,7 +241,10 @@ export class RecallConfigService {
   }
 
   private async _recallLeadsByLabel(): Promise<number> {
-    const configs = await this.prisma.labelRecallConfig.findMany({ where: { isActive: true } });
+    // Skip configs whose label is deactivated — admin disabled the label so recall should pause
+    const configs = await this.prisma.labelRecallConfig.findMany({
+      where: { isActive: true, label: { isActive: true } },
+    });
     if (configs.length === 0) return 0;
 
     const CHUNK_SIZE = 500;

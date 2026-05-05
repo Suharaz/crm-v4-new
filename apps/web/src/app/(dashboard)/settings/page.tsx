@@ -1,6 +1,6 @@
 import { serverFetch } from '@/lib/auth';
 import { SettingsPageClient } from '@/components/settings/settings-page-client';
-import type { LabelEntity, SettingsItem, UserRecord } from '@/types/entities';
+import type { LabelEntity, LabelRecallConfigItem, SettingsItem, UserRecord } from '@/types/entities';
 
 /** Settings page — departments, levels, sources, labels, payment types. */
 export default async function SettingsPage() {
@@ -15,6 +15,7 @@ export default async function SettingsPage() {
   let orderFormats: SettingsItem[] = [];
   let productGroups: SettingsItem[] = [];
   let paymentInstallments: SettingsItem[] = [];
+  let labelRecallConfigs: LabelRecallConfigItem[] = [];
   let aiSettings: Record<string, string> = {};
 
   try {
@@ -37,6 +38,12 @@ export default async function SettingsPage() {
     aiSettings = await serverFetch<{ data: Record<string, string> }>('/system-settings').then(r => r.data);
   } catch { /* may fail for non-admin */ }
 
+  try {
+    labelRecallConfigs = await serverFetch<{ data: LabelRecallConfigItem[] }>(
+      '/recall-configs/labels',
+    ).then(r => r.data);
+  } catch { /* SUPER_ADMIN only — silently ignore for others */ }
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900">Cài đặt</h1>
@@ -52,6 +59,7 @@ export default async function SettingsPage() {
         productGroups={productGroups}
         paymentInstallments={paymentInstallments}
         labels={labels}
+        labelRecallConfigs={labelRecallConfigs}
         users={users}
         apiKeys={apiKeys}
         aiSettings={aiSettings}

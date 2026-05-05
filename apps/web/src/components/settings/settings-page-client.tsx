@@ -20,7 +20,7 @@ import {
   Key, Bot, ChevronDown, Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { SettingsItem, LabelEntity, UserRecord } from '@/types/entities';
+import type { SettingsItem, LabelEntity, LabelRecallConfigItem, UserRecord } from '@/types/entities';
 
 interface SettingsPageClientProps {
   departments: SettingsItem[];
@@ -32,6 +32,7 @@ interface SettingsPageClientProps {
   productGroups: SettingsItem[];
   paymentInstallments: SettingsItem[];
   labels: LabelEntity[];
+  labelRecallConfigs: LabelRecallConfigItem[];
   users: UserRecord[];
   apiKeys: SettingsItem[];
   aiSettings: Record<string, string>;
@@ -84,7 +85,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-export function SettingsPageClient({ departments, levels, sources, paymentTypes, bankAccounts, orderFormats, productGroups, paymentInstallments, labels, users, apiKeys, aiSettings }: SettingsPageClientProps) {
+export function SettingsPageClient({ departments, levels, sources, paymentTypes, bankAccounts, orderFormats, productGroups, paymentInstallments, labels, labelRecallConfigs, users, apiKeys, aiSettings }: SettingsPageClientProps) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'SUPER_ADMIN';
   const isManager = user?.role === 'MANAGER';
@@ -135,7 +136,14 @@ export function SettingsPageClient({ departments, levels, sources, paymentTypes,
       case 'sources':
         return <LeadSourceSettings data={sources} canEdit={canEdit} />;
       case 'labels':
-        return <LabelSettings data={labels as unknown as SettingsItem[]} canEdit={canEditLabels} />;
+        return (
+          <LabelSettings
+            data={labels}
+            recallConfigs={labelRecallConfigs}
+            canEdit={canEditLabels}
+            canEditRecall={isAdmin}
+          />
+        );
       case 'payment-types':
         return <PaymentTypeSettings data={paymentTypes} canEdit={canEdit} />;
       case 'payment-installments':

@@ -14,10 +14,20 @@ export interface LabelEntity {
   id: string;
   name: string;
   color: string;
+  category?: string | null;
+  isActive?: boolean;
 }
 
 export interface NestedLabel {
   label: LabelEntity;
+}
+
+export interface LabelRecallConfigItem {
+  id: string;
+  labelId: string;
+  days: number;
+  isActive: boolean;
+  label?: { id: string; name: string; color: string };
 }
 
 // ─── User ──────────────────────────────────────────────────────────────────

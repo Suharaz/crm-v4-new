@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 /**
  * Check JWT structural validity + expiry without signature verification.
- * NOTE: This is routing-only — real auth happens on NestJS backend.
+ * NOTE: This is routing-only - real auth happens on NestJS backend.
  * Edge middleware cannot access JWT_SECRET for full verification.
  */
 function isTokenExpired(token: string): boolean {

@@ -1,4 +1,4 @@
-# Phase 02 — Frontend Upload UI (Tab trong /payments)
+# Phase 02 - Frontend Upload UI (Tab trong /payments)
 
 **Priority:** P1 (depends on 01)
 **Status:** ✅ Done (2026-04-22)
@@ -6,19 +6,19 @@
 
 ## Context
 
-Thêm **tab "Import sao kê CSV"** vào trang `/payments` hiện có — không tạo sub-route riêng. SA-only. 1-step flow (không preview).
+Thêm **tab "Import sao kê CSV"** vào trang `/payments` hiện có - không tạo sub-route riêng. SA-only. 1-step flow (không preview).
 
 **Files context:**
-- `apps/web/src/app/(dashboard)/payments/page.tsx` — trang payments hiện tại (cần xem structure để biết có tab system chưa hay phải thêm mới)
-- `apps/web/src/app/(dashboard)/import/page.tsx` — pattern upload Excel reference (copy UX flow)
-- `apps/web/src/lib/api-client.ts` — fetch wrapper
-- `apps/web/src/hooks/use-auth.ts` (hoặc tương đương) — check role SA
+- `apps/web/src/app/(dashboard)/payments/page.tsx` - trang payments hiện tại (cần xem structure để biết có tab system chưa hay phải thêm mới)
+- `apps/web/src/app/(dashboard)/import/page.tsx` - pattern upload Excel reference (copy UX flow)
+- `apps/web/src/lib/api-client.ts` - fetch wrapper
+- `apps/web/src/hooks/use-auth.ts` (hoặc tương đương) - check role SA
 
 ## Key Insights
 
 - Đặt làm tab (không sub-route) → không vỡ URL cũ, không cần sửa middleware, user quen flow payments
 - Nếu `/payments` chưa có tab system → thêm `<Tabs>` component (shadcn đã có) với 2 tab: "Danh sách thanh toán" (hiện tại) + "Import sao kê"
-- Tab "Import sao kê" **chỉ hiển thị khi role=SA** — dùng conditional render, không cần hide-via-css
+- Tab "Import sao kê" **chỉ hiển thị khi role=SA** - dùng conditional render, không cần hide-via-css
 - API-client đã handle token refresh cho các request khác → dùng lại cho multipart upload (có thể cần thêm case `FormData` trong api-client nếu chưa hỗ trợ)
 
 ## Requirements
@@ -36,7 +36,7 @@ Thêm **tab "Import sao kê CSV"** vào trang `/payments` hiện có — không 
 
 **Non-functional:**
 - Vietnamese UI, responsive, design system sky blue + glassmorphism
-- Không block tab "Danh sách thanh toán" — user vẫn chuyển tab qua lại bình thường
+- Không block tab "Danh sách thanh toán" - user vẫn chuyển tab qua lại bình thường
 
 ## Architecture
 
@@ -68,11 +68,11 @@ Render:
 ## Related Files
 
 **Modify:**
-- `apps/web/src/app/(dashboard)/payments/page.tsx` — wrap content hiện tại vào `<TabsContent value="list">`, thêm `<TabsContent value="import"><BankImportTab/></TabsContent>`
-- `apps/web/src/lib/api-client.ts` — verify handle `FormData` (content-type auto); nếu không → thêm case
+- `apps/web/src/app/(dashboard)/payments/page.tsx` - wrap content hiện tại vào `<TabsContent value="list">`, thêm `<TabsContent value="import"><BankImportTab/></TabsContent>`
+- `apps/web/src/lib/api-client.ts` - verify handle `FormData` (content-type auto); nếu không → thêm case
 
 **Create:**
-- `apps/web/src/components/payments/bank-import-tab.tsx` — client component (~150 lines)
+- `apps/web/src/components/payments/bank-import-tab.tsx` - client component (~150 lines)
 
 **Delete:** Không
 
@@ -80,7 +80,7 @@ Render:
 
 1. Đọc `apps/web/src/app/(dashboard)/payments/page.tsx` hiện tại → hiểu structure (có tab chưa? Client/Server Component?)
 2. Đọc `apps/web/src/app/(dashboard)/import/page.tsx` lấy pattern download/upload
-3. Verify `api-client.ts` hỗ trợ FormData — sửa nếu cần
+3. Verify `api-client.ts` hỗ trợ FormData - sửa nếu cần
 4. Tạo `bank-import-tab.tsx` component:
    - 'use client'
    - State hooks
@@ -121,14 +121,14 @@ Render:
 
 | Risk | Mitigation |
 |---|---|
-| `/payments/page.tsx` chưa có tab system | Thêm shadcn `<Tabs>` — KISS, không phá structure |
-| FormData chưa được api-client support | Check `Content-Type` handling — không set manual, để browser auto. Add fetch wrapper cho multipart |
-| Token expire giữa upload | api-client auto refresh — verify reuse |
-| SA role check sai (non-SA vẫn thấy tab) | Hard gate: `if (role !== 'SUPER_ADMIN') return null` — test cả 2 role |
+| `/payments/page.tsx` chưa có tab system | Thêm shadcn `<Tabs>` - KISS, không phá structure |
+| FormData chưa được api-client support | Check `Content-Type` handling - không set manual, để browser auto. Add fetch wrapper cho multipart |
+| Token expire giữa upload | api-client auto refresh - verify reuse |
+| SA role check sai (non-SA vẫn thấy tab) | Hard gate: `if (role !== 'SUPER_ADMIN') return null` - test cả 2 role |
 
 ## Security Considerations
 
-- Permission gate: conditional render tab + BE đã `@Roles(SUPER_ADMIN)` — 2 lớp
+- Permission gate: conditional render tab + BE đã `@Roles(SUPER_ADMIN)` - 2 lớp
 - File blob download: `URL.revokeObjectURL` sau khi trigger, không leak memory
 - Không log content/filename vào console
 

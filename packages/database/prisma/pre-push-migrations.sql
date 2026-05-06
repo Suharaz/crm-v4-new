@@ -3,7 +3,7 @@
 -- Why this exists:
 --   The project uses `prisma db push` for production schema sync (see
 --   scripts/deploy.sh). `db push` cannot perform data-preserving column
---   renames or backfills — it refuses when adding a NOT NULL column to
+--   renames or backfills - it refuses when adding a NOT NULL column to
 --   a table with existing rows. This file applies those data-aware
 --   migrations idempotently so `db push` afterwards is a no-op for them.
 --
@@ -31,12 +31,12 @@ BEGIN
   END IF;
 END $$;
 
--- ── 2026-05-05: lead_labels — replace single-col index with composite ─────
+-- ── 2026-05-05: lead_labels - replace single-col index with composite ─────
 -- Composite (label_id, recall_start_at) supports the cron's filter and still
 -- covers label-only lookups via the leftmost prefix.
 -- NOTE: superseded by 2026-05-06 block below (lead_labels dropped). Kept as
 -- historical no-op (DROP/CREATE on non-existent table guarded by IF EXISTS
--- — but CREATE INDEX on missing table errors; wrap in conditional).
+-- - but CREATE INDEX on missing table errors; wrap in conditional).
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'lead_labels') THEN

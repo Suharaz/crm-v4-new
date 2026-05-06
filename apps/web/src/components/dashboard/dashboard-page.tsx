@@ -9,7 +9,7 @@ import { DashboardKpiSection } from './dashboard-kpi-section';
 import { DashboardMainCharts } from './dashboard-main-charts';
 
 /**
- * Main dashboard overview — "Tổng quát" page (/dashboard).
+ * Main dashboard overview - "Tổng quát" page (/dashboard).
  * Shows 4 KPI cards + revenue chart + lead funnel. No tabs.
  */
 export function DashboardPage() {

@@ -137,7 +137,7 @@ export class RecallConfigService {
     return { data: { success: true } };
   }
 
-  // Runs every 5 minutes — label-based recall now supports minute-level
+  // Runs every 5 minutes - label-based recall now supports minute-level
   // granularity (min 5 min). The pool/customer recall (day-based) is also
   // re-evaluated each tick; that's cheap because the cutoff only shifts
   // meaningfully on a daily timescale.
@@ -200,7 +200,7 @@ export class RecallConfigService {
           deletedAt: null,
           updatedAt: { lt: cutoffDate },
         },
-        // Capture previous state BEFORE updateMany — needed for activity log.
+        // Capture previous state BEFORE updateMany - needed for activity log.
         // labelId included to skip auto-label assignment for already-labeled leads.
         select: { id: true, assignedUserId: true, departmentId: true, labelId: true },
         take: CHUNK_SIZE,
@@ -358,7 +358,7 @@ export class RecallConfigService {
   /**
    * Batch-create per-entity activity rows so users see "system recalled this lead"
    * in the timeline. Captures the user/department the entity was assigned to before
-   * recall — useful for forensic / undo flows.
+   * recall - useful for forensic / undo flows.
    *
    * Failure here must not break the recall itself (already mutated rows). All
    * exceptions are caught + logged.
@@ -373,7 +373,7 @@ export class RecallConfigService {
 
     const userId = await this._getSystemUserId();
     if (!userId) {
-      this.logger.warn('System user missing — skipping activity log for recall batch');
+      this.logger.warn('System user missing - skipping activity log for recall batch');
       return;
     }
 
@@ -411,7 +411,7 @@ export class RecallConfigService {
    * Lookup the system user, creating it on first miss. Cached for the lifetime
    * of the process so cron runs don't re-query each tick.
    *
-   * The user is INACTIVE and gets a random unguessable password — it cannot be
+   * The user is INACTIVE and gets a random unguessable password - it cannot be
    * used to log in. Its only purpose is to satisfy the NOT NULL FK on Activity.
    */
   private async _getSystemUserId(): Promise<bigint | null> {

@@ -1,4 +1,4 @@
-# Phase 06 — Retention Cron + Tests
+# Phase 06 - Retention Cron + Tests
 
 **Priority:** P1 | **Status:** Pending | **Est:** 2h | **Depends:** Phase 02-05
 
@@ -6,7 +6,7 @@
 Cron retention 60 ngày: xoá row `audit_logs` + `cron_runs` cũ hơn cutoff. Viết unit + integration tests cho audit log + cron run + sanitizer. Verify end-to-end flow.
 
 ## Requirements
-- Cron chạy 1 lần/ngày (3:30 AM — sau notifications cleanup)
+- Cron chạy 1 lần/ngày (3:30 AM - sau notifications cleanup)
 - Xoá row `created_at < now() - 60 days`
 - Track chính cron này qua `CronRun` (eat own dogfood)
 - Unit test sanitizer + service core methods
@@ -100,13 +100,13 @@ do {
 ## Related Code Files
 
 ### Read first
-- `apps/api/test/` — existing test setup pattern
+- `apps/api/test/` - existing test setup pattern
 - `apps/api/src/modules/audit-log/audit-log.service.ts` (Phase 02)
 - `apps/api/src/modules/cron-run/cron-run.service.ts` (Phase 03)
 
 ### Modify
-- `apps/api/src/modules/audit-log/audit-log.service.ts` — thêm `pruneOldRecords()`
-- `apps/api/src/modules/audit-log/audit-log.module.ts` — register retention service
+- `apps/api/src/modules/audit-log/audit-log.service.ts` - thêm `pruneOldRecords()`
+- `apps/api/src/modules/audit-log/audit-log.module.ts` - register retention service
 
 ### Create
 - `apps/api/src/modules/audit-log/audit-log-retention.service.ts`
@@ -118,25 +118,25 @@ do {
 
 ## Implementation Steps
 
-### Step 1 — Retention service
+### Step 1 - Retention service
 - Implement chunked delete
 - Inject `CronRunService` để self-track
 
-### Step 2 — Wire vào module
+### Step 2 - Wire vào module
 - Add to providers in `audit-log.module.ts`
 - Verify cron starts on app boot (NestJS schedule auto-discover)
 
-### Step 3 — Unit tests
+### Step 3 - Unit tests
 - Setup `jest.config` nếu chưa có per-module
 - Mock `PrismaClient` với `jest-mock-extended` hoặc tự viết mock object
 - Run `pnpm test --filter=api`
 
-### Step 4 — Integration tests
+### Step 4 - Integration tests
 - Setup test DB (Docker compose hoặc separate schema)
 - Use `supertest` để bắn request
 - Cleanup data sau mỗi test
 
-### Step 5 — Manual retention test
+### Step 5 - Manual retention test
 ```bash
 # Insert backdated row
 psql $DATABASE_URL -c "INSERT INTO audit_logs (action, created_at) VALUES ('TEST', now() - interval '70 days');"
@@ -146,7 +146,7 @@ psql $DATABASE_URL -c "INSERT INTO audit_logs (action, created_at) VALUES ('TEST
 psql $DATABASE_URL -c "SELECT count(*) FROM audit_logs WHERE action='TEST';"
 ```
 
-### Step 6 — Performance check
+### Step 6 - Performance check
 - Insert 100k rows audit_logs với `created_at` rải đều 90 ngày
 - Trigger retention → đo thời gian
 - Mục tiêu: < 30s cho 50k rows xoá

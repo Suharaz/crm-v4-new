@@ -11,7 +11,7 @@ export function LandingFooter() {
           <span className="text-sm font-bold text-gradient">VeloCRM</span>
         </div>
         <p className="text-xs text-slate-400">
-          NestJS 11 + Next.js 16 + PostgreSQL 16 + Prisma 6 — Built with Turborepo
+          NestJS 11 + Next.js 16 + PostgreSQL 16 + Prisma 6 - Built with Turborepo
         </p>
       </div>
     </footer>

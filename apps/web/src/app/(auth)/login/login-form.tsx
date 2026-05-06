@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Zap, Eye, EyeOff } from 'lucide-react';
 
-/** Only allow relative paths starting with / — block protocol-relative, absolute URLs, and dangerous protocols */
+/** Only allow relative paths starting with / - block protocol-relative, absolute URLs, and dangerous protocols */
 function sanitizeRedirect(raw: string | null): string {
   if (!raw) return '/dashboard';
   // Block protocol-relative (//evil.com), absolute (http://), data: and javascript: URIs

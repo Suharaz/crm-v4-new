@@ -50,7 +50,7 @@ export function DashboardTabs({ range, isAdmin }: DashboardTabsProps) {
     router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false });
   }, [searchParams, router, pathname]);
 
-  // Lazy-load data per tab — only fetches when active
+  // Lazy-load data per tab - only fetches when active
   const customers = useTabData<CustomersTabData>('customers', range, isAdmin, activeTab === 'customers');
   const revenue = useTabData<RevenueTabData>('revenue', range, isAdmin, activeTab === 'revenue');
   const team = useTabData<TeamTabData>('team', range, isAdmin, isAdmin && activeTab === 'team');

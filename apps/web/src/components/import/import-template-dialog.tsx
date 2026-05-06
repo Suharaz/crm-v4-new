@@ -45,7 +45,7 @@ function downloadCsv(filename: string, content: string) {
 }
 
 /**
- * Schema of a single CSV column — drives both the documentation table and the
+ * Schema of a single CSV column - drives both the documentation table and the
  * preview spreadsheet. Keep required columns listed FIRST so the preview shows
  * them leftmost, matching how the backend parser reads.
  */
@@ -63,12 +63,12 @@ interface TemplateSpec {
   sampleRows: string[][];
 }
 
-/** Source of truth for the UI — mirrors the parser logic in import.processor.ts */
+/** Source of truth for the UI - mirrors the parser logic in import.processor.ts */
 const TEMPLATES: Record<'lead' | 'customer', TemplateSpec> = {
   lead: {
     title: 'Mẫu import Leads',
     columns: [
-      { name: 'Số điện thoại', required: true, format: '10–11 số VN', description: 'SĐT khách. Tự động chuẩn hoá (VD: +84 → 0)' },
+      { name: 'Số điện thoại', required: true, format: '10-11 số VN', description: 'SĐT khách. Tự động chuẩn hoá (VD: +84 → 0)' },
       { name: 'Họ tên', required: false, format: 'Text', description: 'Trống → dùng SĐT làm tên' },
       { name: 'Email', required: false, format: 'Email', description: 'Có thể để trống' },
       { name: 'Nguồn', required: false, format: 'Tên nguồn có trong Settings', description: 'Phải tồn tại sẵn, nếu không → lỗi cả dòng' },
@@ -85,7 +85,7 @@ const TEMPLATES: Record<'lead' | 'customer', TemplateSpec> = {
   customer: {
     title: 'Mẫu import Khách hàng',
     columns: [
-      { name: 'Số điện thoại', required: true, format: '10–11 số VN', description: 'SĐT khách' },
+      { name: 'Số điện thoại', required: true, format: '10-11 số VN', description: 'SĐT khách' },
       { name: 'Họ tên', required: true, format: 'Text', description: 'Bắt buộc với customer (khác với lead)' },
       { name: 'Email', required: false, format: 'Email', description: '' },
       { name: 'Công ty', required: false, format: 'Text', description: '' },
@@ -173,7 +173,7 @@ export function ImportTemplateDialog({ type, onClose }: Props) {
                           )}
                         </td>
                         <td className="px-3 py-2 text-slate-600">{col.format}</td>
-                        <td className="px-3 py-2 text-slate-600">{col.description || '—'}</td>
+                        <td className="px-3 py-2 text-slate-600">{col.description || '-'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -201,7 +201,7 @@ export function ImportTemplateDialog({ type, onClose }: Props) {
                       <tr key={rIdx} className="hover:bg-slate-50">
                         {row.map((cell, cIdx) => (
                           <td key={cIdx} className="whitespace-nowrap px-3 py-2 border-r border-slate-100 last:border-r-0 text-slate-700">
-                            {cell || <span className="text-slate-300">—</span>}
+                            {cell || <span className="text-slate-300">-</span>}
                           </td>
                         ))}
                       </tr>
@@ -220,7 +220,7 @@ export function ImportTemplateDialog({ type, onClose }: Props) {
               <ul className="list-disc pl-4 space-y-0.5">
                 <li>File CSV cần có dòng tiêu đề (header) ở dòng đầu tiên. Tên cột có thể dùng tiếng Việt như mẫu trên hoặc tiếng Anh (<code>phone, name, email, source, product, labels, note</code>).</li>
                 <li>Cột <code>Nguồn</code> và <code>Sản phẩm</code> cần được tạo trước trong <b>Cài đặt</b>, nếu không sẽ báo lỗi cả dòng.</li>
-                <li>Cột <code>Nhãn</code> và <code>Ghi chú</code> tùy chọn — không có cũng không sao. <b>Lead chỉ áp dụng nhãn đầu tiên</b> nếu có nhiều nhãn (cách nhau bằng dấu phẩy); các nhãn còn lại sẽ bị bỏ qua + cảnh báo trong job log.</li>
+                <li>Cột <code>Nhãn</code> và <code>Ghi chú</code> tùy chọn - không có cũng không sao. <b>Lead chỉ áp dụng nhãn đầu tiên</b> nếu có nhiều nhãn (cách nhau bằng dấu phẩy); các nhãn còn lại sẽ bị bỏ qua + cảnh báo trong job log.</li>
                 <li>File tối đa 10MB, encoding UTF-8.</li>
               </ul>
             </section>

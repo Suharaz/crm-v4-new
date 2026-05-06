@@ -13,7 +13,7 @@ interface Customer {
   createdAt: string;
 }
 
-/** Customer list table — click name navigates to detail page. */
+/** Customer list table - click name navigates to detail page. */
 export function CustomerTableWithPreview({
   customers,
   enableBulkDelete = false,
@@ -76,7 +76,7 @@ export function CustomerTableWithPreview({
                 </td>
                 <td className="px-4 py-3 text-slate-600">{c.phone}</td>
                 <td className="hidden md:table-cell px-4 py-3 text-slate-500 text-xs max-w-xs truncate">
-                  {c.shortDescription || '—'}
+                  {c.shortDescription || '-'}
                 </td>
                 <td className="hidden md:table-cell px-4 py-3">
                   {c.labels && c.labels.length > 0 ? (
@@ -89,7 +89,7 @@ export function CustomerTableWithPreview({
                         <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] text-slate-500">+{c.labels.length - 3}</span>
                       )}
                     </div>
-                  ) : <span className="text-slate-400">—</span>}
+                  ) : <span className="text-slate-400">-</span>}
                 </td>
                 <td className="hidden lg:table-cell px-4 py-3 text-slate-400">{formatDate(c.createdAt)}</td>
               </tr>

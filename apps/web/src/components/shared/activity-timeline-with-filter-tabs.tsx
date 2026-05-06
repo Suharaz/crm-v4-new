@@ -33,7 +33,7 @@ function isPaymentActivity(a: ActivityItem): boolean {
   return !!a.metadata?.type && PAYMENT_META_TYPES.includes(a.metadata.type);
 }
 
-/** Get effective display type — resolves NOTE+metadata into ORDER/PAYMENT */
+/** Get effective display type - resolves NOTE+metadata into ORDER/PAYMENT */
 function getEffectiveType(a: ActivityItem): string {
   if (a.type === 'NOTE' && a.metadata?.type) {
     if (a.metadata.type === 'ORDER_CREATED') return 'ORDER';
@@ -135,7 +135,7 @@ export function ActivityTimelineWithFilterTabs({ activities }: { activities: Act
                 <div className="mt-0.5 shrink-0">{getTypeIconByEffective(effectiveType, metaType)}</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium text-slate-700">{a.user?.name || '—'}</span>
+                    <span className="text-sm font-medium text-slate-700">{a.user?.name || '-'}</span>
                     <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
                       isPmt ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
                     }`}>

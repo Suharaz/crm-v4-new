@@ -17,7 +17,7 @@
 
 | Key | Meaning |
 |-----|---------|
-| 🌐 | `@Public()` — không cần JWT |
+| 🌐 | `@Public()` - không cần JWT |
 | 🔑 | API key auth (header `x-api-key` hoặc `Authorization: Bearer mcp_...`) |
 | 👤 | Authenticated user (USER/MANAGER/SUPER_ADMIN) |
 | 👔 | MANAGER+ |
@@ -25,7 +25,7 @@
 
 ---
 
-## 1. Auth — `/auth`
+## 1. Auth - `/auth`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -34,7 +34,7 @@
 | POST | `/auth/logout` | 👤 | Revoke refresh token |
 | GET | `/auth/me` | 👤 | Current user profile + managedDeptIds |
 
-## 2. Users — `/users`
+## 2. Users - `/users`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -45,7 +45,7 @@
 | PATCH | `/users/:id` | 👑 | Admin-update (full fields) |
 | DELETE | `/users/:id` | 👑 | Soft-delete, cascade lead về dept pool |
 
-## 3. Departments — `/departments`
+## 3. Departments - `/departments`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -55,7 +55,7 @@
 | PATCH | `/departments/:id` | 👑 | Update |
 | DELETE | `/departments/:id` | 👑 | Soft-delete |
 
-## 4. Teams — `/teams`
+## 4. Teams - `/teams`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -65,7 +65,7 @@
 | PATCH | `/teams/:id` | 👑 | Update |
 | DELETE | `/teams/:id` | 👑 | Transaction: detach members → soft-delete team |
 
-## 5. Employee Levels — `/employee-levels`
+## 5. Employee Levels - `/employee-levels`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -74,7 +74,7 @@
 | PATCH | `/employee-levels/:id` | 👑 | Update |
 | DELETE | `/employee-levels/:id` | 👑 | Soft-delete |
 
-## 6. Leads — `/leads`
+## 6. Leads - `/leads`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -98,12 +98,12 @@
 | DELETE | `/leads/:id` | 👑 | Soft-delete |
 | PATCH | `/leads/:id/label` | 👤 | Gắn / đổi / gỡ nhãn (single label per lead). Body: `{ labelId: string \| null }` |
 
-## 7. Customers — `/customers`
+## 7. Customers - `/customers`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
 | GET | `/customers` | 👑 | List full (SUPER_ADMIN only theo NFR) |
-| GET | `/customers/search` | 👤 | Search by phone (rate-limited — mọi user) |
+| GET | `/customers/search` | 👤 | Search by phone (rate-limited - mọi user) |
 | GET | `/customers/:id` | 👤 | Chi tiết (scoped) |
 | POST | `/customers` | 👔 | Tạo thủ công |
 | PATCH | `/customers/:id` | 👤 | Update |
@@ -113,9 +113,9 @@
 | DELETE | `/customers/:id` | 👑 | Soft-delete |
 | POST | `/customers/:id/labels` | 👤 | Gắn label |
 | DELETE | `/customers/:id/labels/:labelId` | 👤 | Gỡ label |
-| POST | `/customers/:id/analyze` | 👤 | AI analyze (Gemini) — trả aiRating + shortDescription |
+| POST | `/customers/:id/analyze` | 👤 | AI analyze (Gemini) - trả aiRating + shortDescription |
 
-## 8. Lead Sources — `/lead-sources`
+## 8. Lead Sources - `/lead-sources`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -124,7 +124,7 @@
 | PATCH | `/lead-sources/:id` | 👑 | Update |
 | DELETE | `/lead-sources/:id` | 👑 | Soft-deactivate (`isActive=false`) |
 
-## 9. Labels — `/labels`
+## 9. Labels - `/labels`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -133,7 +133,7 @@
 | PATCH | `/labels/:id` | 👔 | Update name/color |
 | DELETE | `/labels/:id` | 👔 | Soft-deactivate (giữ LeadLabel/CustomerLabel history) |
 
-## 10. Activities — `/leads|customers/:id/activities`
+## 10. Activities - `/leads|customers/:id/activities`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -143,7 +143,7 @@
 | POST | `/customers/:id/activities` | 👤 | Tạo note/call cho customer |
 | GET | `/activities/stats/by-department` | 👔 | Thống kê activity/dept/ngày |
 
-## 11. Products — `/products`
+## 11. Products - `/products`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -153,7 +153,7 @@
 | PATCH | `/products/:id` | 👔 | Update |
 | DELETE | `/products/:id` | 👑 | Soft-delete |
 
-## 12. Product Categories — `/product-categories`
+## 12. Product Categories - `/product-categories`
 
 | Method | Path | Role |
 |--------|------|------|
@@ -162,7 +162,7 @@
 | PATCH | `/product-categories/:id` | 👔 |
 | DELETE | `/product-categories/:id` | 👑 |
 
-## 13. Product Groups — `/product-groups`
+## 13. Product Groups - `/product-groups`
 
 | Method | Path | Role |
 |--------|------|------|
@@ -171,7 +171,7 @@
 | PATCH | `/product-groups/:id` | 👑 |
 | DELETE | `/product-groups/:id` | 👑 |
 
-## 14. Order Formats — `/order-formats`
+## 14. Order Formats - `/order-formats`
 
 | Method | Path | Role |
 |--------|------|------|
@@ -180,7 +180,7 @@
 | PATCH | `/order-formats/:id` | 👑 |
 | DELETE | `/order-formats/:id` | 👑 |
 
-## 15. Orders — `/orders`
+## 15. Orders - `/orders`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -190,7 +190,7 @@
 | PATCH | `/orders/:id/status` | 👔 | Đổi status (PENDING→CONFIRMED→COMPLETED, CANCELLED, REFUNDED) |
 | DELETE | `/orders/:id` | 👑 | Soft-delete |
 
-## 16. Payments — `/payments`
+## 16. Payments - `/payments`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -204,7 +204,7 @@
 | POST | `/payments/:id/verify` | 👔 | Thủ công verify → VERIFIED + trigger convert check |
 | POST | `/payments/:id/reject` | 👔 | REJECTED |
 
-## 17. Payment Types — `/payment-types`
+## 17. Payment Types - `/payment-types`
 
 | Method | Path | Role |
 |--------|------|------|
@@ -213,7 +213,7 @@
 | PATCH | `/payment-types/:id` | 👑 |
 | DELETE | `/payment-types/:id` | 👑 |
 
-## 18. Payment Installments — `/payment-installments`
+## 18. Payment Installments - `/payment-installments`
 
 | Method | Path | Role |
 |--------|------|------|
@@ -222,7 +222,7 @@
 | PATCH | `/payment-installments/:id` | 👑 |
 | DELETE | `/payment-installments/:id` | 👑 |
 
-## 19. Bank Accounts — `/bank-accounts`
+## 19. Bank Accounts - `/bank-accounts`
 
 | Method | Path | Role |
 |--------|------|------|
@@ -231,18 +231,18 @@
 | PATCH | `/bank-accounts/:id` | 👑 |
 | DELETE | `/bank-accounts/:id` | 👑 |
 
-## 20. Bank Transactions — `/bank-transactions` + webhook
+## 20. Bank Transactions - `/bank-transactions` + webhook
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
 | POST | `/webhooks/bank-transactions` | 🌐 `WebhookSignatureGuard` | Ingest webhook ngân hàng → auto-match payment (legacy; `transactionTime` optional, fallback `now()`) |
-| POST | `/bank-transactions/import` | 👑 SA | Multipart CSV import — dedup `externalId`, auto-match, resp: `{ total, imported, skipped_duplicate, auto_matched, errors[] }` |
+| POST | `/bank-transactions/import` | 👑 SA | Multipart CSV import - dedup `externalId`, auto-match, resp: `{ total, imported, skipped_duplicate, auto_matched, errors[] }` |
 | GET | `/bank-transactions/import/template` | 👑 SA | Download CSV template 7 cột (UTF-8 BOM): Mã GD / Số tiền / Nội dung / Thời gian / TK nhận / Người gửi / TK gửi |
 | GET | `/bank-transactions` | 👔 | List |
 | GET | `/bank-transactions/unmatched` | 👔 | Queue UNMATCHED để manager xử lý |
 | POST | `/bank-transactions/:id/match` | 👔 | Thủ công match với payment |
 
-## 21. Call Logs — `/call-logs`
+## 21. Call Logs - `/call-logs`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -252,7 +252,7 @@
 | GET | `/call-logs/unmatched` | 👔 | Queue cần verify |
 | POST | `/call-logs/:id/match` | 👔 | Thủ công match |
 
-## 22. Tasks — `/tasks`
+## 22. Tasks - `/tasks`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -263,7 +263,7 @@
 | PATCH | `/tasks/:id` | 👤 | Update |
 | DELETE | `/tasks/:id` | 👤 | Soft-delete |
 
-## 23. Notifications — `/notifications`
+## 23. Notifications - `/notifications`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -272,7 +272,7 @@
 | POST | `/notifications/:id/read` | 👤 | Mark 1 |
 | POST | `/notifications/read-all` | 👤 | Mark tất cả |
 
-## 24. Dashboard — `/dashboard`
+## 24. Dashboard - `/dashboard`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -287,7 +287,7 @@
 | GET | `/dashboard/team-performance` | 👔 | KPI theo team |
 | GET | `/dashboard/employee-scores` | 👔 | Scorecard 0-100 (conversion 40% + revenue 30% + aging 20% + tasks 10%) |
 
-## 25. Distribution — `/distribution`
+## 25. Distribution - `/distribution`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -296,7 +296,7 @@
 | GET | `/distribution/scores/:deptId` | 👔 | Preview scores trước khi distribute |
 | POST | `/distribution/distribute/:deptId` | 👔 | Run AI distribute trên dept pool |
 
-## 26. Assignment Templates — `/assignment-templates`
+## 26. Assignment Templates - `/assignment-templates`
 
 | Method | Path | Role |
 |--------|------|------|
@@ -307,7 +307,7 @@
 | DELETE | `/assignment-templates/:id` | 👔 |
 | POST | `/assignment-templates/:id/apply` | 👔 | Áp round-robin lên danh sách lead IDs |
 
-## 27. Recall Config — `/recall-configs`
+## 27. Recall Config - `/recall-configs`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -318,7 +318,7 @@
 | DELETE | `/recall-configs/:id` | 👑 | Xóa |
 | POST | `/recall-configs/run-now` | 👑 | Trigger cron ngay lập tức (debug) |
 
-## 28. Import — `/imports`
+## 28. Import - `/imports`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -327,9 +327,9 @@
 | GET | `/imports` | 👔 | List job history |
 | GET | `/imports/:id/status` | 👔 | Poll progress + errorFileUrl |
 
-**CSV requirements:** UTF-8 BOM khuyến nghị (Excel VN), header row bắt buộc, streaming parse (`csv-parse`), progress update mỗi 100 rows. Parser accept cả **header tiếng Anh (camelCase) lẫn tiếng Việt** — khớp 1 trong 2 là OK.
+**CSV requirements:** UTF-8 BOM khuyến nghị (Excel VN), header row bắt buộc, streaming parse (`csv-parse`), progress update mỗi 100 rows. Parser accept cả **header tiếng Anh (camelCase) lẫn tiếng Việt** - khớp 1 trong 2 là OK.
 
-### CSV — Leads (5 cols + metadata JSONB)
+### CSV - Leads (5 cols + metadata JSONB)
 
 | Header VN | Header EN | Required | Ghi chú |
 |---|---|---|---|
@@ -343,7 +343,7 @@
 - **Auto-create customer** theo `phone` (hoặc reuse nếu đã có). Labels của customer merge sang lead mới
 - **Metadata JSONB:** Mọi cột **không thuộc** 5 header trên (cả EN và VN) đều auto-map vào `lead.metadata` key=header, value=cell
 
-### CSV — Customers (11 cols)
+### CSV - Customers (11 cols)
 
 | Header VN | Header EN | Required | Ghi chú |
 |---|---|---|---|
@@ -362,7 +362,7 @@
 - **Dedup:** `phone + deletedAt=null`. Trùng → error row `Trùng khách hàng`
 - **Template download:** FE sinh file `mau-import-khach-hang.csv` với BOM UTF-8 + 3 sample rows (full / chỉ bắt buộc / partial)
 
-### Response — `GET /imports/:id/status`
+### Response - `GET /imports/:id/status`
 
 ```json
 {
@@ -379,9 +379,9 @@
 }
 ```
 
-Error CSV columns: `row, field, message`. Warning rows (label không match) cũng xuất hiện ở đây với `field=general, message=[Warning] Nhãn "..." không tồn tại trong hệ thống — bỏ qua`.
+Error CSV columns: `row, field, message`. Warning rows (label không match) cũng xuất hiện ở đây với `field=general, message=[Warning] Nhãn "..." không tồn tại trong hệ thống - bỏ qua`.
 
-## 29. Export — `/exports`
+## 29. Export - `/exports`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -389,14 +389,14 @@ Error CSV columns: `row, field, message`. Warning rows (label không match) cũn
 | GET | `/exports/customers` | 👔 | CSV customers |
 | GET | `/exports/orders` | 👔 | CSV orders |
 
-## 30. File Upload — `/files`
+## 30. File Upload - `/files`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
 | POST | `/files/upload` | 👤 | Upload (UUID filename, MIME + 10MB check) |
 | GET | `/files/*` | 👤 | Stream file (JWT protected, path-traversal safe) |
 
-## 31. Third-Party API — `/external`
+## 31. Third-Party API - `/external`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -404,7 +404,7 @@ Error CSV columns: `row, field, message`. Warning rows (label không match) cũn
 
 Xem chi tiết trong `api-integration-guide.md`.
 
-## 32. MCP Agent — `/mcp` + `/ai-agent`
+## 32. MCP Agent - `/mcp` + `/ai-agent`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -412,33 +412,33 @@ Xem chi tiết trong `api-integration-guide.md`.
 | GET | `/mcp` | 🔑 | Session re-attach |
 | DELETE | `/mcp` | 🔑 | Terminate session |
 | GET | `/ai-agent/leads` | 🔑 | REST fallback read-only |
-| GET | `/ai-agent/leads/:id` | 🔑 | — |
-| GET | `/ai-agent/customers` | 🔑 | — |
-| GET | `/ai-agent/orders` | 🔑 | — |
-| GET | `/ai-agent/stats` | 🔑 | — |
+| GET | `/ai-agent/leads/:id` | 🔑 | - |
+| GET | `/ai-agent/customers` | 🔑 | - |
+| GET | `/ai-agent/orders` | 🔑 | - |
+| GET | `/ai-agent/stats` | 🔑 | - |
 
 **MCP tools exposed:** `schema`, `leads`, `customers`, `orders`, `products`, `stats`, `users` (all read-only).
 
-## 33. API Keys — `/api-keys`
+## 33. API Keys - `/api-keys`
 
 All 👑 SUPER_ADMIN only.
 
 | Method | Path | Mô tả |
 |--------|------|-------|
 | GET | `/api-keys` | List |
-| POST | `/api-keys` | Tạo (response chứa plaintext key — 1 lần) |
-| PATCH | `/api-keys/:id/deactivate` | — |
-| PATCH | `/api-keys/:id/activate` | — |
+| POST | `/api-keys` | Tạo (response chứa plaintext key - 1 lần) |
+| PATCH | `/api-keys/:id/deactivate` | - |
+| PATCH | `/api-keys/:id/activate` | - |
 | DELETE | `/api-keys/:id` | Xóa |
 
-## 34. System Settings — `/system-settings`
+## 34. System Settings - `/system-settings`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
 | GET | `/system-settings` | 👑 | All key-value |
 | PUT | `/system-settings/:key` | 👑 | Upsert |
 
-## 35. Search — `/search`
+## 35. Search - `/search`
 
 | Method | Path | Role | Mô tả |
 |--------|------|------|-------|
@@ -459,7 +459,7 @@ GET /api/proxy/:path*  →  Next.js route handler
 
 ## Related Docs
 
-- `system-architecture.md` — Module dependency graph + cron jobs
-- `code-standards.md` — IDOR prevention, pagination, response format
-- `api-integration-guide.md` — 3rd-party key integration chi tiết
-- `business-flows.md` — Sequence diagram cho payment verify, lead lifecycle
+- `system-architecture.md` - Module dependency graph + cron jobs
+- `code-standards.md` - IDOR prevention, pagination, response format
+- `api-integration-guide.md` - 3rd-party key integration chi tiết
+- `business-flows.md` - Sequence diagram cho payment verify, lead lifecycle

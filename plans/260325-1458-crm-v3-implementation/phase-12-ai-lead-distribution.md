@@ -12,12 +12,12 @@ depends_on: [4, 11]
 ## Context Links
 
 - AI config model: `plans/reports/brainstorm-260325-1224-internal-crm-system-design.md` (line 249-257)
-- Approach: brainstorm (line 333) — weighted scoring first, NOT LLM
+- Approach: brainstorm (line 333) - weighted scoring first, NOT LLM
 - Risk: brainstorm (line 325)
 
 ## Overview
 
-Implement weighted scoring algorithm for automatic lead distribution. NOT ML/LLM — rule-based scoring using: workload (30%), employee level (30%), historical conversion rate (40%). Configurable per department. Includes config UI for super_admin.
+Implement weighted scoring algorithm for automatic lead distribution. NOT ML/LLM - rule-based scoring using: workload (30%), employee level (30%), historical conversion rate (40%). Configurable per department. Includes config UI for super_admin.
 
 ## Requirements
 
@@ -86,33 +86,33 @@ model AiDistributionConfig {
 ### API Endpoints
 
 **AI Distribution Config:**
-- `GET /distribution/config` — list configs for all departments (super_admin)
-- `GET /distribution/config/:departmentId` — get config for department
-- `PUT /distribution/config/:departmentId` — create/update config (super_admin)
-- `POST /distribution/distribute` — distribute single lead `{ leadId }` (manager+)
-- `POST /distribution/distribute-batch` — distribute all pool leads for department (manager+)
-- `GET /distribution/preview/:leadId` — preview scoring for a lead (show all user scores without assigning)
+- `GET /distribution/config` - list configs for all departments (super_admin)
+- `GET /distribution/config/:departmentId` - get config for department
+- `PUT /distribution/config/:departmentId` - create/update config (super_admin)
+- `POST /distribution/distribute` - distribute single lead `{ leadId }` (manager+)
+- `POST /distribution/distribute-batch` - distribute all pool leads for department (manager+)
+- `GET /distribution/preview/:leadId` - preview scoring for a lead (show all user scores without assigning)
 
 **Assignment Templates (phân phối theo template):**
-- `GET /assignment-templates` — list templates (manager+)
-- `POST /assignment-templates` — create template (manager+)
+- `GET /assignment-templates` - list templates (manager+)
+- `POST /assignment-templates` - create template (manager+)
   Body: `{ name, strategy: "ROUND_ROBIN"|"AI_WEIGHTED", memberUserIds: [1,2,3] }`
   → Chọn danh sách người CỤ THỂ khi tạo template
-- `PATCH /assignment-templates/:id` — update (name, strategy, members)
-- `DELETE /assignment-templates/:id` — deactivate
-- `POST /assignment-templates/:id/apply` — apply lên danh sách leads (manager+)
+- `PATCH /assignment-templates/:id` - update (name, strategy, members)
+- `DELETE /assignment-templates/:id` - deactivate
+- `POST /assignment-templates/:id/apply` - apply lên danh sách leads (manager+)
   Body: `{ leadIds: [1,2,3,4,5,6,7] }`
   → Validation: chỉ apply lên leads có status POOL hoặc FLOATING. Skip leads đã ASSIGNED/IN_PROGRESS/CONVERTED/LOST → trả về danh sách skipped cho manager
-  → ROUND_ROBIN: vòng lặp — 7 leads / 3 người → A(1,4,7), B(2,5), C(3,6)
+  → ROUND_ROBIN: vòng lặp - 7 leads / 3 người → A(1,4,7), B(2,5), C(3,6)
     Không bắt buộc chia hết, vòng lặp cho đến khi hết lead
   → AI_WEIGHTED: dùng scoring, người điểm cao nhận nhiều hơn
   → Mỗi lead: status=ASSIGNED, dept=member's dept, user=member
   → Response: `{ assigned: [...], skipped: [...], reason: "status not POOL/FLOATING" }`
 
 **Recall Config (super_admin):**
-- `GET /recall-configs` — list configs
-- `POST /recall-configs` — create `{ entityType, maxDaysInPool, autoLabelIds }`
-- `PATCH /recall-configs/:id` — update
+- `GET /recall-configs` - list configs
+- `POST /recall-configs` - create `{ entityType, maxDaysInPool, autoLabelIds }`
+- `PATCH /recall-configs/:id` - update
 - Cron `@Cron('0 1 * * *')`: tìm leads/customers trong dept pool quá X ngày → status=FLOATING, dept=null, user=null, gắn labels
 
 ### Frontend
@@ -128,15 +128,15 @@ apps/web/src/components/settings/
 ## Related Code Files
 
 ### Create
-- `apps/api/src/modules/distribution/` — all distribution files
+- `apps/api/src/modules/distribution/` - all distribution files
 - `apps/web/src/app/(dashboard)/settings/distribution/page.tsx`
 - `apps/web/src/components/settings/distribution-config-form.tsx`
 - `apps/web/src/components/settings/distribution-preview.tsx`
 
 ### Modify
-- `apps/api/src/modules/leads/leads.service.ts` — optional auto-distribute on lead create
-- `apps/api/src/app.module.ts` — register distribution module
-- `apps/web/src/components/settings/settings-nav.tsx` — add distribution link
+- `apps/api/src/modules/leads/leads.service.ts` - optional auto-distribute on lead create
+- `apps/api/src/app.module.ts` - register distribution module
+- `apps/web/src/components/settings/settings-nav.tsx` - add distribution link
 
 ## Implementation Steps
 

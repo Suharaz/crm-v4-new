@@ -1,5 +1,5 @@
 /**
- * Test suite: Bank transactions — webhook ingest, dedup, auto-match, manual match
+ * Test suite: Bank transactions - webhook ingest, dedup, auto-match, manual match
  * Covers: POST /webhooks/bank-transactions (@Public), dedup by externalId,
  *         amount validation, auto-match with pending payment,
  *         GET /bank-transactions (MANAGER+), POST manual match
@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { ApiTestClient, adminClient, managerClient, userClient } from '../helpers/api-test-client-with-auth';
 
-describe('Bank Transactions — Webhook & Matching', () => {
+describe('Bank Transactions - Webhook & Matching', () => {
   let admin: ApiTestClient;
   let manager: ApiTestClient;
   let user: ApiTestClient;
@@ -47,8 +47,8 @@ describe('Bank Transactions — Webhook & Matching', () => {
 
   // ── POST /webhooks/bank-transactions (@Public) ───────────────────────────
 
-  describe('POST /webhooks/bank-transactions — ingest giao dịch ngân hàng', () => {
-    it('webhook không cần auth (@Public) — ingest thành công → 201', async () => {
+  describe('POST /webhooks/bank-transactions - ingest giao dịch ngân hàng', () => {
+    it('webhook không cần auth (@Public) - ingest thành công → 201', async () => {
       const externalId = `TX-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const anon = new ApiTestClient(); // không có token
 
@@ -157,7 +157,7 @@ describe('Bank Transactions — Webhook & Matching', () => {
 
   // ── GET /bank-transactions ───────────────────────────────────────────────
 
-  describe('GET /bank-transactions — danh sách giao dịch ngân hàng', () => {
+  describe('GET /bank-transactions - danh sách giao dịch ngân hàng', () => {
     it('MANAGER xem danh sách → 200', async () => {
       const { status, body } = await manager.getJson<any>('/bank-transactions');
       expect(status).toBe(200);
@@ -191,7 +191,7 @@ describe('Bank Transactions — Webhook & Matching', () => {
 
   // ── POST /bank-transactions/:id/match ────────────────────────────────────
 
-  describe('POST /bank-transactions/:id/match — manual match', () => {
+  describe('POST /bank-transactions/:id/match - manual match', () => {
     it('MANAGER manual match tx với payment → 200', async () => {
       // Tạo tx + payment mới với nội dung độc đáo để tránh auto-match
       const anon = new ApiTestClient();

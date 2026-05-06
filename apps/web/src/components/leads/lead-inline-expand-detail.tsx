@@ -56,7 +56,7 @@ interface Props {
   colSpan: number;
 }
 
-/** Inline expandable detail row for lead/customer — replaces popup dialog. */
+/** Inline expandable detail row for lead/customer - replaces popup dialog. */
 export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props) {
   const router = useRouter();
   const [data, setData] = useState<DetailRecord | null>(null);
@@ -96,7 +96,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     ]).then(async ([entityRes, actRes]) => {
       setData(entityRes.data);
       let allActs: ActivityRecord[] = (actRes.data || []).map((a) => ({ ...a, _source: 'lead' }));
-      // Merge customer activities if lead has customerId — dedupe by id (same activity may appear in both endpoints)
+      // Merge customer activities if lead has customerId - dedupe by id (same activity may appear in both endpoints)
       if (entityType === 'lead' && entityRes.data?.customerId) {
         try {
           const custActs = await api.get<{ data: ActivityRecord[] }>(`/customers/${entityRes.data.customerId}/activities`);
@@ -126,7 +126,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
 
   async function toggleLabel(labelId: string) {
     setLabelSaving(true);
-    // Track whether we're clearing or setting — drives toast wording
+    // Track whether we're clearing or setting - drives toast wording
     const wasActive = currentLabelIds.has(labelId);
     try {
       if (entityType === 'lead') {
@@ -223,7 +223,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
     <tr className="bg-sky-50/20">
       <td colSpan={colSpan} className="px-4 py-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          {/* Col 1: Calls + Notes + Orders — shows spinner while loading */}
+          {/* Col 1: Calls + Notes + Orders - shows spinner while loading */}
           <div className="space-y-2">
             {loading ? (
               <div className="flex items-center justify-center py-8">
@@ -242,7 +242,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                       <div className="flex items-center justify-between px-2.5 py-1.5">
                         <div>
                           <span className="font-medium text-slate-700">#{o.id}</span>
-                          <span className="ml-1.5 text-slate-500">{o.product?.name || '—'}</span>
+                          <span className="ml-1.5 text-slate-500">{o.product?.name || '-'}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-slate-900">{formatVND(Number(o.totalAmount))}</span>
@@ -253,7 +253,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                         <div className="border-t border-slate-50 px-2.5 py-1 space-y-0.5">
                           {o.payments.map((p) => (
                             <div key={p.id} className="flex items-center justify-between text-[11px] text-slate-500">
-                              <span>{p.paymentType?.name || 'CK'} {p.transferContent ? `— ${p.transferContent}` : ''}</span>
+                              <span>{p.paymentType?.name || 'CK'} {p.transferContent ? `- ${p.transferContent}` : ''}</span>
                               <div className="flex items-center gap-1.5">
                                 <span className="font-medium text-slate-700">{formatVND(Number(p.amount))}</span>
                                 <StatusBadge status={p.status} />
@@ -278,7 +278,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                     {calls.slice(0, 5).map((a) => (
                       <div key={a.id} className="text-xs bg-white rounded-md px-2.5 py-1.5 border border-slate-100">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-medium text-slate-700">{a.user?.name || '—'}</span>
+                          <span className="font-medium text-slate-700">{a.user?.name || '-'}</span>
                           {a._source === 'customer' && <span className="text-[9px] bg-blue-100 text-blue-600 rounded px-1">KH</span>}
                           <span className="text-slate-300">·</span>
                           <span className="text-slate-400">{formatDate(a.createdAt)}</span>
@@ -305,7 +305,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                       {notes.slice(0, 5).map((a) => (
                         <div key={a.id} className="text-xs bg-white rounded-md px-2.5 py-1.5 border border-slate-100">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-medium text-slate-700">{a.user?.name || '—'}</span>
+                            <span className="font-medium text-slate-700">{a.user?.name || '-'}</span>
                             {a._source === 'customer' && <span className="text-[9px] bg-blue-100 text-blue-600 rounded px-1">KH</span>}
                             <span className="text-slate-300">·</span>
                             <span className="text-slate-400">{formatDate(a.createdAt)}</span>
@@ -322,7 +322,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
             )}
           </div>
 
-          {/* Col 2: Quick Actions — always visible immediately */}
+          {/* Col 2: Quick Actions - always visible immediately */}
           <div className="space-y-2">
             <h4 className="font-semibold text-slate-700 text-xs uppercase">Thao tác nhanh</h4>
             <div className="flex flex-wrap gap-2">
@@ -400,7 +400,7 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
             {paymentOpen && (
               <div className="space-y-2">
                 {pendingOrders.length === 0 ? (
-                  <p className="text-xs text-slate-400">Chưa có đơn hàng — hãy tạo đơn hàng trước</p>
+                  <p className="text-xs text-slate-400">Chưa có đơn hàng - hãy tạo đơn hàng trước</p>
                 ) : (
                   <>
                     {pendingOrders.length > 1 ? (
@@ -410,14 +410,14 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
                           <label key={o.id} className={cn('flex items-center gap-2 rounded border px-2 py-1.5 cursor-pointer text-xs',
                             pmtOrderId === String(o.id) ? 'border-sky-400 bg-sky-50' : 'border-slate-200')}>
                             <input type="radio" name="pmtOrder" checked={pmtOrderId === String(o.id)} onChange={() => setPmtOrderId(String(o.id))} />
-                            <span>#{o.id} — {o.product?.name || 'N/A'} — {formatVND(Number(o.totalAmount))}</span>
+                            <span>#{o.id} - {o.product?.name || 'N/A'} - {formatVND(Number(o.totalAmount))}</span>
                             <StatusBadge status={o.status} />
                           </label>
                         ))}
                       </div>
                     ) : (
                       <AutoSelect orderId={String(pendingOrders[0].id)} onSelect={setPmtOrderId}>
-                        Đơn #{pendingOrders[0].id} — {pendingOrders[0].product?.name} — {formatVND(Number(pendingOrders[0].totalAmount))}
+                        Đơn #{pendingOrders[0].id} - {pendingOrders[0].product?.name} - {formatVND(Number(pendingOrders[0].totalAmount))}
                       </AutoSelect>
                     )}
                     <div className="flex gap-2">

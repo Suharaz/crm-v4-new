@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-// Logic chuyển trạng thái lead — pure, không cần DB
+// Logic chuyển trạng thái lead - pure, không cần DB
 // Dựa theo CLAUDE.md: Lead Status Flow
 
 type LeadStatus = 'POOL' | 'ASSIGNED' | 'IN_PROGRESS' | 'CONVERTED' | 'LOST' | 'FLOATING';
@@ -9,7 +9,7 @@ const ALLOWED_TRANSITIONS: Record<LeadStatus, LeadStatus[]> = {
   POOL: ['ASSIGNED', 'FLOATING'],
   ASSIGNED: ['IN_PROGRESS', 'POOL', 'FLOATING'],
   IN_PROGRESS: ['CONVERTED', 'LOST', 'POOL', 'FLOATING'],
-  CONVERTED: [], // terminal — không thể chuyển ra
+  CONVERTED: [], // terminal - không thể chuyển ra
   LOST: ['FLOATING'],
   FLOATING: ['ASSIGNED'],
 };
@@ -114,7 +114,7 @@ describe('Chuyển trạng thái không hợp lệ', () => {
 
 // ─── CONVERTED là trạng thái terminal ────────────────────────────────────────
 
-describe('CONVERTED — trạng thái terminal (không thể chuyển ra)', () => {
+describe('CONVERTED - trạng thái terminal (không thể chuyển ra)', () => {
   const allStatuses: LeadStatus[] = ['POOL', 'ASSIGNED', 'IN_PROGRESS', 'CONVERTED', 'LOST', 'FLOATING'];
 
   allStatuses.forEach((target) => {

@@ -20,7 +20,7 @@ export class CronRunService implements OnModuleInit {
   constructor(private readonly prisma: PrismaClient) {}
 
   /**
-   * On boot, mark any RUNNING rows older than 30 min as FAILED — they belong
+   * On boot, mark any RUNNING rows older than 30 min as FAILED - they belong
    * to a process that crashed before finishing. Without this, a stuck row
    * blocks dashboards forever.
    */
@@ -48,7 +48,7 @@ export class CronRunService implements OnModuleInit {
    * SUCCESS / FAILED in `finally`. Re-throws so the caller can decide
    * whether to swallow or propagate the error.
    *
-   * Failure to write the tracking row is logged but never blocks the cron —
+   * Failure to write the tracking row is logged but never blocks the cron -
    * the business logic always runs.
    */
   async track<T>(jobName: string, fn: (ctx: CronRunContext) => Promise<T>): Promise<T> {

@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
 import { BackButton } from '@/components/shared/back-button';
 
-/* Social icon SVGs — Zalo has no lucide icon so we use inline SVG */
+/* Social icon SVGs - Zalo has no lucide icon so we use inline SVG */
 function FacebookIcon({ active }: { active: boolean }) {
   return (
     <svg viewBox="0 0 24 24" className={`h-5 w-5 ${active ? 'text-blue-600' : 'text-slate-300'}`} fill="currentColor">
@@ -113,7 +113,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             <h3 className="mb-3 font-semibold text-slate-900">Thông tin</h3>
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between"><dt className="text-slate-500">SĐT</dt><dd className="text-slate-700">{customer.phone}</dd></div>
-              <div className="flex justify-between"><dt className="text-slate-500">Email</dt><dd className="text-slate-700">{customer.email || '—'}</dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">Email</dt><dd className="text-slate-700">{customer.email || '-'}</dd></div>
               {customer.companyName && (
                 <div className="flex justify-between"><dt className="text-slate-500">Công ty</dt><dd className="text-slate-700">{customer.companyName}</dd></div>
               )}
@@ -142,7 +142,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                       <Icon active />
                     </a>
                   ) : (
-                    <span key={key} title={`${label} — chưa có`} className="cursor-default">
+                    <span key={key} title={`${label} - chưa có`} className="cursor-default">
                       <Icon active={false} />
                     </span>
                   )
@@ -151,7 +151,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             </div>
           </div>
 
-          {/* Số điện thoại phụ — đặt liền kề thông tin liên hệ */}
+          {/* Số điện thoại phụ - đặt liền kề thông tin liên hệ */}
           <CustomerPhonesSection customerId={id} phones={customer.phones ?? []} />
 
           {/* Customer analysis card */}

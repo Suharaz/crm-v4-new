@@ -21,7 +21,7 @@ interface UserTableProps {
   users: UserRecord[];
   /** SA-only bulk delete toggle. */
   enableBulkDelete?: boolean;
-  /** Current user id — skip checkbox cho chính mình (không tự deactivate). */
+  /** Current user id - skip checkbox cho chính mình (không tự deactivate). */
   currentUserId?: string;
 }
 
@@ -87,8 +87,8 @@ export function UserTable({ users, enableBulkDelete = false, currentUserId }: Us
                       {ROLE_LABELS[u.role] || u.role}
                     </Badge>
                   </td>
-                  <td className="hidden md:table-cell px-4 py-3 text-slate-600">{u.department?.name || '—'}</td>
-                  <td className="hidden lg:table-cell px-4 py-3 text-slate-600">{u.employeeLevel?.name || '—'}</td>
+                  <td className="hidden md:table-cell px-4 py-3 text-slate-600">{u.department?.name || '-'}</td>
+                  <td className="hidden lg:table-cell px-4 py-3 text-slate-600">{u.employeeLevel?.name || '-'}</td>
                   <td className="px-4 py-3">
                     <Badge variant={u.status === 'ACTIVE' ? 'success' : 'secondary'}>
                       {u.status === 'ACTIVE' ? 'Hoạt động' : 'Vô hiệu hóa'}

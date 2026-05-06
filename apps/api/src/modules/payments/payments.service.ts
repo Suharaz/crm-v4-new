@@ -157,7 +157,7 @@ export class PaymentsService {
         data: {
           entityType: 'LEAD', entityId: order.leadId, userId: order.createdBy,
           type: 'NOTE',
-          content: `Thanh toán ${data.amount.toLocaleString('vi-VN')}₫ — ${data.transferContent || 'CK'} (chờ xác nhận)`,
+          content: `Thanh toán ${data.amount.toLocaleString('vi-VN')}₫ - ${data.transferContent || 'CK'} (chờ xác nhận)`,
           metadata: { paymentId: payment.id.toString(), type: 'PAYMENT_CREATED' },
         },
       });

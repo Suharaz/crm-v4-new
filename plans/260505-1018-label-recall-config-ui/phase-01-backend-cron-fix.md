@@ -1,4 +1,4 @@
-# Phase 01 — Backend: cron skip nhãn deactivate
+# Phase 01 - Backend: cron skip nhãn deactivate
 
 ## Bối cảnh
 
@@ -18,7 +18,7 @@ const configs = await this.prisma.labelRecallConfig.findMany({
 });
 ```
 
-KISS — chỉ 1 dòng.
+KISS - chỉ 1 dòng.
 
 ## Success Criteria
 
@@ -27,4 +27,4 @@ KISS — chỉ 1 dòng.
 
 ## Test thủ công
 
-(skip — đã có 11 unit test ở `auto-recall-pool-expiry-logic.test.ts`, thay đổi nhỏ này không phá test cũ. Sẽ chạy `pnpm test` ở phase 4)
+(skip - đã có 11 unit test ở `auto-recall-pool-expiry-logic.test.ts`, thay đổi nhỏ này không phá test cũ. Sẽ chạy `pnpm test` ở phase 4)

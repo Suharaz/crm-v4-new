@@ -8,16 +8,16 @@
 Add create/edit/delete for products. Dialog-based (simple entity).
 
 ## API Endpoints
-- POST `/products` — create (MANAGER+)
-- PATCH `/products/:id` — update (MANAGER+)
-- DELETE `/products/:id` — delete (SUPER_ADMIN)
-- GET `/product-categories` — for category dropdown
+- POST `/products` - create (MANAGER+)
+- PATCH `/products/:id` - update (MANAGER+)
+- DELETE `/products/:id` - delete (SUPER_ADMIN)
+- GET `/product-categories` - for category dropdown
 
 ## Implementation
 
 ### Components
-1. **components/products/product-form-dialog.tsx** — create/edit dialog
-2. **components/products/product-list-client.tsx** — client wrapper with action buttons
+1. **components/products/product-form-dialog.tsx** - create/edit dialog
+2. **components/products/product-list-client.tsx** - client wrapper with action buttons
 
 ### Form Fields
 - name* (text)

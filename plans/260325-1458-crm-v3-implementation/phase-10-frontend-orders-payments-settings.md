@@ -113,7 +113,7 @@ Manager clicks "Verify" on payment
 - `apps/web/src/lib/settings-api.ts`
 
 ### Modify
-- `apps/web/src/components/layout/app-sidebar.tsx` — settings sub-nav
+- `apps/web/src/components/layout/app-sidebar.tsx` - settings sub-nav
 
 ## Implementation Steps
 
@@ -186,7 +186,7 @@ Manager clicks "Verify" on payment
 - [ ] Build products management page (manager+)
 - [ ] Build product categories management page (manager+)
 - [ ] Build teams management page (super_admin)
-- [ ] Build API keys management page (super_admin) — show key ONCE on create
+- [ ] Build API keys management page (super_admin) - show key ONCE on create
 - [ ] Build manager-department assignment in user edit form (super_admin)
 - [ ] Build assignment templates page (manager+): create, edit, member selection, apply
 - [ ] Build recall config page (super_admin): entity type, days, auto labels

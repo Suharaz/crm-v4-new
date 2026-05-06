@@ -1,4 +1,4 @@
-# Phase 04 — Shared Note Dialog
+# Phase 04 - Shared Note Dialog
 
 **Priority:** P1 | **Status:** ✅ Completed | **Effort:** 3h | **Depends on:** P3
 

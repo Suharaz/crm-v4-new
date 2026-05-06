@@ -5,7 +5,7 @@ import { Public } from '../auth/decorators/public-route.decorator';
 import { ApiKeyAuth } from '../auth/decorators/api-key-auth.decorator';
 import { CustomerPhonesService } from '../customers/customer-phones.service';
 
-/** External lead ingestion API — requires x-api-key header. */
+/** External lead ingestion API - requires x-api-key header. */
 @Controller('external')
 export class ThirdPartyApiController {
   constructor(
@@ -37,7 +37,7 @@ export class ThirdPartyApiController {
       sourceId = source.id;
     }
 
-    // Find or create customer — match cả số chính lẫn số phụ.
+    // Find or create customer - match cả số chính lẫn số phụ.
     let customer = await this.customerPhonesService.findCustomerByAnyPhone(phone);
     if (!customer) {
       customer = await this.prisma.customer.create({
@@ -45,7 +45,7 @@ export class ThirdPartyApiController {
       });
     }
 
-    // Validate metadata size — prevent oversized JSONB payloads
+    // Validate metadata size - prevent oversized JSONB payloads
     let validatedMetadata: object | undefined;
     if (body.metadata) {
       const metaStr = JSON.stringify(body.metadata);
@@ -55,7 +55,7 @@ export class ThirdPartyApiController {
       validatedMetadata = body.metadata as object;
     }
 
-    // Create lead (no dedup for API — always create new)
+    // Create lead (no dedup for API - always create new)
     const lead = await this.prisma.lead.create({
       data: {
         phone, name: body.name, email: body.email,

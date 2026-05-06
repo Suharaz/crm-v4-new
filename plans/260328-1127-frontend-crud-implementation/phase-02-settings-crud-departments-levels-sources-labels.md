@@ -1,4 +1,4 @@
-# Phase 02: Settings CRUD — Departments, Levels, Sources, Labels, Payment Types
+# Phase 02: Settings CRUD - Departments, Levels, Sources, Labels, Payment Types
 
 ## Priority: HIGH
 ## Status: Pending
@@ -22,12 +22,12 @@ Convert read-only settings page into full CRUD with dialog-based create/edit/del
 - Role-based: only show add/edit/delete buttons for SUPER_ADMIN (MANAGER for labels)
 
 ### Components to Create
-1. **components/settings/settings-page-client.tsx** — main client component with tabs
-2. **components/settings/department-settings.tsx** — dept list + CRUD dialogs
-3. **components/settings/employee-level-settings.tsx** — levels list + CRUD
-4. **components/settings/lead-source-settings.tsx** — sources list + CRUD
-5. **components/settings/payment-type-settings.tsx** — payment types list + CRUD
-6. **components/settings/label-settings.tsx** — labels with color picker + CRUD
+1. **components/settings/settings-page-client.tsx** - main client component with tabs
+2. **components/settings/department-settings.tsx** - dept list + CRUD dialogs
+3. **components/settings/employee-level-settings.tsx** - levels list + CRUD
+4. **components/settings/lead-source-settings.tsx** - sources list + CRUD
+5. **components/settings/payment-type-settings.tsx** - payment types list + CRUD
+6. **components/settings/label-settings.tsx** - labels with color picker + CRUD
 
 ### Zod Schemas
 ```typescript

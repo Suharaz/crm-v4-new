@@ -61,7 +61,7 @@ export class LeadsController {
     return this.leadsService.poolFloating(limit ?? 20, cursor);
   }
 
-  // Lịch sử các lead trùng SĐT — dùng cho icon "trùng" trên UI Kho
+  // Lịch sử các lead trùng SĐT - dùng cho icon "trùng" trên UI Kho
   @Get('duplicates')
   async duplicates(@Query('phone') phone?: string) {
     if (!phone) throw new BadRequestException('phone là bắt buộc');
@@ -194,7 +194,7 @@ export class LeadsController {
     return { data: { message: 'Đã xóa lead' } };
   }
 
-  // Set / clear single label — ownership verified via findById
+  // Set / clear single label - ownership verified via findById
   @Patch(':id/label')
   async setLabel(
     @Param('id', ParseBigIntPipe) id: bigint,

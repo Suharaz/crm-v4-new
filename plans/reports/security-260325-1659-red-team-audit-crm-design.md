@@ -11,13 +11,13 @@
 
 Comprehensive audit identified **12 CRITICAL/HIGH** vulnerabilities in the current design, **8 MEDIUM** risk issues, and **6 LOW/INFO** items. The design demonstrates basic security awareness (bcrypt, JWT, rate limiting, soft deletes) but has significant gaps in:
 
-1. **Access Control** — IDOR patterns, missing compartmentalization checks, field-level permission bypass opportunities
-2. **API Key Security** — No expiration enforcement, reuse vulnerability, weak revocation mechanism
-3. **Business Logic** — Multiple race conditions, state validation gaps, privilege escalation paths
-4. **Data Leakage** — Overly permissive response payloads, error message disclosure
-5. **Input Validation** — CSV injection, phone field abuse, insufficient dedup scope
+1. **Access Control** - IDOR patterns, missing compartmentalization checks, field-level permission bypass opportunities
+2. **API Key Security** - No expiration enforcement, reuse vulnerability, weak revocation mechanism
+3. **Business Logic** - Multiple race conditions, state validation gaps, privilege escalation paths
+4. **Data Leakage** - Overly permissive response payloads, error message disclosure
+5. **Input Validation** - CSV injection, phone field abuse, insufficient dedup scope
 
-Risks are **ADDRESSABLE in implementation** but must be explicitly coded—they are NOT solved by the framework alone.
+Risks are **ADDRESSABLE in implementation** but must be explicitly coded-they are NOT solved by the framework alone.
 
 ---
 
@@ -353,7 +353,7 @@ Phase 03 specifies `familyId` for token reuse detection but DOES NOT define what
 1. User logs in, gets refresh token family=ABC, token_hash=XYZ
 2. Session hijacking: attacker gets token
 3. User tries to refresh: hits endpoint first, gets new pair (family=ABC, new_hash=XYZ2)
-4. Attacker's old token fails with "not found" error—silent, no alert
+4. Attacker's old token fails with "not found" error-silent, no alert
 5. Attacker retries with stolen token, gets error, stays quiet
 6. Admin has no way to know account was compromised
 
@@ -998,7 +998,7 @@ app.enableCors({
 });
 ```
 
-Risk: If `FRONTEND_URL` is NOT set or misconfigured, default is localhost—but in production, this might be an attacker domain. Also, if anyone later changes it to `true` (wildcard):
+Risk: If `FRONTEND_URL` is NOT set or misconfigured, default is localhost-but in production, this might be an attacker domain. Also, if anyone later changes it to `true` (wildcard):
 
 ```typescript
 // DANGEROUS

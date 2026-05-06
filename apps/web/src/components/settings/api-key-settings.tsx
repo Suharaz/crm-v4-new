@@ -153,7 +153,7 @@ export function ApiKeySettings({ apiKeys: initialKeys }: ApiKeySettingsProps) {
                   {!k.isActive && <span className="text-xs text-red-500 font-medium">Vô hiệu</span>}
                 </div>
                 <div className="text-xs text-slate-400 mt-0.5">
-                  Tạo {k.createdAt ? formatDate(k.createdAt) : '—'}
+                  Tạo {k.createdAt ? formatDate(k.createdAt) : '-'}
                   {k.lastUsedAt && <> · Dùng lần cuối {formatDate(k.lastUsedAt)}</>}
                   {k.creator?.name && <> · bởi {k.creator.name}</>}
                 </div>
@@ -182,7 +182,7 @@ export function ApiKeySettings({ apiKeys: initialKeys }: ApiKeySettingsProps) {
           {newKey ? (
             <div className="space-y-4 py-2">
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-                <p className="text-sm font-medium text-amber-800 mb-2">Sao chép key ngay — sẽ không hiện lại!</p>
+                <p className="text-sm font-medium text-amber-800 mb-2">Sao chép key ngay - sẽ không hiện lại!</p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 text-xs bg-white rounded px-2 py-1.5 border border-amber-200 break-all select-all">{newKey}</code>
                   <Button size="sm" variant="outline" onClick={copyKey}>
@@ -219,9 +219,9 @@ export function ApiKeySettings({ apiKeys: initialKeys }: ApiKeySettingsProps) {
                   <div>
                     <p>Endpoints được phép:</p>
                     <ul className="list-disc pl-4">
-                      <li><code>POST /api/v1/external/leads</code> — Tạo lead</li>
-                      <li><code>POST /api/v1/call-logs/ingest</code> — Gửi log cuộc gọi</li>
-                      <li><code>POST /api/v1/webhooks/bank-transactions</code> — Webhook ngân hàng</li>
+                      <li><code>POST /api/v1/external/leads</code> - Tạo lead</li>
+                      <li><code>POST /api/v1/call-logs/ingest</code> - Gửi log cuộc gọi</li>
+                      <li><code>POST /api/v1/webhooks/bank-transactions</code> - Webhook ngân hàng</li>
                     </ul>
                   </div>
                 )}

@@ -24,7 +24,7 @@ export const SENSITIVE_KEY_TOKENS = [
  *   - /health        : noisy uptime checks, no business value
  *   - /docs|swagger  : documentation endpoints
  *   - /audit-logs    : avoid recursion (querying audit creates audit row)
- *   - /cron-runs     : same — admin viewing trace shouldn't fill audit_logs
+ *   - /cron-runs     : same - admin viewing trace shouldn't fill audit_logs
  *   - /webhooks/*    : webhook bodies often carry vendor secrets
  */
 export const SKIP_PATH_PREFIXES = [

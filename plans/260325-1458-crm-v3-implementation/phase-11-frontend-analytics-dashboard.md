@@ -54,12 +54,12 @@ apps/api/src/modules/analytics/
 ```
 
 **Endpoints:**
-- `GET /analytics/kpi` — summary KPI cards
-- `GET /analytics/funnel` — conversion funnel data
-- `GET /analytics/ranking` — sales performance ranking
-- `GET /analytics/sources` — source effectiveness
-- `GET /analytics/revenue` — revenue over time
-- `GET /analytics/export` — CSV export of dashboard data
+- `GET /analytics/kpi` - summary KPI cards
+- `GET /analytics/funnel` - conversion funnel data
+- `GET /analytics/ranking` - sales performance ranking
+- `GET /analytics/sources` - source effectiveness
+- `GET /analytics/revenue` - revenue over time
+- `GET /analytics/export` - CSV export of dashboard data
 
 ### Frontend Structure
 ```
@@ -125,12 +125,12 @@ WHERE created_at BETWEEN $1 AND $2 GROUP BY status;
 ## Related Code Files
 
 ### Create
-- `apps/api/src/modules/analytics/` — all analytics backend files
-- `apps/web/src/components/dashboard/` — all dashboard components
-- Modify `apps/web/src/app/(dashboard)/page.tsx` — dashboard page
+- `apps/api/src/modules/analytics/` - all analytics backend files
+- `apps/web/src/components/dashboard/` - all dashboard components
+- Modify `apps/web/src/app/(dashboard)/page.tsx` - dashboard page
 
 ### Modify
-- `apps/api/src/app.module.ts` — register analytics module
+- `apps/api/src/app.module.ts` - register analytics module
 
 ## Implementation Steps
 
@@ -203,11 +203,11 @@ WHERE created_at BETWEEN $1 AND $2 GROUP BY status;
 11. **Wire dashboard page with streaming SSR**
     - Dashboard page.tsx is a Server Component
     - Each widget component (KpiCards, Funnel, etc.) is an async Server Component
-    - Each widget fetches its own data via api.get() — they run in PARALLEL automatically
+    - Each widget fetches its own data via api.get() - they run in PARALLEL automatically
     - Wrap each widget in Suspense with dedicated skeleton
     - DateRangeFilter and DepartmentFilter are Client Components that update URL params
     - On filter change: URL updates → page re-renders → all widgets re-fetch with new params
-    - DO NOT fetch all data in page.tsx and pass down — let each widget fetch independently
+    - DO NOT fetch all data in page.tsx and pass down - let each widget fetch independently
 
 ## Todo List
 

@@ -1,4 +1,4 @@
-# Phase 02 — Frontend: rewrite label-settings.tsx
+# Phase 02 - Frontend: rewrite label-settings.tsx
 
 ## Bối cảnh
 
@@ -13,7 +13,7 @@ Hiện `label-settings.tsx` là wrapper mỏng quanh `SettingsCrudList`. Cần r
 - `POST /labels` { name, color, category }
 - `PATCH /labels/:id` { name?, color?, category?, isActive? }
 - `DELETE /labels/:id` (soft delete)
-- `POST /recall-configs/labels` { labelId, days } — SUPER_ADMIN only
+- `POST /recall-configs/labels` { labelId, days } - SUPER_ADMIN only
 - `PATCH /recall-configs/labels/:id` { days?, isActive? }
 - `DELETE /recall-configs/labels/:id`
 

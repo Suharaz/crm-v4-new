@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAsAdmin, loginAsManager, loginAsUser } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Quản lý nhân viên — CRUD, Roles, Deactivate (SUPER_ADMIN only)', () => {
+test.describe('Quản lý nhân viên - CRUD, Roles, Deactivate (SUPER_ADMIN only)', () => {
   test.describe('Phân quyền truy cập', () => {
     test('SUPER_ADMIN thấy trang /users', async ({ page }) => {
       await loginAsAdmin(page);
@@ -94,7 +94,7 @@ test.describe('Quản lý nhân viên — CRUD, Roles, Deactivate (SUPER_ADMIN o
       ).toBeVisible({ timeout: 10_000 });
     });
 
-    test('Edit nhân viên — đổi tên', async ({ page }) => {
+    test('Edit nhân viên - đổi tên', async ({ page }) => {
       await loginAsAdmin(page);
       await page.goto('/users');
       await page.waitForLoadState('networkidle');
@@ -124,7 +124,7 @@ test.describe('Quản lý nhân viên — CRUD, Roles, Deactivate (SUPER_ADMIN o
       await expect(page.getByText(updatedName)).toBeVisible({ timeout: 10_000 });
     });
 
-    test('Deactivate nhân viên — tài khoản bị khóa', async ({ page }) => {
+    test('Deactivate nhân viên - tài khoản bị khóa', async ({ page }) => {
       await loginAsAdmin(page);
       await page.goto('/users');
       await page.waitForLoadState('networkidle');

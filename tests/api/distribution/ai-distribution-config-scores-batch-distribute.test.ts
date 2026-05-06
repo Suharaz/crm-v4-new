@@ -28,7 +28,7 @@ describe('AI Distribution', () => {
 
   // ── GET /distribution/config/:deptId ────────────────────────────────────
 
-  describe('GET /distribution/config/:deptId — lấy config phân phối', () => {
+  describe('GET /distribution/config/:deptId - lấy config phân phối', () => {
     it('MANAGER lấy config dept → 200', async () => {
       if (!salesDeptId) return;
       const { status, body } = await manager.getJson<any>(`/distribution/config/${salesDeptId}`);
@@ -56,7 +56,7 @@ describe('AI Distribution', () => {
 
   // ── PATCH /distribution/config/:deptId ──────────────────────────────────
 
-  describe('PATCH /distribution/config/:deptId — cập nhật config', () => {
+  describe('PATCH /distribution/config/:deptId - cập nhật config', () => {
     it('SUPER_ADMIN cập nhật config → 200', async () => {
       if (!salesDeptId) return;
       const { status, body } = await admin.patchJson<any>(`/distribution/config/${salesDeptId}`, {
@@ -102,7 +102,7 @@ describe('AI Distribution', () => {
 
   // ── GET /distribution/scores/:deptId ────────────────────────────────────
 
-  describe('GET /distribution/scores/:deptId — xem điểm phân phối', () => {
+  describe('GET /distribution/scores/:deptId - xem điểm phân phối', () => {
     it('MANAGER xem scores → 200 + array of user scores', async () => {
       if (!salesDeptId) return;
       const { status, body } = await manager.getJson<any>(`/distribution/scores/${salesDeptId}`);
@@ -128,7 +128,7 @@ describe('AI Distribution', () => {
 
   // ── POST /distribution/distribute/:deptId ───────────────────────────────
 
-  describe('POST /distribution/distribute/:deptId — batch distribute leads', () => {
+  describe('POST /distribution/distribute/:deptId - batch distribute leads', () => {
     it('MANAGER batch distribute → 200', async () => {
       if (!salesDeptId) return;
       const { status, body } = await manager.postJson<any>(

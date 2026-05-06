@@ -10,7 +10,7 @@ import { createHash } from 'crypto';
 import { Request } from 'express';
 
 /**
- * Guard for MCP endpoints — validates x-api-key header
+ * Guard for MCP endpoints - validates x-api-key header
  * and checks mcp:* permissions on the ApiKey record.
  * Attaches apiKey to request for per-tool permission checks.
  */

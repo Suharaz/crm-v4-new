@@ -7,7 +7,7 @@ import { LeadListWithViewToggle } from '@/components/leads/lead-list-with-view-t
 import { CreateLeadDialog } from '@/components/leads/create-lead-dialog';
 import { CsvExportButton } from '@/components/shared/csv-export-button';
 
-/** Lead list page — table or kanban view with deep filters. */
+/** Lead list page - table or kanban view with deep filters. */
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const params = await searchParams;
   const qp = new URLSearchParams(params);

@@ -95,7 +95,7 @@ export class LabelsService {
     return result;
   }
 
-  /** Reject if non-SUPER_ADMIN tries to set recallMinutes — surface clearly, not silently ignore. */
+  /** Reject if non-SUPER_ADMIN tries to set recallMinutes - surface clearly, not silently ignore. */
   private _assertCanSetRecall(data: LabelInput, user: ActingUser) {
     if (data.recallMinutes !== undefined && user.role !== UserRole.SUPER_ADMIN) {
       throw new ForbiddenException('Chỉ super admin được cấu hình auto-recall theo nhãn');
@@ -130,7 +130,7 @@ export class LabelsService {
   }
 
   // Lead has a single label (FK on leads.label_id). Pass null to clear.
-  // Also resets labelAssignedAt — used by per-label recall cron.
+  // Also resets labelAssignedAt - used by per-label recall cron.
   async setLeadLabel(leadId: bigint, labelId: bigint | null) {
     await this.prisma.lead.update({
       where: { id: leadId },

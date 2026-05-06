@@ -1,9 +1,9 @@
-# Phase 03 — CronRun Tracking Wrapper
+# Phase 03 - CronRun Tracking Wrapper
 
 **Priority:** P0 | **Status:** Pending | **Est:** 2h | **Depends:** Phase 01
 
 ## Overview
-Tạo module `cron-run` cung cấp wrapper helper để cron jobs ghi nhận execution history (start/finish/affected/error). Helper KHÔNG sửa logic cron hiện có — chỉ wrap.
+Tạo module `cron-run` cung cấp wrapper helper để cron jobs ghi nhận execution history (start/finish/affected/error). Helper KHÔNG sửa logic cron hiện có - chỉ wrap.
 
 ## Requirements
 - Wrap không xâm nhập: cron job hiện tại chỉ cần thêm 2-3 dòng
@@ -59,19 +59,19 @@ interface CronRunContext {
 
 ### Filter API
 `GET /api/v1/cron-runs?...`
-- `jobName` — exact match
-- `status` — RUNNING/SUCCESS/FAILED
-- `from` / `to` — time range
+- `jobName` - exact match
+- `status` - RUNNING/SUCCESS/FAILED
+- `from` / `to` - time range
 - `cursor` / `limit`
 
 ## Related Code Files
 
 ### Read first
-- `apps/api/src/modules/recall-config/recall-config.service.ts:127-154` — pattern hiện tại của cron
-- `apps/api/src/modules/audit-log/audit-log.service.ts` (Phase 02) — service pattern reference
+- `apps/api/src/modules/recall-config/recall-config.service.ts:127-154` - pattern hiện tại của cron
+- `apps/api/src/modules/audit-log/audit-log.service.ts` (Phase 02) - service pattern reference
 
 ### Modify
-- `apps/api/src/app.module.ts` — import `CronRunModule`
+- `apps/api/src/app.module.ts` - import `CronRunModule`
 
 ### Create
 - `apps/api/src/modules/cron-run/cron-run.module.ts`
@@ -82,7 +82,7 @@ interface CronRunContext {
 
 ## Implementation Steps
 
-### Step 1 — Service `track()` core
+### Step 1 - Service `track()` core
 ```ts
 async track<T>(jobName: string, fn: (ctx: CronRunContext) => Promise<T>): Promise<T> {
   const ctx: CronRunContext = { affected: 0, metadata: {} };
@@ -122,13 +122,13 @@ async track<T>(jobName: string, fn: (ctx: CronRunContext) => Promise<T>): Promis
 }
 ```
 
-### Step 2 — Query method
+### Step 2 - Query method
 ```ts
 async query(filter: QueryCronRunDto)
   : Promise<{ data: CronRunResponseDto[]; meta: { nextCursor?: string } }>
 ```
 
-### Step 3 — Controller
+### Step 3 - Controller
 ```ts
 @Controller('cron-runs')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -142,11 +142,11 @@ export class CronRunController {
 }
 ```
 
-### Step 4 — Stale RUNNING cleanup (defensive)
+### Step 4 - Stale RUNNING cleanup (defensive)
 - Khi service init, mark all `status='RUNNING'` cũ hơn 30 phút thành `FAILED` với `errorMsg='Stale: server restarted during run'`
 - Implement trong `onModuleInit()`
 
-### Step 5 — Manual test
+### Step 5 - Manual test
 ```bash
 # Test track() từ REPL hoặc tạo test endpoint debug
 # Hoặc đợi Phase 04 wire vào cron jobs thật

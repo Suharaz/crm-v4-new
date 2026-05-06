@@ -103,7 +103,7 @@ function TxRow({ tx, isExpanded, isUnmatched, onToggle, pendingPayments, selecte
         <td className="px-4 py-3 text-slate-600">{formatDate(tx.transactionTime)}</td>
         <td className="px-4 py-3 text-right font-semibold text-slate-900">{formatVND(Number(tx.amount))}</td>
         <td className="px-4 py-3 text-slate-700 max-w-xs truncate">{tx.content}</td>
-        <td className="hidden md:table-cell px-4 py-3 text-slate-500">{tx.senderName || '—'}</td>
+        <td className="hidden md:table-cell px-4 py-3 text-slate-500">{tx.senderName || '-'}</td>
         <td className="px-4 py-3">
           <div className="flex items-center gap-1.5">
             {tx.matchStatus === 'MATCHED' ? (
@@ -119,7 +119,7 @@ function TxRow({ tx, isExpanded, isUnmatched, onToggle, pendingPayments, selecte
         <tr className="bg-sky-50/30">
           <td colSpan={5} className="px-6 py-4">
             <div className="space-y-3">
-              <p className="text-sm font-medium text-slate-700">Match thủ công — chọn thanh toán PENDING:</p>
+              <p className="text-sm font-medium text-slate-700">Match thủ công - chọn thanh toán PENDING:</p>
               {pendingPayments.length === 0 ? (
                 <p className="text-sm text-slate-400">Không có thanh toán PENDING nào</p>
               ) : (
@@ -130,7 +130,7 @@ function TxRow({ tx, isExpanded, isUnmatched, onToggle, pendingPayments, selecte
                       <SelectContent>
                         {pendingPayments.map((p) => (
                           <SelectItem key={p.id} value={String(p.id)}>
-                            #{p.id} — {formatVND(Number(p.amount))} {p.transferContent ? `— ${p.transferContent}` : ''}
+                            #{p.id} - {formatVND(Number(p.amount))} {p.transferContent ? `- ${p.transferContent}` : ''}
                           </SelectItem>
                         ))}
                       </SelectContent>

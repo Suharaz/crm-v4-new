@@ -60,7 +60,7 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
     labelCounts.set(lead.label.id, (labelCounts.get(lead.label.id) || 0) + 1);
   }
 
-  // All available labels — merge from allLabels prop + label seen on leads
+  // All available labels - merge from allLabels prop + label seen on leads
   const labelMap = new Map<string, LabelInfo>();
   if (allLabels) {
     for (const l of allLabels) labelMap.set(l.id, l);

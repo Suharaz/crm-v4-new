@@ -60,7 +60,7 @@ function parseAnalysis(raw: string | null | undefined): { tags: string[]; detail
 }
 
 function formatDuration(seconds: number | null | undefined): string {
-  if (!seconds) return '—';
+  if (!seconds) return '-';
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return m > 0 ? `${m}p${s > 0 ? ` ${s}s` : ''}` : `${s}s`;
@@ -129,7 +129,7 @@ export function CallLogListClient({ callLogs: initialLogs }: { callLogs: RawCall
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900">Cuộc gọi</h1>
-      <p className="text-sm text-slate-500 mb-4">Lịch sử cuộc gọi — bấm để xem chi tiết + phân tích AI</p>
+      <p className="text-sm text-slate-500 mb-4">Lịch sử cuộc gọi - bấm để xem chi tiết + phân tích AI</p>
 
       {/* Date filter */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
@@ -210,7 +210,7 @@ export function CallLogListClient({ callLogs: initialLogs }: { callLogs: RawCall
                     </div>
                   </div>
 
-                  {/* Tags row — always visible if analysis has tags */}
+                  {/* Tags row - always visible if analysis has tags */}
                   {analysis && analysis.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2 ml-8">
                       {analysis.tags.map((tag, i) => (
@@ -225,7 +225,7 @@ export function CallLogListClient({ callLogs: initialLogs }: { callLogs: RawCall
                 {/* Expanded detail */}
                 {isExpanded && (
                   <div className="ml-8 mr-2 mt-1 mb-2 rounded-lg border border-slate-100 bg-slate-50 p-4 space-y-3 text-sm">
-                    {/* Content — collapsible */}
+                    {/* Content - collapsible */}
                     <CollapsibleSection title="Nội dung hội thoại">
                       {hasContent ? (
                         <p className="whitespace-pre-wrap text-slate-700 bg-white rounded-md border border-slate-100 p-3">{c.content}</p>
@@ -234,7 +234,7 @@ export function CallLogListClient({ callLogs: initialLogs }: { callLogs: RawCall
                       )}
                     </CollapsibleSection>
 
-                    {/* AI Analysis — collapsible */}
+                    {/* AI Analysis - collapsible */}
                     {analysis && analysis.detail && (
                       <CollapsibleSection title="Phân tích AI" titleClass="text-purple-600">
                         <div className="bg-white rounded-md border border-purple-100 p-3 prose prose-sm prose-gray max-w-none text-sm [&_strong]:text-slate-800 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_p]:my-1">

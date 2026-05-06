@@ -114,7 +114,7 @@ export function AiPromptSettings({ initialSettings }: Props) {
             type="password"
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
-            placeholder={apiKeyIsMasked ? 'Key đã được thiết lập — để trống nếu không đổi' : 'sk-or-v1-...'}
+            placeholder={apiKeyIsMasked ? 'Key đã được thiết lập - để trống nếu không đổi' : 'sk-or-v1-...'}
             className="flex-1"
           />
           <Button
@@ -207,7 +207,7 @@ export function AiPromptSettings({ initialSettings }: Props) {
         <p className="text-xs text-slate-500">
           Gửi khi phân tích khách hàng (cuộc gọi &gt; 2 phút hoặc bấm nút phân tích).
           Dữ liệu ghi chú, thanh toán, phân tích cuộc gọi đính kèm tự động.
-          Kết quả trả về gồm &quot;short&quot; (tóm tắt) + &quot;detail&quot; (chi tiết) — độ dài tùy bạn mô tả trong prompt.
+          Kết quả trả về gồm &quot;short&quot; (tóm tắt) + &quot;detail&quot; (chi tiết) - độ dài tùy bạn mô tả trong prompt.
         </p>
         <Textarea
           value={customerPrompt}

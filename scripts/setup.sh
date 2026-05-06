@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# CRM V4 — Interactive Production Setup
+# CRM V4 - Interactive Production Setup
 # Creates .env.production with auto-generated secrets, then runs deploy.
 # Usage: bash scripts/setup.sh
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -12,7 +12,7 @@ ENV_FILE="$APP_DIR/.env.production"
 
 echo ""
 echo "╔══════════════════════════════════════╗"
-echo "║      CRM V4 — Production Setup      ║"
+echo "║      CRM V4 - Production Setup      ║"
 echo "╚══════════════════════════════════════╝"
 echo ""
 
@@ -97,7 +97,7 @@ REDIS_URL="redis://:${REDIS_PASSWORD}@localhost:${REDIS_PORT}"
 # ── Write .env.production ──────────────────────────────────────────────────
 cat > "$ENV_FILE" << ENVEOF
 # ═══════════════════════════════════════════════════════════════
-# CRM V4 — Production Environment
+# CRM V4 - Production Environment
 # Generated: $(date '+%Y-%m-%d %H:%M:%S')
 # Domain: ${DOMAIN}
 # ═══════════════════════════════════════════════════════════════

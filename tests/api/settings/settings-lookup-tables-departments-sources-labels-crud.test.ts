@@ -7,7 +7,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { ApiTestClient, adminClient, managerClient, userClient } from '../helpers/api-test-client-with-auth';
 
-describe('Settings — Lookup Tables CRUD', () => {
+describe('Settings - Lookup Tables CRUD', () => {
   let admin: ApiTestClient;
   let manager: ApiTestClient;
   let user: ApiTestClient;
@@ -25,7 +25,7 @@ describe('Settings — Lookup Tables CRUD', () => {
   describe('Departments (SUPER_ADMIN only)', () => {
     let deptId: string;
 
-    it('GET /departments — tất cả authenticated user xem được → 200', async () => {
+    it('GET /departments - tất cả authenticated user xem được → 200', async () => {
       const { status, body } = await user.getJson<any>('/departments');
       expect(status).toBe(200);
       expect(body.data).toBeDefined();
@@ -75,7 +75,7 @@ describe('Settings — Lookup Tables CRUD', () => {
   describe('EmployeeLevels (SUPER_ADMIN only)', () => {
     let levelId: string;
 
-    it('GET /employee-levels — authenticated user xem được → 200', async () => {
+    it('GET /employee-levels - authenticated user xem được → 200', async () => {
       const { status, body } = await user.getJson<any>('/employee-levels');
       expect(status).toBe(200);
       expect(body.data).toBeDefined();
@@ -119,7 +119,7 @@ describe('Settings — Lookup Tables CRUD', () => {
   describe('LeadSources (SUPER_ADMIN only)', () => {
     let sourceId: string;
 
-    it('GET /lead-sources — tất cả authenticated user xem được → 200', async () => {
+    it('GET /lead-sources - tất cả authenticated user xem được → 200', async () => {
       const { status, body } = await user.getJson<any>('/lead-sources');
       expect(status).toBe(200);
       // Trả về array hoặc wrapped object
@@ -165,7 +165,7 @@ describe('Settings — Lookup Tables CRUD', () => {
   describe('Labels (MANAGER+)', () => {
     let labelId: string;
 
-    it('GET /labels — tất cả authenticated user xem được → 200', async () => {
+    it('GET /labels - tất cả authenticated user xem được → 200', async () => {
       const { status } = await user.getJson<any>('/labels');
       expect(status).toBe(200);
     });
@@ -213,7 +213,7 @@ describe('Settings — Lookup Tables CRUD', () => {
   describe('PaymentTypes (SUPER_ADMIN only)', () => {
     let paymentTypeId: string;
 
-    it('GET /payment-types — tất cả authenticated user xem được → 200', async () => {
+    it('GET /payment-types - tất cả authenticated user xem được → 200', async () => {
       const { status } = await user.getJson<any>('/payment-types');
       expect(status).toBe(200);
     });
@@ -254,7 +254,7 @@ describe('Settings — Lookup Tables CRUD', () => {
   describe('ProductCategories (MANAGER+)', () => {
     let catId: string;
 
-    it('GET /product-categories — tất cả authenticated user xem được → 200', async () => {
+    it('GET /product-categories - tất cả authenticated user xem được → 200', async () => {
       const { status } = await user.getJson<any>('/product-categories');
       expect(status).toBe(200);
     });

@@ -76,7 +76,7 @@ export class AuthService {
         select: { userId: true },
       });
       if (revokedToken) {
-        // Potential token theft — revoke ALL user's tokens as precaution
+        // Potential token theft - revoke ALL user's tokens as precaution
         await this.revokeAllUserTokens(revokedToken.userId);
       }
       throw new UnauthorizedException('Refresh token không hợp lệ');

@@ -42,7 +42,7 @@ export class ScoringService {
     const workloadMap = new Map(workloadGroups.map(g => [g.assignedUserId!.toString(), g._count]));
     const maxWorkload = Math.max(...workloadGroups.map(g => g._count), 1);
 
-    // Batch: conversion rates (last 90 days) — 2 queries total instead of 2-3 per user
+    // Batch: conversion rates (last 90 days) - 2 queries total instead of 2-3 per user
     const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
 
     // Count distinct leads assigned to each user via history

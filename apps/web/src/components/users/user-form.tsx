@@ -191,7 +191,7 @@ export function UserForm({ user, departments, levels }: UserFormProps) {
             >
               <SelectTrigger><SelectValue placeholder="Chọn team" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">— Không thuộc team —</SelectItem>
+                <SelectItem value="__none__">- Không thuộc team -</SelectItem>
                 {teams.map(t => (
                   <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                 ))}

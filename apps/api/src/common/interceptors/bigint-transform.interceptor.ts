@@ -16,7 +16,7 @@ export class BigIntTransformInterceptor implements NestInterceptor {
     if (data === null || data === undefined) return data;
     if (typeof data === 'bigint') return data.toString();
     if (data instanceof Date) return data;
-    // Skip binary / stream payloads — iterating their props would break NestJS
+    // Skip binary / stream payloads - iterating their props would break NestJS
     // streaming (StreamableFile) or corrupt Buffers.
     if (data instanceof StreamableFile) return data;
     if (Buffer.isBuffer(data)) return data;

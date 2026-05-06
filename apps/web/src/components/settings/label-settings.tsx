@@ -39,7 +39,7 @@ interface FormState {
 
 const EMPTY_FORM: FormState = { name: '', color: '#6b7280', category: '', value: '', unit: 'day' };
 
-// Cron runs every 5 minutes — anything below 5 min would race or be silently delayed.
+// Cron runs every 5 minutes - anything below 5 min would race or be silently delayed.
 const MIN_MINUTES = 5;
 // Cap = 1 year (365 days). Per-unit caps below keep the input form sane.
 const PER_UNIT_LIMITS: Record<RecallUnit, { min: number; max: number; minutesPerUnit: number; label: string }> = {

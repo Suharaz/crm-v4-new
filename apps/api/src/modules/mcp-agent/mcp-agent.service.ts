@@ -43,7 +43,7 @@ export class McpAgentService implements OnModuleDestroy {
   }
 
   /**
-   * Handle POST /mcp — Stateless Streamable HTTP.
+   * Handle POST /mcp - Stateless Streamable HTTP.
    * Each request creates a fresh server + transport, processes, then tears down.
    * No session management needed for read-only tools.
    */
@@ -54,7 +54,7 @@ export class McpAgentService implements OnModuleDestroy {
     try {
       const server = this.createServer(permissions);
       const transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: undefined, // stateless — no sessions
+        sessionIdGenerator: undefined, // stateless - no sessions
       });
 
       await server.connect(transport);

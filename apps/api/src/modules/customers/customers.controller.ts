@@ -96,7 +96,7 @@ export class CustomersController {
     return { data: { message: 'Đã xóa khách hàng' } };
   }
 
-  // Label attach/detach — ownership verified via findById
+  // Label attach/detach - ownership verified via findById
   @Post(':id/labels')
   async attachLabels(
     @Param('id', ParseBigIntPipe) id: bigint,
@@ -130,7 +130,7 @@ export class CustomersController {
 
   // ── Số điện thoại phụ (multi-phone) ─────────────────────────────────────
   // GET allowed cho mọi role có quyền xem customer (ownership check qua findById).
-  // POST/PATCH/DELETE chỉ MANAGER+ — giống quyền sửa số chính.
+  // POST/PATCH/DELETE chỉ MANAGER+ - giống quyền sửa số chính.
 
   @Get(':id/phones')
   async listPhones(

@@ -1,7 +1,7 @@
 import * as iconv from 'iconv-lite';
 
 /**
- * CSV file detection utilities — handle the two common quirks of Excel-saved CSVs
+ * CSV file detection utilities - handle the two common quirks of Excel-saved CSVs
  * on Vietnamese / European Windows locales:
  *
  *   1. Encoding ≠ UTF-8: Excel "Save As → CSV" defaults to ANSI (Windows-1258 on
@@ -22,7 +22,7 @@ const DELIMITERS: DetectedDelimiter[] = [',', ';', '\t', '|'];
  * Detect encoding from raw bytes.
  * - BOM check first (most reliable signal Excel/Notepad emit).
  * - Otherwise try strict UTF-8 decode; fall back to Windows-1258 (covers
- *   Windows-1252 too — they share the printable ASCII range).
+ *   Windows-1252 too - they share the printable ASCII range).
  */
 export function detectEncoding(buf: Buffer): DetectedEncoding {
   if (buf.length >= 3 && buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) {
@@ -31,7 +31,7 @@ export function detectEncoding(buf: Buffer): DetectedEncoding {
   if (buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xfe) return 'utf-16le';
   if (buf.length >= 2 && buf[0] === 0xfe && buf[1] === 0xff) return 'utf-16be';
 
-  // No BOM — try strict UTF-8. TextDecoder with fatal:true throws on invalid sequences.
+  // No BOM - try strict UTF-8. TextDecoder with fatal:true throws on invalid sequences.
   try {
     new TextDecoder('utf-8', { fatal: true }).decode(buf);
     return 'utf-8';
@@ -51,7 +51,7 @@ export function decodeBuffer(buf: Buffer, encoding: DetectedEncoding): string {
   } else if (encoding === 'utf-16le') {
     text = buf.toString('utf16le');
   } else if (encoding === 'utf-16be') {
-    // Node has no native utf16be — swap byte pairs and decode as utf16le.
+    // Node has no native utf16be - swap byte pairs and decode as utf16le.
     const swapped = Buffer.alloc(buf.length);
     for (let i = 0; i + 1 < buf.length; i += 2) {
       swapped[i] = buf[i + 1];
@@ -61,7 +61,7 @@ export function decodeBuffer(buf: Buffer, encoding: DetectedEncoding): string {
   } else {
     text = iconv.decode(buf, 'win1258');
   }
-  // Strip leading BOM (U+FEFF) — appears after decoding any BOM-prefixed file.
+  // Strip leading BOM (U+FEFF) - appears after decoding any BOM-prefixed file.
   return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
 }
 

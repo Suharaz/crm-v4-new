@@ -1,8 +1,8 @@
-# CRM V4 — Comprehensive Audit Report
+# CRM V4 - Comprehensive Audit Report
 
 **Date:** 2026-04-12
 **Branch:** `audit/security-performance-query-260412`
-**Scope:** Full codebase scan — Security, Performance, Query Speed
+**Scope:** Full codebase scan - Security, Performance, Query Speed
 **Stack:** NestJS 11 + Next.js 16 + PostgreSQL 16 + Prisma 6
 **Scale target:** 50-200 users, 100K+ leads, 50K+ customers, 500K+ activities
 
@@ -18,9 +18,9 @@
 | **Total** | **7** | **16** | **17** | **11** | **51** |
 
 **Top 3 risks requiring immediate action:**
-1. Path traversal in file serving (Security C1) — unauthenticated arbitrary file read
-2. Payment matching race condition (Performance C1) — double-payment verification
-3. Missing partial indexes on `deleted_at IS NULL` (Database C1) — every query scans deleted rows
+1. Path traversal in file serving (Security C1) - unauthenticated arbitrary file read
+2. Payment matching race condition (Performance C1) - double-payment verification
+3. Missing partial indexes on `deleted_at IS NULL` (Database C1) - every query scans deleted rows
 
 ---
 
@@ -28,7 +28,7 @@
 
 ### CRITICAL
 
-#### SEC-C1: Path Traversal — Unauthenticated File Serving
+#### SEC-C1: Path Traversal - Unauthenticated File Serving
 - **File:** `apps/api/src/modules/file-upload/file-upload.controller.ts:39-54`
 - **Issue:** `@Public()` decorator + no path sanitization. `GET /api/v1/files/../../.env` resolves outside upload dir, serves arbitrary files. `getAbsolutePath()` in `file-upload.service.ts:68` does raw `path.join` without boundary check
 - **Impact:** Attacker reads `.env` (DB credentials, JWT secrets), source code, any server file
@@ -37,7 +37,7 @@
 const abs = path.resolve(this.uploadDir, relativePath);
 if (!abs.startsWith(path.resolve(this.uploadDir))) throw new ForbiddenException();
 ```
-Remove `@Public()` — require JWT auth for file access
+Remove `@Public()` - require JWT auth for file access
 
 ---
 
@@ -52,7 +52,7 @@ Remove `@Public()` — require JWT auth for file access
 #### SEC-H2: IDOR in `findById` Methods
 - **Files:** `leads.service.ts:244-250`, `customers.service.ts:101-128`, `orders.service.ts:100-118`
 - **Issue:** `findById(id)` has no `assignedUserId` filter. A USER-role attacker who guesses/enumerates BigInt IDs can read ANY lead/customer/order. `list()` correctly scopes by user, but `findById` does not, and all mutations call `findById` first
-- **Impact:** Full data exposure for USER role — bypasses RBAC on detail/edit endpoints
+- **Impact:** Full data exposure for USER role - bypasses RBAC on detail/edit endpoints
 - **Fix:** Create `findByIdScoped(id, user)` that adds `assignedUserId` filter for USER role
 
 #### SEC-H3: Missing Helmet Security Headers
@@ -96,21 +96,21 @@ Remove `@Public()` — require JWT auth for file access
 
 #### SEC-M5: `metadata` Field Accepts Arbitrary JSON
 - **File:** `apps/api/src/modules/third-party-api/third-party-api.controller.ts:53`
-- **Issue:** `metadata: body.metadata as any` — no validation on JSONB size or content from external API
+- **Issue:** `metadata: body.metadata as any` - no validation on JSONB size or content from external API
 - **Fix:** Validate with `@IsObject()` + max size constraint
 
 #### SEC-M6: CORS Fallback to Localhost in Production
 - **File:** `apps/api/src/main.ts:33`
-- **Issue:** `origin: process.env.FRONTEND_URL || 'http://localhost:3011'` — silent fallback if env missing
+- **Issue:** `origin: process.env.FRONTEND_URL || 'http://localhost:3011'` - silent fallback if env missing
 - **Fix:** Throw error on missing `FRONTEND_URL` in production
 
 ---
 
 ### LOW
 
-- **SEC-L1:** `enableImplicitConversion: true` in ValidationPipe — could bypass type validators
-- **SEC-L2:** Auth cookies use `SameSite=Lax` — `Strict` better for internal CRM
-- **SEC-L3:** Dashboard raw SQL uses tagged template literals correctly — no injection risk (Good)
+- **SEC-L1:** `enableImplicitConversion: true` in ValidationPipe - could bypass type validators
+- **SEC-L2:** Auth cookies use `SameSite=Lax` - `Strict` better for internal CRM
+- **SEC-L3:** Dashboard raw SQL uses tagged template literals correctly - no injection risk (Good)
 
 ---
 
@@ -131,7 +131,7 @@ const updated = await tx.bankTransaction.updateMany({
 if (updated.count === 0) throw new Error('Already matched');
 ```
 
-#### PERF-C2: Import Processor — Memory + Connection Pool Leak
+#### PERF-C2: Import Processor - Memory + Connection Pool Leak
 - **File:** `apps/api/src/modules/import/import.processor.ts:18, 37-48`
 - **Issue:** (a) `fs.readFileSync` + collects ALL records before processing. 50K rows = ~10MB per import, multiple concurrent workers = OOM risk. (b) `new PrismaClient()` per worker creates separate connection pool. 5 workers = 50 connections, exhausts PG limits
 - **Fix:** (a) Stream CSV with `for await (const row of parser)`. (b) Inject `PrismaClient` via NestJS DI
@@ -152,7 +152,7 @@ if (updated.count === 0) throw new Error('Already matched');
 
 #### PERF-H3: N+1 in Assignment Template Apply
 - **File:** `apps/api/src/modules/assignment-templates/assignment-templates.service.ts:111-130`
-- **Issue:** `for` loop inside `$transaction` — `lead.update` + `assignmentHistory.create` per lead. 100 leads = 200 sequential queries in single transaction
+- **Issue:** `for` loop inside `$transaction` - `lead.update` + `assignmentHistory.create` per lead. 100 leads = 200 sequential queries in single transaction
 - **Fix:** Group by userId, `updateMany` per group + `createMany` for history
 
 #### PERF-H4: N+1 in CSV Import (4-6 queries per row)
@@ -178,7 +178,7 @@ if (updated.count === 0) throw new Error('Already matched');
 - **Issue:** `take: 10000` into memory, builds full array, then `stringify` synchronously
 - **Fix:** Use streaming CSV with `csv-stringify` piped to response
 
-#### PERF-M4: Dashboard `getLeadFunnel` — 7 Separate COUNT Queries
+#### PERF-M4: Dashboard `getLeadFunnel` - 7 Separate COUNT Queries
 - **File:** `apps/api/src/modules/dashboard/dashboard.service.ts:55-60`
 - **Fix:** Single `groupBy({ by: ['status'], _count: true })`
 
@@ -195,15 +195,15 @@ if (updated.count === 0) throw new Error('Already matched');
 
 ### LOW
 
-- **PERF-L1:** `next.config.ts` — no `optimizePackageImports`, no bundle analysis
-- **PERF-L2:** Frontend 30s `setInterval` polling — verify `clearInterval` in unmount
-- **PERF-L3:** `scoring.service.ts:85-86` — `Array.find()` O(n^2). Use `Map` keyed by userId
+- **PERF-L1:** `next.config.ts` - no `optimizePackageImports`, no bundle analysis
+- **PERF-L2:** Frontend 30s `setInterval` polling - verify `clearInterval` in unmount
+- **PERF-L3:** `scoring.service.ts:85-86` - `Array.find()` O(n^2). Use `Map` keyed by userId
 
 ### Positive Observations
-- `leads.service.ts` `claim()` uses atomic `updateMany({ where: { assignedUserId: null } })` — correct
+- `leads.service.ts` `claim()` uses atomic `updateMany({ where: { assignedUserId: null } })` - correct
 - Bulk operations use `updateMany`/`createMany` inside transactions
-- `enrichLeads()` uses 4 parallel `groupBy` — excellent pattern
-- Dashboard uses raw SQL for complex aggregations — correct approach
+- `enrichLeads()` uses 4 parallel `groupBy` - excellent pattern
+- Dashboard uses raw SQL for complex aggregations - correct approach
 - MCP tools enforce `Math.min(limit, 100)` cap
 - Cursor pagination consistently used on primary list endpoints
 
@@ -213,7 +213,7 @@ if (updated.count === 0) throw new Error('Already matched');
 
 ### CRITICAL
 
-#### DB-C1: `leads` Table — No Partial Index on `deleted_at IS NULL`
+#### DB-C1: `leads` Table - No Partial Index on `deleted_at IS NULL`
 - **Schema:** `packages/database/prisma/schema.prisma` line 274-310
 - **Issue:** `@@index([status, assignedUserId])` exists but NOT partial. Soft-delete extension auto-appends `deletedAt: null` to every query. 100K leads with 20% deleted = 20K dead rows polluting every B-tree scan
 - **Fix:**
@@ -226,7 +226,7 @@ CREATE INDEX CONCURRENTLY idx_leads_created_at_active
   ON leads (created_at DESC) WHERE deleted_at IS NULL;
 ```
 
-#### DB-C2: `activities` Table — No Partial Index + Correlated Subquery
+#### DB-C2: `activities` Table - No Partial Index + Correlated Subquery
 - **Schema line 560-577, Dashboard line 142-166**
 - **Issue:** `@@index([entityType, entityId, createdAt])` NOT partial. `getLeadAging` runs correlated subquery per lead: `SELECT MAX(a.created_at) FROM activities a WHERE a.entity_type='LEAD' AND a.entity_id = l.id`. At 500K activities = nested loop sequential scan
 - **Fix:**
@@ -236,9 +236,9 @@ CREATE INDEX CONCURRENTLY idx_activities_entity_active
 ```
 Rewrite `getLeadAging` to use lateral join or `GROUP BY`
 
-#### DB-C3: `phone` Column — No Index (Sequential Scan on Every Search)
+#### DB-C3: `phone` Column - No Index (Sequential Scan on Every Search)
 - **Schema line 276, search.service.ts line 14**
-- **Issue:** `phone` has no index. `contains` generates `LIKE '%value%'` — full sequential scan. At 100K leads, every phone search = full table scan
+- **Issue:** `phone` has no index. `contains` generates `LIKE '%value%'` - full sequential scan. At 100K leads, every phone search = full table scan
 - **Fix:**
 ```sql
 -- Exact match:
@@ -253,7 +253,7 @@ CREATE INDEX CONCURRENTLY idx_customers_phone_trgm ON customers USING gin (phone
 CREATE INDEX CONCURRENTLY idx_customers_name_trgm ON customers USING gin (name gin_trgm_ops);
 ```
 
-#### DB-C4: `notifications` Table — No Cleanup/Archival
+#### DB-C4: `notifications` Table - No Cleanup/Archival
 - **Schema line 788-803**
 - **Issue:** No `deletedAt`, no TTL, no partition. 200 users × 300 days = 60K-1M rows/year. Permanent bloat
 - **Fix:** Cron to hard-delete notifications >90 days, or partition by month
@@ -262,12 +262,12 @@ CREATE INDEX CONCURRENTLY idx_customers_name_trgm ON customers USING gin (name g
 
 ### HIGH
 
-#### DB-H1: `poolNewFiltered` — Heavy LEAD_SELECT With Nested orders.payments
+#### DB-H1: `poolNewFiltered` - Heavy LEAD_SELECT With Nested orders.payments
 - **File:** `leads.service.ts:131, 163-174`
 - **Issue:** `take: 200` with full `LEAD_SELECT` including nested `orders.payments`. Each row hits N×M joins
 - **Fix:** Use slimmer projection for pool-list endpoints
 
-#### DB-H2: Dashboard `getTopPerformers` — Full Users×Leads×Orders Cross-Join
+#### DB-H2: Dashboard `getTopPerformers` - Full Users×Leads×Orders Cross-Join
 - **File:** `dashboard.service.ts:84-99`
 - **Issue:** No date filter on leads join, joins ALL non-deleted leads for every user. No index on `leads.updated_at`
 - **Fix:**
@@ -276,7 +276,7 @@ CREATE INDEX CONCURRENTLY idx_leads_updated_at ON leads (updated_at DESC) WHERE 
 CREATE INDEX CONCURRENTLY idx_payments_verified_at ON payments (verified_at) WHERE status = 'VERIFIED';
 ```
 
-#### DB-H3: Dashboard `getConversionTrend` — `::date` Cast Prevents Index Use
+#### DB-H3: Dashboard `getConversionTrend` - `::date` Cast Prevents Index Use
 - **File:** `dashboard.service.ts:121-134`
 - **Issue:** `generate_series` × `leads` with `(created_at::date = d.day OR updated_at::date = d.day)`. Cast prevents B-tree index use
 - **Fix:** Functional indexes:
@@ -285,16 +285,16 @@ CREATE INDEX CONCURRENTLY idx_leads_created_date ON leads ((created_at::date)) W
 CREATE INDEX CONCURRENTLY idx_leads_converted_date ON leads ((updated_at::date)) WHERE status = 'CONVERTED' AND deleted_at IS NULL;
 ```
 
-#### DB-H4: Search Service — 3 Parallel `ILIKE '%query%'` Without Trigram Index
+#### DB-H4: Search Service - 3 Parallel `ILIKE '%query%'` Without Trigram Index
 - **File:** `search.service.ts:11-51`
 - **Issue:** `mode: 'insensitive'` generates `ILIKE '%query%'`. Without `pg_trgm` GIN = full sequential scan on every keystroke
 - **Fix:** See DB-C3 trigram indexes
 
-#### DB-H5: Leads Enrichment — 4 Extra Queries Per List Page
+#### DB-H5: Leads Enrichment - 4 Extra Queries Per List Page
 - **File:** `leads.service.ts:348-386`
 - **Issue:** `enrichLeads` fires 4 `groupBy` queries after every `list()` call. Could merge into 2 queries using `_count` + `_max`
 
-#### DB-H6: Payment Matching — In-Memory Content Filter
+#### DB-H6: Payment Matching - In-Memory Content Filter
 - **File:** `payment-matching.service.ts:36-50`
 - **Issue:** Fetches ALL `PENDING` payments with matching amount, then filters by `transferContent` in JavaScript. No index on `payments.status`
 - **Fix:**
@@ -314,10 +314,10 @@ CREATE INDEX CONCURRENTLY idx_payments_status_verified_at ON payments (status, v
 
 ### MEDIUM
 
-#### DB-M1: `activities.service.ts` — Unbounded `findMany` for Stats
+#### DB-M1: `activities.service.ts` - Unbounded `findMany` for Stats
 - **Fix:** Paginate or use raw SQL `GROUP BY department_id`
 
-#### DB-M2: `customers` Table — Missing Partial Indexes
+#### DB-M2: `customers` Table - Missing Partial Indexes
 - **Fix:**
 ```sql
 CREATE INDEX CONCURRENTLY idx_customers_dept_user_active
@@ -326,7 +326,7 @@ CREATE INDEX CONCURRENTLY idx_customers_status_active
   ON customers (status) WHERE deleted_at IS NULL;
 ```
 
-#### DB-M3: `tasks` Table — Missing Partial Indexes
+#### DB-M3: `tasks` Table - Missing Partial Indexes
 - **Fix:**
 ```sql
 CREATE INDEX CONCURRENTLY idx_tasks_assigned_status_due_active
@@ -335,14 +335,14 @@ CREATE INDEX CONCURRENTLY idx_tasks_remind_active
   ON tasks (remind_at) WHERE status = 'PENDING' AND reminded_at IS NULL AND deleted_at IS NULL;
 ```
 
-#### DB-M4: `AssignmentHistory` — No Index for 72h Window Query
+#### DB-M4: `AssignmentHistory` - No Index for 72h Window Query
 - **Fix:**
 ```sql
 CREATE INDEX CONCURRENTLY idx_assignment_history_type_dept_created
   ON assignment_history (entity_type, created_at DESC) WHERE from_department_id IS NULL;
 ```
 
-#### DB-M5: Prisma — No Connection Pool Configuration
+#### DB-M5: Prisma - No Connection Pool Configuration
 - **File:** `packages/database/src/index.ts:9`
 - **Issue:** `new PrismaClient()` with defaults. 2-core VPS = 5 connections. 200 concurrent users = pool timeout
 - **Fix:** `DATABASE_URL` with `?connection_limit=20&pool_timeout=10`
@@ -351,9 +351,9 @@ CREATE INDEX CONCURRENTLY idx_assignment_history_type_dept_created
 
 ### LOW
 
-- **DB-L1:** `getLeadFunnel` runs 7 separate `COUNT` — replace with single `groupBy`
+- **DB-L1:** `getLeadFunnel` runs 7 separate `COUNT` - replace with single `groupBy`
 - **DB-L2:** `LEAD_SELECT` eagerly loads `orders.payments` for list endpoints
-- **DB-L3:** Recall loads all IDs into memory then `IN(...)` — replace with direct `updateMany`
+- **DB-L3:** Recall loads all IDs into memory then `IN(...)` - replace with direct `updateMany`
 - **DB-L4:** `BankTransaction.content` no index for `ILIKE` matching
 - **DB-L5:** MCP `count` query runs even during cursor pagination (wasted)
 
@@ -361,7 +361,7 @@ CREATE INDEX CONCURRENTLY idx_assignment_history_type_dept_created
 
 ## Priority Implementation Roadmap
 
-### Phase 1: CRITICAL — Fix Before Production (Week 1)
+### Phase 1: CRITICAL - Fix Before Production (Week 1)
 
 | # | Issue | Category | Effort |
 |---|-------|----------|--------|
@@ -371,7 +371,7 @@ CREATE INDEX CONCURRENTLY idx_assignment_history_type_dept_created
 | 4 | SEC-H3: Add Helmet security headers | Security | 30min |
 | 5 | PERF-C2: Import processor memory + connection leak | Performance | 2h |
 
-### Phase 2: HIGH — Fix Before Scale (Week 2)
+### Phase 2: HIGH - Fix Before Scale (Week 2)
 
 | # | Issue | Category | Effort |
 |---|-------|----------|--------|
@@ -382,7 +382,7 @@ CREATE INDEX CONCURRENTLY idx_assignment_history_type_dept_created
 | 10 | DB-H7: Orders/payments status indexes | Database | 1h |
 | 11 | SEC-M2+M3: Scope search + export by role | Security | 2h |
 
-### Phase 3: MEDIUM — Optimize (Week 3-4)
+### Phase 3: MEDIUM - Optimize (Week 3-4)
 
 | # | Issue | Category | Effort |
 |---|-------|----------|--------|
@@ -399,16 +399,16 @@ CREATE INDEX CONCURRENTLY idx_assignment_history_type_dept_created
 
 ## Positive Findings (Already Good)
 
-- bcrypt cost 12, SHA-256 refresh tokens, rotation, lockout — solid auth
-- `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })` — prevents mass assignment
-- CSV formula injection sanitization with `\t` prefix — correct
-- API keys stored as SHA-256 hashes, shown once — correct
-- All raw SQL uses Prisma tagged template literals — SQL injection-safe
-- Atomic `updateMany({ where: { assignedUserId: null } })` for lead claim — no race condition
+- bcrypt cost 12, SHA-256 refresh tokens, rotation, lockout - solid auth
+- `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })` - prevents mass assignment
+- CSV formula injection sanitization with `\t` prefix - correct
+- API keys stored as SHA-256 hashes, shown once - correct
+- All raw SQL uses Prisma tagged template literals - SQL injection-safe
+- Atomic `updateMany({ where: { assignedUserId: null } })` for lead claim - no race condition
 - Bulk operations use `updateMany`/`createMany` in transactions
 - MCP tools enforce `Math.min(limit, 100)` cap
 - Cursor pagination consistently used on primary endpoints
-- Dashboard uses raw SQL for complex aggregations — correct approach
+- Dashboard uses raw SQL for complex aggregations - correct approach
 
 ---
 

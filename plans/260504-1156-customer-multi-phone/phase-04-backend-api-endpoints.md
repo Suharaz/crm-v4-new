@@ -1,4 +1,4 @@
-# Phase 04 — Backend API Endpoints
+# Phase 04 - Backend API Endpoints
 
 **Priority:** High
 **Status:** ⬜ Pending
@@ -12,10 +12,10 @@ Expose CRUD số phụ qua REST endpoints để FE dùng. Theo QĐ 5: **chỉ MA
 ## Requirements
 
 ### Functional
-- `GET    /customers/:id/phones` — list số phụ (mọi role có quyền xem customer).
-- `POST   /customers/:id/phones` — thêm (MANAGER+).
-- `PATCH  /customers/:id/phones/:phoneId` — sửa (MANAGER+).
-- `DELETE /customers/:id/phones/:phoneId` — soft delete (MANAGER+).
+- `GET    /customers/:id/phones` - list số phụ (mọi role có quyền xem customer).
+- `POST   /customers/:id/phones` - thêm (MANAGER+).
+- `PATCH  /customers/:id/phones/:phoneId` - sửa (MANAGER+).
+- `DELETE /customers/:id/phones/:phoneId` - soft delete (MANAGER+).
 
 ### Non-functional
 - Tuân `@crm/api-design` conventions: REST resource pattern, status code đúng, BigInt serialize string.
@@ -41,12 +41,12 @@ CustomersController (mở rộng, không tạo controller mới)
 ## Related Code Files
 
 ### Read for context
-- `apps/api/src/modules/customers/customers.controller.ts` — pattern existing endpoints, decorator usage
-- `apps/api/src/common/decorators/roles.decorator.ts` (hoặc tương đương) — `@Roles()` decorator
-- `apps/api/src/common/guards/roles.guard.ts` — guard
+- `apps/api/src/modules/customers/customers.controller.ts` - pattern existing endpoints, decorator usage
+- `apps/api/src/common/decorators/roles.decorator.ts` (hoặc tương đương) - `@Roles()` decorator
+- `apps/api/src/common/guards/roles.guard.ts` - guard
 
 ### Modify
-- `apps/api/src/modules/customers/customers.controller.ts` — thêm 4 endpoints.
+- `apps/api/src/modules/customers/customers.controller.ts` - thêm 4 endpoints.
 
 ## Implementation Steps
 
@@ -102,11 +102,11 @@ async deletePhone(
 }
 ```
 
-> **Decorator chính xác** dựa vào pattern hiện có — đọc file controller trước để copy đúng style.
+> **Decorator chính xác** dựa vào pattern hiện có - đọc file controller trước để copy đúng style.
 
 ### Step 3: Customer detail response include `phones`
 
-Mở rộng `findOne` (trong `customers.service.ts`) để include số phụ active. Hoặc thêm endpoint riêng `GET /customers/:id/phones` (đã có) — tùy lựa chọn.
+Mở rộng `findOne` (trong `customers.service.ts`) để include số phụ active. Hoặc thêm endpoint riêng `GET /customers/:id/phones` (đã có) - tùy lựa chọn.
 
 > **Khuyến nghị:** Thêm `phones: { where: { deletedAt: null } }` vào select của `findOne`. Tiết kiệm round-trip cho FE detail page (không gọi 2 API).
 
@@ -158,7 +158,7 @@ curl http://localhost:3010/api/v1/customers/1/phones \
 |---|---|
 | Roles decorator viết sai → guard không trigger | Test với cả 2 role thực tế |
 | `ParseBigIntPipe` chưa có trong project | Check codebase, dùng `ParseIntPipe` + cast hoặc custom pipe đã có |
-| FE đang dùng `findOne` payload cũ → break khi thêm `phones` field | Field optional, FE TS sẽ pass — verify build FE sau khi đổi DTO |
+| FE đang dùng `findOne` payload cũ → break khi thêm `phones` field | Field optional, FE TS sẽ pass - verify build FE sau khi đổi DTO |
 
 ## Security
 
@@ -168,4 +168,4 @@ curl http://localhost:3010/api/v1/customers/1/phones \
 
 ## Next Steps
 
-- Phase 05 — UI cho FE.
+- Phase 05 - UI cho FE.

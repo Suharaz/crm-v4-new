@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { hasPermission } from '../mcp-agent-auth.guard';
 
-/** Register get_schema tool — returns available tools, filters, and enum values */
+/** Register get_schema tool - returns available tools, filters, and enum values */
 export function registerSchemaTools(
   server: McpServer,
   _prisma: PrismaClient,
@@ -39,30 +39,30 @@ export function registerSchemaTools(
             permission: 'mcp:leads:read',
             description: 'Search leads with filters. Returns summary list.',
             filters: {
-              search: 'string — search by name, phone, email',
+              search: 'string - search by name, phone, email',
               status: 'POOL | ASSIGNED | IN_PROGRESS | CONVERTED | LOST | FLOATING',
-              departmentId: 'string (bigint) — filter by department',
-              userId: 'string (bigint) — filter by assigned user',
-              sourceId: 'string (bigint) — filter by lead source',
-              labelId: 'string (bigint) — filter by label',
-              dateFrom: 'ISO date — created after',
-              dateTo: 'ISO date — created before',
+              departmentId: 'string (bigint) - filter by department',
+              userId: 'string (bigint) - filter by assigned user',
+              sourceId: 'string (bigint) - filter by lead source',
+              labelId: 'string (bigint) - filter by label',
+              dateFrom: 'ISO date - created after',
+              dateTo: 'ISO date - created before',
               limit: 'number 1-100, default 20',
-              cursor: 'string (bigint) — cursor for pagination',
+              cursor: 'string (bigint) - cursor for pagination',
             },
           },
           {
             name: 'get_lead_detail',
             permission: 'mcp:leads:read',
             description: 'Get full lead detail by ID, includes recent activities and notes.',
-            params: { id: 'string (bigint) — lead ID' },
+            params: { id: 'string (bigint) - lead ID' },
           },
           {
             name: 'search_customers',
             permission: 'mcp:customers:read',
             description: 'Search customers with filters. Returns summary list.',
             filters: {
-              search: 'string — search by name, phone, email',
+              search: 'string - search by name, phone, email',
               status: 'ACTIVE | INACTIVE | FLOATING',
               departmentId: 'string (bigint)',
               userId: 'string (bigint)',
@@ -84,7 +84,7 @@ export function registerSchemaTools(
             permission: 'mcp:orders:read',
             description: 'Search orders with filters.',
             filters: {
-              search: 'string — customer name, phone, order key',
+              search: 'string - customer name, phone, order key',
               status: 'PENDING | CONFIRMED | COMPLETED | CANCELLED | REFUNDED',
               productId: 'string (bigint)',
               createdBy: 'string (bigint)',
@@ -106,7 +106,7 @@ export function registerSchemaTools(
             description: 'List products with optional category filter.',
             filters: {
               categoryId: 'string (bigint)',
-              search: 'string — product name',
+              search: 'string - product name',
               limit: 'number 1-100, default 20',
             },
           },
@@ -117,13 +117,13 @@ export function registerSchemaTools(
             filters: {
               dateFrom: 'ISO date',
               dateTo: 'ISO date',
-              departmentId: 'string (bigint) — scope to department',
+              departmentId: 'string (bigint) - scope to department',
             },
           },
           {
             name: 'list_users',
             permission: 'mcp:users:read',
-            description: 'List users (name, role, department only — no sensitive fields).',
+            description: 'List users (name, role, department only - no sensitive fields).',
             filters: {
               departmentId: 'string (bigint)',
               role: 'SUPER_ADMIN | MANAGER | USER',
@@ -179,8 +179,8 @@ export function registerSchemaTools(
             filters: {
               dateFrom: 'ISO date (required)',
               dateTo: 'ISO date (required)',
-              adSpend: 'number (VND) — optional, enables ROI metrics',
-              sourceId: 'string (bigint) — optional, filter to specific source',
+              adSpend: 'number (VND) - optional, enables ROI metrics',
+              sourceId: 'string (bigint) - optional, filter to specific source',
             },
           },
           {
@@ -190,8 +190,8 @@ export function registerSchemaTools(
             filters: {
               dateFrom: 'ISO date (required)',
               dateTo: 'ISO date (required)',
-              adSpend: 'number (VND) — optional, for CPL per source',
-              sourceId: 'string (bigint) — optional, filter to specific source',
+              adSpend: 'number (VND) - optional, for CPL per source',
+              sourceId: 'string (bigint) - optional, filter to specific source',
             },
           },
         ],

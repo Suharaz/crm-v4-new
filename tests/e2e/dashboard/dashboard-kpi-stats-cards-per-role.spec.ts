@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAsAdmin, loginAsManager, loginAsUser } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Dashboard — KPI Stats Cards theo Role', () => {
+test.describe('Dashboard - KPI Stats Cards theo Role', () => {
   test('SUPER_ADMIN thấy đầy đủ KPI cards', async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto('/');

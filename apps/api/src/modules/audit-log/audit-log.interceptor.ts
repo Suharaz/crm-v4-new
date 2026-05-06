@@ -10,7 +10,7 @@ import { SKIP_METHODS, SKIP_PATH_PREFIXES } from './audit-log.constants';
  *
  * Fire-and-forget: writes are scheduled via `setImmediate` so the response
  * never waits on the audit insert. A failure inside the interceptor is logged
- * but never thrown — auditing must not break the API.
+ * but never thrown - auditing must not break the API.
  */
 @Injectable()
 export class AuditLogInterceptor implements NestInterceptor {

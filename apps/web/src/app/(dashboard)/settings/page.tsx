@@ -2,7 +2,7 @@ import { serverFetch } from '@/lib/auth';
 import { SettingsPageClient } from '@/components/settings/settings-page-client';
 import type { LabelEntity, LabelRecallConfigItem, SettingsItem, UserRecord } from '@/types/entities';
 
-/** Settings page — departments, levels, sources, labels, payment types. */
+/** Settings page - departments, levels, sources, labels, payment types. */
 export default async function SettingsPage() {
   let departments: SettingsItem[] = [];
   let levels: SettingsItem[] = [];
@@ -42,7 +42,7 @@ export default async function SettingsPage() {
     labelRecallConfigs = await serverFetch<{ data: LabelRecallConfigItem[] }>(
       '/recall-configs/labels',
     ).then(r => r.data);
-  } catch { /* SUPER_ADMIN only — silently ignore for others */ }
+  } catch { /* SUPER_ADMIN only - silently ignore for others */ }
 
   return (
     <div>

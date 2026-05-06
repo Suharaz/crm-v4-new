@@ -6,7 +6,7 @@
 
 ## Conventions
 
-- **PK:** `BigInt` với `@default(autoincrement())` — IDENTITY trong Postgres. Serialize → `string` qua global interceptor.
+- **PK:** `BigInt` với `@default(autoincrement())` - IDENTITY trong Postgres. Serialize → `string` qua global interceptor.
 - **Table/column naming:** snake_case qua `@@map` / `@map`.
 - **Timestamps:** `createdAt`, `updatedAt` (auto), `deletedAt` (soft-delete nullable).
 - **Soft delete:** 21/31 bảng có `deletedAt`. Partial indexes `WHERE deleted_at IS NULL` trong `raw-indexes.sql`.
@@ -79,7 +79,7 @@
 ## Auth (3 tables)
 
 ### `users`
-Entity trung tâm — mọi bảng CRM tham chiếu qua assignedUserId/createdBy.
+Entity trung tâm - mọi bảng CRM tham chiếu qua assignedUserId/createdBy.
 
 | Column | Type | Ghi chú |
 |--------|------|---------|
@@ -125,7 +125,7 @@ Super admin quản lý. Key plaintext chỉ hiện 1 lần lúc tạo.
 ## Organization (4 tables)
 
 ### `departments`
-Không soft delete? — CÓ (`deletedAt DateTime?`). Xóa cascade: users.departmentId bị null hóa ở service layer.
+Không soft delete? - CÓ (`deletedAt DateTime?`). Xóa cascade: users.departmentId bị null hóa ở service layer.
 
 ### `teams`
 **Soft-delete + partial unique** trên `leaderId`:
@@ -157,7 +157,7 @@ Lookup cấp bậc + `maxLeads` cap (null = unlimited). Trên rank: INTERN < JUN
 | status | CustomerStatus | ACTIVE/INACTIVE/FLOATING |
 
 **Indexes:** `assignedUserId`, `(assignedDepartmentId, assignedUserId)`.
-**Uniqueness:** KHÔNG có (1 phone có thể có nhiều customer qua dedup rule riêng — chỉ CSV import dedup).
+**Uniqueness:** KHÔNG có (1 phone có thể có nhiều customer qua dedup rule riêng - chỉ CSV import dedup).
 
 ### `leads`
 Core entity. 7 status.
@@ -182,7 +182,7 @@ Core entity. 7 status.
 Pattern C (`isActive` flag, không soft delete). `skipPool` = true → lead tạo mới đi thẳng vào AI distribution, skip dept pool.
 
 ### `labels`, `customer_labels`
-Label master (pattern C — `isActive`). DELETE label → soft-deactivate để giữ history.
+Label master (pattern C - `isActive`). DELETE label → soft-deactivate để giữ history.
 
 **Cardinality (BREAKING 2026-05-06):**
 - **Lead** = single label via FK `leads.label_id` (nullable). `leads.label_assigned_at` tracks last reset for per-label recall cron.
@@ -192,13 +192,13 @@ Migration: bảng `lead_labels` đã drop. `recall_configs.auto_label_ids[]` →
 
 ---
 
-## Commerce (9 tables — bao gồm bank_accounts)
+## Commerce (9 tables - bao gồm bank_accounts)
 
 ### `products`
 Decimal price + VAT rate. Soft delete. FK categoryId.
 
 ### `product_categories`, `product_groups`, `order_formats`, `payment_types`, `payment_installments`, `bank_accounts`
-6 lookup table — tất cả pattern C (`isActive`, không soft delete). Tên được phép reuse.
+6 lookup table - tất cả pattern C (`isActive`, không soft delete). Tên được phép reuse.
 
 ### `orders`
 Rich domain entity. Nhiều field legacy + lookup FK:
@@ -214,7 +214,7 @@ Rich domain entity. Nhiều field legacy + lookup FK:
 | format (legacy) + formatId (lookup) | Migration hybrid |
 | groupType (legacy) + productGroupId (lookup) | - |
 | stt, courseCode, notes | Additional context |
-| createdBy | BigInt — user tạo |
+| createdBy | BigInt - user tạo |
 
 **Indexes:** leadId, customerId, createdBy + composite (status + createdAt trong Round 2 audit).
 
@@ -231,19 +231,19 @@ Hybrid verification: PENDING ↔ bank_transactions. Partial payment hỗ trợ q
 | verifiedSource | AUTO/MANUAL |
 | verifiedBy, verifiedAt | Audit |
 
-Index: orderId + composite (order + status — Round 2 audit).
+Index: orderId + composite (order + status - Round 2 audit).
 
 ### `bank_transactions`
 Ingest webhook ngân hàng.
 
 | Column | Ghi chú |
 |--------|---------|
-| externalId | **`@unique`** (không soft delete — OK) |
+| externalId | **`@unique`** (không soft delete - OK) |
 | amount, content, bankAccount, senderName, senderAccount | Raw data |
 | transactionTime | DateTime |
-| matchedPaymentId | **`@unique`** — 1 TX chỉ match 1 payment |
+| matchedPaymentId | **`@unique`** - 1 TX chỉ match 1 payment |
 | matchStatus | AUTO_MATCHED / UNMATCHED / MANUALLY_MATCHED |
-| rawData | Json — gốc payload |
+| rawData | Json - gốc payload |
 
 Index: `(matchStatus, createdAt)`, `(amount, transactionTime)`.
 
@@ -252,12 +252,12 @@ Index: `(matchStatus, createdAt)`, `(amount, transactionTime)`.
 ## Activity (4 tables)
 
 ### `activities`
-Polymorphic — `entityType + entityId` (LEAD | CUSTOMER).
+Polymorphic - `entityType + entityId` (LEAD | CUSTOMER).
 
 | Column | Ghi chú |
 |--------|---------|
 | entityType | EntityType enum |
-| entityId | BigInt (không FK — polymorphic) |
+| entityId | BigInt (không FK - polymorphic) |
 | userId | User tạo |
 | type | ActivityType (6 loại) |
 | content | Note/summary |
@@ -272,12 +272,12 @@ Polymorphic — `entityType + entityId` (LEAD | CUSTOMER).
 File đính kèm 1 activity. Unique path `file_url`.
 
 ### `documents`
-Tách biệt với activity — "tài liệu" gắn entity (hợp đồng, giấy tờ). Soft delete.
+Tách biệt với activity - "tài liệu" gắn entity (hợp đồng, giấy tờ). Soft delete.
 
 ### `call_logs`
 | Column | Ghi chú |
 |--------|---------|
-| externalId | **Partial unique** (WHERE deleted_at IS NULL) — Pattern A |
+| externalId | **Partial unique** (WHERE deleted_at IS NULL) - Pattern A |
 | phoneNumber | Normalized |
 | callType | OUTGOING/INCOMING/MISSED |
 | duration | Seconds |
@@ -302,7 +302,7 @@ Audit log. Không soft delete (history immutable).
 | fromUserId, toUserId | Null khi từ/về pool |
 | fromDepartmentId, toDepartmentId | Dept tracking |
 | assignedBy | User thực hiện |
-| reason | String? — lý do transfer |
+| reason | String? - lý do transfer |
 
 Index: `(entityType, entityId, createdAt)`.
 
@@ -328,8 +328,8 @@ Composite PK `(templateId, userId)`. Order → vòng round-robin.
 
 | Column | Ghi chú |
 |--------|---------|
-| matchingCriteria | Json — filter rules |
-| weightConfig | Json — `{workload: 30, level: 30, performance: 40}` |
+| matchingCriteria | Json - filter rules |
+| weightConfig | Json - `{workload: 30, level: 30, performance: 40}` |
 | isActive | - |
 
 ### `recall_configs`
@@ -339,7 +339,7 @@ Config auto-recall dept pool → FLOATING.
 |--------|---------|
 | entityType | String "LEAD" hoặc "CUSTOMER" |
 | maxDaysInPool | Int |
-| autoLabelIds | BigInt[] — nhãn gắn tự động |
+| autoLabelIds | BigInt[] - nhãn gắn tự động |
 | isActive | - |
 
 Cron `Daily 1 AM` đọc config active, quét entities quá hạn.
@@ -366,7 +366,7 @@ Todo với reminder + escalation.
 | completedAt | Audit |
 | deletedAt | Soft delete |
 
-**Indexes:** `(assignedTo, status, dueDate)`, `(remindAt, remindedAt, status)` — cho cron sweep.
+**Indexes:** `(assignedTo, status, dueDate)`, `(remindAt, remindedAt, status)` - cho cron sweep.
 
 ### `notifications`
 Polling 30s từ frontend.
@@ -410,10 +410,10 @@ Bảng có `@unique` + `deletedAt`:
 | users | email | B (composite) + backup partial | `@@unique([email, deletedAt])` |
 | teams | leaderId | A (partial unique) | Swap khỏi `@unique`, Prisma relation → `Team[]` |
 | call_logs | externalId | A (partial unique) | Swap khỏi `@unique`, `findUnique` → `findFirst({deletedAt:null})` |
-| documents, activities, products, customers, leads, orders | (không có unique string) | — | An toàn |
-| api_keys | keyHash | **`@unique` giữ** | Không soft delete (chỉ deactivate qua `isActive`) — OK |
-| bank_transactions | externalId, matchedPaymentId | **`@unique` giữ** | Không soft delete — OK |
-| ai_distribution_configs | departmentId | **`@unique` giữ** | Không soft delete — OK |
+| documents, activities, products, customers, leads, orders | (không có unique string) | - | An toàn |
+| api_keys | keyHash | **`@unique` giữ** | Không soft delete (chỉ deactivate qua `isActive`) - OK |
+| bank_transactions | externalId, matchedPaymentId | **`@unique` giữ** | Không soft delete - OK |
+| ai_distribution_configs | departmentId | **`@unique` giữ** | Không soft delete - OK |
 
 → 3 bảng cần partial unique, tất cả đã fix (xem changelog 2026-04-17).
 
@@ -429,6 +429,6 @@ Bảng có `@unique` + `deletedAt`:
 
 ## Related Docs
 
-- `code-standards.md` — 3 pattern soft-delete unique chi tiết
-- `api-reference.md` — Endpoint expose các entity này
-- `business-flows.md` — Sequence cho payment verification, lead lifecycle
+- `code-standards.md` - 3 pattern soft-delete unique chi tiết
+- `api-reference.md` - Endpoint expose các entity này
+- `business-flows.md` - Sequence cho payment verification, lead lifecycle

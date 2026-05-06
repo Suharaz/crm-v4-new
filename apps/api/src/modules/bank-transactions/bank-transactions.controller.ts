@@ -29,7 +29,7 @@ export class BankTransactionsController {
     private readonly importService: BankTransactionImportService,
   ) {}
 
-  /** Webhook endpoint for bank transaction ingestion — requires x-api-key + HMAC signature. */
+  /** Webhook endpoint for bank transaction ingestion - requires x-api-key + HMAC signature. */
   @Public()
   @ApiKeyAuth()
   @UseGuards(WebhookSignatureGuard)

@@ -1,4 +1,4 @@
-# Phase 02 — AuditLog Service + Global Interceptor
+# Phase 02 - AuditLog Service + Global Interceptor
 
 **Priority:** P0 | **Status:** Pending | **Est:** 3h | **Depends:** Phase 01
 
@@ -52,30 +52,30 @@ Request → JwtGuard → AuditLogInterceptor.intercept()
 ### Filter API (super_admin only)
 `GET /api/v1/audit-logs?...`
 Query params:
-- `userId` — filter by user
-- `departmentId` — filter by user's dept (join)
-- `action` — exact match or comma-list
-- `entityType` — `LEAD` | `CUSTOMER` | `ORDER` | `USER` | etc
+- `userId` - filter by user
+- `departmentId` - filter by user's dept (join)
+- `action` - exact match or comma-list
+- `entityType` - `LEAD` | `CUSTOMER` | `ORDER` | `USER` | etc
 - `entityId`
-- `method` — POST/PUT/PATCH/DELETE
-- `statusCode` — exact or range (e.g., `4xx`, `5xx`)
+- `method` - POST/PUT/PATCH/DELETE
+- `statusCode` - exact or range (e.g., `4xx`, `5xx`)
 - `ipAddress`
-- `from` — ISO datetime
-- `to` — ISO datetime
-- `cursor` — pagination cursor
-- `limit` — default 50, max 200
+- `from` - ISO datetime
+- `to` - ISO datetime
+- `cursor` - pagination cursor
+- `limit` - default 50, max 200
 
 ## Related Code Files
 
 ### Read first
-- `apps/api/src/common/interceptors/bigint-transform.interceptor.ts` — interceptor pattern
-- `apps/api/src/common/build-access-filter.ts` — query helper pattern
-- `apps/api/src/modules/activities/activities.service.ts` — service pattern
-- `apps/api/src/modules/users/users.controller.ts` — controller pattern + role guard
-- `apps/api/src/app.module.ts` — global interceptor registration
+- `apps/api/src/common/interceptors/bigint-transform.interceptor.ts` - interceptor pattern
+- `apps/api/src/common/build-access-filter.ts` - query helper pattern
+- `apps/api/src/modules/activities/activities.service.ts` - service pattern
+- `apps/api/src/modules/users/users.controller.ts` - controller pattern + role guard
+- `apps/api/src/app.module.ts` - global interceptor registration
 
 ### Modify
-- `apps/api/src/app.module.ts` — register `AuditLogInterceptor` global, import `AuditLogModule`
+- `apps/api/src/app.module.ts` - register `AuditLogInterceptor` global, import `AuditLogModule`
 
 ### Create
 - `apps/api/src/modules/audit-log/audit-log.module.ts`
@@ -89,7 +89,7 @@ Query params:
 
 ## Implementation Steps
 
-### Step 1 — Constants (`audit-log.constants.ts`)
+### Step 1 - Constants (`audit-log.constants.ts`)
 ```ts
 export const SENSITIVE_KEYS = [
   'password', 'currentPassword', 'newPassword',
@@ -110,14 +110,14 @@ export const MAX_FIELD_BYTES = 4096;
 export const MAX_DEPTH = 5;
 ```
 
-### Step 2 — Sanitizer (`audit-log.sanitizer.ts`)
+### Step 2 - Sanitizer (`audit-log.sanitizer.ts`)
 - Pure function `sanitize(input: unknown, depth = 0): unknown`
 - Lowercase key compare cho `SENSITIVE_KEYS`
 - Truncate string > MAX_FIELD_BYTES
 - Stop tại MAX_DEPTH
 - Handle Buffer/Date/null/undefined
 
-### Step 3 — Service (`audit-log.service.ts`)
+### Step 3 - Service (`audit-log.service.ts`)
 ```ts
 async create(params: {
   userId?: bigint | null;
@@ -136,7 +136,7 @@ async query(filter: QueryAuditLogDto, requesterRole: UserRole)
   : Promise<{ data: AuditLogResponseDto[]; meta: { nextCursor?: string } }>
 ```
 
-### Step 4 — Interceptor (`audit-log.interceptor.ts`)
+### Step 4 - Interceptor (`audit-log.interceptor.ts`)
 - Implement `NestInterceptor`
 - Trong `intercept()`:
   - Lấy `req` từ context
@@ -148,19 +148,19 @@ async query(filter: QueryAuditLogDto, requesterRole: UserRole)
   - `catchError(err → enqueueLog(ERROR); throw err)`
 - `enqueueLog`: dùng `setImmediate(() => service.create(...).catch(noop))`
 - Suy ra `action` từ method + path (vd `POST /leads/:id/transfer` → `LEAD_TRANSFER`)
-  - Implement `inferAction(method: string, path: string): string` — basic mapping, fallback `${method}_${pathSegment}`
+  - Implement `inferAction(method: string, path: string): string` - basic mapping, fallback `${method}_${pathSegment}`
 
-### Step 5 — Controller (`audit-log.controller.ts`)
+### Step 5 - Controller (`audit-log.controller.ts`)
 - `@UseGuards(JwtAuthGuard, RolesGuard)`
 - `@Roles('SUPER_ADMIN')`
-- `GET /audit-logs` — return paginated list theo filter
-- `GET /audit-logs/:id` — chi tiết 1 log
+- `GET /audit-logs` - return paginated list theo filter
+- `GET /audit-logs/:id` - chi tiết 1 log
 
-### Step 6 — Module wiring
+### Step 6 - Module wiring
 - `audit-log.module.ts`: providers = [Service, Interceptor, Sanitizer], exports = [Service]
 - `app.module.ts`: import AuditLogModule, đăng ký interceptor global qua `APP_INTERCEPTOR`
 
-### Step 7 — Manual test
+### Step 7 - Manual test
 ```bash
 # Run API
 pnpm dev --filter=api
@@ -206,8 +206,8 @@ psql $DATABASE_URL -c "SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 5
 ## Security Considerations
 - **Role guard nghiêm ngặt:** chỉ SUPER_ADMIN, dù MANAGER là role cao thứ 2
 - **IP từ header X-Forwarded-For** nếu sau reverse proxy (đọc `req.ip` của Express đã có config trust proxy chưa)
-- **Không log Authorization header** dù bị bypass — sanitize key `authorization`
-- **Don't log webhook bodies có chứa secret** — verify SKIP_PATHS có cover endpoint webhook
+- **Không log Authorization header** dù bị bypass - sanitize key `authorization`
+- **Don't log webhook bodies có chứa secret** - verify SKIP_PATHS có cover endpoint webhook
 
 ## Next Steps
 - Phase 03 (cron tracking) parallel

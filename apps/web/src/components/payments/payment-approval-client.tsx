@@ -13,7 +13,7 @@ interface Props {
   payments: PaymentRecord[];
 }
 
-/** Manager payment approval list — verify or reject pending payments in bulk. */
+/** Manager payment approval list - verify or reject pending payments in bulk. */
 export function PaymentApprovalClient({ payments: initial }: Props) {
   const router = useRouter();
   const [payments, setPayments] = useState(initial);
@@ -66,7 +66,7 @@ export function PaymentApprovalClient({ payments: initial }: Props) {
               <div className="mt-0.5 text-xs text-slate-400">
                 Tạo {formatDate(p.createdAt)}
                 {p.matchedTransaction && (
-                  <span className="ml-2 text-emerald-600">Auto-match: {formatVND(Number(p.matchedTransaction.amount))} — {p.matchedTransaction.content}</span>
+                  <span className="ml-2 text-emerald-600">Auto-match: {formatVND(Number(p.matchedTransaction.amount))} - {p.matchedTransaction.content}</span>
                 )}
               </div>
             </div>

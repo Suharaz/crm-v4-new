@@ -20,7 +20,7 @@ export function DashboardHeader({ isAdmin, range, onRangeChange, title, subtitle
         </p>
       </div>
 
-      {/* Time range selector — desktop: button row, mobile: handled by parent */}
+      {/* Time range selector - desktop: button row, mobile: handled by parent */}
       <div className="hidden sm:flex rounded-xl border border-slate-200 bg-white p-1 shadow-[0_2px_10px_-2px_rgba(14,165,233,0.08)]">
         {(Object.keys(RANGE_LABELS) as RangeKey[]).map(key => (
           <button

@@ -1,4 +1,4 @@
-# Phase 01 — Database Schema
+# Phase 01 - Database Schema
 
 **Priority:** P0 (blocks all) | **Status:** Pending | **Est:** 1h
 
@@ -32,14 +32,14 @@ Thêm 2 bảng mới: `audit_logs` (user actions) + `cron_runs` (cron execution 
 ## Related Code Files
 
 ### Read first
-- `packages/database/prisma/schema.prisma` (line 596 — Activity model làm reference)
+- `packages/database/prisma/schema.prisma` (line 596 - Activity model làm reference)
 - `packages/database/prisma/migrations/20260505111000_label_recall_minutes/migration.sql` (latest migration làm reference)
 
 ### Modify
-- `packages/database/prisma/schema.prisma` — thêm 2 model
+- `packages/database/prisma/schema.prisma` - thêm 2 model
 
 ### Create
-- `packages/database/prisma/migrations/{timestamp}_add_audit_logs_cron_runs/migration.sql` — auto generate
+- `packages/database/prisma/migrations/{timestamp}_add_audit_logs_cron_runs/migration.sql` - auto generate
 
 ## Implementation Steps
 
@@ -91,7 +91,7 @@ model CronRun {
 }
 ```
 
-3. **Cập nhật** model `User` — thêm relation:
+3. **Cập nhật** model `User` - thêm relation:
 ```prisma
 auditLogs AuditLog[] @relation("AuditLogUser")
 ```
@@ -129,8 +129,8 @@ psql $DATABASE_URL -c "\d cron_runs"
 - Migration file ở `packages/database/prisma/migrations/`
 
 ## Risk Assessment
-- **R1:** Migration conflict nếu DB đã có data — mitigation: chỉ thêm bảng mới, không sửa bảng cũ
-- **R2:** Index quá nhiều slow insert — chấp nhận: insert audit không phải hot path
+- **R1:** Migration conflict nếu DB đã có data - mitigation: chỉ thêm bảng mới, không sửa bảng cũ
+- **R2:** Index quá nhiều slow insert - chấp nhận: insert audit không phải hot path
 
 ## Security Considerations
 - `metadata` JSONB phải được sanitize **TRƯỚC khi insert** (xử lý ở Phase 02, không phải DB)

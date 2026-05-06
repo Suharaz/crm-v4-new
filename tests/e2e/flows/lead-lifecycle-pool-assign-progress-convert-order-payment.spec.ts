@@ -3,7 +3,7 @@ import { loginAsAdmin, loginAsManager, loginAsUser } from '../../helpers/test-au
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
 /**
- * Lead Lifecycle E2E Flow — full journey through browser:
+ * Lead Lifecycle E2E Flow - full journey through browser:
  * 1. Manager tạo lead → Kho Mới (POOL)
  * 2. Manager assign lead cho sale
  * 3. Sale xem lead → ASSIGNED
@@ -17,7 +17,7 @@ const UNIQUE = Date.now().toString().slice(-6);
 const TEST_PHONE = `091${UNIQUE}1`;
 const TEST_NAME = `Lead Test ${UNIQUE}`;
 
-test.describe.serial('Lead Lifecycle — Từ Kho Mới đến Payment Verified', () => {
+test.describe.serial('Lead Lifecycle - Từ Kho Mới đến Payment Verified', () => {
 
   // ── Step 1: Manager tạo lead mới ──────────────────────────
   test('1. MANAGER tạo lead mới → xuất hiện trong danh sách', async ({ page }) => {
@@ -108,7 +108,7 @@ test.describe.serial('Lead Lifecycle — Từ Kho Mới đến Payment Verified'
         await claimBtn.click();
         await page.waitForTimeout(1000);
         await screenshotStep(page, '03-confirm-dialog', 'lead-flow');
-        // Click xác nhận trong AlertDialog — tìm button cuối cùng có text "Nhận"
+        // Click xác nhận trong AlertDialog - tìm button cuối cùng có text "Nhận"
         const confirmBtns = page.getByRole('button', { name: /^Nhận$/ });
         const btnCount = await confirmBtns.count();
         if (btnCount > 0) {

@@ -42,7 +42,7 @@ Set up Next.js 16 App Router with shadcn/ui, Tailwind 4, app shell (sidebar + he
 - Date format: DD/MM/YYYY (Vietnamese standard)
 - Number format: 1.000.000 (dot as thousand separator, comma as decimal)
 - Currency: VND (no decimal places for VND display)
-- No barrel imports — import each shadcn/ui component from its own file (e.g. `@/components/ui/button`), never create `components/ui/index.ts`
+- No barrel imports - import each shadcn/ui component from its own file (e.g. `@/components/ui/button`), never create `components/ui/index.ts`
 - Lazy load sonner Toaster component with `next/dynamic` (ssr: false)
 - Use `React.cache()` for shared data fetched by multiple Server Components (e.g. labels, user info)
 
@@ -139,11 +139,11 @@ API call returns 401 → auto-refresh → retry → if fail → redirect /login
 - `apps/web/src/hooks/use-auth.ts`
 - `apps/web/src/providers/auth-provider.tsx`
 - `apps/web/src/middleware.ts`
-- `apps/web/src/app/api/auth/[...action]/route.ts` — proxy for token cookie management
+- `apps/web/src/app/api/auth/[...action]/route.ts` - proxy for token cookie management
 
 ### Modify
-- `apps/web/src/app/layout.tsx` — add providers, fonts, metadata
-- `apps/web/tailwind.config.ts` — theme customization if needed
+- `apps/web/src/app/layout.tsx` - add providers, fonts, metadata
+- `apps/web/tailwind.config.ts` - theme customization if needed
 
 ## Implementation Steps
 

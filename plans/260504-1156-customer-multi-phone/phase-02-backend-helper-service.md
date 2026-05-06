@@ -1,4 +1,4 @@
-# Phase 02 — Backend Helper Service
+# Phase 02 - Backend Helper Service
 
 **Priority:** High
 **Status:** ⬜ Pending
@@ -7,13 +7,13 @@
 
 ## Context
 
-Tạo service `CustomerPhonesService` với các method **bắt buộc** dùng chung ở mọi nơi search/dedup. Mục tiêu: **single source of truth** — không lặp logic `findFirst({ phone })` ở nhiều file.
+Tạo service `CustomerPhonesService` với các method **bắt buộc** dùng chung ở mọi nơi search/dedup. Mục tiêu: **single source of truth** - không lặp logic `findFirst({ phone })` ở nhiều file.
 
 ## Requirements
 
 ### Functional
-- Helper `findCustomerByAnyPhone(phone)` — tìm Customer bằng số chính HOẶC số phụ.
-- Helper `assertPhoneNotExists(phone, excludeCustomerId?)` — check trùng cross-table, throw nếu trùng.
+- Helper `findCustomerByAnyPhone(phone)` - tìm Customer bằng số chính HOẶC số phụ.
+- Helper `assertPhoneNotExists(phone, excludeCustomerId?)` - check trùng cross-table, throw nếu trùng.
 - CRUD số phụ: `add`, `update`, `softDelete`, `list` cho 1 customer.
 - Mọi input phone phải qua `normalizePhone()` trước.
 - Sử dụng transaction khi cần (race condition prevention).
@@ -46,16 +46,16 @@ Tạo service `CustomerPhonesService` với các method **bắt buộc** dùng c
 ## Related Code Files
 
 ### Read for context
-- `apps/api/src/modules/customers/customers.service.ts` — patterns hiện có (normalizePhone, isValidVNPhone, error format)
-- `packages/utils/src/phone-normalizer.ts` — utilities
-- `apps/api/src/modules/customers/customers.module.ts` — module structure
+- `apps/api/src/modules/customers/customers.service.ts` - patterns hiện có (normalizePhone, isValidVNPhone, error format)
+- `packages/utils/src/phone-normalizer.ts` - utilities
+- `apps/api/src/modules/customers/customers.module.ts` - module structure
 
 ### Create
-- `apps/api/src/modules/customers/customer-phones.service.ts` — helper service
-- `apps/api/src/modules/customers/dto/customer-phone.dto.ts` — DTOs
+- `apps/api/src/modules/customers/customer-phones.service.ts` - helper service
+- `apps/api/src/modules/customers/dto/customer-phone.dto.ts` - DTOs
 
 ### Modify
-- `apps/api/src/modules/customers/customers.module.ts` — register `CustomerPhonesService` provider, export
+- `apps/api/src/modules/customers/customers.module.ts` - register `CustomerPhonesService` provider, export
 
 ## Implementation Steps
 
@@ -226,5 +226,5 @@ Phải pass không lỗi type.
 
 ## Next Steps
 
-- Phase 03 — sửa các service hiện có để DÙNG helper này (thay thế logic dedup cũ).
-- Phase 04 — expose API endpoints cho FE.
+- Phase 03 - sửa các service hiện có để DÙNG helper này (thay thế logic dedup cũ).
+- Phase 04 - expose API endpoints cho FE.

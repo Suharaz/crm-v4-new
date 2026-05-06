@@ -36,7 +36,7 @@ if [ ! -f "$ENV_FILE" ]; then
     exit 1
   fi
 
-  echo ">>> .env.production not found — generating from example..."
+  echo ">>> .env.production not found - generating from example..."
   cp "$ENV_EXAMPLE" "$ENV_FILE"
 
   # Generate secure random values
@@ -94,7 +94,7 @@ echo ">>> [4/6] Building..."
 pnpm db:generate
 # Clear stale build artifacts AND Turborepo cache to prevent HTML/chunk hash mismatch.
 # Turborepo cache HIT can serve old prerendered HTML referencing chunks
-# that were regenerated with new hashes — causing 404 on chunk fetch.
+# that were regenerated with new hashes - causing 404 on chunk fetch.
 rm -rf apps/web/.next apps/api/dist .turbo node_modules/.cache/turbo
 pnpm build --force
 
@@ -145,7 +145,7 @@ HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:$API_PORT/a
 if [ "$HTTP_CODE" = "200" ]; then
   echo "✓ API healthy (HTTP $HTTP_CODE)"
 else
-  echo "✗ API unhealthy (HTTP $HTTP_CODE) — check: pm2 logs crm-api --err --lines 50"
+  echo "✗ API unhealthy (HTTP $HTTP_CODE) - check: pm2 logs crm-api --err --lines 50"
 fi
 
 echo ""

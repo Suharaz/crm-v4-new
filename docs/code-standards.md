@@ -142,12 +142,12 @@ apps/web/src/
 
 **Ba pattern được dùng trong project (chọn 1):**
 
-**Pattern A — Partial unique trong raw-indexes.sql (preferred)**
+**Pattern A - Partial unique trong raw-indexes.sql (preferred)**
 
 Phù hợp khi trường unique có back-relation one-to-one hoặc đơn thuần là unique business-level.
 
 ```prisma
-// schema.prisma — BỎ @unique
+// schema.prisma - BỎ @unique
 model Team {
   leaderId  BigInt    @map("leader_id")  // không @unique
   deletedAt DateTime? @map("deleted_at")
@@ -160,9 +160,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_leader_active
   ON teams(leader_id) WHERE deleted_at IS NULL;
 ```
 
-**Lưu ý Prisma relation one-to-one:** Nếu bỏ `@unique` mà field có back-relation `Xxx?`, Prisma sẽ fail validation (P1012). Đổi back-relation thành `Xxx[]` (many) — business rule đơn lẻ vẫn enforce ở partial unique + service logic.
+**Lưu ý Prisma relation one-to-one:** Nếu bỏ `@unique` mà field có back-relation `Xxx?`, Prisma sẽ fail validation (P1012). Đổi back-relation thành `Xxx[]` (many) - business rule đơn lẻ vẫn enforce ở partial unique + service logic.
 
-**Pattern B — Composite `@@unique([field, deletedAt])`**
+**Pattern B - Composite `@@unique([field, deletedAt])`**
 
 Phù hợp khi không muốn đụng raw SQL và chấp nhận constraint chặt hơn một chút.
 
@@ -176,7 +176,7 @@ model User {
 
 Rủi ro: 2 row soft-delete trong cùng millisecond sẽ conflict (rare but possible).
 
-**Pattern C — Dùng `isActive` flag, không soft-delete**
+**Pattern C - Dùng `isActive` flag, không soft-delete**
 
 Phù hợp với lookup tables (LeadSource, PaymentType, BankAccount, Label...). Không có `deletedAt` → không có ghost-row → tạo mới cùng tên vẫn OK.
 
@@ -199,7 +199,7 @@ model LeadSource {
 // SAFE
 prisma.$queryRaw`SELECT * FROM leads WHERE name ILIKE ${'%' + search + '%'}`
 
-// VULNERABLE — NEVER DO THIS
+// VULNERABLE - NEVER DO THIS
 prisma.$queryRaw(`SELECT * FROM leads WHERE name ILIKE '%${search}%'`)
 ```
 

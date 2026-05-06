@@ -24,7 +24,7 @@ interface FilterBarProps {
   labels: { id: string; name: string; color: string }[];
 }
 
-/** Advanced filter bar for leads list — URL-based state (shareable). */
+/** Advanced filter bar for leads list - URL-based state (shareable). */
 const STORAGE_KEY = 'crm_lead_filters';
 
 export function LeadListAdvancedFilterBar({ sources, products, users, departments, labels }: FilterBarProps) {

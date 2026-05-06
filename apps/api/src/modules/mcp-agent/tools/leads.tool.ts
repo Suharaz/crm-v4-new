@@ -64,7 +64,7 @@ export function registerLeadsTools(
       title: 'Search Leads',
       description:
         'Search CRM leads with filters. Returns summary list with pagination. ' +
-        'Always use filters to narrow results — never fetch all.',
+        'Always use filters to narrow results - never fetch all.',
       inputSchema: searchLeadsSchema,
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
     },

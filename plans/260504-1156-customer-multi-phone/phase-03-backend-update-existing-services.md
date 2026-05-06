@@ -1,4 +1,4 @@
-# Phase 03 — Update Existing Services
+# Phase 03 - Update Existing Services
 
 **Priority:** Critical (đụng nhiều file, rủi ro cao)
 **Status:** ⬜ Pending
@@ -7,16 +7,16 @@
 
 ## Context
 
-Phase này là **rủi ro nhất** — đụng vào logic dedup/search hiện có ở 4-5 module. Mục tiêu: thay tất cả pattern `prisma.customer.findFirst({ where: { phone } })` bằng helper từ phase 02.
+Phase này là **rủi ro nhất** - đụng vào logic dedup/search hiện có ở 4-5 module. Mục tiêu: thay tất cả pattern `prisma.customer.findFirst({ where: { phone } })` bằng helper từ phase 02.
 
 ## Requirements
 
 ### Functional
-- `customers.service.ts` — `searchByPhone`, `create`, `update` đều phải check + match cả số phụ.
-- `search.service.ts` — global search phải JOIN `customer_phones` để match.
-- `import.processor.ts` — `processLeadRow`, `processCustomerRow` phải findOrCreate dùng helper.
-- `third-party-api.controller.ts` — findOrCreate customer dùng helper.
-- `call-logs.service.ts` — lookup customer theo phone từ tổng đài → match cả số phụ (NẾU có).
+- `customers.service.ts` - `searchByPhone`, `create`, `update` đều phải check + match cả số phụ.
+- `search.service.ts` - global search phải JOIN `customer_phones` để match.
+- `import.processor.ts` - `processLeadRow`, `processCustomerRow` phải findOrCreate dùng helper.
+- `third-party-api.controller.ts` - findOrCreate customer dùng helper.
+- `call-logs.service.ts` - lookup customer theo phone từ tổng đài → match cả số phụ (NẾU có).
 
 ### Non-functional
 - KHÔNG break behavior cũ (số chính vẫn match).
@@ -38,12 +38,12 @@ findCustomerByAnyPhone(phone)
 ## Related Code Files
 
 ### Read for context (line numbers từ scout)
-- `apps/api/src/modules/customers/customers.service.ts:91-137` — `searchByPhone`, `create`
-- `apps/api/src/modules/customers/customers.service.ts:168-210` — `update` (phone field permission line 170)
-- `apps/api/src/modules/search/search.service.ts:25-65` — global search
-- `apps/api/src/modules/import/import.processor.ts:198-220, 333-360` — CSV import lead/customer
-- `apps/api/src/modules/third-party-api/third-party-api.controller.ts:14-67` — POST /third-party/leads
-- `apps/api/src/modules/call-logs/call-logs.service.ts` — lookup phone (cần đọc kỹ)
+- `apps/api/src/modules/customers/customers.service.ts:91-137` - `searchByPhone`, `create`
+- `apps/api/src/modules/customers/customers.service.ts:168-210` - `update` (phone field permission line 170)
+- `apps/api/src/modules/search/search.service.ts:25-65` - global search
+- `apps/api/src/modules/import/import.processor.ts:198-220, 333-360` - CSV import lead/customer
+- `apps/api/src/modules/third-party-api/third-party-api.controller.ts:14-67` - POST /third-party/leads
+- `apps/api/src/modules/call-logs/call-logs.service.ts` - lookup phone (cần đọc kỹ)
 
 ### Modify
 - `apps/api/src/modules/customers/customers.service.ts`
@@ -51,7 +51,7 @@ findCustomerByAnyPhone(phone)
 - `apps/api/src/modules/import/import.processor.ts`
 - `apps/api/src/modules/third-party-api/third-party-api.controller.ts`
 - `apps/api/src/modules/call-logs/call-logs.service.ts` (nếu có lookup phone)
-- Module nào cần — import `CustomerPhonesService`.
+- Module nào cần - import `CustomerPhonesService`.
 
 ## Implementation Steps
 
@@ -97,7 +97,7 @@ async searchByPhone(phone: string) {
 }
 ```
 
-> Theo QĐ 3A: silent return — không phân biệt match số chính/phụ.
+> Theo QĐ 3A: silent return - không phân biệt match số chính/phụ.
 
 #### `create` (line 135)
 
@@ -132,7 +132,7 @@ const customerWhere = {
 };
 ```
 
-> Prisma cho phép filter qua relation `phones: { some: ... }` — chuẩn, không cần raw SQL.
+> Prisma cho phép filter qua relation `phones: { some: ... }` - chuẩn, không cần raw SQL.
 
 ### Step 3: `import.processor.ts`
 
@@ -168,7 +168,7 @@ try {
 }
 ```
 
-> **Cache implication:** Cache hiện chỉ key bằng số chính. Sau khi customer được tìm qua số phụ, cache lưu `customerId` — vẫn đúng. Nhưng nếu cùng 1 customer có 2 số phụ A, B trong CSV → cache miss lần thứ 2 nếu key là phone string. Chấp nhận N+1 nhỏ trong import (rare case), không tối ưu.
+> **Cache implication:** Cache hiện chỉ key bằng số chính. Sau khi customer được tìm qua số phụ, cache lưu `customerId` - vẫn đúng. Nhưng nếu cùng 1 customer có 2 số phụ A, B trong CSV → cache miss lần thứ 2 nếu key là phone string. Chấp nhận N+1 nhỏ trong import (rare case), không tối ưu.
 
 ### Step 4: `third-party-api.controller.ts` (line 14-67)
 
@@ -183,7 +183,7 @@ if (!customer) {
 }
 ```
 
-> Cần inject `CustomerPhonesService` — controller phải import từ `customers.module` (đã export ở phase 02).
+> Cần inject `CustomerPhonesService` - controller phải import từ `customers.module` (đã export ở phase 02).
 
 ### Step 5: `call-logs.service.ts`
 
@@ -212,7 +212,7 @@ Manual smoke test (5 case nhanh):
 - [ ] Update `import.processor.ts:processLeadRow` (`findCustomerByAnyPhone`)
 - [ ] Update `import.processor.ts:processCustomerRow` (`assertPhoneNotExists`)
 - [ ] Update `third-party-api.controller.ts` (`findCustomerByAnyPhone`)
-- [ ] Check `call-logs.service.ts` — update nếu có lookup phone
+- [ ] Check `call-logs.service.ts` - update nếu có lookup phone
 - [ ] Inject `CustomerPhonesService` ở các module sử dụng (import module/service)
 - [ ] Build pass
 - [ ] Smoke test 5 case manual
@@ -234,9 +234,9 @@ Manual smoke test (5 case nhanh):
 
 ## Security
 
-- Không thay đổi access filter — vẫn dùng `buildAccessFilter(user)` ở các service hiện có.
+- Không thay đổi access filter - vẫn dùng `buildAccessFilter(user)` ở các service hiện có.
 - `searchByPhone` được dùng cho call-log lookup → nên có rate limit như cũ (nếu đã có).
 
 ## Next Steps
 
-- Phase 04 — expose CRUD số phụ qua API.
+- Phase 04 - expose CRUD số phụ qua API.

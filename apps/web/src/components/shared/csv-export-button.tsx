@@ -10,7 +10,7 @@ interface CsvExportButtonProps {
   label?: string;
 }
 
-/** Reusable CSV export button — opens export endpoint in new tab to trigger file download. */
+/** Reusable CSV export button - opens export endpoint in new tab to trigger file download. */
 export function CsvExportButton({ exportPath, label = 'Xuất CSV' }: CsvExportButtonProps) {
   return (
     <Button

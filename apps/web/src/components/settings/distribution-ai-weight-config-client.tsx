@@ -202,9 +202,9 @@ export function DistributionAiWeightConfigClient({ departments }: Props) {
                       <tr key={s.userId} className="border-b border-slate-100 hover:bg-slate-50 last:border-0">
                         <td className="px-4 py-2 font-medium text-slate-800">{s.name}</td>
                         <td className="px-4 py-2 text-right font-semibold text-sky-600">{s.score.toFixed(1)}</td>
-                        <td className="px-4 py-2 text-right text-slate-600">{s.details?.workload?.toFixed(1) ?? '—'}</td>
-                        <td className="px-4 py-2 text-right text-slate-600">{s.details?.level?.toFixed(1) ?? '—'}</td>
-                        <td className="px-4 py-2 text-right text-slate-600">{s.details?.conversion?.toFixed(1) ?? '—'}</td>
+                        <td className="px-4 py-2 text-right text-slate-600">{s.details?.workload?.toFixed(1) ?? '-'}</td>
+                        <td className="px-4 py-2 text-right text-slate-600">{s.details?.level?.toFixed(1) ?? '-'}</td>
+                        <td className="px-4 py-2 text-right text-slate-600">{s.details?.conversion?.toFixed(1) ?? '-'}</td>
                       </tr>
                     ))}
                   </tbody>

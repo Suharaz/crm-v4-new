@@ -1,7 +1,7 @@
 import { serverFetch } from '@/lib/auth';
 import { CsvImportPageClient } from '@/components/import/csv-import-upload-with-job-status';
 
-/** CSV import page — upload leads/customers CSV files and track job status. */
+/** CSV import page - upload leads/customers CSV files and track job status. */
 export default async function ImportPage() {
   let history: Record<string, unknown>[] = [];
   try {

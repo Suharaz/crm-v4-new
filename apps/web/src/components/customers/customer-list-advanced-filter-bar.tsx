@@ -20,7 +20,7 @@ interface FilterBarProps {
 
 const STORAGE_KEY = 'crm_customer_filters';
 
-/** Advanced filter bar for customers list — URL-based state (shareable). */
+/** Advanced filter bar for customers list - URL-based state (shareable). */
 export function CustomerListAdvancedFilterBar({ departments, users, labels }: FilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();

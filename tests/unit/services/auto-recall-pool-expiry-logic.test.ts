@@ -82,7 +82,7 @@ function daysAgo(days: number): Date {
 
 // ─── Lead recall eligibility ─────────────────────────────────────────────────
 
-describe('Lead — điều kiện đủ để recall', () => {
+describe('Lead - điều kiện đủ để recall', () => {
   const config: RecallConfig = { maxDaysInPool: 7, autoLabelIds: [] };
 
   it('lead ở kho phòng ban quá 7 ngày → đủ điều kiện recall', () => {
@@ -165,7 +165,7 @@ describe('Lead — điều kiện đủ để recall', () => {
 
 // ─── Customer recall eligibility ──────────────────────────────────────────────
 
-describe('Customer — điều kiện đủ để recall', () => {
+describe('Customer - điều kiện đủ để recall', () => {
   const config: RecallConfig = { maxDaysInPool: 14, autoLabelIds: [] };
 
   it('customer ở kho phòng ban quá 14 ngày → đủ điều kiện recall', () => {
@@ -224,9 +224,9 @@ describe('Customer — điều kiện đủ để recall', () => {
   });
 });
 
-// ─── filterEligibleLeads — batch filtering ────────────────────────────────────
+// ─── filterEligibleLeads - batch filtering ────────────────────────────────────
 
-describe('filterEligibleLeads — lọc hàng loạt', () => {
+describe('filterEligibleLeads - lọc hàng loạt', () => {
   const config: RecallConfig = { maxDaysInPool: 7, autoLabelIds: [BigInt(1)] };
 
   it('trả về chỉ leads đủ điều kiện trong danh sách hỗn hợp', () => {
@@ -253,9 +253,9 @@ describe('filterEligibleLeads — lọc hàng loạt', () => {
   });
 });
 
-// ─── autoLabelIds — gắn nhãn sau khi recall ──────────────────────────────────
+// ─── autoLabelIds - gắn nhãn sau khi recall ──────────────────────────────────
 
-describe('autoLabelIds — cấu hình nhãn tự động', () => {
+describe('autoLabelIds - cấu hình nhãn tự động', () => {
   it('config với autoLabelIds rỗng → không cần gắn nhãn', () => {
     const config: RecallConfig = { maxDaysInPool: 7, autoLabelIds: [] };
     expect(config.autoLabelIds).toHaveLength(0);
@@ -279,7 +279,7 @@ describe('autoLabelIds — cấu hình nhãn tự động', () => {
 
 // ─── getCutoffDate ────────────────────────────────────────────────────────────
 
-describe('getCutoffDate — tính ngày cắt', () => {
+describe('getCutoffDate - tính ngày cắt', () => {
   it('maxDaysInPool=7 → cutoff là 7 ngày trước', () => {
     const now = new Date('2026-03-28T12:00:00Z');
     const cutoff = getCutoffDate(7, now);
@@ -293,7 +293,7 @@ describe('getCutoffDate — tính ngày cắt', () => {
   });
 });
 
-// ─── Label-based recall — thu hồi theo nhãn ─────────────────────────────────
+// ─── Label-based recall - thu hồi theo nhãn ─────────────────────────────────
 
 interface LeadWithLabels {
   id: bigint;
@@ -310,7 +310,7 @@ interface LabelRecallConfig {
   isActive: boolean;
 }
 
-/** Cutoff for minute-grained label recall — mirrors prod cron formula. */
+/** Cutoff for minute-grained label recall - mirrors prod cron formula. */
 function getCutoffDateMinutes(minutes: number, now = new Date()): Date {
   return new Date(now.getTime() - minutes * 60_000);
 }
@@ -343,7 +343,7 @@ function resetRecallStartAt(lead: LeadWithLabels, now = new Date()): LeadWithLab
   };
 }
 
-describe('Label-based recall — thu hồi theo nhãn', () => {
+describe('Label-based recall - thu hồi theo nhãn', () => {
   const HOT_LABEL = BigInt(100);
   const config: LabelRecallConfig = { labelId: HOT_LABEL, recallMinutes: 7 * 1440, isActive: true };
   const now = new Date('2026-05-04T12:00:00Z');
@@ -427,7 +427,7 @@ describe('Label-based recall — thu hồi theo nhãn', () => {
 
 // ─── recallStartAt reset ─────────────────────────────────────────────────────
 
-describe('recallStartAt reset — khi chuyển dept/assign', () => {
+describe('recallStartAt reset - khi chuyển dept/assign', () => {
   const HOT_LABEL = BigInt(100);
 
   it('transfer DEPARTMENT → recallStartAt reset về now', () => {

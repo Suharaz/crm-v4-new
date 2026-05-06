@@ -1,7 +1,7 @@
-# Phase 03 — Test, Docs, Ship
+# Phase 03 - Test, Docs, Ship
 
 **Priority:** P2 (depends on 01, 02)
-**Status:** ✅ Done (2026-04-22) — Note: manual UI tests deferred to user; fixtures available in `tests/fixtures/bank-csv/`
+**Status:** ✅ Done (2026-04-22) - Note: manual UI tests deferred to user; fixtures available in `tests/fixtures/bank-csv/`
 **Effort:** 1h
 
 ## Context
@@ -13,11 +13,11 @@ Verify end-to-end, update docs, commit + push theo rule "1 feature = 1 commit".
 ## Requirements
 
 - Test E2E với 1 file CSV mock (5-10 row, mix valid/invalid/duplicate)
-- Update `docs/api-reference.md` — thêm 2 endpoint mới
-- Update `docs/project-changelog.md` — entry 2026-04-22
-- Update `docs/project-roadmap.md` — phase 24 entry
-- Update `docs/business-flows.md` (nếu có) — thay flow webhook bằng CSV import
-- Commit `feat: bank transaction CSV import — 7-col template, dedup, auto-match`
+- Update `docs/api-reference.md` - thêm 2 endpoint mới
+- Update `docs/project-changelog.md` - entry 2026-04-22
+- Update `docs/project-roadmap.md` - phase 24 entry
+- Update `docs/business-flows.md` (nếu có) - thay flow webhook bằng CSV import
+- Commit `feat: bank transaction CSV import - 7-col template, dedup, auto-match`
 - Push lên remote
 
 ## Test Cases (Manual)
@@ -44,7 +44,7 @@ Verify end-to-end, update docs, commit + push theo rule "1 feature = 1 commit".
 4. Manual test full 10 cases qua UI (dev server)
 3. Sửa nếu phát hiện bug
 4. Update 4 doc files
-5. Commit: `feat: bank transaction CSV import — 7-col template, dedup, auto-match`
+5. Commit: `feat: bank transaction CSV import - 7-col template, dedup, auto-match`
 6. Push
 
 ## Todo List
@@ -80,8 +80,8 @@ Verify end-to-end, update docs, commit + push theo rule "1 feature = 1 commit".
 ## Memory Update
 
 Sau khi ship xong, update memory:
-- `feedback_simplification.md` — User chỉnh "đừng overthink schema migration nếu service layer fallback đủ" (rule áp dụng cho future)
-- `project_state.md` — ghi nhận tính năng mới phase 24
+- `feedback_simplification.md` - User chỉnh "đừng overthink schema migration nếu service layer fallback đủ" (rule áp dụng cho future)
+- `project_state.md` - ghi nhận tính năng mới phase 24
 
 ## Done Definition
 

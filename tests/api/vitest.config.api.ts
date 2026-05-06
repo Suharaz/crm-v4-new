@@ -5,7 +5,7 @@ export default defineConfig({
     environment: 'node',
     testTimeout: 30000,
     hookTimeout: 30000,
-    // Sequential — shared DB state, cannot run in parallel
+    // Sequential - shared DB state, cannot run in parallel
     sequence: { concurrent: false },
     include: ['tests/api/**/*.test.ts'],
     reporters: ['verbose'],

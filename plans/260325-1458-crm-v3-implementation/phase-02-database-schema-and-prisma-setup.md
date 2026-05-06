@@ -54,9 +54,9 @@ ActivityType: NOTE | CALL | STATUS_CHANGE | ASSIGNMENT | LABEL_CHANGE | SYSTEM
 ```
 
 ### Lookup Tables (CRUD by super_admin)
-- `lead_sources` — dynamic, new sources added frequently
-- `payment_types` — dynamic, new payment methods possible
-- `labels` — dynamic, user-created tags
+- `lead_sources` - dynamic, new sources added frequently
+- `payment_types` - dynamic, new payment methods possible
+- `labels` - dynamic, user-created tags
 
 ### Key Index Strategy (43 total indexes)
 
@@ -78,13 +78,13 @@ ActivityType: NOTE | CALL | STATUS_CHANGE | ASSIGNMENT | LABEL_CHANGE | SYSTEM
 ## Related Code Files
 
 ### Modify
-- `packages/database/prisma/schema.prisma` — full schema
+- `packages/database/prisma/schema.prisma` - full schema
 
 ### Create
-- `packages/database/prisma/seed.ts` — seed script
-- `packages/database/prisma/migrations/` — auto-generated
-- `packages/database/src/index.ts` — PrismaClient singleton export
-- `packages/database/src/prisma.extension.ts` — soft delete middleware/extension
+- `packages/database/prisma/seed.ts` - seed script
+- `packages/database/prisma/migrations/` - auto-generated
+- `packages/database/src/index.ts` - PrismaClient singleton export
+- `packages/database/src/prisma.extension.ts` - soft delete middleware/extension
 
 ## Implementation Steps
 
@@ -165,8 +165,8 @@ ActivityType: NOTE | CALL | STATUS_CHANGE | ASSIGNMENT | LABEL_CHANGE | SYSTEM
 
 4. **Create Product/Order/Payment models**
    - Product: name, price (Decimal), description, status enum, categoryId (BigInt? FK → product_categories), vatRate (Decimal(5,2) @default(0) @map("vat_rate"))
-   - Order: lead_id, customer_id, product_id, amount (Decimal), status enum, notes, created_by, vatRate (Decimal(5,2) NOT NULL @map("vat_rate") — snapshot from product at creation time), vatAmount (Decimal(10,2) NOT NULL @map("vat_amount") — = amount * vatRate / 100), totalAmount (Decimal(10,2) NOT NULL @map("total_amount") — = amount + vatAmount)
-   - Payment: order_id, payment_type_id, amount (Decimal), status enum, status_verify (Boolean), verified_by, verified_at, transfer_content (String? — nội dung CK sale nhập), matched_bank_transaction_id (BigInt? FK → bank_transactions), verified_source (enum: AUTO | MANUAL — ai/cái gì verify)
+   - Order: lead_id, customer_id, product_id, amount (Decimal), status enum, notes, created_by, vatRate (Decimal(5,2) NOT NULL @map("vat_rate") - snapshot from product at creation time), vatAmount (Decimal(10,2) NOT NULL @map("vat_amount") - = amount * vatRate / 100), totalAmount (Decimal(10,2) NOT NULL @map("total_amount") - = amount + vatAmount)
+   - Payment: order_id, payment_type_id, amount (Decimal), status enum, status_verify (Boolean), verified_by, verified_at, transfer_content (String? - nội dung CK sale nhập), matched_bank_transaction_id (BigInt? FK → bank_transactions), verified_source (enum: AUTO | MANUAL - ai/cái gì verify)
    - PaymentType lookup table: name, description, is_active
    - Seed PaymentTypes: CK lần 1, CK lần 2, CK lần 3, CK lần 4, CK full, COD, Tiền mặt
 
@@ -250,7 +250,7 @@ ActivityType: NOTE | CALL | STATUS_CHANGE | ASSIGNMENT | LABEL_CHANGE | SYSTEM
     ```
     - Manager chọn danh sách người CỤ THỂ khi tạo template
     - Round-robin: chia vòng lặp cho đến hết lead (7 leads / 5 người → 2+2+1+1+1)
-    - Không bắt buộc chia hết — vòng lặp tự xử lý số dư
+    - Không bắt buộc chia hết - vòng lặp tự xử lý số dư
 
 9ac. **Create Task model** (todo/reminder cho sales)
     ```prisma
@@ -480,9 +480,9 @@ ActivityType: NOTE | CALL | STATUS_CHANGE | ASSIGNMENT | LABEL_CHANGE | SYSTEM
     - 5 sample customers with orders
 
 13. **Run migration and verify**
-    - `pnpm db:generate` — generate Prisma client
-    - `pnpm db:push` or `pnpm db:migrate dev` — apply schema
-    - `pnpm db:seed` — populate dev data
+    - `pnpm db:generate` - generate Prisma client
+    - `pnpm db:push` or `pnpm db:migrate dev` - apply schema
+    - `pnpm db:seed` - populate dev data
     - Verify via `psql` or Prisma Studio
 
 ## Todo List

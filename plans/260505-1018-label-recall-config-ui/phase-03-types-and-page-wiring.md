@@ -1,10 +1,10 @@
-# Phase 03 — Types + page wiring
+# Phase 03 - Types + page wiring
 
 ## Files
 
 - `apps/web/src/types/entities.ts` (modify)
-- `apps/web/src/app/(dashboard)/settings/page.tsx` (modify — thêm fetch `/recall-configs/labels`)
-- `apps/web/src/components/settings/settings-page-client.tsx` (modify — prop `labelRecallConfigs` + truyền canEditRecall)
+- `apps/web/src/app/(dashboard)/settings/page.tsx` (modify - thêm fetch `/recall-configs/labels`)
+- `apps/web/src/components/settings/settings-page-client.tsx` (modify - prop `labelRecallConfigs` + truyền canEditRecall)
 
 ## Types thêm
 
@@ -31,7 +31,7 @@ export interface LabelRecallConfigItem {
 ```ts
 const labelRecallConfigs = await serverFetch<{ data: LabelRecallConfigItem[] }>(
   '/recall-configs/labels'
-).then(r => r.data).catch(() => []);  // catch — non-admin user 403
+).then(r => r.data).catch(() => []);  // catch - non-admin user 403
 ```
 
 ## Settings page client

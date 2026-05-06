@@ -1,4 +1,4 @@
-# Phase 02 — Backend Service + Cron
+# Phase 02 - Backend Service + Cron
 
 **Priority:** P0 | **Status:** ✅ Completed | **Effort:** 3h | **Depends on:** P1
 
@@ -105,7 +105,7 @@ async create(dto: CreateTaskDto, userId: bigint) {
 }
 ```
 
-### `update()` — strategy: delete all + recreate nếu `reminders` có trong payload
+### `update()` - strategy: delete all + recreate nếu `reminders` có trong payload
 ```ts
 async update(id: bigint, dto: UpdateTaskDto, userId: bigint) {
   const existing = await this.prisma.task.findUnique({ where: { id } });
@@ -185,7 +185,7 @@ async processReminders() {
 }
 ```
 
-### Escalation logic — giữ nguyên (vẫn dựa vào `dueDate` + `escalation1At/2At` trên Task).
+### Escalation logic - giữ nguyên (vẫn dựa vào `dueDate` + `escalation1At/2At` trên Task).
 
 ## Implementation Steps
 1. Update DTOs với `TaskReminderDto` + `reminders` array (max 5)
@@ -211,10 +211,10 @@ async processReminders() {
 - PATCH /tasks/:id thay `reminders` → delete cũ, create mới
 - Cron gửi notification đúng type `TASK_REMIND` + đúng referenceType/Id
 - Reminders đã gửi rồi (`remindedAt IS NOT NULL`) không gửi lại
-- Max 5 reminders — validation reject 422 nếu > 5
+- Max 5 reminders - validation reject 422 nếu > 5
 
 ## Risks
-- Transaction rollback khi prisma lỗi — đã dùng `$transaction`
+- Transaction rollback khi prisma lỗi - đã dùng `$transaction`
 - Cron race condition nếu 2 instance chạy đồng thời → hiện tại chỉ 1 instance, OK
 
 ## Security

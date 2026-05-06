@@ -32,7 +32,7 @@ export function registerAnalyticsTools(
       title: 'Revenue Trend',
       description:
         'Daily revenue breakdown for a date range. ' +
-        'Shows verified payment totals per day — use for line/bar charts.',
+        'Shows verified payment totals per day - use for line/bar charts.',
       inputSchema: dateRangeSchema,
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
     },
@@ -275,7 +275,7 @@ export function registerAnalyticsTools(
     },
   );
 
-  // ── 9. Ads Effectiveness — Dedup + Source×Product Matrix ─────
+  // ── 9. Ads Effectiveness - Dedup + Source×Product Matrix ─────
   server.registerTool(
     'analyze_ads_effectiveness',
     {
@@ -423,7 +423,7 @@ export function registerAnalyticsTools(
             uniquePhones,
             dedupRatio: `${dedupRatio}%`,
             duplicateLeads: totalLeads - uniquePhones,
-            verdict: dedupRatio >= 90 ? 'Tốt — ít trùng' : dedupRatio >= 70 ? 'Trung bình — có trùng' : 'Kém — nhiều lead trùng SĐT',
+            verdict: dedupRatio >= 90 ? 'Tốt - ít trùng' : dedupRatio >= 70 ? 'Trung bình - có trùng' : 'Kém - nhiều lead trùng SĐT',
           },
           trueDuplicates: {
             count: dupeRows.length,

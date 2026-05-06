@@ -82,7 +82,7 @@ export class LeadsService {
       ];
     }
 
-    // ── Cursor-based (backward compat — kanban, infinite scroll) ────────────
+    // ── Cursor-based (backward compat - kanban, infinite scroll) ────────────
     if (query.cursor) {
       const leads = await this.prisma.lead.findMany({
         where, select: LEAD_SELECT,
@@ -291,7 +291,7 @@ export class LeadsService {
     const phone = normalizePhone(dto.phone);
     if (!isValidVNPhone(phone)) throw new BadRequestException('Số điện thoại không hợp lệ');
 
-    // Find or create customer — match cả số chính lẫn số phụ.
+    // Find or create customer - match cả số chính lẫn số phụ.
     // Helper trả về Customer minimal; nếu found → re-fetch kèm labels để merge xuống lead.
     const matched = await this.customerPhonesService.findCustomerByAnyPhone(phone);
     let customer = matched
@@ -349,7 +349,7 @@ export class LeadsService {
     if (isDuplicate) {
       (result as any)._warning = {
         type: 'DUPLICATE_PHONE',
-        message: `SĐT ${phone} đã tồn tại — ${customer.name || 'khách hàng'}`,
+        message: `SĐT ${phone} đã tồn tại - ${customer.name || 'khách hàng'}`,
         existingCustomerId: customer.id.toString(),
         existingName: customer.name,
       };

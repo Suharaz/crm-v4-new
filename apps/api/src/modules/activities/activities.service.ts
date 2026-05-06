@@ -53,7 +53,7 @@ export class ActivitiesService {
     await this.validateEntityExists(entityType, entityId);
     const take = limit + 1;
 
-    // Build where clause — for customers, include activities from all related leads
+    // Build where clause - for customers, include activities from all related leads
     let where: Prisma.ActivityWhereInput;
     if (entityType === 'CUSTOMER') {
       const leads = await this.prisma.lead.findMany({
@@ -99,7 +99,7 @@ export class ActivitiesService {
   async getStatsByDepartment(entityType: EntityType, entityId: bigint): Promise<{ data: DeptStatGroup[] }> {
     await this.validateEntityExists(entityType, entityId);
 
-    // Build where — same entity expansion as getTimeline for CUSTOMER
+    // Build where - same entity expansion as getTimeline for CUSTOMER
     let where: Prisma.ActivityWhereInput;
     if (entityType === 'CUSTOMER') {
       const leads = await this.prisma.lead.findMany({
@@ -141,7 +141,7 @@ export class ActivitiesService {
       groupMap.get(key)!.items.push(act);
     }
 
-    // Shape output — limit 20 activities per dept, sort by count desc
+    // Shape output - limit 20 activities per dept, sort by count desc
     const data: DeptStatGroup[] = Array.from(groupMap.values())
       .map(g => ({
         departmentId: g.departmentId,

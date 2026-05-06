@@ -120,7 +120,7 @@ function OrderRow({
         </td>
         <td className="px-4 py-3 font-medium text-sky-600">#{o.id}</td>
         <td className="px-4 py-3 text-slate-600">{o.customer?.name}</td>
-        <td className="hidden md:table-cell px-4 py-3 text-slate-600">{o.product?.name || '—'}</td>
+        <td className="hidden md:table-cell px-4 py-3 text-slate-600">{o.product?.name || '-'}</td>
         <td className="px-4 py-3 text-right font-medium text-slate-900">{formatVND(Number(o.totalAmount))}</td>
         <td className="px-4 py-3"><StatusBadge status={o.status} /></td>
         <td className="hidden lg:table-cell px-4 py-3 text-slate-400">{formatDate(o.createdAt)}</td>
@@ -143,8 +143,8 @@ function OrderExpandedDetail({ order: o }: { order: OrderRecord }) {
       <div className="space-y-2">
         <h4 className="font-semibold text-slate-700">Chi tiết đơn hàng</h4>
         <div className="grid grid-cols-2 gap-1 text-slate-600">
-          <span>Khách hàng:</span><span className="font-medium">{o.customer?.name} — {o.customer?.phone}</span>
-          <span>Sản phẩm:</span><span>{o.product?.name || '—'}</span>
+          <span>Khách hàng:</span><span className="font-medium">{o.customer?.name} - {o.customer?.phone}</span>
+          <span>Sản phẩm:</span><span>{o.product?.name || '-'}</span>
           <span>Giá:</span><span>{formatVND(Number(o.amount))}</span>
           {Number(o.vatRate) > 0 && <><span>VAT ({o.vatRate}%):</span><span>{formatVND(Number(o.vatAmount))}</span></>}
           <span>Tổng:</span><span className="font-bold text-sky-600">{formatVND(Number(o.totalAmount))}</span>
@@ -155,7 +155,7 @@ function OrderExpandedDetail({ order: o }: { order: OrderRecord }) {
             </>
           )}
           {o.vatEmail && <><span>Mail VAT:</span><span>{o.vatEmail}</span></>}
-          <span>Người tạo:</span><span>{o.creator?.name || '—'}</span>
+          <span>Người tạo:</span><span>{o.creator?.name || '-'}</span>
           {o.notes && <><span>Ghi chú:</span><span>{o.notes}</span></>}
         </div>
       </div>

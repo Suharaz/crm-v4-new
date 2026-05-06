@@ -88,7 +88,7 @@ export default function NoteDialog({ open, onOpenChange, entityType, entityId, o
     setSubmitting(true);
     const activityUrl = `/${entityType === 'lead' ? 'leads' : 'customers'}/${entityId}/activities`;
 
-    // Step 1 — note. If this fails, bail.
+    // Step 1 - note. If this fails, bail.
     try {
       await api.post(activityUrl, { type: 'NOTE', content: noteText.trim() });
     } catch (e: unknown) {
@@ -98,7 +98,7 @@ export default function NoteDialog({ open, onOpenChange, entityType, entityId, o
       return;
     }
 
-    // Step 2 — task (optional). Note already persisted; surface partial-success explicitly.
+    // Step 2 - task (optional). Note already persisted; surface partial-success explicitly.
     if (createTask && user) {
       try {
         await api.post('/tasks', {
@@ -119,7 +119,7 @@ export default function NoteDialog({ open, onOpenChange, entityType, entityId, o
         toast.warning(
           `Đã thêm ghi chú nhưng tạo công việc lỗi: ${err?.response?.data?.message ?? 'Lỗi không xác định'}. Bạn có thể tạo lại công việc riêng.`,
         );
-        // Still consider the flow "done" so the dialog closes — user knows status
+        // Still consider the flow "done" so the dialog closes - user knows status
       }
     } else {
       toast.success('Đã thêm ghi chú');

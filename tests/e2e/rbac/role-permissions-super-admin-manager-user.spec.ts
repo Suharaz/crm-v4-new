@@ -8,9 +8,9 @@ import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
  */
 
 // ═══════════════════════════════════════════════════════════
-// SUPER_ADMIN — Toàn quyền
+// SUPER_ADMIN - Toàn quyền
 // ═══════════════════════════════════════════════════════════
-test.describe('SUPER_ADMIN — Toàn quyền', () => {
+test.describe('SUPER_ADMIN - Toàn quyền', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
@@ -76,9 +76,9 @@ test.describe('SUPER_ADMIN — Toàn quyền', () => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// MANAGER — Quản lý phòng ban
+// MANAGER - Quản lý phòng ban
 // ═══════════════════════════════════════════════════════════
-test.describe('MANAGER — Quản lý phòng ban', () => {
+test.describe('MANAGER - Quản lý phòng ban', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsManager(page);
   });
@@ -112,7 +112,7 @@ test.describe('MANAGER — Quản lý phòng ban', () => {
     await expect(page.getByRole('link', { name: /Tạo lead|Thêm lead/i }).or(page.getByText(/Tạo mới/))).toBeVisible();
   });
 
-  test('Lead detail — thấy nút Assign, Transfer nhưng KHÔNG thấy Xóa', async ({ page }) => {
+  test('Lead detail - thấy nút Assign, Transfer nhưng KHÔNG thấy Xóa', async ({ page }) => {
     await page.goto('/leads');
     await page.waitForLoadState('networkidle');
     const firstLead = page.locator('table tbody tr a').first();
@@ -140,9 +140,9 @@ test.describe('MANAGER — Quản lý phòng ban', () => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// USER (Sale) — Nhân viên bán hàng
+// USER (Sale) - Nhân viên bán hàng
 // ═══════════════════════════════════════════════════════════
-test.describe('USER (Sale) — Nhân viên bán hàng', () => {
+test.describe('USER (Sale) - Nhân viên bán hàng', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsUser(page);
   });
@@ -173,7 +173,7 @@ test.describe('USER (Sale) — Nhân viên bán hàng', () => {
     await expect(page.getByText('Leads').first()).toBeVisible();
   });
 
-  test('Lead detail — KHÔNG thấy Assign, Xóa', async ({ page }) => {
+  test('Lead detail - KHÔNG thấy Assign, Xóa', async ({ page }) => {
     await page.goto('/leads');
     await page.waitForLoadState('networkidle');
     const firstLead = page.locator('table tbody tr a').first();
@@ -200,7 +200,7 @@ test.describe('USER (Sale) — Nhân viên bán hàng', () => {
     await expect(page.getByText(/Lead mới|Leads/i).first()).toBeVisible();
   });
 
-  test('Kho thả nổi — thấy nút Nhận lead', async ({ page }) => {
+  test('Kho thả nổi - thấy nút Nhận lead', async ({ page }) => {
     await page.goto('/floating');
     await page.waitForLoadState('networkidle');
     await screenshotStep(page, 'floating-pool', 'user-rbac');

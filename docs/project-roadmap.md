@@ -59,37 +59,37 @@ Phase 14 (Testing/Deploy) ← runs LAST ─────────┘
 | 19 | Full Project Audit & Quality Fixes | 4h | Complete | 100% |
 | 20 | Comprehensive Test Suites (E2E + API + Unit) | 8h | Complete | 100% |
 | 21 | Test Execution & Bug Fixes | 4h | Complete | 100% |
-| 22 | Dashboard Redesign — Smart Tabs | 4h | Complete | 100% |
-| 23 | Dashboard v2 — Sub-pages + Employee Scorecard | 4h | Complete | 100% |
+| 22 | Dashboard Redesign - Smart Tabs | 4h | Complete | 100% |
+| 23 | Dashboard v2 - Sub-pages + Employee Scorecard | 4h | Complete | 100% |
 
 ## Milestones
 
-### M1: Foundation (Phase 01-03) — 34h
+### M1: Foundation (Phase 01-03) - 34h
 - Monorepo running, DB schema applied, auth working
 - User/Dept/Team/Level CRUD operational
 - **Gate:** `pnpm dev` runs, login works, RBAC enforced
 
-### M2: Core Backend (Phase 04-07) — 54h
+### M2: Core Backend (Phase 04-07) - 54h
 - Full lead lifecycle working (POOL → CONVERTED)
 - Payment hybrid verification operational
 - Call log ingestion + auto-match
 - CSV import/export working
 - **Gate:** Complete lead flow testable via Postman
 
-### M3: Frontend (Phase 08-11) — 44h
+### M3: Frontend (Phase 08-11) - 44h
 - App shell with sidebar, auth, responsive
 - All CRUD pages operational
 - Dashboard with analytics
 - **Gate:** End-to-end flow testable in browser
 
-### M4: Advanced (Phase 12-13) — 24h
+### M4: Advanced (Phase 12-13) - 24h
 - AI lead distribution
 - Tasks/todo system
 - Transfer + claim + auto-recall
 - Global search + notifications
 - **Gate:** All business features operational
 
-### M5: Production (Phase 14) — 12h
+### M5: Production (Phase 14) - 12h
 - Tests passing (>80% coverage services)
 - Docker production build
 - CI/CD pipeline
@@ -102,7 +102,7 @@ Phase 14 (Testing/Deploy) ← runs LAST ─────────┘
 ### 2026-04-22
 - Bank Transaction CSV Import (Phase 24): thay webhook bằng CSV upload vì bank ngừng push API
 - 2 endpoints mới: `POST /bank-transactions/import` + `GET /bank-transactions/import/template` (SA-only)
-- Tab thứ 3 "Import sao kê CSV" trong `/payments` — conditional render cho SA
+- Tab thứ 3 "Import sao kê CSV" trong `/payments` - conditional render cho SA
 - Auto-match reuse 100% `tryMatchBankTransaction()`; dedup `externalId` + hash fallback
 
 ### 2026-04-13
@@ -112,8 +112,8 @@ Phase 14 (Testing/Deploy) ← runs LAST ─────────┘
 - 44 prior security/performance controls verified as working
 
 ### 2026-03-28
-- Phase 15-18: CRUD, gap fill, polish, tasks enhancement — all complete
-- Phase 19: Full audit — manager dept perm, cron error handling, Zod validation, mobile responsive, loading skeletons
+- Phase 15-18: CRUD, gap fill, polish, tasks enhancement - all complete
+- Phase 19: Full audit - manager dept perm, cron error handling, Zod validation, mobile responsive, loading skeletons
 - 19 phases total, ~198h effort
 
 ### 2026-03-27

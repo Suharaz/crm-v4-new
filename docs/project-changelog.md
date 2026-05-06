@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Lead Single Label — BREAKING (2026-05-06)
+### Lead Single Label - BREAKING (2026-05-06)
 - **BREAKING:** Lead label cardinality đổi từ N-N → 1-N. Mỗi lead chỉ có 1 nhãn duy nhất; Customer giữ nguyên multi-label.
 - **Database:**
   - DROP bảng `lead_labels` (junction). Backup ephemeral `lead_labels_backup_20260506` (tồn tại trong cửa sổ pre-push → db-push; rollback thực tế dùng `pg_dump`).
@@ -15,25 +15,25 @@ All notable changes to this project will be documented in this file.
   - `LabelsService.attachToLead/detachFromLead` → `setLeadLabel(leadId, labelId | null)` (auto-update `labelAssignedAt`).
   - `LeadsController` endpoints `POST :id/labels` + `DELETE :id/labels/:labelId` → gộp 1 endpoint `PATCH :id/label` body `{ labelId: string | null }`.
   - 3 call-sites trong `leads.service.ts` (assign/bulkAssign/transfer): reset `lead.labelAssignedAt` thay vì junction `recallStartAt`.
-  - `RecallConfigService._recallLeads`: skip-if-exists — auto-label chỉ apply nếu `lead.label_id IS NULL` (không đè nhãn business).
+  - `RecallConfigService._recallLeads`: skip-if-exists - auto-label chỉ apply nếu `lead.label_id IS NULL` (không đè nhãn business).
   - `RecallConfigService._recallLeadsByLabel`: query `lead.labelId + labelAssignedAt < cutoff` thay vì junction.
   - `import.processor`: nếu CSV `labels` có nhiều nhãn, lấy phần tử đầu tiên + log warning trong job summary.
 - **Frontend:**
   - `LeadRecord.labels?[]` → `labelId?: string | null` + `label?: LabelEntity | null` + `labelAssignedAt?: string | null`.
-  - `LeadActions` dialog: multi-checkbox → single `<Select>` dropdown với option "— Bỏ nhãn —".
+  - `LeadActions` dialog: multi-checkbox → single `<Select>` dropdown với option "- Bỏ nhãn -".
   - `LeadTable`, `LeadPoolTableWithBulkAssign`, `LeadKanbanViewByLabel`: render 1 badge thay vì map.
   - Kanban group-by: mỗi lead vào đúng 1 cột (column "Khác" cho lead chưa có nhãn).
-  - `LeadInlineExpandDetail`, `EntityQuickPreviewDialog`: dual-mode logic — lead PATCH `/leads/:id/label`, customer giữ junction `POST/DELETE /customers/:id/labels[/:labelId]`.
+  - `LeadInlineExpandDetail`, `EntityQuickPreviewDialog`: dual-mode logic - lead PATCH `/leads/:id/label`, customer giữ junction `POST/DELETE /customers/:id/labels[/:labelId]`.
   - `ImportTemplateDialog`: thêm helper text về first-label-only behavior.
 - **Migration:** Decision = all NULL (không migrate nhãn cũ). User gắn lại nhãn manually sau deploy.
 - **Rollback:** `pg_dump` trước deploy. Schema rollback bằng cách re-create `lead_labels` từ dump + xoá `leads.label_id` + restore `recall_configs.auto_label_ids[]`.
 
-### Customer Multi-Phone — Số điện thoại phụ (2026-05-04)
+### Customer Multi-Phone - Số điện thoại phụ (2026-05-04)
 - **Feature:** Mỗi Customer có thể có nhiều số phụ (1 chính + N phụ) với dedup cross-table và search match toàn diện.
 - **Database:** Bảng mới `customer_phones` (id, customer_id, phone, label, note, created_by, soft delete). 3 index: `customer_id`, `phone`, `(phone, deleted_at)`. FK CASCADE qua app-level. Migration `20260504070357_add_customer_phones`.
 - **Backend:**
-  - `CustomerPhonesService` — single source of truth: `findCustomerByAnyPhone()`, `assertPhoneNotExists()` (cross-table), `addPhone`, `updatePhone`, `softDeletePhone`, `listPhones`.
-  - 4 endpoints CRUD: `GET/POST/PATCH/DELETE /customers/:id/phones[/:phoneId]` — mutating chỉ MANAGER+ qua `@Roles`.
+  - `CustomerPhonesService` - single source of truth: `findCustomerByAnyPhone()`, `assertPhoneNotExists()` (cross-table), `addPhone`, `updatePhone`, `softDeletePhone`, `listPhones`.
+  - 4 endpoints CRUD: `GET/POST/PATCH/DELETE /customers/:id/phones[/:phoneId]` - mutating chỉ MANAGER+ qua `@Roles`.
   - `findById` include `phones` (FE 1 round-trip).
   - Tất cả nơi dedup/search/findOrCreate dùng helper: `customers.service`, `search.service`, `import.processor` (CSV lead+customer), `third-party-api.controller`, `call-logs.service`, `leads.service`.
 - **Frontend:**
@@ -41,12 +41,12 @@ All notable changes to this project will be documented in this file.
   - API client `lib/api/customer-phones.ts`.
   - `CustomerRecord.phones` thêm vào types.
 - **Behavior:**
-  - Search SĐT (global + searchByPhone) match cả số chính lẫn số phụ — silent return (không phân biệt nguồn).
+  - Search SĐT (global + searchByPhone) match cả số chính lẫn số phụ - silent return (không phân biệt nguồn).
   - Tạo customer với phone trùng số phụ KH cũ → 409.
   - CSV import lead/customer: phone trùng số phụ KH cũ → reuse customer (không tạo mới).
-- **Tests:** 16 integration test pass (`tests/api/customers/customer-multi-phone-crud-and-cross-table-dedup.test.ts`) — RBAC, cross-table dedup, search match, soft delete + reuse.
+- **Tests:** 16 integration test pass (`tests/api/customers/customer-multi-phone-crud-and-cross-table-dedup.test.ts`) - RBAC, cross-table dedup, search match, soft delete + reuse.
 
-### Task Reminders + Shared Note Dialog — Flexible scheduling (2026-04-24)
+### Task Reminders + Shared Note Dialog - Flexible scheduling (2026-04-24)
 - **Feature:** 3 new components + cron refactor for task reminder notifications with custom scheduling.
 - **Database:** New `TaskReminder` table (1-N with Task). Tracks `remindAt`, `remindedAt` flag, optional label. Max 5 reminders/task. Cascade delete with task. Replaced old `Task.remindAt`/`Task.remindedAt` columns.
 - **Backend:**
@@ -60,75 +60,75 @@ All notable changes to this project will be documented in this file.
 - **Integration:** Replaced 3 inline note dialogs with single shared component. 2 critical bugs from code review: backend cron payload field rename (referenceType→entityType), frontend notification interface alignment.
 - **Files:** `packages/database/schema.prisma`, `apps/api/tasks/tasks.service.ts` (cron refactor), `apps/web/components/shared/{reminder-list,note-dialog}.tsx` + notification integration.
 
-### Customer CSV Import — Extended Columns (2026-04-16)
+### Customer CSV Import - Extended Columns (2026-04-16)
 - **New optional columns:** `companyName`/`Công ty`, `facebookUrl`/`Facebook`, `instagramUrl`/`Instagram`, `zaloUrl`/`Zalo`, `linkedinUrl`/`LinkedIn`, `shortDescription`/`Mô tả ngắn`, `description`/`Mô tả`, `labels`/`Nhãn`
 - **Labels:** Comma-separated names (e.g. "VIP,Quan tâm"), matched case-insensitive against DB labels, attached via `customerLabel` junction table. Unmatched labels reported as `[Warning]` in error CSV (row vẫn success)
 - **Bilingual headers:** All columns accept both English (camelCase) and Vietnamese names
 - **Labels preloaded:** Added to lookup preload alongside sources/products for O(1) matching
 - **FE template:** `mau-import-khach-hang.csv` updated from 3 cols → 11 cols (bilingual, BOM UTF-8)
 
-### Bank Transaction CSV Import — 7-col template, dedup, auto-match (2026-04-22)
+### Bank Transaction CSV Import - 7-col template, dedup, auto-match (2026-04-22)
 - **Feature:** Thay webhook bank bằng flow upload CSV sao kê (bank ngừng push webhook). SA upload CSV → parse → dedup `externalId` → auto-match payment PENDING. Tab mới "Import sao kê CSV" trong `/payments` (chỉ SA thấy).
 - **Backend:**
-  - `POST /bank-transactions/import` (multipart, 10MB max, `@Roles(SUPER_ADMIN)`) — parse CSV 7 cột, ignore cột thừa, return `{ total, imported, skipped_duplicate, auto_matched, errors[] }`.
-  - `GET /bank-transactions/import/template` — CSV template UTF-8 BOM, 7 header tiếng Việt + 1 row mẫu.
-  - `bank-transaction-import.service.ts` (~230 lines) — dùng `csv-parse/sync`, helpers `parseVNAmount` (1.000.000 / 1,000,000 / plain), `parseFlexDate` (ISO, dd/MM/yyyy), `generateExternalId` (sha1 hash fallback khi bank không cung cấp mã GD).
+  - `POST /bank-transactions/import` (multipart, 10MB max, `@Roles(SUPER_ADMIN)`) - parse CSV 7 cột, ignore cột thừa, return `{ total, imported, skipped_duplicate, auto_matched, errors[] }`.
+  - `GET /bank-transactions/import/template` - CSV template UTF-8 BOM, 7 header tiếng Việt + 1 row mẫu.
+  - `bank-transaction-import.service.ts` (~230 lines) - dùng `csv-parse/sync`, helpers `parseVNAmount` (1.000.000 / 1,000,000 / plain), `parseFlexDate` (ISO, dd/MM/yyyy), `generateExternalId` (sha1 hash fallback khi bank không cung cấp mã GD).
   - Sửa `BankTransactionsService.ingest()`: bỏ throw `transactionTime required`, fallback `new Date()` → webhook cũ gửi thiếu field vẫn OK (backward-compat).
-  - Validate `bankAccount` match `BankAccount.name` (case-insensitive) — row sai tên TK → errors[], không abort batch.
+  - Validate `bankAccount` match `BankAccount.name` (case-insensitive) - row sai tên TK → errors[], không abort batch.
   - Catch `ConflictException` từ unique constraint → đếm `skipped_duplicate`, continue loop.
 - **Frontend:**
-  - `bank-import-tab.tsx` — client component: hướng dẫn 3 bước, tải template, upload CSV, result panel 4 metric card + errors table.
-  - `payment-reconciliation-client.tsx` — thêm tab thứ 3 (conditional render SA) vào Tabs hiện có. Không phá regression 2 tab cũ.
+  - `bank-import-tab.tsx` - client component: hướng dẫn 3 bước, tải template, upload CSV, result panel 4 metric card + errors table.
+  - `payment-reconciliation-client.tsx` - thêm tab thứ 3 (conditional render SA) vào Tabs hiện có. Không phá regression 2 tab cũ.
   - Upload qua `/api/proxy/bank-transactions/import` (FormData multipart), download via `window.location.href` cho template.
 - **Decisions locked:** Không migrate schema (`transactionTime` giữ NOT NULL, fallback ở service). CSV template chung 1 format (không per-bank parser). Test data tự sinh từ template (parser ignore unknown cols).
 - **Files:** `apps/api/src/modules/bank-transactions/{bank-transactions.service,controller,module}.ts`, mới `bank-transaction-import.service.ts`; `apps/web/src/components/payments/bank-import-tab.tsx`, sửa `payment-reconciliation-client.tsx`; `docs/{api-reference,project-changelog,project-roadmap,business-flows}.md`.
 
-### Bulk Delete — Orders / Customers / Leads / Users (2026-04-18)
+### Bulk Delete - Orders / Customers / Leads / Users (2026-04-18)
 - **Feature:** SA-only bulk soft-delete với checkbox cho 4 entity. Cap 100/lần. Bar fixed-bottom hiện khi có item được chọn.
 - **Backend (8 file):**
-  - `POST /leads/bulk-delete`, `/customers/bulk-delete`, `/orders/bulk-delete`, `/users/bulk-delete` — tất cả `@Roles(SUPER_ADMIN)`.
+  - `POST /leads/bulk-delete`, `/customers/bulk-delete`, `/orders/bulk-delete`, `/users/bulk-delete` - tất cả `@Roles(SUPER_ADMIN)`.
   - Services: `bulkSoftDelete(ids)` dùng `updateMany` 1-shot cho leads/customers. Orders filter `status=PENDING` (skip đơn đã xác nhận). Users loop `deactivate()` để giữ cascade (leads/customers về dept pool + refresh token revoke).
-  - Response: `{ deleted: number; skipped: number }` — skipped = đã xóa trước / không đủ điều kiện / self.
+  - Response: `{ deleted: number; skipped: number }` - skipped = đã xóa trước / không đủ điều kiện / self.
 - **Frontend (6 file mới/sửa):**
-  - `hooks/use-bulk-selection.ts` — reusable Set-based selection (toggleOne/toggleAll/clear + indeterminate state).
-  - `components/shared/bulk-delete-bar.tsx` — fixed-bottom floating bar với confirm dialog + toast. Dùng `api.post` + `router.refresh`.
-  - 4 table wired: `lead-table.tsx`, `customer-table-with-preview.tsx`, `order-list-with-inline-expand.tsx`, `user-table.tsx` — nhận prop `enableBulkDelete`.
+  - `hooks/use-bulk-selection.ts` - reusable Set-based selection (toggleOne/toggleAll/clear + indeterminate state).
+  - `components/shared/bulk-delete-bar.tsx` - fixed-bottom floating bar với confirm dialog + toast. Dùng `api.post` + `router.refresh`.
+  - 4 table wired: `lead-table.tsx`, `customer-table-with-preview.tsx`, `order-list-with-inline-expand.tsx`, `user-table.tsx` - nhận prop `enableBulkDelete`.
   - 4 page truyền `isSuperAdmin = currentUser?.role === 'SUPER_ADMIN'`.
-- **UX decisions:** deactivate users (không hard delete — giữ audit), cap 100, Y/N confirm đơn giản, có nút "Bỏ chọn", orders hint "chỉ PENDING sẽ xóa", users skip self + row đã INACTIVE.
+- **UX decisions:** deactivate users (không hard delete - giữ audit), cap 100, Y/N confirm đơn giản, có nút "Bỏ chọn", orders hint "chỉ PENDING sẽ xóa", users skip self + row đã INACTIVE.
 - **Files:** leads/customers/orders/users × {controller, service}; `apps/web/src/hooks/use-bulk-selection.ts`, `apps/web/src/components/shared/bulk-delete-bar.tsx`, 4 table, 4 page.
 
-### CallLog — Partial unique on external_id + docs pattern (2026-04-17)
+### CallLog - Partial unique on external_id + docs pattern (2026-04-17)
 - **Audit result:** Chỉ còn `CallLog.externalId` bị ghost-row risk (3 soft-delete models có `@unique`: User đã có `@@unique([email, deletedAt])` + partial, Team vừa fix, CallLog còn lại).
 - **DB change:** Swap `call_logs_external_id_key` → `idx_call_logs_external_active ... WHERE deleted_at IS NULL`. Cho phép re-ingest nếu row cũ đã soft-delete.
 - **Code change:** `call-logs.service.ts` ingest đổi `findUnique` → `findFirst({ deletedAt: null })` vì bỏ `@unique` nên Prisma không còn cho dùng làm unique lookup.
 - **Docs:** Thêm section *"Unique Constraints on Soft-Delete Tables"* trong `code-standards.md`: 3 pattern (A-partial unique, B-composite `@@unique`, C-isActive flag) + decision guide cho reviewer.
 - **Files:** `packages/database/prisma/schema.prisma`, `packages/database/prisma/raw-indexes.sql`, `apps/api/src/modules/call-logs/call-logs.service.ts`, `docs/code-standards.md`
 
-### Teams — Partial unique on leader_id (2026-04-17)
+### Teams - Partial unique on leader_id (2026-04-17)
 - **Rationale:** Full `@unique` trên `Team.leaderId` chặn tạo team mới nếu leader từng là leader của team đã soft-delete (ghost row blocking). Không khớp với soft-delete pattern toàn project.
 - **DB change:** Swap `teams_leader_id_key UNIQUE (leader_id)` → `idx_teams_leader_active UNIQUE (leader_id) WHERE deleted_at IS NULL`. Applied via manual SQL; raw-indexes.sql updated cho tham chiếu tương lai.
-- **Schema change:** Bỏ `@unique` khỏi `Team.leaderId`; đổi `User.leadingTeam Team?` → `leadingTeams Team[]` (Prisma yêu cầu khi relation không còn unique side). Nghiệp vụ vẫn là "1 leader cho 1 active team" — enforce bởi partial unique + `create()` service.
+- **Schema change:** Bỏ `@unique` khỏi `Team.leaderId`; đổi `User.leadingTeam Team?` → `leadingTeams Team[]` (Prisma yêu cầu khi relation không còn unique side). Nghiệp vụ vẫn là "1 leader cho 1 active team" - enforce bởi partial unique + `create()` service.
 - **Files:** `packages/database/prisma/schema.prisma`, `packages/database/prisma/raw-indexes.sql`
 
-### Teams — Unable to delete team (2026-04-17)
+### Teams - Unable to delete team (2026-04-17)
 - **Bug:** Settings → Team: xóa team luôn trả 409 "Không thể xóa team đang có thành viên". Leader được auto-attach khi tạo team (`teamId=team.id, isLeader=true`) nên count members luôn ≥ 1, kể cả khi UI hiển thị 0 sales.
-- **Fix v2 (cascade auto-detach):** Xóa team = transaction atomic: (1) `updateMany` tất cả members (`teamId=null, isLeader=false`), (2) soft-delete team. UX 1-click, không cần admin detach thủ công. Giữ option "— Không thuộc team —" trong user-form để admin vẫn có thể detach riêng khi cần.
+- **Fix v2 (cascade auto-detach):** Xóa team = transaction atomic: (1) `updateMany` tất cả members (`teamId=null, isLeader=false`), (2) soft-delete team. UX 1-click, không cần admin detach thủ công. Giữ option "- Không thuộc team -" trong user-form để admin vẫn có thể detach riêng khi cần.
 - **Fix v1 (deprecated, Approach 2 strict):** Trước đó chặn xóa nếu còn member + yêu cầu admin detach từng người. User feedback: quá cồng kềnh cho trường hợp xóa team không còn sử dụng.
 - **Files:** `apps/api/src/modules/teams/teams.service.ts`, `apps/web/src/components/users/user-form.tsx`
 
-### Labels — Missing DELETE endpoint (2026-04-17)
+### Labels - Missing DELETE endpoint (2026-04-17)
 - **Bug:** Settings → Nhãn: clicking delete hit 404 (`/api/proxy/labels/:id`). `LabelsController` only had `GET/POST/PATCH`.
 - **Fix:** Added `DELETE /labels/:id` → soft-deactivate (`isActive=false`) matching `lead-sources`/`payment-types` pattern. Preserves `LeadLabel`/`CustomerLabel` history; `list()` already filters `isActive:true` and invalidates `LOOKUP_LABELS` cache.
 - **Files:** `apps/api/src/modules/labels/labels.{controller,service}.ts`
 
-### Security Hardening — Dependency Updates + IDOR Prevention (2026-04-16)
+### Security Hardening - Dependency Updates + IDOR Prevention (2026-04-16)
 - **file-type** 19.6.0 → 21.3.2: Fix CVE-2026-31808 (DoS via infinite loop on crafted file upload)
 - **@nestjs/core** 11.1.17 → 11.1.19: Fix CVE-2026-35515 (SSE injection) + pulls patched path-to-regexp
 - **pnpm overrides:** lodash → 4.18.0 (CVE-2026-4800 code injection), defu → 6.1.7 (CVE-2026-35209 prototype pollution)
 - **buildAccessFilter utility** (`common/filters/build-access-filter.ts`): Shared IDOR prevention filter replacing ad-hoc inline checks in leads, orders, tasks services
 - **Verified:** httpOnly cookie auth already implemented via Next.js BFF proxy pattern
 
-### Dashboard v2 — Sidebar Sub-pages + Employee Scorecard (2026-04-14)
+### Dashboard v2 - Sidebar Sub-pages + Employee Scorecard (2026-04-14)
 - **Navigation:** "Trang chủ" now dropdown in sidebar with 4 sub-pages (Tổng quát, Doanh thu, Nhân viên, Khách hàng)
 - **Routing:** Each section is a separate page (`/dashboard/revenue`, `/dashboard/employees`, `/dashboard/customers`)
 - **Employee Scorecard (`/dashboard/employees`):**
@@ -142,7 +142,7 @@ All notable changes to this project will be documented in this file.
 - **Sidebar:** Extended `NavItem` with `children` array pattern (reuses existing dropdown UI)
 - **Main dashboard:** Simplified to overview only (no tabs), focused KPI + charts
 
-### Dashboard Full Redesign — Smart Dashboard + Domain Tabs (2026-04-14)
+### Dashboard Full Redesign - Smart Dashboard + Domain Tabs (2026-04-14)
 - **Architecture:** Replaced monolithic 452-line component with 14 modular files (all <200 lines)
 - **Layout:** Main overview (4 KPI + 2 mini charts) + 3 domain tabs (Khách hàng, Doanh thu, Nhân viên)
 - **KPI Cards:** Reduced from 8 to 4 primary metrics with ↑↓% trend arrows (vs previous period)
@@ -153,34 +153,34 @@ All notable changes to this project will be documented in this file.
 - **Error handling:** Per-section errors instead of empty catch block; loading skeletons
 - **Removed:** `dashboard-client-with-charts.tsx` (452 lines), `dashboard-kpi-stats-grid.tsx` (129 lines)
 - **New structure:**
-  - `dashboard-page.tsx` — orchestrator (42 lines)
-  - `dashboard-header.tsx` — title + time range selector (mobile dropdown)
-  - `dashboard-kpi-section.tsx` — 4 KPI cards with scroll-snap
-  - `dashboard-main-charts.tsx` — revenue + funnel mini charts
-  - `dashboard-tabs.tsx` — tab container with URL sync
-  - `tabs/tab-customers.tsx` — funnel, aging, conversion trend, sources
-  - `tabs/tab-revenue.tsx` — revenue trend, dept revenue
-  - `tabs/tab-team.tsx` — top performers, dept + team performance
-  - `hooks/` — data fetching with proper error handling
-  - `widgets/` — reusable KPI card, chart card, tooltip
-  - `constants.ts` — design tokens, formatters, types
+  - `dashboard-page.tsx` - orchestrator (42 lines)
+  - `dashboard-header.tsx` - title + time range selector (mobile dropdown)
+  - `dashboard-kpi-section.tsx` - 4 KPI cards with scroll-snap
+  - `dashboard-main-charts.tsx` - revenue + funnel mini charts
+  - `dashboard-tabs.tsx` - tab container with URL sync
+  - `tabs/tab-customers.tsx` - funnel, aging, conversion trend, sources
+  - `tabs/tab-revenue.tsx` - revenue trend, dept revenue
+  - `tabs/tab-team.tsx` - top performers, dept + team performance
+  - `hooks/` - data fetching with proper error handling
+  - `widgets/` - reusable KPI card, chart card, tooltip
+  - `constants.ts` - design tokens, formatters, types
 
-### Security & Performance Audit Remediation — Round 2 (2026-04-13)
-- **Branch:** `audit/security-performance-260413` — 10 fixes across security and performance
+### Security & Performance Audit Remediation - Round 2 (2026-04-13)
+- **Branch:** `audit/security-performance-260413` - 10 fixes across security and performance
 - **Audit scope:** 328 TypeScript files, 7 security areas + 3 performance areas scanned
 - **Results:** 1 critical, 12 high, 16 medium, 9 low findings; 44 prior controls verified
 - **Security (IDOR fixes):**
-  - Lead update IDOR bypass — `findById` now receives user context (H7)
-  - Pool department endpoint — USER restricted to own department only (H1)
-  - Payment list/findById — USER scoped to own orders (H3/H4)
-  - Payment create — order ownership check for USER role (H5)
-  - Task complete/cancel/update/remove — ownership check (assignee/creator/MANAGER+) (M8)
-  - Label attach/detach — ownership verified via `findById` on leads and customers (M10)
-  - Webhook signature guard — fail-closed in production, warn-only in dev (M1)
+  - Lead update IDOR bypass - `findById` now receives user context (H7)
+  - Pool department endpoint - USER restricted to own department only (H1)
+  - Payment list/findById - USER scoped to own orders (H3/H4)
+  - Payment create - order ownership check for USER role (H5)
+  - Task complete/cancel/update/remove - ownership check (assignee/creator/MANAGER+) (M8)
+  - Label attach/detach - ownership verified via `findById` on leads and customers (M10)
+  - Webhook signature guard - fail-closed in production, warn-only in dev (M1)
 - **Performance:**
-  - Distribution batchDistribute — score once + batch $transaction (~800 → ~7 queries) (CRIT-1)
-  - Lead assign — atomic $transaction with `updateMany` status guard prevents race (PH1)
-  - Task processReminders — batch `createMany`/`updateMany` for all 3 escalation levels (PH5)
+  - Distribution batchDistribute - score once + batch $transaction (~800 → ~7 queries) (CRIT-1)
+  - Lead assign - atomic $transaction with `updateMany` status guard prevents race (PH1)
+  - Task processReminders - batch `createMany`/`updateMany` for all 3 escalation levels (PH5)
   - 2 new composite indexes: orders(status, created_at), payments(order_id, status) (PM3/PM4)
 - **Report:** `plans/reports/audit-260413-1048-security-performance-comprehensive.md`
 
@@ -194,7 +194,7 @@ All notable changes to this project will be documented in this file.
 - **UX:** Collapsible group headers, icon + active highlight per item
 
 ### User Profile Page + Password Toggle (2026-04-12)
-- **Profile page:** `/profile` — view account info (email, role, dept, team), edit name/phone, change password
+- **Profile page:** `/profile` - view account info (email, role, dept, team), edit name/phone, change password
 - **Password toggle:** Eye/EyeOff icon on login + profile password fields
 - **Header link:** Avatar/name in header now links to `/profile`
 - **Password change:** Auto-logout + redirect to login (tokens revoked server-side)
@@ -203,29 +203,29 @@ All notable changes to this project will be documented in this file.
 - **Rebrand:** "CRM V4" → "VeloCRM" across all UI (sidebar logo, login page, metadata, dashboard)
 - **Design System:** Sky Blue (#0ea5e9) primary + Cyan (#06b6d4) accent. Plus Jakarta Sans font. Colored shadows, hover-lift cards, gradient text
 - **Font:** Plus Jakarta Sans (geometric sans-serif, Vietnamese subset) via next/font/google
-- **Design Tokens:** globals.css @theme — sky primary scale, cyan accent, blue-tinted shadows, gradient utilities
-- **shadcn/ui:** All 11 base components updated — gradient buttons (sky→cyan), colored card shadows, sky focus rings
+- **Design Tokens:** globals.css @theme - sky primary scale, cyan accent, blue-tinted shadows, gradient utilities
+- **shadcn/ui:** All 11 base components updated - gradient buttons (sky→cyan), colored card shadows, sky focus rings
 - **Layout Shell:** Sidebar gradient active indicator, gradient avatar, responsive hamburger menu
-- **Login:** Split-screen design — left branded panel (sky gradient, feature highlights), right clean form. Responsive on mobile
+- **Login:** Split-screen design - left branded panel (sky gradient, feature highlights), right clean form. Responsive on mobile
 - **Dashboard:** KPI cards with hover-lift, gradient time range selector (sky→cyan), chart color update
-- **Landing Page:** Root `/` (public) — nav, hero (isometric mockup), features (8 cards), stats (dark sky gradient), CTA, footer
+- **Landing Page:** Root `/` (public) - nav, hero (isometric mockup), features (8 cards), stats (dark sky gradient), CTA, footer
 - **Routing:** `/` = landing (public), `/dashboard` = CRM home (auth). Middleware PUBLIC_PATHS array
 - **Responsive:** Mobile sidebar drawer with hamburger toggle, auto-close on navigate, h-dvh layout, responsive padding
 - **Docs:** Updated design-guidelines.md, CLAUDE.md, changelog
 
-### Audit Remediation — 40+ Fixes Across Security, Performance, Database (2026-04-12)
-- **Branch:** `fix/audit-remediation-260412` — 12 commits addressing 40+ audit findings
+### Audit Remediation - 40+ Fixes Across Security, Performance, Database (2026-04-12)
+- **Branch:** `fix/audit-remediation-260412` - 12 commits addressing 40+ audit findings
 - **Security (Critical/High):**
   - Path traversal in file serving (already patched in prior commit)
-  - Payment matching race condition — optimistic locking with `updateMany` guards
-  - IDOR in `findById` — USER role now scoped to own leads/customers/orders
+  - Payment matching race condition - optimistic locking with `updateMany` guards
+  - IDOR in `findById` - USER role now scoped to own leads/customers/orders
   - Helmet security headers (X-Frame-Options, CSP, HSTS, etc.)
   - Webhook HMAC-SHA256 signature verification (`WEBHOOK_SECRET` env var)
   - MCP endpoint rate limiting (was @SkipThrottle, now 100 req/min)
   - File upload magic bytes validation (file-type package)
   - API key permission scope enforcement
 - **Security (Medium):**
-  - CORS production guard — throws on missing `FRONTEND_URL` in production
+  - CORS production guard - throws on missing `FRONTEND_URL` in production
   - `externalId` format validation (max 255, alphanumeric+dash)
   - Third-party API metadata size limit (10KB max)
   - Global search scoped by user role (USER sees only own records)
@@ -233,7 +233,7 @@ All notable changes to this project will be documented in this file.
   - Import processor: streaming CSV + DI PrismaClient (was: readFileSync + new PrismaClient per worker)
   - Scoring service: 4 batch queries replaces 6000 queries per distribute batch
   - Assignment template apply: grouped `updateMany` + `createMany` per user
-  - CSV import: preloaded source/product/phone Maps — 1 query/row instead of 4-6
+  - CSV import: preloaded source/product/phone Maps - 1 query/row instead of 4-6
   - Dashboard `getLeadFunnel`: single `groupBy` replaces 7 COUNT queries
   - Dashboard `getLeadAging`: LATERAL JOIN replaces correlated subquery
   - Recall service: chunk processing (500/batch) prevents large IN clauses
@@ -242,18 +242,18 @@ All notable changes to this project will be documented in this file.
   - 17 new indexes: partial (leads/activities/customers/tasks), pg_trgm (phone/name search), functional (date cast), payment status+amount
   - Connection pool config documented (`connection_limit=20&pool_timeout=10`)
   - Notification cleanup cron (delete >90 days, daily at 3 AM)
-- **~~Still remaining:~~ Redis caching layer (PERF-M1) — DONE** (see below), streaming CSV export (PERF-M3)
+- **~~Still remaining:~~ Redis caching layer (PERF-M1) - DONE** (see below), streaming CSV export (PERF-M3)
 
-### Database Optimization & Redis Caching — 5 Phases (2026-04-12)
+### Database Optimization & Redis Caching - 5 Phases (2026-04-12)
 - **Branch:** `fix/audit-remediation-260412`
-- **Phase 01 — PrismaClient Singleton:** Fixed 35 modules each creating `new PrismaClient()` → single @Global() PrismaModule with shared singleton. Connection pool: 20 connections, 10s timeout.
-- **Phase 02 — Redis Cache Infrastructure:** `CacheService` with BigInt-safe serialization, fail-open pattern, `getOrSet()` helper, `@CacheInvalidate()` decorator. Uses existing Redis 7 on port 6380 with `crm:cache:` key prefix.
-- **Phase 03 — Lookup Table Caching:** 9 lookup services (labels, lead-sources, payment-types, order-formats, product-groups, payment-installments, product-categories, bank-accounts, employee-levels) cached with 10min TTL + write-through invalidation on mutations.
-- **Phase 04 — Dashboard Caching:** 9 dashboard query methods cached with 30s TTL, hash-based cache keys scoped by userId/role/date range.
-- **Phase 05 — PostgreSQL Docker Tuning:** `shared_buffers=512MB`, `work_mem=16MB`, `effective_cache_size=2GB`, `random_page_cost=1.1`, slow query logging (>500ms). Redis: `maxmemory=128mb` with `allkeys-lru` eviction.
+- **Phase 01 - PrismaClient Singleton:** Fixed 35 modules each creating `new PrismaClient()` → single @Global() PrismaModule with shared singleton. Connection pool: 20 connections, 10s timeout.
+- **Phase 02 - Redis Cache Infrastructure:** `CacheService` with BigInt-safe serialization, fail-open pattern, `getOrSet()` helper, `@CacheInvalidate()` decorator. Uses existing Redis 7 on port 6380 with `crm:cache:` key prefix.
+- **Phase 03 - Lookup Table Caching:** 9 lookup services (labels, lead-sources, payment-types, order-formats, product-groups, payment-installments, product-categories, bank-accounts, employee-levels) cached with 10min TTL + write-through invalidation on mutations.
+- **Phase 04 - Dashboard Caching:** 9 dashboard query methods cached with 30s TTL, hash-based cache keys scoped by userId/role/date range.
+- **Phase 05 - PostgreSQL Docker Tuning:** `shared_buffers=512MB`, `work_mem=16MB`, `effective_cache_size=2GB`, `random_page_cost=1.1`, slow query logging (>500ms). Redis: `maxmemory=128mb` with `allkeys-lru` eviction.
 
-### Full Codebase Audit — Security, Performance, Query Speed (2026-04-12)
-- **Scope:** 51 findings across 3 categories — Security (15), Performance (15), Database/Query (21)
+### Full Codebase Audit - Security, Performance, Query Speed (2026-04-12)
+- **Scope:** 51 findings across 3 categories - Security (15), Performance (15), Database/Query (21)
 - **Critical (7):** Path traversal in file serving, payment matching race condition, missing partial indexes on leads/activities/phone, import processor memory+connection leak, no notification cleanup
 - **High (16):** IDOR in findById methods, missing Helmet headers, N+1 in scoring (6000 queries/batch), webhook auth gaps, MCP rate limit bypass, search/export role scoping, dashboard cross-joins
 - **Medium (17):** Zero caching layer, unbounded queries, missing customer/task indexes, connection pool defaults, CORS fallback, metadata validation
@@ -265,7 +265,7 @@ All notable changes to this project will be documented in this file.
 - **MCP Tools (18):** 10 core tools + 8 analytics tools for Sales Director
   - Core: `get_schema`, `search_leads`, `get_lead_detail`, `search_customers`, `get_customer_detail`, `search_orders`, `get_order_detail`, `list_products`, `get_stats`, `list_users`
   - Analytics: `get_revenue_trend`, `get_top_performers`, `get_dept_performance`, `get_team_performance`, `get_leads_by_source`, `get_conversion_trend`, `get_lead_aging`, `analyze_lead_quality` (CPL/CPA/ROAS with adSpend input)
-  - Ads: `analyze_ads_effectiveness` — phone dedup, true duplicates, multi-product interest, revenue per source, avg conversion time, source×product matrix
+  - Ads: `analyze_ads_effectiveness` - phone dedup, true duplicates, multi-product interest, revenue per source, avg conversion time, source×product matrix
 - **Smart filtering:** All tools enforce `limit` (default 20, max 100), cursor pagination. Never return all data
 - **Auth:** API key via `x-api-key` header with granular `mcp:*` permissions (leads, customers, orders, products, stats, users, schema)
 - **REST fallback:** `/ai-agent/` endpoints reuse same query service for non-MCP AI clients
@@ -290,7 +290,7 @@ All notable changes to this project will be documented in this file.
 - **Numbered pagination:** Replaced "Tải thêm" cursor pagination with numbered pages (1,2...N) + first/prev/next/last buttons + page size selector (10/50/100/500) saved to localStorage. Backend supports offset+total count via `?page=N&limit=M`. All list pages (leads, customers, orders, users) updated
 
 ### Dynamic Order/Payment Lookup Tables + New Payment Fields (2026-04-11)
-- **Schema:** 3 new lookup tables — `OrderFormat` (Hình thức), `ProductGroup` (Nhóm sản phẩm), `PaymentInstallment` (Lần CK)
+- **Schema:** 3 new lookup tables - `OrderFormat` (Hình thức), `ProductGroup` (Nhóm sản phẩm), `PaymentInstallment` (Lần CK)
 - **Schema:** Order: added `vatEmail`, `formatId`, `productGroupId` foreign keys (legacy string fields kept)
 - **Schema:** Payment: added `transferDate`, `vatAmount`, `installmentId`
 - **API:** 3 new CRUD modules (GET/POST/PATCH/DELETE) with SUPER_ADMIN guards
@@ -305,7 +305,7 @@ All notable changes to this project will be documented in this file.
 
 ### Type Safety Cleanup (2026-04-10)
 - **65 files fixed:** Eliminated all `@typescript-eslint/no-explicit-any` warnings across frontend
-- **New types:** `apps/web/src/types/entities.ts` — 15 entity interfaces (LeadRecord, CustomerRecord, OrderRecord, etc.)
+- **New types:** `apps/web/src/types/entities.ts` - 15 entity interfaces (LeadRecord, CustomerRecord, OrderRecord, etc.)
 - **Pattern:** `Record<string, unknown>` replaces `Record<string, any>`, `err: unknown` replaces `err: any`
 
 ### Bug Fixes (2026-04-10)
@@ -316,22 +316,22 @@ All notable changes to this project will be documented in this file.
 - **Repo flip private → public:** `gh repo edit Suharaz/crm-v4-new --visibility public`. Pre-flight scan: `.env*` trong gitignore, không có hardcoded secrets trong source.
 - **Seed credential leak fix:** `packages/database/prisma/seed.ts` cũ hardcode `changeme` cho 6 accounts bao gồm SUPER_ADMIN → repo public sẽ leak credentials. Refactor:
   - Dev: default `changeme` (backward compat)
-  - Production: **bắt buộc** env `SEED_PASSWORD` (min 8 chars) — throw error nếu thiếu để tránh leak
+  - Production: **bắt buộc** env `SEED_PASSWORD` (min 8 chars) - throw error nếu thiếu để tránh leak
 - **`.env.production.example`:** thêm `SEED_PASSWORD`, `NODE_ENV=production`, sửa comment `NEXT_PUBLIC_API_URL` phải dùng HTTPS public URL (không localhost)
 - **`docs/demo-accounts.md`:** thêm warning DEV ONLY, phân biệt rõ dev password vs production SEED_PASSWORD
 
 ### aaPanel Deployment Guide (2026-04-10)
-- **New doc:** `docs/aapanel-deployment-guide.md` — multi-project VPS deployment playbook với aaPanel 7.x
-- **Research:** `plans/reports/research-260410-1114-aapanel-facts.md` — verified facts từ aapanel.com docs + forum + GitHub source code
+- **New doc:** `docs/aapanel-deployment-guide.md` - multi-project VPS deployment playbook với aaPanel 7.x
+- **Research:** `plans/reports/research-260410-1114-aapanel-facts.md` - verified facts từ aapanel.com docs + forum + GitHub source code
 - **Kiến trúc:** aaPanel 7 **Proxy Project** site type + **Customized Configuration Files** (persistent custom nginx) + PM2 Manager plugin + Docker Manager plugin + Cloudflare Full(Strict) + Let's Encrypt **DNS-01 via CF API**
-- **Hardening checklist:** bt 8 (đổi port), bt 14 (Security Entrance), 2FA, IP whitelist, BasicAuth, panel SSL — mandatory trước production
+- **Hardening checklist:** bt 8 (đổi port), bt 14 (Security Entrance), 2FA, IP whitelist, BasicAuth, panel SSL - mandatory trước production
 - **Auto-deploy:** GitHub Actions → SSH → `scripts/deploy.sh` (tái sử dụng từ commit 16bb453)
 - **Playbook thêm project mới:** Port convention (API=30N0, Web=30N1, PG=543(N+2), Redis=638N), 13-step checklist, template files cho docker-compose + PM2 + deploy script
 - **Gotchas documented:** vhost regeneration wipes raw edits, Repair button drops reverse proxy, firewall ufw desync, HTTP-01 fail với CF proxied, phpMyAdmin 888 no-SSL, Node Project vs PM2 Manager dual systems, CVE-2022-28117 (aaPanel ≤6.6.6)
 
 ### Customer Detail Redesign (2026-04-09)
 - **Remove "Thông tin thêm":** Metadata section removed from detail view (already in edit form)
-- **Social icons in info card:** Facebook, Instagram, Zalo, LinkedIn shown as icons — colored+clickable if link exists, grey if not. Opens in new tab
+- **Social icons in info card:** Facebook, Instagram, Zalo, LinkedIn shown as icons - colored+clickable if link exists, grey if not. Opens in new tab
 - **"Phân tích khách hàng" card:** Shows short description with expandable full description. CTA to edit page if no analysis exists
 - **Expandable orders:** Click order row to expand inline payment history (fetched on-demand from `/orders/:id`). No more navigation to order page
 - **Backend:** Customer detail orders now include product name, sorted by date desc
@@ -344,7 +344,7 @@ All notable changes to this project will be documented in this file.
 - **Schema:** `CallLog.analysis` field for call analysis results. `SystemSetting` key-value table for admin config
 - **Call analysis:** Auto-triggered when call duration > 60s. Prompt configurable by super admin in Settings > AI tab
 - **Customer analysis:** Auto-triggered when call > 120s, or manual via "Phân tích ngay" button on customer detail
-- **Customer analysis input:** Notes, payment history, call analyses — merged from customer + all related leads
+- **Customer analysis input:** Notes, payment history, call analyses - merged from customer + all related leads
 - **Customer analysis output:** Saves to `shortDescription` (tóm tắt) + `description` (chi tiết) fields. Fixed JSON output wrapper ensures structured extraction regardless of prompt
 - **Settings > AI tab:** Super admin configures call analysis prompt and customer analysis prompt
 - **Removed:** `aiSummaryShort` / `aiSummaryDetail` metadata approach (replaced by direct field writes)
@@ -357,7 +357,7 @@ All notable changes to this project will be documented in this file.
 - **Call analysis tags:** AI outputs structured JSON `{tags:[], detail:""}`. Tags shown as hash-colored pastel badges on call rows (8-color palette). Content + analysis sections collapsible with "Xem thêm"
 - **Call summary refactor:** "Tóm tắt AI" now sends only tag frequency table (max 150 calls) with fixed prompt. Returns: tổng quan, điểm mạnh, điểm yếu, đề xuất. No configurable prompt needed
 
-### Advanced Filter Bars — Customers & Orders (2026-04-08)
+### Advanced Filter Bars - Customers & Orders (2026-04-08)
 - **Customers filter:** Status, phòng ban, nhân viên, nhãn, khoảng ngày. Search tên/SĐT/email
 - **Orders filter:** Status, sản phẩm, người tạo, hình thức, nhóm, khoảng ngày. Search tên KH/SĐT/mã khoá
 - URL-based state (shareable links), localStorage persistence, badge count active filters
@@ -376,11 +376,11 @@ All notable changes to this project will be documented in this file.
 - **Products:** Click card to view full description in popup dialog
 - **Dashboard:** Time range picker (Hôm nay/Tuần/Tháng/Quý/Năm). Revenue bar chart + lead status pie chart. Role-based data filtering
 
-### UI Redesign — Status Rename + Role-based Navigation + Products Tabs (2026-04-02)
+### UI Redesign - Status Rename + Role-based Navigation + Products Tabs (2026-04-02)
 - **Status rename:** REDATA → ZOOM across full stack (Prisma enum, backend, frontend, routes)
 - **Role-based sidebar:** Manager sees Leads submenu (Chờ phân phối, Zoom, Kho thả nổi). Super Admin sees flat /leads link
 - **Products page:** Merged products + categories into one tabbed page (Sản phẩm / Danh mục). Removed Danh mục SP from Settings
-- **Auth fix:** Prevent stale cookies from blocking login — middleware JWT expiry check, proxy cookie cleanup on failed refresh, api-client 401 redirect
+- **Auth fix:** Prevent stale cookies from blocking login - middleware JWT expiry check, proxy cookie cleanup on failed refresh, api-client 401 redirect
 
 ### Phase 23: RBAC E2E Tests + Lead Flow (2026-03-28)
 - **RBAC E2E** (19 tests): Kiểm tra sidebar, page access, action buttons cho 3 roles qua trình duyệt
@@ -389,22 +389,22 @@ All notable changes to this project will be documented in this file.
 - Fix port-in-use detection khi khởi động API
 
 ### Phase 22: Lead Pool Inline Actions (2026-03-28)
-- **Kho Mới:** Nút "Phân" inline trên bảng — manager chọn nhân viên qua dialog
-- **Kho Thả Nổi:** Nút "Nhận" + "Phân" inline — user claim nhanh, manager assign
+- **Kho Mới:** Nút "Phân" inline trên bảng - manager chọn nhân viên qua dialog
+- **Kho Thả Nổi:** Nút "Nhận" + "Phân" inline - user claim nhanh, manager assign
 - New component: `lead-pool-action-buttons.tsx`
 - `LeadTable` nhận `poolMode` prop để hiện cột Thao tác
 
 ### Phase 21: Test Execution & Bug Fixes (2026-03-28)
 
-#### Test Results — 531/531 PASSED (18 skipped)
+#### Test Results - 531/531 PASSED (18 skipped)
 - **Unit:** 9 files, 195/195 tests passed (~1.2s)
 - **API Integration:** 16 files, 288/288 tests passed (~88s)
 - **E2E Playwright:** 13 files, 48/48 tests passed, 18 skipped (~19min)
 
 #### Bug Fixes (discovered via test execution)
-- **Zod 4 API change:** `orderSchema.customerId` — use `error` instead of `required_error`
+- **Zod 4 API change:** `orderSchema.customerId` - use `error` instead of `required_error`
 - **Self-deactivation guard:** `UsersService.deactivate()` now blocks admin self-deactivation (400)
-- **Task creation crash:** `BigInt(undefined)` for missing `assignedTo` — made optional
+- **Task creation crash:** `BigInt(undefined)` for missing `assignedTo` - made optional
 - **Payment verify stale read:** Moved `findById()` outside `$transaction()` scope
 - **Activities validation:** Empty content → 400, non-existent entity → 404
 - **12 action endpoints:** Added `@HttpCode(200)` on assign, claim, transfer, verify, reject, etc.
@@ -415,7 +415,7 @@ All notable changes to this project will be documented in this file.
 
 ### Phase 20: Comprehensive Test Suites (2026-03-28)
 
-#### E2E Tests (Playwright) — 14 spec files, ~87 tests
+#### E2E Tests (Playwright) - 14 spec files, ~87 tests
 - Auth: login/logout/session guard, 3 roles
 - Leads: CRUD, status flow, 3 Kho pools, assign/claim/transfer
 - Customers: CRUD, claim, transfer, role visibility
@@ -431,13 +431,13 @@ All notable changes to this project will be documented in this file.
 - AI Distribution: config, weights, batch assign
 - Screenshot capture on all key steps
 
-#### API Integration Tests (Vitest) — 16 test files, ~90+ tests
+#### API Integration Tests (Vitest) - 16 test files, ~90+ tests
 - All REST endpoints with HTTP status assertions
 - RBAC verification: 3 roles per protected endpoint
 - Business logic: status transitions, payment matching, bank webhook dedup
 - Cursor pagination, phone normalization, auto IN_PROGRESS trigger
 
-#### Unit Tests (Vitest) — 10 test files, ~192 tests
+#### Unit Tests (Vitest) - 10 test files, ~192 tests
 - Phone normalization + validation (VN format)
 - CSV formula injection sanitizer
 - Zod form schemas (Vietnamese error messages)
@@ -475,8 +475,8 @@ All notable changes to this project will be documented in this file.
 ### Phase 18: Tasks/Todo Full Enhancement (2026-03-28)
 
 #### Backend
-- `PATCH /tasks/:id` — update title, description, dueDate, remindAt, priority, assignedTo
-- `DELETE /tasks/:id` — soft delete
+- `PATCH /tasks/:id` - update title, description, dueDate, remindAt, priority, assignedTo
+- `DELETE /tasks/:id` - soft delete
 - Escalation cron: overdue >1h → notify assigned user, >24h → notify department manager
 - Reminder reset: changing remindAt clears remindedAt flag
 
@@ -490,11 +490,11 @@ All notable changes to this project will be documented in this file.
 - **Overdue indicator**: red "Quá hạn" badge when PENDING + past due
 - **From-note task creation**: checkbox in lead note dialog → auto-creates linked task
 
-### Phase 17: Frontend Polish — Dashboard, Pagination, Distribution UI (2026-03-28)
+### Phase 17: Frontend Polish - Dashboard, Pagination, Distribution UI (2026-03-28)
 
 #### Added
 - **Dashboard Stats API**: `GET /dashboard/stats` with role-based filtering (8 KPIs)
-- **Dashboard KPI Cards**: Real data — new leads, in progress, converted, monthly revenue, total customers, orders, pending payments, overdue tasks
+- **Dashboard KPI Cards**: Real data - new leads, in progress, converted, monthly revenue, total customers, orders, pending payments, overdue tasks
 - **Cursor Pagination**: "Tải thêm" controls on leads, customers, orders, users list pages
 - **AI Distribution Config UI**: Department-based weight config (workload/level/conversion), scores preview, batch auto-distribute button
 - **Pagination Controls**: Reusable component with URL-based cursor state
@@ -629,7 +629,7 @@ All notable changes to this project will be documented in this file.
 - Conversion trigger: total verified payments >= order.totalAmount → lead CONVERTED
 - Auto IN_PROGRESS trigger when order created for ASSIGNED lead
 
-### Phase 04: Core CRM — Leads & Customers (2026-03-28)
+### Phase 04: Core CRM - Leads & Customers (2026-03-28)
 
 #### Added
 - Leads CRUD: create (auto-link customer), list, detail, update, soft delete

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAsAdmin, loginAsManager } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Tìm kiếm toàn cục — Dropdown kết quả và điều hướng', () => {
+test.describe('Tìm kiếm toàn cục - Dropdown kết quả và điều hướng', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto('/');

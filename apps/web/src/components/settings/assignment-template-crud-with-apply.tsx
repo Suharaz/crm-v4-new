@@ -23,7 +23,7 @@ interface Props {
   departments: Department[];
 }
 
-/** Assignment template CRUD + apply — round-robin manual distribution. */
+/** Assignment template CRUD + apply - round-robin manual distribution. */
 export function AssignmentTemplateCrudWithApply({ users, departments }: Props) {
   const router = useRouter();
   const [templates, setTemplates] = useState<Template[]>([]);

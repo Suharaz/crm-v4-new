@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 
 // Pure authorization logic extracted từ RolesGuard
-// Không cần NestJS runtime — mock ExecutionContext + Reflector
+// Không cần NestJS runtime - mock ExecutionContext + Reflector
 
 type UserRole = 'SUPER_ADMIN' | 'MANAGER' | 'USER';
 
@@ -13,7 +13,7 @@ interface MockUser {
 }
 
 /**
- * Extracted logic từ RolesGuard.canActivate — pure function để test.
+ * Extracted logic từ RolesGuard.canActivate - pure function để test.
  * - Không có required roles → cho qua (allow all authenticated)
  * - SUPER_ADMIN luôn qua
  * - User có role trong required roles → qua
@@ -38,7 +38,7 @@ function canActivateRole(
 
 // ─── SUPER_ADMIN ──────────────────────────────────────────────────────────────
 
-describe('SUPER_ADMIN — bypass tất cả roles', () => {
+describe('SUPER_ADMIN - bypass tất cả roles', () => {
   const superAdmin: MockUser = { id: BigInt(1), role: 'SUPER_ADMIN' };
 
   it('SUPER_ADMIN truy cập endpoint chỉ dành cho MANAGER → cho qua', () => {
@@ -60,7 +60,7 @@ describe('SUPER_ADMIN — bypass tất cả roles', () => {
 
 // ─── MANAGER ─────────────────────────────────────────────────────────────────
 
-describe('MANAGER — truy cập endpoint MANAGER và USER', () => {
+describe('MANAGER - truy cập endpoint MANAGER và USER', () => {
   const manager: MockUser = { id: BigInt(2), role: 'MANAGER' };
 
   it('MANAGER truy cập endpoint @Roles(MANAGER) → cho qua', () => {
@@ -84,7 +84,7 @@ describe('MANAGER — truy cập endpoint MANAGER và USER', () => {
 
 // ─── USER ─────────────────────────────────────────────────────────────────────
 
-describe('USER — chỉ truy cập endpoint USER', () => {
+describe('USER - chỉ truy cập endpoint USER', () => {
   const user: MockUser = { id: BigInt(3), role: 'USER' };
 
   it('USER truy cập endpoint @Roles(USER) → cho qua', () => {

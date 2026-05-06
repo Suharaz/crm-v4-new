@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { ApiTestClient, adminClient } from '../helpers/api-test-client-with-auth';
 
-describe('Lead Single Label — PATCH /leads/:id/label', () => {
+describe('Lead Single Label - PATCH /leads/:id/label', () => {
   let admin: ApiTestClient;
   let leadId: string;
   let labelA: string;
@@ -34,7 +34,7 @@ describe('Lead Single Label — PATCH /leads/:id/label', () => {
     labelB = String(labels[1].id);
   });
 
-  it('sets label on lead — response.label populated', async () => {
+  it('sets label on lead - response.label populated', async () => {
     const setRes = await admin.patchJson<any>(`/leads/${leadId}/label`, { labelId: labelA });
     expect(setRes.status).toBe(200);
 
@@ -45,17 +45,17 @@ describe('Lead Single Label — PATCH /leads/:id/label', () => {
     expect(String(detail.body.data.label.id)).toBe(labelA);
   });
 
-  it('changes label — replaces previous (no duplicate)', async () => {
+  it('changes label - replaces previous (no duplicate)', async () => {
     const swapRes = await admin.patchJson<any>(`/leads/${leadId}/label`, { labelId: labelB });
     expect(swapRes.status).toBe(200);
 
     const detail = await admin.getJson<any>(`/leads/${leadId}`);
     expect(detail.body.data.labelId).toBe(labelB);
-    // No `labels[]` array on lead anymore — just `label` singular
+    // No `labels[]` array on lead anymore - just `label` singular
     expect(detail.body.data.labels).toBeUndefined();
   });
 
-  it('clears label — labelId null, label null', async () => {
+  it('clears label - labelId null, label null', async () => {
     const clearRes = await admin.patchJson<any>(`/leads/${leadId}/label`, { labelId: null });
     expect(clearRes.status).toBe(200);
 

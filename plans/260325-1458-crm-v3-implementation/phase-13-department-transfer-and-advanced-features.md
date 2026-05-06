@@ -117,38 +117,38 @@ model Notification {
 ### API Endpoints
 
 **Tasks (todo/reminder):**
-- `GET /tasks` — list tasks của mình (filter: status, dueDate, priority, entityType)
-- `GET /tasks/today` — tasks đến hạn hôm nay + quá hạn
-- `GET /tasks/overdue` — tasks quá hạn chưa complete
-- `GET /leads/:id/tasks` — tasks gắn với lead
-- `GET /customers/:id/tasks` — tasks gắn với customer
-- `POST /tasks` — tạo task. Body: `{ title, entityType?, entityId?, dueDate?, remindAt?, priority?, assignedTo? }`
+- `GET /tasks` - list tasks của mình (filter: status, dueDate, priority, entityType)
+- `GET /tasks/today` - tasks đến hạn hôm nay + quá hạn
+- `GET /tasks/overdue` - tasks quá hạn chưa complete
+- `GET /leads/:id/tasks` - tasks gắn với lead
+- `GET /customers/:id/tasks` - tasks gắn với customer
+- `POST /tasks` - tạo task. Body: `{ title, entityType?, entityId?, dueDate?, remindAt?, priority?, assignedTo? }`
   - assignedTo mặc định = currentUser (tự tạo cho mình)
   - manager có thể giao cho người khác
   - remindAt mặc định = dueDate - 15 phút
-- `POST /tasks/quick` — quick create với smart time parsing. Body: `{ text, entityType?, entityId? }`
+- `POST /tasks/quick` - quick create với smart time parsing. Body: `{ text, entityType?, entityId? }`
   - Parse "Gọi lại chiều mai 14h" → title + dueDate + remindAt tự động
-- `PATCH /tasks/:id` — update (title, dueDate, priority, status)
-- `PATCH /tasks/:id/complete` — đánh dấu hoàn thành
-- `DELETE /tasks/:id` — soft delete
+- `PATCH /tasks/:id` - update (title, dueDate, priority, status)
+- `PATCH /tasks/:id/complete` - đánh dấu hoàn thành
+- `DELETE /tasks/:id` - soft delete
 
 **Transfers:**
-- `POST /transfers` — initiate transfer (lead hoặc customer)
+- `POST /transfers` - initiate transfer (lead hoặc customer)
   Body: `{ entityType, entityId, targetType: "DEPARTMENT"|"FLOATING"|"UNASSIGN", targetDepartmentId?, reason }`
   - `DEPARTMENT`: chuyển sang pool phòng ban khác
   - `FLOATING`: chuyển về kho thả nổi (public, ai cũng claim)
   - `UNASSIGN`: bỏ gán, về pool phòng ban hiện tại
-- `GET /transfers` — list transfers (filter: department, date)
-- `POST /customers/:id/claim` — claim unassigned customer (từ dept pool hoặc floating)
+- `GET /transfers` - list transfers (filter: department, date)
+- `POST /customers/:id/claim` - claim unassigned customer (từ dept pool hoặc floating)
 
 **Search:**
-- `GET /search?q=query` — global search across entities
+- `GET /search?q=query` - global search across entities
 
 **Notifications:**
-- `GET /notifications` — list user's notifications, cursor paginated
-- `GET /notifications/unread-count` — unread count
-- `PATCH /notifications/:id/read` — mark as read
-- `PATCH /notifications/read-all` — mark all as read
+- `GET /notifications` - list user's notifications, cursor paginated
+- `GET /notifications/unread-count` - unread count
+- `PATCH /notifications/:id/read` - mark as read
+- `PATCH /notifications/read-all` - mark all as read
 
 ### Frontend Structure
 ```
@@ -168,20 +168,20 @@ apps/web/src/components/
 ## Related Code Files
 
 ### Create
-- `apps/api/src/modules/transfers/` — all transfer files
-- `apps/api/src/modules/search/` — all search files
-- `apps/api/src/modules/notifications/` — all notification files
-- `apps/web/src/components/transfers/` — transfer UI
-- `apps/web/src/components/search/` — global search UI
-- `apps/web/src/components/notifications/` — notification UI
+- `apps/api/src/modules/transfers/` - all transfer files
+- `apps/api/src/modules/search/` - all search files
+- `apps/api/src/modules/notifications/` - all notification files
+- `apps/web/src/components/transfers/` - transfer UI
+- `apps/web/src/components/search/` - global search UI
+- `apps/web/src/components/notifications/` - notification UI
 
 ### Modify
-- `packages/database/prisma/schema.prisma` — add Notification model
-- `apps/api/src/app.module.ts` — register modules
-- `apps/api/src/modules/leads/leads.service.ts` — trigger notification on assign
-- `apps/api/src/modules/customers/customers.controller.ts` — add claim endpoint
-- `apps/web/src/components/layout/header.tsx` — add search + notification bell
-- `apps/web/src/components/customers/customer-detail-panel.tsx` — add transfer button
+- `packages/database/prisma/schema.prisma` - add Notification model
+- `apps/api/src/app.module.ts` - register modules
+- `apps/api/src/modules/leads/leads.service.ts` - trigger notification on assign
+- `apps/api/src/modules/customers/customers.controller.ts` - add claim endpoint
+- `apps/web/src/components/layout/header.tsx` - add search + notification bell
+- `apps/web/src/components/customers/customer-detail-panel.tsx` - add transfer button
 
 ## Implementation Steps
 
@@ -190,7 +190,7 @@ apps/web/src/components/
 2. **Implement Notifications module**
    - `notifications.service.ts`:
      - `create(userId, type, title, content?, entityType?, entityId?)`
-     - `getForUser(userId, cursor, limit)` — paginated
+     - `getForUser(userId, cursor, limit)` - paginated
      - `getUnreadCount(userId)`
      - `markRead(notificationId, userId)`
      - `markAllRead(userId)`
@@ -209,7 +209,7 @@ apps/web/src/components/
        - Create assignment_history (from/to dept, from/to user)
        - Log activity
        - Notify target dept manager
-     - `listTransfers(filters)` — cursor paginated
+     - `listTransfers(filters)` - cursor paginated
    - SECURITY: Transfer boundary checks:
      - Initiator must be customer owner OR manager of customer's current department
      - Target department must be a valid active department

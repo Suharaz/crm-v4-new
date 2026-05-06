@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAsManager, loginAsUser, loginAsAdmin } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Lead — Assign, Claim, Transfer', () => {
+test.describe('Lead - Assign, Claim, Transfer', () => {
   test.describe('Manager assign lead cho user', () => {
     test('MANAGER mở lead detail → assign cho nhân viên', async ({ page }) => {
       await loginAsManager(page);

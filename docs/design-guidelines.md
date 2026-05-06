@@ -1,8 +1,8 @@
-# VeloCRM — Design Guidelines
+# VeloCRM - Design Guidelines
 
 ## 1. Design System
 
-**Style:** Modern SaaS — Trustworthy, Vibrant, Polished, Dimensional, Enterprise-Ready
+**Style:** Modern SaaS - Trustworthy, Vibrant, Polished, Dimensional, Enterprise-Ready
 **Font:** Plus Jakarta Sans (400/500/600/700/800)
 **Primary:** Sky Blue (#0ea5e9) | **Accent:** Cyan (#06b6d4)
 **Visual DNA:** Sky-blue colored shadows, gradient text (sky→cyan), atmospheric blur orbs, hover lift cards
@@ -55,7 +55,7 @@ DARK MODE
 ### Glassmorphism Tokens
 
 ```css
-/* Subtle glass — dùng cho cards, sidebar, dialogs */
+/* Subtle glass - dùng cho cards, sidebar, dialogs */
 .glass {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
@@ -70,7 +70,7 @@ DARK MODE
   border: 1px solid rgba(51, 65, 85, 0.5);
 }
 
-/* Stronger glass — dùng cho sidebar, floating elements */
+/* Stronger glass - dùng cho sidebar, floating elements */
 .glass-strong {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
@@ -89,7 +89,7 @@ DARK MODE
 ### Typography
 
 ```
-Font: Inter (Google Fonts) — clean, professional, great VN support
+Font: Inter (Google Fonts) - clean, professional, great VN support
 Fallback: system-ui, -apple-system, sans-serif
 
 Headings:
@@ -103,7 +103,7 @@ Body:
   small: 12px / 400 / gray-500  ← helper text, timestamps
   tiny:  11px / 500 / gray-400  ← badges, labels
 
-Monospace: JetBrains Mono — for IDs, codes, amounts
+Monospace: JetBrains Mono - for IDs, codes, amounts
 ```
 
 ### Spacing & Radius
@@ -297,11 +297,11 @@ SIDEBAR (glass-strong, border-right: 1px solid primary-200)
 │ │ ☐ │ Tên          │ SĐT        │Trạng thái│Nguồn   │Sale  ││
 │ │───┼──────────────┼────────────┼──────────┼────────┼──────││
 │ │ ☐ │ Trần Thị B   │ 090 123 45 │🟡ASSIGNED│Website │Bình  ││
-│ │ ☑ │ Lê Văn C     │ 098 765 43 │🔵POOL    │Facebook│ —    ││
+│ │ ☑ │ Lê Văn C     │ 098 765 43 │🔵POOL    │Facebook│ -    ││
 │ │ ☐ │ Phạm Thị D   │ 091 234 56 │🟠IN_PROG │Referral│Cường ││
 │ │ ☐ │ Nguyễn E     │ 097 654 32 │🟢CONVERT │Website │Mai   ││
 │ │ ☐ │ Hoàng F      │ 093 456 78 │🔴LOST    │ColdCall│Hùng  ││
-│ │ ☐ │ Vũ Thị G     │ 096 543 21 │🟣FLOAT   │Event   │ —    ││
+│ │ ☐ │ Vũ Thị G     │ 096 543 21 │🟣FLOAT   │Event   │ -    ││
 │ │                                                            ││
 │ │ Hiển thị 1-20 / 156          [← Trước] [Tiếp →]          ││
 │ └────────────────────────────────────────────────────────────┘│
@@ -341,16 +341,16 @@ Status badges (pill shape, subtle bg):
 │ │  │ [Nhập ghi chú...                              ] [Gửi]│ ││
 │ │  └──────────────────────────────────────────────────────┘ ││
 │ │                                                            ││
-│ │  ● 14:30 hôm nay — 📝 Ghi chú (Sale Bình)               ││
+│ │  ● 14:30 hôm nay - 📝 Ghi chú (Sale Bình)               ││
 │ │  │  "Khách quan tâm gói Premium, hẹn gọi lại thứ 5"     ││
 │ │  │                                                        ││
-│ │  ● 10:00 hôm nay — 📞 Cuộc gọi đi (5p30s)              ││
+│ │  ● 10:00 hôm nay - 📞 Cuộc gọi đi (5p30s)              ││
 │ │  │  Auto-matched · Gọi tư vấn lần đầu                    ││
 │ │  │                                                        ││
-│ │  ● 09:05 hôm nay — 🔄 Trạng thái                        ││
+│ │  ● 09:05 hôm nay - 🔄 Trạng thái                        ││
 │ │  │  POOL → ASSIGNED (auto, template "Chia Team A")        ││
 │ │  │                                                        ││
-│ │  ● 09:00 hôm nay — ➕ Tạo mới                            ││
+│ │  ● 09:00 hôm nay - ➕ Tạo mới                            ││
 │ │  │  Lead tạo từ CSV Import                                ││
 │ │  │                                                        ││
 │ │  [Xem thêm...]                                            ││
@@ -471,7 +471,7 @@ Floating card: glass + violet-100 left border (4px)
 │ │                                                            ││
 │ │  #101 Gói Premium    🟢 CONVERTED   Sale Bình   01/03/26  ││
 │ │  #156 Gói VIP        🟠 IN_PROGRESS Sale Mai    15/03/26  ││
-│ │  #200 Gia hạn        🔵 POOL        —           25/03/26  ││
+│ │  #200 Gia hạn        🔵 POOL        -           25/03/26  ││
 │ │                                                            ││
 │ └────────────────────────────────────────────────────────────┘│
 └──────────────────────────────────────────────────────────────┘
@@ -616,7 +616,7 @@ Time: text-xs text-gray-400, above content
 
 ---
 
-## 5. Responsive Strategy — Breakpoints & Rules
+## 5. Responsive Strategy - Breakpoints & Rules
 
 ### Breakpoints (Tailwind 4)
 
@@ -721,7 +721,7 @@ Desktop:
   Bulk actions: inline toolbar
 
 Tablet:
-  Table: hide columns (source, created date) — show on row expand
+  Table: hide columns (source, created date) - show on row expand
   Toolbar: 2 rows (search | filters + actions)
 
 Mobile (<768px):

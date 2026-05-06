@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAsAdmin, loginAsManager } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Lead — CRUD và chuyển trạng thái', () => {
+test.describe('Lead - CRUD và chuyển trạng thái', () => {
   test('MANAGER tạo lead mới → hiện trong danh sách', async ({ page }) => {
     await loginAsManager(page);
     await page.goto('/leads/new');

@@ -1,5 +1,5 @@
 /**
- * Test data factory — tạo dữ liệu test qua API trực tiếp.
+ * Test data factory - tạo dữ liệu test qua API trực tiếp.
  * Login để lấy JWT token, sau đó dùng token để tạo các entity.
  */
 

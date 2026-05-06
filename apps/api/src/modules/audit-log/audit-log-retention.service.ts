@@ -6,7 +6,7 @@ import { CronRunService } from '../cron-run/cron-run.service';
 const RETENTION_DAYS = 60;
 
 /**
- * Daily 3:30 AM (after notification cleanup) — drops audit_logs and cron_runs
+ * Daily 3:30 AM (after notification cleanup) - drops audit_logs and cron_runs
  * older than RETENTION_DAYS. Self-instrumented via cron-run tracking so retention
  * itself shows up in the trace UI ("eat own dogfood").
  *

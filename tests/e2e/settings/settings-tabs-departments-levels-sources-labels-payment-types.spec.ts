@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAsAdmin, loginAsManager, loginAsUser } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Cài đặt — Tabs và CRUD (Phòng ban, Cấp bậc, Nguồn, Nhãn, Thanh toán)', () => {
+test.describe('Cài đặt - Tabs và CRUD (Phòng ban, Cấp bậc, Nguồn, Nhãn, Thanh toán)', () => {
   test.describe('Truy cập và chuyển tab', () => {
     test('SUPER_ADMIN thấy trang Cài đặt với đủ 5 tabs', async ({ page }) => {
       await loginAsAdmin(page);

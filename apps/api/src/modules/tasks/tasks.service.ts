@@ -262,7 +262,7 @@ export class TasksService {
             ? `Hạn: ${formatVnDateTime(r.task.dueDate)}`
             : 'Công việc đến hạn nhắc',
           type: 'TASK_REMIND',
-          // EntityType enum only supports LEAD/CUSTOMER — leave null for pure tasks
+          // EntityType enum only supports LEAD/CUSTOMER - leave null for pure tasks
           entityType: r.task.entityType ?? null,
           entityId: r.task.entityType ? r.task.entityId : null,
         }));

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAsAdmin, loginAsUser } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Thông báo — Bell icon, Unread count, Đánh dấu đã đọc', () => {
+test.describe('Thông báo - Bell icon, Unread count, Đánh dấu đã đọc', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto('/');
@@ -26,7 +26,7 @@ test.describe('Thông báo — Bell icon, Unread count, Đánh dấu đã đọc
     // Badge (span đỏ) có thể hiện hoặc không tùy vào dữ liệu seed
     // Chỉ verify bell tồn tại, không bắt buộc có badge
     const badge = bellBtn.locator('span').filter({ hasText: /\d+/ }).first();
-    // Badge là optional — pass nếu không có thông báo
+    // Badge là optional - pass nếu không có thông báo
     const badgeVisible = await badge.isVisible();
     // Log để debug, không fail test
     console.log(`Unread badge visible: ${badgeVisible}`);

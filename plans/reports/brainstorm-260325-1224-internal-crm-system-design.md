@@ -79,7 +79,7 @@ customers
 ├── phone (required, indexed)
 ├── name
 ├── email
-├── metadata (jsonb) — flexible extra fields
+├── metadata (jsonb) - flexible extra fields
 ├── assigned_user_id → users (nullable, current owner)
 ├── assigned_department_id → departments (nullable)
 └── timestamps
@@ -91,7 +91,7 @@ leads
 ├── source_id → lead_sources
 ├── assigned_user_id → users (nullable, current owner)
 ├── status (enum: pool | assigned | in_progress | converted | lost | transferred)
-├── phone (required, indexed) — denormalized for quick lookup
+├── phone (required, indexed) - denormalized for quick lookup
 ├── name
 ├── email
 ├── metadata (jsonb)
@@ -251,8 +251,8 @@ ai_distribution_configs
 ├── id (uuid)
 ├── department_id → departments
 ├── is_active (boolean)
-├── matching_criteria (jsonb) — rules for matching
-├── weight_config (jsonb) — {workload: 0.3, skill: 0.4, performance: 0.3}
+├── matching_criteria (jsonb) - rules for matching
+├── weight_config (jsonb) - {workload: 0.3, skill: 0.4, performance: 0.3}
 └── timestamps
 ```
 

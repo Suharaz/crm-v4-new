@@ -52,7 +52,7 @@ export class CallLogsService {
     externalId: string; phoneNumber: string; callType: string;
     callTime: string; duration?: number; content?: string;
   }) {
-    // Dedup by external_id (chỉ check row active — cho phép re-ingest nếu row cũ đã soft-delete)
+    // Dedup by external_id (chỉ check row active - cho phép re-ingest nếu row cũ đã soft-delete)
     const existing = await this.prisma.callLog.findFirst({
       where: { externalId: data.externalId, deletedAt: null },
       select: { id: true },
@@ -80,7 +80,7 @@ export class CallLogsService {
       matchedUserId = lead.assignedUserId;
       matchStatus = 'AUTO_MATCHED';
     } else {
-      // Try match customer — match cả số chính lẫn số phụ.
+      // Try match customer - match cả số chính lẫn số phụ.
       const customer = await this.customerPhonesService.findCustomerByAnyPhone(phone);
       if (customer) {
         matchedEntityType = 'CUSTOMER';

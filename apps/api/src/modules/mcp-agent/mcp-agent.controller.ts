@@ -15,7 +15,7 @@ import { McpAgentAuthGuard } from './mcp-agent-auth.guard';
 
 /**
  * MCP Streamable HTTP endpoint.
- * @Public() skips global JWT guard — uses API key auth instead.
+ * @Public() skips global JWT guard - uses API key auth instead.
  * Rate limited: 100 req/min per API key to prevent DB exfiltration.
  */
 @Controller('mcp')

@@ -1,5 +1,5 @@
 /**
- * Test suite: Activity timeline — create notes, cursor pagination,
+ * Test suite: Activity timeline - create notes, cursor pagination,
  *             auto IN_PROGRESS trigger on first note for ASSIGNED lead,
  *             customer activities
  */
@@ -56,7 +56,7 @@ describe('Activity Timeline', () => {
 
   // ── POST /leads/:id/activities ───────────────────────────────────────────
 
-  describe('POST /leads/:id/activities — tạo note cho lead', () => {
+  describe('POST /leads/:id/activities - tạo note cho lead', () => {
     it('USER tạo note cho lead → 201', async () => {
       const leadId = await createAssignedLead();
       const { status, body } = await user.postJson<any>(`/leads/${leadId}/activities`, {
@@ -116,7 +116,7 @@ describe('Activity Timeline', () => {
 
   // ── Auto IN_PROGRESS trigger ─────────────────────────────────────────────
 
-  describe('Auto IN_PROGRESS trigger — note đầu tiên cho lead ASSIGNED', () => {
+  describe('Auto IN_PROGRESS trigger - note đầu tiên cho lead ASSIGNED', () => {
     it('lead ASSIGNED + user tạo note đầu tiên → lead tự chuyển IN_PROGRESS', async () => {
       const leadId = await createAssignedLead();
 
@@ -164,7 +164,7 @@ describe('Activity Timeline', () => {
 
       // Note thứ 2
       const { status } = await user.postJson<any>(`/leads/${leadId}/activities`, {
-        content: 'Note 2 — không thay đổi status',
+        content: 'Note 2 - không thay đổi status',
       });
       expect(status).toBe(201);
 
@@ -176,7 +176,7 @@ describe('Activity Timeline', () => {
 
   // ── GET /leads/:id/activities ────────────────────────────────────────────
 
-  describe('GET /leads/:id/activities — timeline với cursor pagination', () => {
+  describe('GET /leads/:id/activities - timeline với cursor pagination', () => {
     it('lấy timeline lead → 200 + array notes', async () => {
       const leadId = await createAssignedLead();
       // Tạo vài notes
@@ -217,7 +217,7 @@ describe('Activity Timeline', () => {
 
   // ── POST /customers/:id/activities ──────────────────────────────────────
 
-  describe('POST /customers/:id/activities — tạo note cho customer', () => {
+  describe('POST /customers/:id/activities - tạo note cho customer', () => {
     it('USER tạo note cho customer → 201', async () => {
       const { status, body } = await user.postJson<any>(`/customers/${customerId}/activities`, {
         content: 'Gọi điện cho khách, đã đặt hàng',
@@ -248,7 +248,7 @@ describe('Activity Timeline', () => {
 
   // ── GET /customers/:id/activities ────────────────────────────────────────
 
-  describe('GET /customers/:id/activities — customer timeline', () => {
+  describe('GET /customers/:id/activities - customer timeline', () => {
     it('lấy timeline customer → 200 + array', async () => {
       const { status, body } = await manager.getJson<any>(`/customers/${customerId}/activities`);
       expect(status).toBe(200);

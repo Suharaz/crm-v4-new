@@ -1,4 +1,4 @@
-# Phase 04 — Frontend Types & Data Layer
+# Phase 04 - Frontend Types & Data Layer
 
 ## Context Links
 
@@ -13,7 +13,7 @@
 ## Related Code Files
 
 **Modify:**
-- `apps/web/src/types/entities.ts` — Lead type
+- `apps/web/src/types/entities.ts` - Lead type
 - `apps/web/src/lib/api-client.ts` (hoặc helper file gọi label endpoint)
 
 **Read for context:**
@@ -58,8 +58,8 @@ Bỏ helper cũ `attachLabelsToLead([])` cho Lead (nếu có).
 
 - [ ] Sửa `Lead` type
 - [ ] Thêm helper `setLeadLabel`
-- [ ] `pnpm --filter @crm/web build` — không TS error
-- [ ] Grep `lead.labels`, `Lead\.labels` — chỉ còn ở comment hoặc legacy đã clean
+- [ ] `pnpm --filter @crm/web build` - không TS error
+- [ ] Grep `lead.labels`, `Lead\.labels` - chỉ còn ở comment hoặc legacy đã clean
 
 ## Success Criteria
 

@@ -1,4 +1,4 @@
-# Phase 05 — Frontend `/trace` Page (Super Admin)
+# Phase 05 - Frontend `/trace` Page (Super Admin)
 
 **Priority:** P1 | **Status:** Pending | **Est:** 4h | **Depends:** Phase 02 + 03
 
@@ -47,7 +47,7 @@ apps/web/src/app/(dashboard)/trace/
 - `GET /api/v1/cron-runs?...` (Phase 03)
 - `GET /api/v1/cron-runs/:id`
 
-### Tab "All" — gộp như nào?
+### Tab "All" - gộp như nào?
 - Frontend gọi 2 API parallel với cùng time-range
 - Merge + sort desc theo `createdAt` / `startedAt` ở client
 - Limit 50 mỗi nguồn → max 100 rows hiển thị
@@ -58,7 +58,7 @@ apps/web/src/app/(dashboard)/trace/
 **Audit Log:**
 - User (autocomplete users API)
 - Department (dropdown departments API)
-- Action (dropdown — fetch distinct từ API)
+- Action (dropdown - fetch distinct từ API)
 - Entity Type (LEAD / CUSTOMER / ORDER / PAYMENT / USER / TASK)
 - Entity ID (number input)
 - Method (POST/PUT/PATCH/DELETE checkbox group)
@@ -67,25 +67,25 @@ apps/web/src/app/(dashboard)/trace/
 - From / To (date-range picker)
 
 **Cron Runs:**
-- Job name (dropdown — fetch distinct)
+- Job name (dropdown - fetch distinct)
 - Status (RUNNING / SUCCESS / FAILED checkbox)
 - From / To
-- Min duration (input seconds — optional)
+- Min duration (input seconds - optional)
 
 **All:** chỉ time-range + free-text search (sau)
 
 ## Related Code Files
 
 ### Read first
-- `apps/web/src/app/(dashboard)/layout.tsx` — dashboard layout pattern
-- `apps/web/src/app/(dashboard)/users/page.tsx` — page với role check pattern
-- `apps/web/src/app/(dashboard)/leads/page.tsx` — table + filter pattern
-- `apps/web/src/lib/api-client.ts` — API client (token refresh)
-- `apps/web/src/components/leads/lead-list-table.tsx` (or similar) — table component reference
-- `apps/web/src/components/ui/sheet.tsx` — shadcn sheet for detail modal
+- `apps/web/src/app/(dashboard)/layout.tsx` - dashboard layout pattern
+- `apps/web/src/app/(dashboard)/users/page.tsx` - page với role check pattern
+- `apps/web/src/app/(dashboard)/leads/page.tsx` - table + filter pattern
+- `apps/web/src/lib/api-client.ts` - API client (token refresh)
+- `apps/web/src/components/leads/lead-list-table.tsx` (or similar) - table component reference
+- `apps/web/src/components/ui/sheet.tsx` - shadcn sheet for detail modal
 
 ### Modify
-- `apps/web/src/components/layout/sidebar.tsx` (or nav file) — thêm link `/trace` (chỉ hiển thị cho super_admin)
+- `apps/web/src/components/layout/sidebar.tsx` (or nav file) - thêm link `/trace` (chỉ hiển thị cho super_admin)
 
 ### Create
 - `apps/web/src/app/(dashboard)/trace/page.tsx`
@@ -97,15 +97,15 @@ apps/web/src/app/(dashboard)/trace/
 - `apps/web/src/app/(dashboard)/trace/_components/cron-run-row-detail.tsx`
 - `apps/web/src/app/(dashboard)/trace/_components/all-events-feed.tsx`
 - `apps/web/src/app/(dashboard)/trace/_components/action-badge.tsx`
-- `apps/web/src/lib/api/trace.ts` — typed API wrappers
+- `apps/web/src/lib/api/trace.ts` - typed API wrappers
 
 ### Types
-- `packages/types/src/trace.ts` — DTOs khớp backend
+- `packages/types/src/trace.ts` - DTOs khớp backend
   - `AuditLogResponse`, `CronRunResponse`, query DTOs
 
 ## Implementation Steps
 
-### Step 1 — Types in @crm/types
+### Step 1 - Types in @crm/types
 ```ts
 // packages/types/src/trace.ts
 export interface AuditLogResponse {
@@ -137,7 +137,7 @@ export interface CronRunResponse {
 }
 ```
 
-### Step 2 — Page shell với role check (Server Component)
+### Step 2 - Page shell với role check (Server Component)
 ```tsx
 // app/(dashboard)/trace/page.tsx
 export default async function TracePage() {
@@ -147,18 +147,18 @@ export default async function TracePage() {
 }
 ```
 
-### Step 3 — Trace tabs (Client)
+### Step 3 - Trace tabs (Client)
 - shadcn Tabs với 3 options
 - Tab state sync với URL `?tab=`
 - Mount table component theo tab
 
-### Step 4 — Filter sheet
+### Step 4 - Filter sheet
 - shadcn Sheet hoặc inline filter bar
 - Form state: zod + react-hook-form
 - Apply → update searchParams qua router
 - Clear button → reset
 
-### Step 5 — Tables
+### Step 5 - Tables
 - Use `@tanstack/react-table` (kiểm tra đã có chưa, nếu chưa thì dùng plain table)
 - Audit log columns: Time | User | Action | Method/Path | Status | IP | Detail btn
 - Cron run columns: Job | Started | Duration | Status | Affected | Error | Detail btn
@@ -167,21 +167,21 @@ export default async function TracePage() {
   - Status code: 2xx=green, 4xx=amber, 5xx=red
   - Cron status: SUCCESS=green, FAILED=red, RUNNING=blue (pulse)
 
-### Step 6 — Detail sheet
+### Step 6 - Detail sheet
 - Click row → open right-side sheet
 - Hiển thị tất cả field + metadata pretty-printed JSON (use `<pre>` với syntax highlight cơ bản)
 - Copy ID button
 
-### Step 7 — Pagination
+### Step 7 - Pagination
 - "Load more" button thay vì page numbers (cursor-based)
 - Disable khi không có nextCursor
 
-### Step 8 — Sidebar link
+### Step 8 - Sidebar link
 - Thêm icon + label "Trace" trong sidebar
 - Chỉ render khi `user.role === 'SUPER_ADMIN'`
 - Active state khi pathname === `/trace`
 
-### Step 9 — Manual test
+### Step 9 - Manual test
 1. Login as super_admin → vào `/trace` → 3 tab hiển thị
 2. Login as manager/user → truy cập `/trace` → redirect về `/dashboard`
 3. Apply filter user + time-range → kết quả đúng

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-// Pure logic extracted từ PaymentMatchingService — không cần DB
+// Pure logic extracted từ PaymentMatchingService - không cần DB
 // Kiểm tra matching logic và conversion trigger conditions
 
 // ─── Matching logic helpers ───────────────────────────────────────────────────
@@ -50,7 +50,7 @@ function shouldTriggerConversion(verifiedPayments: number[], orderTotal: number)
 
 // ─── Payment matching ─────────────────────────────────────────────────────────
 
-describe('isPaymentMatchingBankTx — khớp payment với bank transaction', () => {
+describe('isPaymentMatchingBankTx - khớp payment với bank transaction', () => {
   const payment: Payment = {
     id: BigInt(1),
     status: 'PENDING',
@@ -99,16 +99,16 @@ describe('isPaymentMatchingBankTx — khớp payment với bank transaction', ()
     expect(isPaymentMatchingBankTx(payment, upperContentTx)).toBe(true);
   });
 
-  it('transferContent uppercase — content lowercase vẫn khớp', () => {
+  it('transferContent uppercase - content lowercase vẫn khớp', () => {
     const upperPayment = { ...payment, transferContent: 'CK001' };
     const lowerTx = { ...bankTx, content: 'thanhtoan ck001 nguyen' };
     expect(isPaymentMatchingBankTx(upperPayment, lowerTx)).toBe(true);
   });
 });
 
-// ─── findMatchingPayments — chọn candidate duy nhất ──────────────────────────
+// ─── findMatchingPayments - chọn candidate duy nhất ──────────────────────────
 
-describe('findMatchingPayments — lọc candidates cho bank transaction', () => {
+describe('findMatchingPayments - lọc candidates cho bank transaction', () => {
   const bankTx: BankTransaction = {
     id: BigInt(10),
     matchStatus: 'UNMATCHED',
@@ -148,9 +148,9 @@ describe('findMatchingPayments — lọc candidates cho bank transaction', () =>
   });
 });
 
-// ─── shouldTriggerConversion — kích hoạt chuyển đổi ──────────────────────────
+// ─── shouldTriggerConversion - kích hoạt chuyển đổi ──────────────────────────
 
-describe('shouldTriggerConversion — tổng verified >= order total', () => {
+describe('shouldTriggerConversion - tổng verified >= order total', () => {
   it('tổng verified bằng đúng order total → trigger', () => {
     expect(shouldTriggerConversion([1000000], 1000000)).toBe(true);
   });

@@ -169,7 +169,7 @@ function JobStatusRow({ job, onUpdate }: { job: ImportJob; onUpdate: (updated: I
             {job.totalRows}
             {job.errorCount ? <span className="text-red-500"> ({job.errorCount} lỗi)</span> : null}
           </span>
-        ) : '—'}
+        ) : '-'}
       </td>
       <td className="px-4 py-3">
         {job.errorFileUrl ? (
@@ -180,7 +180,7 @@ function JobStatusRow({ job, onUpdate }: { job: ImportJob; onUpdate: (updated: I
           >
             <Download className="h-3 w-3" />Tải lỗi
           </a>
-        ) : '—'}
+        ) : '-'}
       </td>
       <td className="px-4 py-3 text-sm text-slate-400">{formatDateTime(job.createdAt)}</td>
     </tr>

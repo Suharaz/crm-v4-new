@@ -31,7 +31,7 @@ describe('Leads CRUD', () => {
 
   // ── POST /leads ──────────────────────────────────────────────────────────
 
-  describe('POST /leads — tạo lead mới', () => {
+  describe('POST /leads - tạo lead mới', () => {
     it('MANAGER tạo lead với đầy đủ thông tin → 201', async () => {
       const payload = {
         name: 'Nguyễn Văn Test Lead',
@@ -96,7 +96,7 @@ describe('Leads CRUD', () => {
 
   // ── GET /leads ───────────────────────────────────────────────────────────
 
-  describe('GET /leads — danh sách lead với cursor pagination', () => {
+  describe('GET /leads - danh sách lead với cursor pagination', () => {
     it('MANAGER lấy danh sách → 200 + data + meta.nextCursor', async () => {
       const { status, body } = await manager.getJson<any>('/leads?limit=5');
       expect(status).toBe(200);
@@ -136,7 +136,7 @@ describe('Leads CRUD', () => {
 
   // ── GET /leads/:id ───────────────────────────────────────────────────────
 
-  describe('GET /leads/:id — chi tiết lead', () => {
+  describe('GET /leads/:id - chi tiết lead', () => {
     it('MANAGER xem lead tồn tại → 200 + data đầy đủ', async () => {
       if (!createdLeadId) return;
       const { status, body } = await manager.getJson<any>(`/leads/${createdLeadId}`);
@@ -154,7 +154,7 @@ describe('Leads CRUD', () => {
 
   // ── PATCH /leads/:id ─────────────────────────────────────────────────────
 
-  describe('PATCH /leads/:id — cập nhật lead', () => {
+  describe('PATCH /leads/:id - cập nhật lead', () => {
     it('MANAGER cập nhật tên lead → 200', async () => {
       if (!createdLeadId) return;
       const { status, body } = await manager.patchJson<any>(`/leads/${createdLeadId}`, {
@@ -175,7 +175,7 @@ describe('Leads CRUD', () => {
 
   // ── DELETE /leads/:id ─────────────────────────────────────────────────────
 
-  describe('DELETE /leads/:id — soft delete', () => {
+  describe('DELETE /leads/:id - soft delete', () => {
     it('MANAGER xóa lead → 403 (chỉ SUPER_ADMIN được xóa)', async () => {
       if (!createdLeadId) return;
       const { status } = await manager.deleteJson<any>(`/leads/${createdLeadId}`);

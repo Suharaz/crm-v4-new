@@ -34,7 +34,7 @@ async function openNoteDialog(page: import('@playwright/test').Page) {
   await page.locator('[data-testid="note-dialog"]').waitFor({ state: 'visible', timeout: 5_000 });
 }
 
-test.describe('NoteDialog — ghi chú với nhắc nhở', () => {
+test.describe('NoteDialog - ghi chú với nhắc nhở', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsUser(page);
   });
@@ -91,7 +91,7 @@ test.describe('NoteDialog — ghi chú với nhắc nhở', () => {
       await titleInput.fill('Nhắc nhanh');
     }
 
-    // Deadline 1 hour from now — only "30 phút trước" passes the > now filter
+    // Deadline 1 hour from now - only "30 phút trước" passes the > now filter
     const nearDue = new Date(Date.now() + 3_600_000);
     await dialog.locator('[data-testid="task-due-date"]').fill(toInputValue(nearDue));
 
@@ -100,7 +100,7 @@ test.describe('NoteDialog — ghi chú với nhắc nhở', () => {
     await expect(reminderRows.first().locator('input[type="text"]')).toHaveValue('30 phút trước');
   });
 
-  test('Max 5 reminders — nút thêm bị disabled khi đạt giới hạn', async ({ page }) => {
+  test('Max 5 reminders - nút thêm bị disabled khi đạt giới hạn', async ({ page }) => {
     await openNoteDialog(page);
 
     const dialog = page.locator('[data-testid="note-dialog"]');

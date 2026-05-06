@@ -92,7 +92,7 @@ export function invalidatePreviewCache(entityType: string, entityId: string) {
   try { localStorage.removeItem(CACHE_PREFIX + `${entityType}:${entityId}`); } catch { /* */ }
 }
 
-/** Quick preview dialog for lead/customer — shows key info + quick actions. */
+/** Quick preview dialog for lead/customer - shows key info + quick actions. */
 export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entityId }: PreviewDialogProps) {
   const router = useRouter();
   const [data, setData] = useState<PreviewEntityData | null>(null);
@@ -150,11 +150,11 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
       : (data?.labels || data?.customerLabels || []);
   const currentLabelIds = new Set(labels.map((ll) => String((ll.label || ll).id)));
 
-  // Quick label toggle — lead uses PATCH single, customer uses junction add/remove
+  // Quick label toggle - lead uses PATCH single, customer uses junction add/remove
   async function toggleLabel(labelId: string) {
     if (!entityId) return;
     setLabelSaving(true);
-    // Track whether we're clearing or setting — drives toast wording
+    // Track whether we're clearing or setting - drives toast wording
     const wasActive = currentLabelIds.has(labelId);
     try {
       if (entityType === 'lead') {
@@ -285,7 +285,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                     {activities.slice(0, 5).map((a) => (
                       <div key={a.id} className="text-xs bg-slate-50 rounded-md px-2.5 py-2 border border-slate-100">
                         <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="font-medium text-slate-700">{a.user?.name || '—'}</span>
+                          <span className="font-medium text-slate-700">{a.user?.name || '-'}</span>
                           <span className="text-slate-300">·</span>
                           <span className="text-slate-400">{a.type === 'NOTE' ? 'Ghi chú' : a.type === 'CALL' ? 'Cuộc gọi' : a.type}</span>
                           <span className="text-slate-300">·</span>
@@ -363,7 +363,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
               {paymentOpen && (
                 <div className="space-y-2">
                   {pendingOrders.length === 0 ? (
-                    <p className="text-xs text-slate-400">Chưa có đơn hàng — hãy tạo đơn hàng trước</p>
+                    <p className="text-xs text-slate-400">Chưa có đơn hàng - hãy tạo đơn hàng trước</p>
                   ) : (
                     <>
                       {pendingOrders.length > 1 ? (
@@ -373,14 +373,14 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                             <label key={o.id} className={`flex items-center gap-2 rounded border px-2 py-1.5 cursor-pointer text-xs ${
                               pmtOrderId === String(o.id) ? 'border-sky-400 bg-sky-50' : 'border-slate-200'}`}>
                               <input type="radio" name="pmtOrder" checked={pmtOrderId === String(o.id)} onChange={() => setPmtOrderId(String(o.id))} />
-                              <span>#{o.id} — {o.product?.name || 'N/A'} — {formatVND(Number(o.totalAmount))}</span>
+                              <span>#{o.id} - {o.product?.name || 'N/A'} - {formatVND(Number(o.totalAmount))}</span>
                               <StatusBadge status={o.status} />
                             </label>
                           ))}
                         </div>
                       ) : (
                         <AutoSelectOrder orderId={String(pendingOrders[0].id)} onSelect={setPmtOrderId}>
-                          Đơn #{pendingOrders[0].id} — {pendingOrders[0].product?.name} — {formatVND(Number(pendingOrders[0].totalAmount))}
+                          Đơn #{pendingOrders[0].id} - {pendingOrders[0].product?.name} - {formatVND(Number(pendingOrders[0].totalAmount))}
                         </AutoSelectOrder>
                       )}
                       <div className="flex gap-2">
@@ -397,7 +397,7 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
               )}
             </div>
 
-            {/* Footer — Detail button */}
+            {/* Footer - Detail button */}
             <div className="sticky bottom-0 border-t border-slate-200 bg-slate-50 px-5 py-3 flex justify-between items-center">
               <span className="text-xs text-slate-400">
                 {entityType === 'lead' ? 'Lead' : 'Khách hàng'} #{entityId}

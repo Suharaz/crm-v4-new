@@ -46,7 +46,7 @@ All 4 reports are **solid and practical**. Few conflicts between reports. Below:
 - Performance advantage real at CRM scale (10K+ leads/month)
 - Sequential = better B-tree performance, cache locality
 - Privacy concern minimal for internal CRM
-- Frontend will receive `string` (BigInt serialized) — no impact on UI code
+- Frontend will receive `string` (BigInt serialized) - no impact on UI code
 - **Exception:** Consider UUID only if multi-tenant SaaS planned (currently: single-tenant, YAGNI)
 
 ### 2.2 Server Actions vs REST API
@@ -55,7 +55,7 @@ All 4 reports are **solid and practical**. Few conflicts between reports. Below:
 **NestJS report:** Full REST API with controller → service → repository pattern
 
 **Resolution: Use NestJS REST API exclusively**
-- We already chose NestJS as dedicated API server — don't bypass it with Server Actions calling Prisma directly
+- We already chose NestJS as dedicated API server - don't bypass it with Server Actions calling Prisma directly
 - Server Actions should call NestJS API, not Prisma directly
 - Single source of truth for business logic = NestJS
 - Next.js = pure frontend, no direct DB access
@@ -103,7 +103,7 @@ crm-v3/
 - Prisma `enum` keyword creates native PG enum automatically
 - TypeScript type safety + PG type safety
 - **Caveat:** Adding new enum values requires migration. Acceptable for CRM status fields (stable after initial design)
-- For frequently-changing values (lead sources, labels, payment types): use **lookup tables** CRUD by super_admin — NOT enums
+- For frequently-changing values (lead sources, labels, payment types): use **lookup tables** CRUD by super_admin - NOT enums
 
 ### 2.5 Authentication in Next.js
 
@@ -129,12 +129,12 @@ crm-v3/
 - COPY command for bulk import
 
 **Corrections:**
-- `@@fulltext` annotation in Prisma example is wrong — Prisma doesn't support `@@fulltext` for PostgreSQL (only MySQL). Use raw SQL for GIN full-text index.
+- `@@fulltext` annotation in Prisma example is wrong - Prisma doesn't support `@@fulltext` for PostgreSQL (only MySQL). Use raw SQL for GIN full-text index.
 - `@@uniqueConstraint` doesn't exist in Prisma. Should be `@@unique([email, deletedAt])`.
 - PgBouncer: mention that Prisma 5+ has built-in connection pooling via `?connection_limit=10` in DATABASE_URL. PgBouncer optional but recommended for production.
 
 **Addition needed:**
-- Phone number normalization strategy (libphonenumber) — critical for auto-matching calls
+- Phone number normalization strategy (libphonenumber) - critical for auto-matching calls
 - Index on `(phone, deletedAt)` specifically for call matching use case
 
 ### 3.2 NestJS Report
@@ -148,8 +148,8 @@ crm-v3/
 
 **Corrections:**
 - Package versions outdated: Prisma should be `^6.x` not `^5.9`, NestJS `^11.x` not `^10.x`
-- `@nestjs/typeorm` listed in dependencies but we're using Prisma — remove it
-- Lead scoring service example assumes AI scoring at creation time — per brainstorm, Phase 1 uses manual assignment, AI matching comes later
+- `@nestjs/typeorm` listed in dependencies but we're using Prisma - remove it
+- Lead scoring service example assumes AI scoring at creation time - per brainstorm, Phase 1 uses manual assignment, AI matching comes later
 
 **Addition needed:**
 - API key authentication module for 3rd party integrations (call log API, lead import API)
@@ -159,16 +159,16 @@ crm-v3/
 ### 3.3 React/Next.js Report
 
 **Good:**
-- Server Components by default — correct principle
+- Server Components by default - correct principle
 - Suspense boundaries for dashboard streaming excellent
 - URL searchParams for filter state practical
 - TanStack Table code examples useful
 - Auth context pattern clean
 
 **Corrections:**
-- Remove all references to "Prisma directly in Server Components" — we use NestJS API
-- `proxy.ts` naming is speculative for Next.js 16 — current stable is `middleware.ts`. Use `middleware.ts` until officially renamed
-- React Hook Form + useActionState combination example is awkward — pick one approach: React Hook Form for complex forms OR useActionState for simple forms. Don't mix.
+- Remove all references to "Prisma directly in Server Components" - we use NestJS API
+- `proxy.ts` naming is speculative for Next.js 16 - current stable is `middleware.ts`. Use `middleware.ts` until officially renamed
+- React Hook Form + useActionState combination example is awkward - pick one approach: React Hook Form for complex forms OR useActionState for simple forms. Don't mix.
 
 **Addition needed:**
 - How to forward JWT from cookies to NestJS API calls in Server Components
@@ -186,9 +186,9 @@ crm-v3/
 - Toast patterns with undo/retry actions
 
 **Corrections:**
-- "Send Email" in quick actions — per brainstorm, no email integration. Remove.
-- "Schedule Call" — no scheduling feature discussed. Call logs are passive (3rd party pushes data). Remove.
-- Global search dropdown — needs to match actual entities: Leads, Customers, Orders (not generic)
+- "Send Email" in quick actions - per brainstorm, no email integration. Remove.
+- "Schedule Call" - no scheduling feature discussed. Call logs are passive (3rd party pushes data). Remove.
+- Global search dropdown - needs to match actual entities: Leads, Customers, Orders (not generic)
 
 **Addition needed:**
 - Lead Pool view: dedicated view for unassigned leads in waiting pool (not just Kanban)
@@ -250,11 +250,11 @@ crm-v3/
 
 ### Can Defer (Not Needed for Phase 1)
 
-6. Multi-tenant / SaaS — skip for now (YAGNI)
-7. Real-time updates — not required per brainstorm
-8. Call recording storage — defer until call integration phase
-9. Custom dashboard builder — pre-built dashboards first
-10. Offline support — not needed for internal CRM
+6. Multi-tenant / SaaS - skip for now (YAGNI)
+7. Real-time updates - not required per brainstorm
+8. Call recording storage - defer until call integration phase
+9. Custom dashboard builder - pre-built dashboards first
+10. Offline support - not needed for internal CRM
 
 ---
 

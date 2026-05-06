@@ -53,7 +53,7 @@ export class DistributionService {
     return { leadId, assignedUserId: userId };
   }
 
-  /** Batch distribute leads from department pool — scores once, batch writes. */
+  /** Batch distribute leads from department pool - scores once, batch writes. */
   async batchDistribute(departmentId: bigint, assignedBy: bigint) {
     const leads = await this.prisma.lead.findMany({
       where: { status: 'POOL', departmentId, assignedUserId: null, deletedAt: null },

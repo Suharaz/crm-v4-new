@@ -204,7 +204,7 @@ function parseVNAmount(raw: unknown): number {
       normalized = cleaned.replace(/,/g, '');
     }
   } else if (cleaned.includes(',')) {
-    // Ambiguous — treat comma as thousands if >1 comma or group-of-3
+    // Ambiguous - treat comma as thousands if >1 comma or group-of-3
     const parts = cleaned.split(',');
     if (parts.length > 2 || (parts[1] && parts[1].length === 3)) {
       normalized = cleaned.replace(/,/g, '');

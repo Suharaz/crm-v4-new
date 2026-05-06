@@ -7,7 +7,7 @@ import { LandingNav } from '@/components/landing/landing-nav';
 import { LandingFooter } from '@/components/landing/landing-footer';
 
 export const metadata: Metadata = {
-  title: 'VeloCRM — Tốc độ & Hiệu suất cho đội ngũ bán hàng',
+  title: 'VeloCRM - Tốc độ & Hiệu suất cho đội ngũ bán hàng',
   description: 'Hệ thống CRM nội bộ tối ưu hiệu suất đội sales, quản lý lead pipeline, payment verification tự động, phân phối AI-based.',
 };
 

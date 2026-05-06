@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-// Pure scoring logic extracted từ ScoringService — không cần DB
+// Pure scoring logic extracted từ ScoringService - không cần DB
 // Trọng số mặc định: workload 30%, level 30%, performance 40%
 
 interface UserScoreInput {
@@ -60,7 +60,7 @@ function pickBestUser(users: UserScoreInput[]): bigint | null {
 
 // ─── Workload weight ──────────────────────────────────────────────────────────
 
-describe('Workload weight (30%) — ít lead hơn = điểm cao hơn', () => {
+describe('Workload weight (30%) - ít lead hơn = điểm cao hơn', () => {
   it('user có 2 leads được điểm workload cao hơn user có 5 leads', () => {
     const users: UserScoreInput[] = [
       { userId: BigInt(1), workloadCount: 5, levelRank: 1, conversionRate: 0 },
@@ -95,7 +95,7 @@ describe('Workload weight (30%) — ít lead hơn = điểm cao hơn', () => {
 
 // ─── Level weight ─────────────────────────────────────────────────────────────
 
-describe('Level weight (30%) — rank cao hơn = điểm cao hơn', () => {
+describe('Level weight (30%) - rank cao hơn = điểm cao hơn', () => {
   it('user rank 3 được điểm level cao hơn user rank 1', () => {
     const users: UserScoreInput[] = [
       { userId: BigInt(1), workloadCount: 0, levelRank: 1, conversionRate: 0 },
@@ -120,7 +120,7 @@ describe('Level weight (30%) — rank cao hơn = điểm cao hơn', () => {
 
 // ─── Performance weight ───────────────────────────────────────────────────────
 
-describe('Performance weight (40%) — tỉ lệ convert cao hơn = điểm cao hơn', () => {
+describe('Performance weight (40%) - tỉ lệ convert cao hơn = điểm cao hơn', () => {
   it('user tỉ lệ 80% được điểm cao hơn user tỉ lệ 20%', () => {
     const users: UserScoreInput[] = [
       { userId: BigInt(1), workloadCount: 0, levelRank: 1, conversionRate: 0.2 },
@@ -151,7 +151,7 @@ describe('Performance weight (40%) — tỉ lệ convert cao hơn = điểm cao 
 
 // ─── Combined score ───────────────────────────────────────────────────────────
 
-describe('Combined score — công thức kết hợp 3 trọng số', () => {
+describe('Combined score - công thức kết hợp 3 trọng số', () => {
   it('tổng điểm = workload + level + performance', () => {
     const users: UserScoreInput[] = [
       { userId: BigInt(1), workloadCount: 0, levelRank: 1, conversionRate: 0.5 },
@@ -189,7 +189,7 @@ describe('Combined score — công thức kết hợp 3 trọng số', () => {
 
 // ─── pickBestUser ─────────────────────────────────────────────────────────────
 
-describe('pickBestUser — chọn user điểm cao nhất', () => {
+describe('pickBestUser - chọn user điểm cao nhất', () => {
   it('chọn user có điểm tổng cao nhất', () => {
     const users: UserScoreInput[] = [
       { userId: BigInt(1), workloadCount: 10, levelRank: 1, conversionRate: 0.1 },

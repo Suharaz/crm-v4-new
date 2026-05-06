@@ -70,13 +70,13 @@ export function BankImportTab() {
 
   return (
     <div className="my-4 space-y-4">
-      {/* Hướng dẫn — chứa luôn nút tải file mẫu để gom 1 chỗ */}
+      {/* Hướng dẫn - chứa luôn nút tải file mẫu để gom 1 chỗ */}
       <div className="rounded-xl border border-sky-100 bg-sky-50/50 p-4">
         <h3 className="text-sm font-semibold text-sky-900 mb-2">Hướng dẫn import sao kê CSV</h3>
         <ol className="text-xs text-sky-800 space-y-1 list-decimal list-inside">
-          <li>Tải file mẫu CSV (UTF-8) — gồm 7 cột chuẩn: Mã giao dịch, Số tiền, Nội dung, Thời gian giao dịch, TK nhận, Tên người gửi, TK người gửi.</li>
+          <li>Tải file mẫu CSV (UTF-8) - gồm 7 cột chuẩn: Mã giao dịch, Số tiền, Nội dung, Thời gian giao dịch, TK nhận, Tên người gửi, TK người gửi.</li>
           <li>Điền dữ liệu từ file sao kê bank vào template. Cột thừa sẽ bị bỏ qua, cột "Mã giao dịch" để trống sẽ tự sinh hash.</li>
-          <li>Upload file — hệ thống tự dedup trùng, tự match với payment PENDING đang chờ.</li>
+          <li>Upload file - hệ thống tự dedup trùng, tự match với payment PENDING đang chờ.</li>
         </ol>
         <button
           type="button"
@@ -116,7 +116,7 @@ export function BankImportTab() {
         <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
           <div className="flex items-center gap-2 text-emerald-700">
             <CheckCircle2 className="h-5 w-5" />
-            <span className="font-semibold">Hoàn tất — {result.total} dòng đã xử lý</span>
+            <span className="font-semibold">Hoàn tất - {result.total} dòng đã xử lý</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -142,7 +142,7 @@ export function BankImportTab() {
                     {result.errors.map((e, i) => (
                       <tr key={i} className="border-t border-red-100">
                         <td className="px-3 py-1.5 text-slate-700">{e.row}</td>
-                        <td className="px-3 py-1.5 text-slate-600 font-mono text-[11px]">{e.externalId || '—'}</td>
+                        <td className="px-3 py-1.5 text-slate-600 font-mono text-[11px]">{e.externalId || '-'}</td>
                         <td className="px-3 py-1.5 text-red-600">{e.reason}</td>
                       </tr>
                     ))}

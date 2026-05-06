@@ -3,7 +3,7 @@ import type { NamedEntity } from '@/types/entities';
 import { DistributionAiWeightConfigClient } from '@/components/settings/distribution-ai-weight-config-client';
 import { AssignmentTemplateCrudWithApply } from '@/components/settings/assignment-template-crud-with-apply';
 
-/** Distribution config page — AI weights + manual assignment templates. */
+/** Distribution config page - AI weights + manual assignment templates. */
 export default async function DistributionSettingsPage() {
   let departments: { id: string; name: string }[] = [];
   let users: { id: string; name: string; departmentId?: string }[] = [];

@@ -1,12 +1,12 @@
 /**
  * Test suite: Tasks/Todo CRUD
- * Covers: tạo, list, complete, cancel, update, delete task — scoped per user (personal only)
+ * Covers: tạo, list, complete, cancel, update, delete task - scoped per user (personal only)
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { ApiTestClient, adminClient, managerClient, userClient } from '../helpers/api-test-client-with-auth';
 
-describe('Tasks CRUD — Personal Scoped', () => {
+describe('Tasks CRUD - Personal Scoped', () => {
   let admin: ApiTestClient;
   let manager: ApiTestClient;
   let user: ApiTestClient;
@@ -23,7 +23,7 @@ describe('Tasks CRUD — Personal Scoped', () => {
 
   // ── POST /tasks ──────────────────────────────────────────────────────────
 
-  describe('POST /tasks — tạo task mới', () => {
+  describe('POST /tasks - tạo task mới', () => {
     it('USER tạo task → 201', async () => {
       const { status, body } = await user.postJson<any>('/tasks', {
         title: 'Gọi điện cho khách hàng ABC',
@@ -73,7 +73,7 @@ describe('Tasks CRUD — Personal Scoped', () => {
 
   // ── GET /tasks ───────────────────────────────────────────────────────────
 
-  describe('GET /tasks — danh sách task của chính mình', () => {
+  describe('GET /tasks - danh sách task của chính mình', () => {
     it('USER chỉ thấy tasks của mình → 200', async () => {
       const { status, body } = await user.getJson<any>('/tasks');
       expect(status).toBe(200);
@@ -119,7 +119,7 @@ describe('Tasks CRUD — Personal Scoped', () => {
 
   // ── POST /tasks/:id/complete ─────────────────────────────────────────────
 
-  describe('POST /tasks/:id/complete — đánh dấu hoàn thành', () => {
+  describe('POST /tasks/:id/complete - đánh dấu hoàn thành', () => {
     it('USER complete task của mình → 200, status COMPLETED', async () => {
       if (!createdTaskId) return;
       const { status, body } = await user.postJson<any>(`/tasks/${createdTaskId}/complete`, {});
@@ -136,7 +136,7 @@ describe('Tasks CRUD — Personal Scoped', () => {
 
   // ── POST /tasks/:id/cancel ────────────────────────────────────────────────
 
-  describe('POST /tasks/:id/cancel — hủy task', () => {
+  describe('POST /tasks/:id/cancel - hủy task', () => {
     it('MANAGER cancel task của mình → 200, status CANCELLED', async () => {
       if (!managerTaskId) return;
       const { status, body } = await manager.postJson<any>(`/tasks/${managerTaskId}/cancel`, {});
@@ -147,7 +147,7 @@ describe('Tasks CRUD — Personal Scoped', () => {
 
   // ── PATCH /tasks/:id ─────────────────────────────────────────────────────
 
-  describe('PATCH /tasks/:id — cập nhật task', () => {
+  describe('PATCH /tasks/:id - cập nhật task', () => {
     let updateTaskId: string;
 
     beforeAll(async () => {
@@ -181,7 +181,7 @@ describe('Tasks CRUD — Personal Scoped', () => {
 
   // ── DELETE /tasks/:id ─────────────────────────────────────────────────────
 
-  describe('DELETE /tasks/:id — xóa task', () => {
+  describe('DELETE /tasks/:id - xóa task', () => {
     let deleteTaskId: string;
 
     beforeAll(async () => {

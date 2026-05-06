@@ -103,25 +103,25 @@ docker-compose.prod.yml:
 ├── redis        (Redis 7, for BullMQ, AOF persistence enabled)
 └── backup       (pg_dump cron job)
 ```
-**Note:** NO MinIO — file storage uses local filesystem (`uploads/` volume mount). Redis uses AOF persistence to survive restarts (job queue data is ephemeral but AOF prevents unnecessary loss).
+**Note:** NO MinIO - file storage uses local filesystem (`uploads/` volume mount). Redis uses AOF persistence to survive restarts (job queue data is ephemeral but AOF prevents unnecessary loss).
 
 ## Related Code Files
 
 ### Create
-- `apps/api/test/` — all test files
-- `apps/web/__tests__/` — frontend tests
+- `apps/api/test/` - all test files
+- `apps/web/__tests__/` - frontend tests
 - `docker/api.Dockerfile`
 - `docker/web.Dockerfile`
 - `docker/nginx.conf`
 - `docker/docker-compose.prod.yml`
-- `scripts/backup.sh` — DB backup script
-- `scripts/deploy.sh` — deployment script
-- `apps/api/src/modules/health/` — health check module
+- `scripts/backup.sh` - DB backup script
+- `scripts/deploy.sh` - deployment script
+- `apps/api/src/modules/health/` - health check module
 
 ### Modify
-- `turbo.json` — add test pipeline
-- `package.json` — add test scripts
-- `apps/api/package.json` — add jest config
+- `turbo.json` - add test pipeline
+- `package.json` - add test scripts
+- `apps/api/package.json` - add jest config
 
 ## Implementation Steps
 
@@ -157,9 +157,9 @@ docker-compose.prod.yml:
    - Data table: pagination, sorting
 
 6. **Create health check endpoint**
-   - `GET /health` — returns DB connection status, Redis status, disk space for uploads/
+   - `GET /health` - returns DB connection status, Redis status, disk space for uploads/
    - Used by Docker health check and monitoring
-   - NO MinIO check — using local filesystem
+   - NO MinIO check - using local filesystem
 
 7. **Create Docker production builds**
    - `api.Dockerfile`: multi-stage (deps → build → prod), ~200MB final image
@@ -198,9 +198,9 @@ docker-compose.prod.yml:
     - Basic monitoring: UptimeRobot or similar for health endpoint polling
 
 11. **Run all tests and validate**
-    - `pnpm test` — all unit tests pass
-    - `pnpm test:e2e` — all integration tests pass
-    - `docker compose -f docker/docker-compose.prod.yml up` — production stack starts
+    - `pnpm test` - all unit tests pass
+    - `pnpm test:e2e` - all integration tests pass
+    - `docker compose -f docker/docker-compose.prod.yml up` - production stack starts
     - Health check returns OK
     - Manual smoke test of critical flow
 

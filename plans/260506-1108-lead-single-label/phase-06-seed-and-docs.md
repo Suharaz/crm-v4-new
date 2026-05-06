@@ -1,4 +1,4 @@
-# Phase 06 — Seed & Docs
+# Phase 06 - Seed & Docs
 
 ## Context Links
 
@@ -13,14 +13,14 @@
 ## Related Code Files
 
 **Modify:**
-- `packages/database/prisma/seed.ts:282-287` — đổi `prisma.leadLabel.create` → `prisma.lead.update({ data: { labelId } })`
-- `docs/data-model.md` — cập nhật ERD + relation Lead-Label
-- `docs/system-architecture.md` — phần data layer
-- `docs/codebase-summary.md` — module labels
-- `docs/api-reference.md` — endpoint label
-- `docs/business-flows.md` — flow gắn nhãn lead
-- `docs/project-changelog.md` — append entry mới
-- `CLAUDE.md` (project root) — mục "Business Logic — Key Decisions" thêm dòng "Lead 1 nhãn, Customer nhiều nhãn"
+- `packages/database/prisma/seed.ts:282-287` - đổi `prisma.leadLabel.create` → `prisma.lead.update({ data: { labelId } })`
+- `docs/data-model.md` - cập nhật ERD + relation Lead-Label
+- `docs/system-architecture.md` - phần data layer
+- `docs/codebase-summary.md` - module labels
+- `docs/api-reference.md` - endpoint label
+- `docs/business-flows.md` - flow gắn nhãn lead
+- `docs/project-changelog.md` - append entry mới
+- `CLAUDE.md` (project root) - mục "Business Logic - Key Decisions" thêm dòng "Lead 1 nhãn, Customer nhiều nhãn"
 
 ## Implementation Steps
 
@@ -70,7 +70,7 @@ Response: { ok: true }
 
 ### 3. CLAUDE.md (project)
 
-Thêm vào mục "Business Logic — Key Decisions":
+Thêm vào mục "Business Logic - Key Decisions":
 ```markdown
 ### Lead vs Customer Label
 - Lead: 1 nhãn duy nhất (labelId nullable FK)

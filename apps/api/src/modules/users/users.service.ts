@@ -199,7 +199,7 @@ export class UsersService {
   }
 
   /**
-   * Bulk deactivate — loop `deactivate()` để giữ cascade (leads/customers về dept pool, refresh token revoke).
+   * Bulk deactivate - loop `deactivate()` để giữ cascade (leads/customers về dept pool, refresh token revoke).
    * Skip nếu id là chính performedBy hoặc user đã soft-delete.
    */
   async bulkDeactivate(

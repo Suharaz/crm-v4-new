@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAsManager, loginAsUser, loginAsAdmin } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Lead Pools — Kho Mới, Kho Phòng Ban, Kho Thả Nổi', () => {
+test.describe('Lead Pools - Kho Mới, Kho Phòng Ban, Kho Thả Nổi', () => {
   test.describe('Kho Mới (POOL, dept=null)', () => {
     test('MANAGER thấy leads trong Kho Mới', async ({ page }) => {
       await loginAsManager(page);

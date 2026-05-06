@@ -29,7 +29,7 @@ export interface EmployeeScorecard extends EmployeeScoreRaw {
   vsDeptAvg: number;
 }
 
-// Score weights — adjustable without deploy
+// Score weights - adjustable without deploy
 const WEIGHTS = {
   conversion: 0.4,
   revenue: 0.3,
@@ -46,7 +46,7 @@ function computeScore(emp: EmployeeScoreRaw, maxRevenue: number): number {
   // Revenue score: relative to max performer
   const revScore = maxRevenue > 0 ? (emp.revenue / maxRevenue) * 100 : 0;
 
-  // Aging score: penalize for aging leads (inverse — 0 aging = 100)
+  // Aging score: penalize for aging leads (inverse - 0 aging = 100)
   const totalActive = emp.leadsAssigned - emp.leadsConverted;
   const agingRatio = totalActive > 0 ? emp.agingLeads7d / totalActive : 0;
   const agingScore = Math.max(0, (1 - agingRatio) * 100);

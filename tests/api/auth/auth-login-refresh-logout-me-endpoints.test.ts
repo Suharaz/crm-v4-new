@@ -1,5 +1,5 @@
 /**
- * Test suite: Auth endpoints — login, refresh token, logout, /me
+ * Test suite: Auth endpoints - login, refresh token, logout, /me
  * Covers: thành công, sai password, brute-force lock, token lifecycle
  */
 

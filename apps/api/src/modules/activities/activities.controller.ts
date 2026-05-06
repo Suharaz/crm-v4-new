@@ -12,7 +12,7 @@ export class ActivitiesController {
     @Inject(forwardRef(() => LeadsService)) private readonly leadsService: LeadsService,
   ) {}
 
-  // Dept stats — must be before /:id routes to avoid param clash
+  // Dept stats - must be before /:id routes to avoid param clash
   @Get('activities/stats/by-department')
   async statsByDepartment(
     @Query('entityType', new ParseEnumPipe(EntityType)) entityType: EntityType,

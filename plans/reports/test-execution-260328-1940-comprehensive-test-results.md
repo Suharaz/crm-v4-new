@@ -1,4 +1,4 @@
-# Test Execution Report — CRM V4
+# Test Execution Report - CRM V4
 
 **Date:** 2026-03-28 | **Branch:** master | **Executor:** Claude Code
 
@@ -15,7 +15,7 @@
 
 ---
 
-## 1. Unit Tests (Vitest) — 195/195 PASSED
+## 1. Unit Tests (Vitest) - 195/195 PASSED
 
 **Config:** `tests/unit/vitest.config.unit.ts` | **Duration:** ~1.2s
 
@@ -32,11 +32,11 @@
 | `guards/roles-guard-authorization-logic.test.ts` | ✓ | PASS |
 
 ### Fixes Applied
-- **Zod 4 API:** `orderSchema.customerId` — use `error` instead of `required_error` for type-level error message (Zod 4 breaking change from v3)
+- **Zod 4 API:** `orderSchema.customerId` - use `error` instead of `required_error` for type-level error message (Zod 4 breaking change from v3)
 
 ---
 
-## 2. API Integration Tests (Vitest) — 288/288 PASSED
+## 2. API Integration Tests (Vitest) - 288/288 PASSED
 
 **Config:** `tests/api/vitest.config.api.ts` | **Duration:** ~88s
 
@@ -79,25 +79,25 @@
 
 ---
 
-## 3. E2E Playwright Tests — 48/48 PASSED (18 skipped)
+## 3. E2E Playwright Tests - 48/48 PASSED (18 skipped)
 
 **Config:** `tests/playwright.config.ts` | **Duration:** ~19min | **Browser:** Chrome (system)
 
 | File | Passed | Skipped | Status |
 |------|--------|---------|--------|
 | `auth/login-logout-and-session-guard.spec.ts` | 9 | 0 | PASS |
-| `leads/lead-crud-create-edit-delete-convert.spec.ts` | ✓ | — | PASS |
-| `leads/lead-pools-kho-moi-kho-phong-ban-tha-noi.spec.ts` | ✓ | — | PASS |
-| `leads/lead-assign-claim-transfer-between-pools.spec.ts` | ✓ | — | PASS |
-| `customers/customer-crud-claim-transfer-role-visibility.spec.ts` | ✓ | — | PASS |
-| `orders/order-create-status-change-payment-verify.spec.ts` | ✓ | — | PASS |
-| `products/product-crud-via-dialog-price-format-vnd.spec.ts` | ✓ | — | PASS |
-| `settings/settings-tabs-departments-levels-sources-labels-payment-types.spec.ts` | ✓ | — | PASS |
-| `users/user-management-crud-roles-deactivate-admin-only.spec.ts` | ✓ | — | PASS |
-| `tasks/task-quick-add-complete-cancel-edit-delete.spec.ts` | ✓ | — | PASS |
-| `dashboard/dashboard-kpi-stats-cards-per-role.spec.ts` | ✓ | — | PASS |
-| `search/global-search-dropdown-results-navigation.spec.ts` | ✓ | — | PASS |
-| `notifications/notification-bell-unread-count-mark-read.spec.ts` | ✓ | — | PASS |
+| `leads/lead-crud-create-edit-delete-convert.spec.ts` | ✓ | - | PASS |
+| `leads/lead-pools-kho-moi-kho-phong-ban-tha-noi.spec.ts` | ✓ | - | PASS |
+| `leads/lead-assign-claim-transfer-between-pools.spec.ts` | ✓ | - | PASS |
+| `customers/customer-crud-claim-transfer-role-visibility.spec.ts` | ✓ | - | PASS |
+| `orders/order-create-status-change-payment-verify.spec.ts` | ✓ | - | PASS |
+| `products/product-crud-via-dialog-price-format-vnd.spec.ts` | ✓ | - | PASS |
+| `settings/settings-tabs-departments-levels-sources-labels-payment-types.spec.ts` | ✓ | - | PASS |
+| `users/user-management-crud-roles-deactivate-admin-only.spec.ts` | ✓ | - | PASS |
+| `tasks/task-quick-add-complete-cancel-edit-delete.spec.ts` | ✓ | - | PASS |
+| `dashboard/dashboard-kpi-stats-cards-per-role.spec.ts` | ✓ | - | PASS |
+| `search/global-search-dropdown-results-navigation.spec.ts` | ✓ | - | PASS |
+| `notifications/notification-bell-unread-count-mark-read.spec.ts` | ✓ | - | PASS |
 
 ### Fixes Applied
 - Test credentials updated: `admin@crm.vn` → `admin@crm.local`, passwords → `changeme`
@@ -105,17 +105,17 @@
 - Error message matching: "Email hoặc mật khẩu không đúng"
 
 ### Screenshots Captured
-Screenshots stored in `tests/test-results/screenshots/` — includes login flow, dashboard, error states.
+Screenshots stored in `tests/test-results/screenshots/` - includes login flow, dashboard, error states.
 
 ---
 
 ## Commits
 1. `fix: use Zod 4 error API for orderSchema customerId`
 2. `fix: resolve all API integration test failures (288/288 passing)`
-3. `fix: E2E tests — update credentials, Chrome channel, error messages`
+3. `fix: E2E tests - update credentials, Chrome channel, error messages`
 
 ---
 
 ## Unresolved
-- 18 E2E tests skipped — feature-level specs awaiting frontend implementation
+- 18 E2E tests skipped - feature-level specs awaiting frontend implementation
 - Test upload CSVs committed to repo (may want to gitignore `apps/api/uploads/`)

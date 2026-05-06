@@ -8,15 +8,15 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { ApiTestClient, adminClient, managerClient, userClient } from '../helpers/api-test-client-with-auth';
 
-describe('Customer Multi-Phone — CRUD + cross-table dedup', () => {
+describe('Customer Multi-Phone - CRUD + cross-table dedup', () => {
   let admin: ApiTestClient;
   let manager: ApiTestClient;
   let user: ApiTestClient;
 
-  // Customer A — sẽ có số phụ
+  // Customer A - sẽ có số phụ
   let customerAId: string;
   let customerAPhone: string;
-  // Customer B — dùng để test dedup ngược
+  // Customer B - dùng để test dedup ngược
   let customerBId: string;
   // ID của 1 số phụ active để PATCH/DELETE
   let altPhoneId: string;
@@ -36,14 +36,14 @@ describe('Customer Multi-Phone — CRUD + cross-table dedup', () => {
 
     customerAPhone = uniquePhone();
     const { status: sa, body: ba } = await manager.postJson<any>('/customers', {
-      name: 'KH A — multi-phone',
+      name: 'KH A - multi-phone',
       phone: customerAPhone,
     });
     expect(sa).toBe(201);
     customerAId = ba.data.id;
 
     const { status: sb, body: bb } = await manager.postJson<any>('/customers', {
-      name: 'KH B — control',
+      name: 'KH B - control',
       phone: uniquePhone(),
     });
     expect(sb).toBe(201);
@@ -112,7 +112,7 @@ describe('Customer Multi-Phone — CRUD + cross-table dedup', () => {
   describe('Cross-table dedup khi tạo customer mới', () => {
     it('Tạo customer với phone = số phụ KH cũ → 409', async () => {
       const { status } = await manager.postJson<any>('/customers', {
-        name: 'KH C — trùng số phụ KH A',
+        name: 'KH C - trùng số phụ KH A',
         phone: altPhoneOfA,
       });
       expect(status).toBe(409);

@@ -218,7 +218,7 @@
         </mxCell>
 
         <!-- TITLE -->
-        <mxCell id="title" value="CRM V3 — Entity Relationship Diagram&lt;br&gt;&lt;span style='font-size:12px;font-weight:normal;'&gt;22 tables | 10 enums | 43 indexes | PostgreSQL 16 + Prisma 6&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="title" value="CRM V3 - Entity Relationship Diagram&lt;br&gt;&lt;span style='font-size:12px;font-weight:normal;'&gt;22 tables | 10 enums | 43 indexes | PostgreSQL 16 + Prisma 6&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="1700" y="300" width="200" height="80" as="geometry" />
         </mxCell>
 

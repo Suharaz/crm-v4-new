@@ -1,4 +1,4 @@
-# CLAUDE.md — VeloCRM Project
+# CLAUDE.md - VeloCRM Project
 
 ## Project Overview
 
@@ -17,6 +17,16 @@ Internal CRM system (VeloCRM) for sales team efficiency, customer data managemen
 - Development rules: `%USERPROFILE%/.claude/workflows/development-rules.md`
 - Orchestration protocols: `%USERPROFILE%/.claude/workflows/orchestration-protocol.md`
 - Documentation management: `%USERPROFILE%/.claude/workflows/documentation-management.md`
+
+## Character Style Rules (STRICT, NON-NEGOTIABLE)
+
+**[CRITICAL] NEVER use em dash (—) in ANY file (code, comments, docs, commits, PR descriptions, UI text). ALWAYS use hyphen (-) instead.**
+
+- Forbidden: `—` (em dash, U+2014), `–` (en dash, U+2013)
+- Allowed: `-` (ASCII hyphen-minus, U+002D)
+- Applies to: `.ts`, `.tsx`, `.js`, `.jsx`, `.md`, `.json`, `.yml`, `.yaml`, `.env`, `.sql`, `.prisma`, ALL Vietnamese UI strings, commit messages, PR titles/bodies, code review comments
+- Why: Em/en dashes look like AI-generated content, break grep/search by ASCII pattern, cause encoding issues in some terminals/editors, and inconsistent across the codebase
+- How to apply: When writing or editing any text, use only `-`. When reading existing files with `—` or `–`, replace them with `-` as part of the edit.
 
 ## Skills Activation Rule
 
@@ -84,7 +94,7 @@ crm-v4/
 
 ### Frontend (Next.js)
 - Server Components by default, Client Components only when needed
-- No barrel imports for shadcn/ui — import each component from its own file
+- No barrel imports for shadcn/ui - import each component from its own file
 - Lazy load heavy components (charts, kanban) with `next/dynamic`
 - URL-based filter state (shareable views)
 - React Hook Form + Zod for form validation
@@ -112,7 +122,7 @@ crm-v4/
 - File uploads: UUID filenames, MIME validation, 10MB max
 - httpOnly + Secure + SameSite cookies for JWT
 
-## Business Logic — Key Decisions
+## Business Logic - Key Decisions
 
 ### 3 Kho Lead
 - **Kho Mới:** `status=POOL, dept=null` → manager+ thấy, phân phối vào dept
@@ -148,7 +158,7 @@ POOL → ASSIGNED → IN_PROGRESS → CONVERTED | LOST → FLOATING
 ### Auto-Recall
 - Lead/customer ở dept pool quá X ngày → FLOATING + gắn nhãn mặc định
 - Super admin config ngày + nhãn (1 nhãn auto)
-- **Skip-if-exists:** cron không đè nhãn business của lead — chỉ gắn auto-label nếu `lead.label_id IS NULL`
+- **Skip-if-exists:** cron không đè nhãn business của lead - chỉ gắn auto-label nếu `lead.label_id IS NULL`
 
 ### Lead vs Customer Label (BREAKING 2026-05-06)
 - **Lead = 1 nhãn** (`leads.label_id` FK nullable, `leads.label_assigned_at` track recall timer)

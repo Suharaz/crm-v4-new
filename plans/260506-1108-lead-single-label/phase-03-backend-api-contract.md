@@ -1,4 +1,4 @@
-# Phase 03 — Backend API Contract
+# Phase 03 - Backend API Contract
 
 ## Context Links
 
@@ -12,7 +12,7 @@
 
 ## Requirements
 
-- `PATCH /api/v1/leads/:id/label` — body `{ labelId: string | null }`
+- `PATCH /api/v1/leads/:id/label` - body `{ labelId: string | null }`
 - Lead response include: `label: { id, name, color } | null`
 - Customer endpoint **giữ nguyên** `labelIds: string[]`
 
@@ -20,12 +20,12 @@
 
 **Modify:**
 - `apps/api/src/modules/leads/leads.controller.ts:201-205`
-- `apps/api/src/modules/leads/dto/*.ts` — Lead response DTO + update DTO
-- `packages/types/src/lead.ts` (nếu shared types có Lead.labels) — đổi sang `label`
+- `apps/api/src/modules/leads/dto/*.ts` - Lead response DTO + update DTO
+- `packages/types/src/lead.ts` (nếu shared types có Lead.labels) - đổi sang `label`
 
 **Read for context:**
-- `apps/api/src/modules/customers/customers.controller.ts:103-107` — customer pattern không đổi
-- `apps/api/src/modules/leads/leads.service.ts` — đảm bảo Prisma include `label: true`
+- `apps/api/src/modules/customers/customers.controller.ts:103-107` - customer pattern không đổi
+- `apps/api/src/modules/leads/leads.service.ts` - đảm bảo Prisma include `label: true`
 
 ## Architecture
 
@@ -75,7 +75,7 @@ Bỏ field `labels: Array<{ ... }>` cũ.
 
 **Decision:** Không có BC layer (clean break). FE và BE deploy cùng lúc.
 - Tag commit migration là `BREAKING_CHANGE` để rõ ràng.
-- Nếu có client bên ngoài (3rd-party API key dùng) → cần check `apps/api/src/modules/external/*` (nếu có) — flag riêng.
+- Nếu có client bên ngoài (3rd-party API key dùng) → cần check `apps/api/src/modules/external/*` (nếu có) - flag riêng.
 
 ## Todo List
 

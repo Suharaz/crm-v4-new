@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAsManager, loginAsUser } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Đơn hàng — Tạo, Đổi trạng thái, Thanh toán', () => {
+test.describe('Đơn hàng - Tạo, Đổi trạng thái, Thanh toán', () => {
   test('Xem danh sách đơn hàng', async ({ page }) => {
     await loginAsManager(page);
     await page.goto('/orders');

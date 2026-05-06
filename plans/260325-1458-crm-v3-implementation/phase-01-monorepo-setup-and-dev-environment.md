@@ -27,7 +27,7 @@ Bootstrap Turborepo monorepo with NestJS 11 API app, Next.js 16 web app, shared 
 - Docker Compose: PostgreSQL 16
 - Create `uploads/` directory in project root for file storage
 - Add `uploads/` to .gitignore
-- No MinIO/S3 needed — local filesystem for CSV imports and attachments
+- No MinIO/S3 needed - local filesystem for CSV imports and attachments
 - Hot reload in dev for both apps
 
 ### Non-Functional
@@ -95,16 +95,16 @@ crm-v3/
 ## Related Code Files
 
 ### Create
-- `package.json` — root workspace config
-- `pnpm-workspace.yaml` — workspace definitions
-- `turbo.json` — pipeline config (build, dev, lint, db:generate)
-- `tsconfig.base.json` — shared TS config
-- `.eslintrc.js` — shared ESLint rules
-- `.prettierrc` — Prettier config
-- `.env.example` — environment template
-- `.gitignore` — standard Node + Prisma ignores
-- `.nvmrc` — Node version pin
-- `docker-compose.yml` — PG 16 service
+- `package.json` - root workspace config
+- `pnpm-workspace.yaml` - workspace definitions
+- `turbo.json` - pipeline config (build, dev, lint, db:generate)
+- `tsconfig.base.json` - shared TS config
+- `.eslintrc.js` - shared ESLint rules
+- `.prettierrc` - Prettier config
+- `.env.example` - environment template
+- `.gitignore` - standard Node + Prisma ignores
+- `.nvmrc` - Node version pin
+- `docker-compose.yml` - PG 16 service
 - `apps/api/package.json` + NestJS bootstrap files
 - `apps/web/package.json` + Next.js bootstrap files
 - `packages/database/package.json` + Prisma scaffold
@@ -143,7 +143,7 @@ crm-v3/
    - Network: `crm-network`
    - Create `uploads/` directory in project root for file storage
    - Add `uploads/` to .gitignore
-   - No MinIO/S3 needed — local filesystem for CSV imports and attachments
+   - No MinIO/S3 needed - local filesystem for CSV imports and attachments
 
 6. **Environment configuration**
    - `.env.example` with: `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `UPLOAD_DIR`, `API_PORT`, `NEXT_PUBLIC_API_URL`

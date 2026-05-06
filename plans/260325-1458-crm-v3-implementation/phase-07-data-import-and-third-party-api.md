@@ -12,7 +12,7 @@ depends_on: [4]
 ## Context Links
 
 - CSV import pipeline: `plans/reports/brainstorm-260325-1224-internal-crm-system-design.md` (line 263-269)
-- Import size target: brainstorm (line 362) — 10K+ rows
+- Import size target: brainstorm (line 362) - 10K+ rows
 - BullMQ for background jobs: `plans/reports/review-260325-1353-research-reports-synthesis.md` (line 33)
 
 ## Overview
@@ -137,32 +137,32 @@ Add ImportStatus enum: PROCESSING | COMPLETED | FAILED to Phase 02 schema
 ### API Endpoints
 
 **Import:**
-- `POST /imports/leads` — upload CSV for lead import (manager+)
-- `POST /imports/customers` — upload CSV for customer import (manager+)
-- `GET /imports` — list import jobs, cursor paginated
-- `GET /imports/:id/status` — import progress/results
-- `GET /imports/templates/leads` — download CSV template
-- `GET /imports/templates/customers` — download CSV template
+- `POST /imports/leads` - upload CSV for lead import (manager+)
+- `POST /imports/customers` - upload CSV for customer import (manager+)
+- `GET /imports` - list import jobs, cursor paginated
+- `GET /imports/:id/status` - import progress/results
+- `GET /imports/templates/leads` - download CSV template
+- `GET /imports/templates/customers` - download CSV template
 
 **Export:**
-- `GET /exports/leads` — export leads CSV (with current query filters)
-- `GET /exports/customers` — export customers CSV
-- `GET /exports/orders` — export orders CSV
+- `GET /exports/leads` - export leads CSV (with current query filters)
+- `GET /exports/customers` - export customers CSV
+- `GET /exports/orders` - export orders CSV
 
 **Third-Party API:**
-- `POST /external/leads` — create lead from external system (API key auth)
+- `POST /external/leads` - create lead from external system (API key auth)
 
 ## Related Code Files
 
 ### Create
-- `apps/api/src/modules/import/` — all import files
-- `apps/api/src/modules/export/` — all export files
-- `apps/api/src/modules/third-party-api/` — external lead API
+- `apps/api/src/modules/import/` - all import files
+- `apps/api/src/modules/export/` - all export files
+- `apps/api/src/modules/third-party-api/` - external lead API
 
 ### Modify
-- `packages/database/prisma/schema.prisma` — add ImportJob model
-- `apps/api/src/app.module.ts` — register modules + BullMQ
-- `docker-compose.yml` — add Redis service (for BullMQ)
+- `packages/database/prisma/schema.prisma` - add ImportJob model
+- `apps/api/src/app.module.ts` - register modules + BullMQ
+- `docker-compose.yml` - add Redis service (for BullMQ)
 
 ## Implementation Steps
 

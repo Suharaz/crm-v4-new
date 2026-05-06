@@ -9,7 +9,7 @@
 
 | File | Purpose |
 |------|---------|
-| `tests/api/vitest.config.api.ts` | Vitest config — node env, 30s timeout, sequential, includes tests/api/**/*.test.ts |
+| `tests/api/vitest.config.api.ts` | Vitest config - node env, 30s timeout, sequential, includes tests/api/**/*.test.ts |
 | `tests/api/helpers/api-test-client-with-auth.ts` | HTTP client helper: login(), get/post/patch/delete, asAdmin/asManager/asUser shortcuts |
 | `tests/api/auth/auth-login-refresh-logout-me-endpoints.test.ts` | Login success/fail, refresh, logout token revoke, GET /auth/me RBAC |
 | `tests/api/users/users-crud-and-rbac-role-access-control.test.ts` | Users list/create/update/deactivate, profile update, RBAC per role |
@@ -31,8 +31,8 @@
 Total: 1 config + 1 helper + 16 test files = **18 files**
 
 ## Tasks Completed
-- [x] vitest.config.api.ts — sequential, node env, 30s timeout
-- [x] api-test-client-with-auth.ts — full HTTP helper with role shortcuts
+- [x] vitest.config.api.ts - sequential, node env, 30s timeout
+- [x] api-test-client-with-auth.ts - full HTTP helper with role shortcuts
 - [x] auth endpoints (7 test cases)
 - [x] users CRUD + RBAC (14 test cases)
 - [x] leads CRUD + phone normalization (13 test cases)
@@ -56,14 +56,14 @@ Total: 1 config + 1 helper + 16 test files = **18 files**
 - Integration tests: not run (write-only task per instructions)
 
 ## Design Decisions
-- Seed accounts use `@crm.local` domain (from `packages/database/prisma/seed.ts`), NOT `@crm.vn` as specified in task — corrected to match actual seed
+- Seed accounts use `@crm.local` domain (from `packages/database/prisma/seed.ts`), NOT `@crm.vn` as specified in task - corrected to match actual seed
 - `ApiTestClient` uses native `fetch` (Node 18+), no extra deps
-- Tests use `beforeAll` not `beforeEach` for login — one auth per suite, faster
+- Tests use `beforeAll` not `beforeEach` for login - one auth per suite, faster
 - Sequential execution enforced via `poolOptions.forks.singleFork: true` to prevent shared-DB race conditions
 - All helpers use `body.data?.items ?? body.data` pattern to handle both paginated and flat responses
 
 ## Issues Encountered
-None — write-only, no execution.
+None - write-only, no execution.
 
 ## Next Steps
 - Run `pnpm add -D vitest` in root if not yet installed
@@ -72,6 +72,6 @@ None — write-only, no execution.
 - Ensure API running on port 3010: `pnpm dev`
 
 ## Unresolved Questions
-- Seed passwords in task spec (`Admin@123`, `Manager@123`, `Sale@123`) differ from actual seed (`changeme` for all) — tests use actual seed passwords `changeme`
-- Task spec says seed emails use `@crm.vn` but actual seed uses `@crm.local` — tests follow actual seed
-- `POST /auth/login` brute-force lock (5 attempts → 403) was not implemented in the auth controller reviewed — test for this was omitted to avoid false failures
+- Seed passwords in task spec (`Admin@123`, `Manager@123`, `Sale@123`) differ from actual seed (`changeme` for all) - tests use actual seed passwords `changeme`
+- Task spec says seed emails use `@crm.vn` but actual seed uses `@crm.local` - tests follow actual seed
+- `POST /auth/login` brute-force lock (5 attempts → 403) was not implemented in the auth controller reviewed - test for this was omitted to avoid false failures

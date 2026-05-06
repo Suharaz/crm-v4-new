@@ -15,11 +15,11 @@ export class WebhookSignatureGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const secret = this.config.get<string>('WEBHOOK_SECRET');
     if (!secret) {
-      // Fail closed in production — do not silently skip signature verification
+      // Fail closed in production - do not silently skip signature verification
       if (process.env.NODE_ENV === 'production') {
-        throw new UnauthorizedException('WEBHOOK_SECRET chưa được cấu hình — webhook bị từ chối');
+        throw new UnauthorizedException('WEBHOOK_SECRET chưa được cấu hình - webhook bị từ chối');
       }
-      this.logger.warn('WEBHOOK_SECRET not configured — skipping signature check (dev only)');
+      this.logger.warn('WEBHOOK_SECRET not configured - skipping signature check (dev only)');
       return true;
     }
 

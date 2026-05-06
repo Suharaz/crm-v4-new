@@ -46,15 +46,15 @@ describe('leadSchema', () => {
     }
   });
 
-  it('phone regex /^0\\d{9,10}$/ — đúng 10 chữ số bắt đầu 0', () => {
+  it('phone regex /^0\\d{9,10}$/ - đúng 10 chữ số bắt đầu 0', () => {
     expect(leadSchema.safeParse({ phone: '0912345678', name: 'AA' }).success).toBe(true);
   });
 
-  it('phone regex — 11 chữ số bắt đầu 0 cũng hợp lệ', () => {
+  it('phone regex - 11 chữ số bắt đầu 0 cũng hợp lệ', () => {
     expect(leadSchema.safeParse({ phone: '09123456789', name: 'AA' }).success).toBe(true);
   });
 
-  it('phone regex — bắt đầu bằng 1 → không hợp lệ', () => {
+  it('phone regex - bắt đầu bằng 1 → không hợp lệ', () => {
     expect(leadSchema.safeParse({ phone: '1912345678', name: 'AA' }).success).toBe(false);
   });
 

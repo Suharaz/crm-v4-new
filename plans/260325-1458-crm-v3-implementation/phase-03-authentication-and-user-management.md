@@ -22,10 +22,10 @@ Implement JWT authentication with refresh token rotation, email/password login, 
 ## Requirements
 
 ### Functional
-- POST `/auth/login` — email + password, returns access + refresh tokens
-- POST `/auth/refresh` — refresh token rotation (single-use refresh tokens)
-- POST `/auth/logout` — invalidate refresh token
-- GET `/auth/me` — current user profile
+- POST `/auth/login` - email + password, returns access + refresh tokens
+- POST `/auth/refresh` - refresh token rotation (single-use refresh tokens)
+- POST `/auth/logout` - invalidate refresh token
+- GET `/auth/me` - current user profile
 - User CRUD: list (cursor paginated), create, update, deactivate (soft delete)
 - Department CRUD: list, create, update, delete
 - EmployeeLevel CRUD: list, create, update, delete (super_admin only)
@@ -138,10 +138,10 @@ model RefreshToken {
 ## Related Code Files
 
 ### Create
-- `apps/api/src/modules/auth/` — all auth files
-- `apps/api/src/modules/users/` — all user files
-- `apps/api/src/modules/departments/` — all department files
-- `apps/api/src/modules/employee-levels/` — all employee-level files
+- `apps/api/src/modules/auth/` - all auth files
+- `apps/api/src/modules/users/` - all user files
+- `apps/api/src/modules/departments/` - all department files
+- `apps/api/src/modules/employee-levels/` - all employee-level files
 - `apps/api/src/common/interceptors/transform.interceptor.ts`
 - `apps/api/src/common/filters/http-exception.filter.ts`
 - `apps/api/src/common/pipes/parse-bigint.pipe.ts`
@@ -149,8 +149,8 @@ model RefreshToken {
 - `apps/api/src/common/dto/api-response.dto.ts`
 
 ### Modify
-- `apps/api/src/app.module.ts` — register new modules
-- `packages/database/prisma/schema.prisma` — add RefreshToken model
+- `apps/api/src/app.module.ts` - register new modules
+- `packages/database/prisma/schema.prisma` - add RefreshToken model
 
 ## Implementation Steps
 
@@ -181,11 +181,11 @@ model RefreshToken {
    - `users.service.ts`: create (hash password), update, deactivate, list (cursor pagination), findById
    - `users.controller.ts`: REST endpoints with guards
    - Endpoints:
-     - `GET /users` — list, cursor paginated, filter by department/role/status (manager+ only)
-     - `GET /users/:id` — get by ID (manager+ or self)
-     - `POST /users` — create (super_admin only)
-     - `PATCH /users/:id` — update (super_admin or self for limited fields)
-     - `DELETE /users/:id` — soft delete (super_admin only)
+     - `GET /users` - list, cursor paginated, filter by department/role/status (manager+ only)
+     - `GET /users/:id` - get by ID (manager+ or self)
+     - `POST /users` - create (super_admin only)
+     - `PATCH /users/:id` - update (super_admin or self for limited fields)
+     - `DELETE /users/:id` - soft delete (super_admin only)
 
    - **User deactivation cascade**: When deactivating a user:
      1. Revoke ALL refresh tokens for that user
@@ -199,33 +199,33 @@ model RefreshToken {
 
 5. **Implement Departments module**
    - CRUD endpoints, super_admin only for create/update/delete
-   - `GET /departments` — list all (any authenticated user)
-   - `GET /departments/:id` — get with user count
-   - `POST /departments` — create (super_admin)
-   - `PATCH /departments/:id` — update (super_admin)
-   - `DELETE /departments/:id` — soft delete (super_admin)
+   - `GET /departments` - list all (any authenticated user)
+   - `GET /departments/:id` - get with user count
+   - `POST /departments` - create (super_admin)
+   - `PATCH /departments/:id` - update (super_admin)
+   - `DELETE /departments/:id` - soft delete (super_admin)
 
 6. **Implement EmployeeLevels module**
    - Full CRUD, super_admin only
-   - `GET /employee-levels` — list ordered by rank
-   - `POST /employee-levels` — create
-   - `PATCH /employee-levels/:id` — update
-   - `DELETE /employee-levels/:id` — delete
+   - `GET /employee-levels` - list ordered by rank
+   - `POST /employee-levels` - create
+   - `PATCH /employee-levels/:id` - update
+   - `DELETE /employee-levels/:id` - delete
 
 6b. **Implement Teams module**
    - Team CRUD: super_admin only for create/update/delete
-   - `GET /teams` — list all teams, optional filter by departmentId
-   - `GET /teams/:id` — get team with members + leader info
-   - `POST /teams` — create team (name, departmentId, leaderId) — super_admin only
-   - `PATCH /teams/:id` — update (name, leaderId) — super_admin only
-   - `DELETE /teams/:id` — soft delete (super_admin only, must have no members)
+   - `GET /teams` - list all teams, optional filter by departmentId
+   - `GET /teams/:id` - get team with members + leader info
+   - `POST /teams` - create team (name, departmentId, leaderId) - super_admin only
+   - `PATCH /teams/:id` - update (name, leaderId) - super_admin only
+   - `DELETE /teams/:id` - soft delete (super_admin only, must have no members)
    - Validation: leader must be in same department, leader can only lead ONE team (unique constraint)
 
 6c. **Implement Manager-Department assignment endpoints**
    - Manage the ManagerDepartment junction table
-   - `GET /users/:id/managed-departments` — list departments managed by user
-   - `POST /users/:id/managed-departments` — assign department(s) `{ departmentIds: [] }` — super_admin only
-   - `DELETE /users/:id/managed-departments/:departmentId` — unassign — super_admin only
+   - `GET /users/:id/managed-departments` - list departments managed by user
+   - `POST /users/:id/managed-departments` - assign department(s) `{ departmentIds: [] }` - super_admin only
+   - `DELETE /users/:id/managed-departments/:departmentId` - unassign - super_admin only
    - Validation: user must have role=MANAGER, department must exist and be active
    - This relationship powers `buildAccessFilter(user)` in Phase 04
 

@@ -13,7 +13,7 @@ depends_on: [3]
 
 - Product/Order/Payment models: `plans/reports/brainstorm-260325-1224-internal-crm-system-design.md` (line 114-158)
 - Conversion rule: brainstorm (line 160)
-- Scope limits: brainstorm (line 328) — NO accounting, NO inventory, NO invoicing
+- Scope limits: brainstorm (line 328) - NO accounting, NO inventory, NO invoicing
 
 ## Overview
 
@@ -137,57 +137,57 @@ Khi payment verified → check order:
 ### API Endpoints
 
 **Products:**
-- `GET /products` — list active, cursor paginated
-- `GET /products/:id` — detail
-- `POST /products` — create (manager+)
-- `PATCH /products/:id` — update (manager+)
-- `DELETE /products/:id` — soft delete (super_admin)
+- `GET /products` - list active, cursor paginated
+- `GET /products/:id` - detail
+- `POST /products` - create (manager+)
+- `PATCH /products/:id` - update (manager+)
+- `DELETE /products/:id` - soft delete (super_admin)
 
 **Product Categories:**
-- `GET /product-categories` — list active
-- `POST /product-categories` — create (manager+)
-- `PATCH /product-categories/:id` — update (manager+)
-- `DELETE /product-categories/:id` — deactivate (super_admin)
+- `GET /product-categories` - list active
+- `POST /product-categories` - create (manager+)
+- `PATCH /product-categories/:id` - update (manager+)
+- `DELETE /product-categories/:id` - deactivate (super_admin)
 
 **Payment Types:**
-- `GET /payment-types` — list active
-- `POST /payment-types` — create (super_admin)
-- `PATCH /payment-types/:id` — update (super_admin)
-- `DELETE /payment-types/:id` — deactivate (super_admin)
+- `GET /payment-types` - list active
+- `POST /payment-types` - create (super_admin)
+- `PATCH /payment-types/:id` - update (super_admin)
+- `DELETE /payment-types/:id` - deactivate (super_admin)
 
 **Orders:**
-- `GET /orders` — list, filter by status/customer/lead/user/date
-- `GET /orders/:id` — detail with payments + bank transactions
-- `POST /orders` — create (any auth user, linked to their assigned lead)
-- `PATCH /orders/:id/status` — update status (manager+)
-- `DELETE /orders/:id` — soft delete (super_admin, only PENDING orders)
+- `GET /orders` - list, filter by status/customer/lead/user/date
+- `GET /orders/:id` - detail with payments + bank transactions
+- `POST /orders` - create (any auth user, linked to their assigned lead)
+- `PATCH /orders/:id/status` - update status (manager+)
+- `DELETE /orders/:id` - soft delete (super_admin, only PENDING orders)
 
 **Payments:**
-- `GET /payments` — list, filter by status/order
-- `GET /payments/:id` — detail with matched bank_transaction
-- `POST /payments` — create for order (any auth user). Fields: transfer_content, amount, payment_type_id
-- `POST /payments/:id/verify` — verify thủ công (manager+), optional link bank_transaction_id
-- `POST /payments/:id/reject` — reject payment (manager+)
-- `GET /payments/pending` — list payments chờ xác minh (manager+)
+- `GET /payments` - list, filter by status/order
+- `GET /payments/:id` - detail with matched bank_transaction
+- `POST /payments` - create for order (any auth user). Fields: transfer_content, amount, payment_type_id
+- `POST /payments/:id/verify` - verify thủ công (manager+), optional link bank_transaction_id
+- `POST /payments/:id/reject` - reject payment (manager+)
+- `GET /payments/pending` - list payments chờ xác minh (manager+)
 
 **Bank Transactions (webhook):**
-- `POST /webhooks/bank-transactions` — ingest từ cổng TT (API key auth)
-- `GET /bank-transactions` — list, filter by match_status (manager+)
-- `GET /bank-transactions/unmatched` — unmatched queue (manager+)
-- `POST /bank-transactions/:id/match` — ghép thủ công với payment (manager+)
+- `POST /webhooks/bank-transactions` - ingest từ cổng TT (API key auth)
+- `GET /bank-transactions` - list, filter by match_status (manager+)
+- `GET /bank-transactions/unmatched` - unmatched queue (manager+)
+- `POST /bank-transactions/:id/match` - ghép thủ công với payment (manager+)
 
 ## Related Code Files
 
 ### Create
-- `apps/api/src/modules/products/` — all product files
-- `apps/api/src/modules/orders/` — all order files
-- `apps/api/src/modules/payments/` — all payment files
-- `apps/api/src/modules/payment-types/` — all payment-type files
+- `apps/api/src/modules/products/` - all product files
+- `apps/api/src/modules/orders/` - all order files
+- `apps/api/src/modules/payments/` - all payment files
+- `apps/api/src/modules/payment-types/` - all payment-type files
 
 ### Modify
-- `apps/api/src/app.module.ts` — register modules
-- `apps/api/src/modules/leads/leads.service.ts` — add conversion method (or call from payments)
-- `packages/types/src/` — Product, Order, Payment interfaces
+- `apps/api/src/app.module.ts` - register modules
+- `apps/api/src/modules/leads/leads.service.ts` - add conversion method (or call from payments)
+- `packages/types/src/` - Product, Order, Payment interfaces
 
 ## Implementation Steps
 
@@ -197,10 +197,10 @@ Khi payment verified → check order:
 
 2. **Implement ProductCategories module**
    - Simple CRUD, super_admin/manager for writes
-   - `GET /product-categories` — list active categories
-   - `POST /product-categories` — create (manager+)
-   - `PATCH /product-categories/:id` — update (manager+)
-   - `DELETE /product-categories/:id` — deactivate (super_admin)
+   - `GET /product-categories` - list active categories
+   - `POST /product-categories` - create (manager+)
+   - `PATCH /product-categories/:id` - update (manager+)
+   - `DELETE /product-categories/:id` - deactivate (super_admin)
 
 3. **Implement Products module**
    - CRUD with Decimal price field, optional categoryId FK
@@ -262,10 +262,10 @@ Khi payment verified → check order:
 
 5. **Implement BankTransactions module**
    - `bank-transactions.controller.ts`:
-     - `POST /webhooks/bank-transactions` — API key auth, ingest webhook
-     - `GET /bank-transactions` — list (manager+)
-     - `GET /bank-transactions/unmatched` — unmatched queue (manager+)
-     - `POST /bank-transactions/:id/match` — ghép thủ công `{ paymentId }` (manager+)
+     - `POST /webhooks/bank-transactions` - API key auth, ingest webhook
+     - `GET /bank-transactions` - list (manager+)
+     - `GET /bank-transactions/unmatched` - unmatched queue (manager+)
+     - `POST /bank-transactions/:id/match` - ghép thủ công `{ paymentId }` (manager+)
    - `bank-transactions.service.ts`:
      - **Ingest:** validate + dedup bằng external_id → lưu raw data
        - Sau lưu → gọi `paymentMatchingService.tryMatchBankTx(bankTx)` để tìm payment khớp

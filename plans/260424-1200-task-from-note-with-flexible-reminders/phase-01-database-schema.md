@@ -1,4 +1,4 @@
-# Phase 01 — Database Schema
+# Phase 01 - Database Schema
 
 **Priority:** P0 (blocks all) | **Status:** ✅ Completed | **Effort:** 2h
 
@@ -79,7 +79,7 @@ ALTER TABLE "tasks" DROP COLUMN "reminded_at";
 ```
 
 ## Implementation Steps
-1. Sửa `schema.prisma` — add `TaskReminder` model, remove `remindAt`/`remindedAt` từ Task
+1. Sửa `schema.prisma` - add `TaskReminder` model, remove `remindAt`/`remindedAt` từ Task
 2. Chạy `pnpm db:migrate dev --name task_reminders`
 3. Review SQL được generate, bổ sung INSERT migrate data (step 2 trên)
 4. Chạy `pnpm db:generate` để update Prisma client

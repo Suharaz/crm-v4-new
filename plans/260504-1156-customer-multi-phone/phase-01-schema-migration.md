@@ -1,4 +1,4 @@
-# Phase 01 — Schema + Migration
+# Phase 01 - Schema + Migration
 
 **Priority:** Critical (blocks all other phases)
 **Status:** ⬜ Pending
@@ -6,7 +6,7 @@
 
 ## Context
 
-Thêm bảng `customer_phones` chứa số phụ. Giữ nguyên `customers.phone` làm số chính. Không migrate data — bảng mới rỗng từ đầu.
+Thêm bảng `customer_phones` chứa số phụ. Giữ nguyên `customers.phone` làm số chính. Không migrate data - bảng mới rỗng từ đầu.
 
 ## Requirements
 
@@ -37,10 +37,10 @@ Thêm bảng `customer_phones` chứa số phụ. Giữ nguyên `customers.phone
 ## Related Code Files
 
 ### Modify
-- `packages/database/prisma/schema.prisma` — Thêm model `CustomerPhone`, thêm relation vào `Customer` và `User`.
+- `packages/database/prisma/schema.prisma` - Thêm model `CustomerPhone`, thêm relation vào `Customer` và `User`.
 
 ### Create
-- `packages/database/prisma/migrations/{timestamp}_add_customer_phones/migration.sql` — Auto-generated.
+- `packages/database/prisma/migrations/{timestamp}_add_customer_phones/migration.sql` - Auto-generated.
 
 ## Implementation Steps
 
@@ -130,7 +130,7 @@ pnpm db:studio  # mở Prisma Studio xác nhận bảng mới hiện ra
 | Risk | Mitigation |
 |---|---|
 | Conflict với migration cũ | Pull main mới nhất, rebase migration trước khi gen mới |
-| Quên `pnpm db:generate` | Sẽ thấy ngay khi import `CustomerPhone` ở phase 02 — TS error |
+| Quên `pnpm db:generate` | Sẽ thấy ngay khi import `CustomerPhone` ở phase 02 - TS error |
 
 ## Security
 
@@ -140,4 +140,4 @@ pnpm db:studio  # mở Prisma Studio xác nhận bảng mới hiện ra
 ## Next Steps
 
 Sau khi xong phase này:
-- Phase 02 — viết helper service dùng các Prisma types mới.
+- Phase 02 - viết helper service dùng các Prisma types mới.

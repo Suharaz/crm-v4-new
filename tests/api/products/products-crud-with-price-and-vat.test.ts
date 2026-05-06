@@ -33,7 +33,7 @@ describe('Products CRUD', () => {
 
   // ── POST /products ───────────────────────────────────────────────────────
 
-  describe('POST /products — tạo sản phẩm', () => {
+  describe('POST /products - tạo sản phẩm', () => {
     it('MANAGER tạo sản phẩm mới → 201', async () => {
       const { status, body } = await manager.postJson<any>('/products', {
         name: `Sản Phẩm Test ${Date.now()}`,
@@ -90,7 +90,7 @@ describe('Products CRUD', () => {
 
   // ── GET /products ────────────────────────────────────────────────────────
 
-  describe('GET /products — danh sách sản phẩm', () => {
+  describe('GET /products - danh sách sản phẩm', () => {
     it('SUPER_ADMIN xem danh sách → 200', async () => {
       const { status, body } = await admin.getJson<any>('/products');
       expect(status).toBe(200);
@@ -122,7 +122,7 @@ describe('Products CRUD', () => {
 
   // ── GET /products/:id ────────────────────────────────────────────────────
 
-  describe('GET /products/:id — chi tiết sản phẩm', () => {
+  describe('GET /products/:id - chi tiết sản phẩm', () => {
     it('bất kỳ authenticated user xem chi tiết → 200', async () => {
       if (!createdProductId) return;
       const { status, body } = await user.getJson<any>(`/products/${createdProductId}`);
@@ -138,7 +138,7 @@ describe('Products CRUD', () => {
 
   // ── PATCH /products/:id ──────────────────────────────────────────────────
 
-  describe('PATCH /products/:id — cập nhật sản phẩm', () => {
+  describe('PATCH /products/:id - cập nhật sản phẩm', () => {
     it('MANAGER cập nhật giá → 200', async () => {
       if (!createdProductId) return;
       const { status, body } = await manager.patchJson<any>(`/products/${createdProductId}`, {
@@ -160,7 +160,7 @@ describe('Products CRUD', () => {
 
   // ── DELETE /products/:id ─────────────────────────────────────────────────
 
-  describe('DELETE /products/:id — soft delete', () => {
+  describe('DELETE /products/:id - soft delete', () => {
     it('SUPER_ADMIN xóa sản phẩm → 200', async () => {
       if (!createdProductId) return;
       const { status, body } = await admin.deleteJson<any>(`/products/${createdProductId}`);

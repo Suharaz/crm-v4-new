@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Phone: Vietnamese format — starts with 0, 10-11 digits total
+// Phone: Vietnamese format - starts with 0, 10-11 digits total
 const phoneVN = z
   .string()
   .min(1, 'Vui lòng nhập số điện thoại')
@@ -67,7 +67,7 @@ export const userCreateSchema = z.object({
   employeeLevelId: z.string().optional(),
 });
 
-// User form (edit — password optional)
+// User form (edit - password optional)
 export const userEditSchema = userCreateSchema.extend({
   password: z
     .string()
@@ -123,7 +123,7 @@ export const taskSchema = z.object({
 
 export type TaskFormValues = z.infer<typeof taskSchema>;
 
-// Settings — generic name-required schema
+// Settings - generic name-required schema
 export const settingsNameSchema = z.object({
   name: z.string().min(1, 'Vui lòng nhập tên'),
 });

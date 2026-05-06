@@ -7,7 +7,7 @@ const FEATURES = [
   {
     icon: Users,
     title: '3 Kho Lead thông minh',
-    description: 'Kho Mới, Kho Phòng Ban, Kho Thả Nổi — phân phối lead công bằng, claim tự do, round-robin tự động.',
+    description: 'Kho Mới, Kho Phòng Ban, Kho Thả Nổi - phân phối lead công bằng, claim tự do, round-robin tự động.',
   },
   {
     icon: CreditCard,
@@ -22,7 +22,7 @@ const FEATURES = [
   {
     icon: BarChart3,
     title: 'Analytics Dashboard',
-    description: 'KPI cards, conversion funnel, sales ranking, source chart, revenue trend — tất cả real-time.',
+    description: 'KPI cards, conversion funnel, sales ranking, source chart, revenue trend - tất cả real-time.',
   },
   {
     icon: CheckSquare,
@@ -42,7 +42,7 @@ const FEATURES = [
   {
     icon: Bell,
     title: 'Thông báo In-app',
-    description: 'Lead assigned, transfer, claim, payment verified, task reminder — polling 30s, auto cleanup.',
+    description: 'Lead assigned, transfer, claim, payment verified, task reminder - polling 30s, auto cleanup.',
   },
 ];
 

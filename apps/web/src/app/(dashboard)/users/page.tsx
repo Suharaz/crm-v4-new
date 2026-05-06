@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
-/** Users management page — SUPER_ADMIN only. */
+/** Users management page - SUPER_ADMIN only. */
 export default async function UsersPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const params = await searchParams;
   const qp = new URLSearchParams(params);

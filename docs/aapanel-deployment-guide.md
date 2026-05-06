@@ -1,4 +1,4 @@
-# aaPanel Deployment Guide — Multi-Project VPS
+# aaPanel Deployment Guide - Multi-Project VPS
 
 > Guide setup VPS với aaPanel 7.x để deploy nhiều dự án Node.js (NestJS + Next.js).
 > Thiết kế reusable: thêm project mới chỉ cần lặp lại **Phần 5**.
@@ -38,9 +38,9 @@ GitHub Actions: push → SSH → deploy.sh per project
 ```
 
 **Quyết định kiến trúc:**
-- **Reverse proxy:** aaPanel 7 **"Proxy Project"** site type (top-level) — không tạo wwwroot, pure reverse proxy, SSL 1-click
+- **Reverse proxy:** aaPanel 7 **"Proxy Project"** site type (top-level) - không tạo wwwroot, pure reverse proxy, SSL 1-click
 - **Custom nginx blocks:** dùng **"Customized Configuration Files"** (persistent, không bị wipe khi regenerate vhost)
-- **SSL:** Let's Encrypt **DNS-01 qua Cloudflare API token** — end-to-end encryption, không cần grey-cloud toggle
+- **SSL:** Let's Encrypt **DNS-01 qua Cloudflare API token** - end-to-end encryption, không cần grey-cloud toggle
 - **Runtime:** PM2 Manager plugin + Node.js Version Manager plugin (apps) + Docker Manager plugin (PG/Redis infra)
 - **Auto-deploy:** GitHub Actions → SSH → `scripts/deploy.sh` (logs đầy đủ, control tốt)
 
@@ -74,7 +74,7 @@ username: <random>
 password: <random>
 ```
 
-**Lưu lại ngay** — hoặc dùng các `bt` commands sau:
+**Lưu lại ngay** - hoặc dùng các `bt` commands sau:
 
 | Command | Tác dụng |
 |---------|----------|
@@ -84,14 +84,14 @@ password: <random>
 | `bt 8` | Đổi panel port (mặc định 8888) |
 | `bt 22` | Bật/tắt BasicAuth |
 
-### 1.3 Cấu hình firewall — CHỈ qua aaPanel Security tab
+### 1.3 Cấu hình firewall - CHỈ qua aaPanel Security tab
 
-⚠️ **KHÔNG** chạy `ufw` CLI song song với aaPanel Security tab. aaPanel wrap `ufw` (Ubuntu) hoặc `firewalld` (RHEL) — rules thêm qua CLI có thể không hiện lên UI và ngược lại → desync.
+⚠️ **KHÔNG** chạy `ufw` CLI song song với aaPanel Security tab. aaPanel wrap `ufw` (Ubuntu) hoặc `firewalld` (RHEL) - rules thêm qua CLI có thể không hiện lên UI và ngược lại → desync.
 
 Login aaPanel → **Security** → ensure các port mở:
-- 22 (SSH) — hoặc port SSH custom
+- 22 (SSH) - hoặc port SSH custom
 - 80, 443 (web)
-- 8888 (panel) — sẽ đổi ở Phần 1.8
+- 8888 (panel) - sẽ đổi ở Phần 1.8
 
 Nếu lỡ enable ufw từ CLI trước khi cài aaPanel:
 ```bash
@@ -105,16 +105,16 @@ ufw --force reset
 
 Vào **App Store** (Software Store) → cài theo **thứ tự sau** (quan trọng):
 
-1. **Nginx** (latest stable) — reverse proxy cho tất cả sites
-2. **Node.js Version Manager** — plugin nvm-based, install TRƯỚC PM2 Manager
-3. **PM2 Manager** — depends on Node.js Version Manager ở bước 2
-4. **Docker Manager** — quản lý PostgreSQL + Redis containers
-5. **Fail2ban** — chống brute force SSH (nếu chưa có)
+1. **Nginx** (latest stable) - reverse proxy cho tất cả sites
+2. **Node.js Version Manager** - plugin nvm-based, install TRƯỚC PM2 Manager
+3. **PM2 Manager** - depends on Node.js Version Manager ở bước 2
+4. **Docker Manager** - quản lý PostgreSQL + Redis containers
+5. **Fail2ban** - chống brute force SSH (nếu chưa có)
 
 ⚠️ **Tránh:**
 - **KHÔNG** cài MySQL/PostgreSQL qua aaPanel App Store → dùng Docker cho DB (version lock, isolation per-project, khỏi conflict giữa projects cần PG versions khác nhau)
-- **KHÔNG** cài phpMyAdmin — mặc định chạy port 888 không SSL, leak credentials. Nếu cần query DB dùng `docker exec -it <container> psql` hoặc SSH tunnel.
-- **KHÔNG** dùng "Node Project" dưới menu Website song song với PM2 Manager — hai hệ thống overlap nhau, gây lẫn lộn.
+- **KHÔNG** cài phpMyAdmin - mặc định chạy port 888 không SSL, leak credentials. Nếu cần query DB dùng `docker exec -it <container> psql` hoặc SSH tunnel.
+- **KHÔNG** dùng "Node Project" dưới menu Website song song với PM2 Manager - hai hệ thống overlap nhau, gây lẫn lộn.
 
 ### 1.5 Cài Node.js 20 qua Node.js Version Manager plugin
 
@@ -169,7 +169,7 @@ Từ đây trở đi dùng `deploy@VPS_IP` thay `root@VPS_IP`.
 
 ### 1.8 Hardening aaPanel (BẮT BUỘC trước khi dùng production)
 
-aaPanel default install **không** an toàn — panel mở port 8888 world-wide, SSH thường 22, không 2FA. Làm các bước sau ngay sau khi login lần đầu:
+aaPanel default install **không** an toàn - panel mở port 8888 world-wide, SSH thường 22, không 2FA. Làm các bước sau ngay sau khi login lần đầu:
 
 | # | Hành động | Command/Location |
 |---|-----------|------------------|
@@ -178,7 +178,7 @@ aaPanel default install **không** an toàn — panel mở port 8888 world-wide,
 | 3 | Đổi admin username + strong password | Panel Settings → User Info |
 | 4 | Enable 2FA (Google Authenticator) | Panel Settings → Security → 2FA |
 | 5 | IP whitelist cho panel | Security → Authorization IP → add IP nhà/VPN |
-| 6 | Enable BasicAuth layer | `bt 22` — HTTP auth trước login form |
+| 6 | Enable BasicAuth layer | `bt 22` - HTTP auth trước login form |
 | 7 | Enable brute-force protection | Panel Settings → Security |
 | 8 | Issue SSL cho panel (self-signed hoặc LE) | Panel Settings → Panel SSL |
 | 9 | Disable Developer Mode | Panel Settings → Developer Mode OFF |
@@ -261,7 +261,7 @@ docker ps                                # crm-postgres + crm-redis
 
 ### 3.1 Tạo site bằng "Proxy Project" (aaPanel 7.x)
 
-aaPanel 7 có **top-level "Proxy Project"** site type dành riêng cho reverse proxy — cleaner hơn Website thường vì không tạo wwwroot, không có PHP, không có DB.
+aaPanel 7 có **top-level "Proxy Project"** site type dành riêng cho reverse proxy - cleaner hơn Website thường vì không tạo wwwroot, không có PHP, không có DB.
 
 aaPanel UI → **Website (sidebar) → Proxy Project (tab)** → **Add Proxy**:
 - **Proxy name:** `crm-web` (identifier nội bộ)
@@ -273,14 +273,14 @@ aaPanel UI → **Website (sidebar) → Proxy Project (tab)** → **Add Proxy**:
 
 > **Nếu aaPanel version của bạn không có "Proxy Project":** fallback dùng **Website → Add site** với PHP version = "Pure static", sau đó vào site Settings → **Reverse Proxy** tab → Add với target `http://127.0.0.1:3011`. Cả hai cách cùng tạo file `/www/server/panel/vhost/nginx/<domain>.conf`.
 
-### 3.2 Thêm location cho API + files — QUAN TRỌNG: dùng Customized Configuration
+### 3.2 Thêm location cho API + files - QUAN TRỌNG: dùng Customized Configuration
 
-⚠️ **Gotcha lớn:** aaPanel sẽ **regenerate** file vhost `<domain>.conf` mỗi khi bạn save site settings qua UI. Bất kỳ edit trực tiếp nào vào file đó sẽ bị **wipe**. Phải dùng **"Customized Configuration Files"** — một include file riêng mà aaPanel không overwrite.
+⚠️ **Gotcha lớn:** aaPanel sẽ **regenerate** file vhost `<domain>.conf` mỗi khi bạn save site settings qua UI. Bất kỳ edit trực tiếp nào vào file đó sẽ bị **wipe**. Phải dùng **"Customized Configuration Files"** - một include file riêng mà aaPanel không overwrite.
 
 Site (trong Proxy Project list) → click tên site → mở Settings modal → tab **Config File** → scroll xuống thấy **"Customized Configuration Files"** (tiếng TQ: 用户自定义配置) → paste block dưới:
 
 ```nginx
-# ===== Custom config cho CRM — survives aaPanel regeneration =====
+# ===== Custom config cho CRM - survives aaPanel regeneration =====
 
 client_max_body_size 10M;
 
@@ -297,7 +297,7 @@ location /api/ {
     proxy_read_timeout 300s;
 }
 
-# File uploads — serve từ NestJS
+# File uploads - serve từ NestJS
 location /files/ {
     proxy_pass http://127.0.0.1:3010;
     proxy_set_header Host $host;
@@ -324,7 +324,7 @@ ls /www/server/panel/vhost/nginx/
 # → thường có thêm file *.custom hoặc include inline trong vhost chính
 ```
 
-### 3.4 SSL với Let's Encrypt — 2 strategies
+### 3.4 SSL với Let's Encrypt - 2 strategies
 
 **Chiến lược A: DNS-01 qua Cloudflare API (KHUYẾN NGHỊ)**
 
@@ -347,7 +347,7 @@ ls /www/server/panel/vhost/nginx/
 4. Tick **Force HTTPS**
 5. Auto-renew sẽ fail định kỳ → phải grey-cloud toggle lại mỗi 60-90 ngày. **Khuyến nghị chuyển sang Strategy A**.
 
-> **Cloudflare Origin Cert (option C):** free 15-year cert từ Cloudflare, paste vào aaPanel SSL → "Other Certificate". Không rate-limit. Chỉ valid khi request đi qua Cloudflare — direct IP access sẽ fail SSL. OK cho prod CRM.
+> **Cloudflare Origin Cert (option C):** free 15-year cert từ Cloudflare, paste vào aaPanel SSL → "Other Certificate". Không rate-limit. Chỉ valid khi request đi qua Cloudflare - direct IP access sẽ fail SSL. OK cho prod CRM.
 
 ### 3.5 Cloudflare DNS
 
@@ -357,7 +357,7 @@ Vào Cloudflare dashboard → domain → **DNS → Records**:
 |------|------|---------|-------|-----|
 | A | crm | `YOUR_VPS_IP` | Proxied ☁️ | Auto |
 
-**SSL/TLS mode:** Full (Strict) — Overview tab → SSL/TLS → chọn **Full (strict)**.
+**SSL/TLS mode:** Full (Strict) - Overview tab → SSL/TLS → chọn **Full (strict)**.
 
 **Edge Certificates:**
 - ✅ Always Use HTTPS
@@ -477,7 +477,7 @@ ss -tlnp | grep LISTEN
 
 ### 5.3 Template files cho project mới
 
-**`docker-compose.prod.yml`** — thay `<NAME>`, `<N>`:
+**`docker-compose.prod.yml`** - thay `<NAME>`, `<N>`:
 ```yaml
 services:
   <NAME>-postgres:
@@ -508,7 +508,7 @@ volumes:
   <NAME>-redisdata:
 ```
 
-**`ecosystem.config.cjs`** — PM2 config:
+**`ecosystem.config.cjs`** - PM2 config:
 ```javascript
 module.exports = {
   apps: [
@@ -545,7 +545,7 @@ Copy đoạn này khi nhờ Claude tạo deployment cho project mới:
 ## Deployment Context
 
 VPS đã có: aaPanel + Node.js 20 + pnpm + PM2 + Docker
-Reverse proxy: aaPanel Website (Nginx) — mỗi project 1 site
+Reverse proxy: aaPanel Website (Nginx) - mỗi project 1 site
 SSL: Let's Encrypt qua aaPanel + Cloudflare Full (Strict)
 Auto-deploy: GitHub Actions → SSH script
 
@@ -557,9 +557,9 @@ Ports đã dùng: [chạy `pm2 status` + `docker ps` để list]
 Project number kế tiếp: N=?
 
 ## Files cần tạo
-1. docker-compose.prod.yml — PG + Redis, container names prefix, ports unique
-2. ecosystem.config.cjs — PM2 apps, names prefix, ports unique
-3. scripts/deploy.sh — git pull → docker up → install → build → pm2 reload
+1. docker-compose.prod.yml - PG + Redis, container names prefix, ports unique
+2. ecosystem.config.cjs - PM2 apps, names prefix, ports unique
+3. scripts/deploy.sh - git pull → docker up → install → build → pm2 reload
 4. .env.production.example
 5. .github/workflows/deploy.yml
 6. Nginx config cho /api/ + /files/ location (paste vào aaPanel site config)
@@ -655,16 +655,16 @@ done
 |-----|-------------|------------|
 | Custom nginx blocks bị mất | Edit raw file `<domain>.conf`, aaPanel regenerate khi save settings | **Luôn** dùng **"Customized Configuration Files"** |
 | Reverse proxy biến mất sau "Repair" | Site Settings → Repair button wipe proxy config (forum bug) | Đừng click Repair trừ khi biết rõ. Backup vhost trước |
-| Firewall rules desync | Chạy `ufw` CLI sau khi aaPanel đã add rules | Quản firewall **1 chỗ duy nhất** — chỉ Security tab |
+| Firewall rules desync | Chạy `ufw` CLI sau khi aaPanel đã add rules | Quản firewall **1 chỗ duy nhất** - chỉ Security tab |
 | PM2 Manager ↔ Node Project confusion | Hai hệ Node.js management song song | Chỉ dùng MỘT. Guide này dùng PM2 Manager |
 | LE HTTP-01 fail khi CF proxied | Cloudflare TLS termination | Dùng DNS-01 với CF API token (Phần 3.4 Strategy A) |
 | phpMyAdmin port 888 leak | Mặc định no SSL | **Không cài** hoặc disable ngay. Dùng SSH tunnel |
 | `bt` commands not found | PATH chưa load | `source /etc/profile` hoặc logout/login lại |
 
 ### 502 Bad Gateway từ Nginx
-- `pm2 status` — app có online không?
-- `pm2 logs <app> --err --lines 50` — xem error
-- `curl http://127.0.0.1:<port>` từ VPS — app trả lời không?
+- `pm2 status` - app có online không?
+- `pm2 logs <app> --err --lines 50` - xem error
+- `curl http://127.0.0.1:<port>` từ VPS - app trả lời không?
 - Nginx config `proxy_pass` sai port? → check `/www/server/panel/vhost/nginx/<domain>.conf`
 - aaPanel đã reload nginx chưa? → `nginx -s reload` hoặc Site → Settings save lại
 
@@ -692,7 +692,7 @@ systemctl status pm2-root
 
 ### aaPanel Repair button xoá reverse proxy
 Nếu lỡ click Repair và mất config:
-1. Mở `/www/server/panel/vhost/nginx/<domain>.conf` — có thể còn backup `.bak`
+1. Mở `/www/server/panel/vhost/nginx/<domain>.conf` - có thể còn backup `.bak`
 2. Hoặc re-add qua **Proxy Project → Add** + paste lại Customized Config
 3. **Bài học:** backup vhost folder định kỳ: `tar czf vhost-backup.tgz /www/server/panel/vhost/nginx/`
 
@@ -759,9 +759,9 @@ git push → GitHub Actions → auto deploy via SSH
 
 ## Related docs
 
-- `docs/deployment-guide.md` — dev setup guide
-- `CLAUDE.md` — project overview + architecture rules
-- `.github/workflows/deploy.yml` — CI/CD config
-- `scripts/deploy.sh` — deploy script logic
-- `docker-compose.prod.yml` — infrastructure definition
-- `ecosystem.config.cjs` — PM2 processes
+- `docs/deployment-guide.md` - dev setup guide
+- `CLAUDE.md` - project overview + architecture rules
+- `.github/workflows/deploy.yml` - CI/CD config
+- `scripts/deploy.sh` - deploy script logic
+- `docker-compose.prod.yml` - infrastructure definition
+- `ecosystem.config.cjs` - PM2 processes

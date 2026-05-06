@@ -23,7 +23,7 @@ interface BulkDeleteBarProps {
 }
 
 /**
- * Fixed-bottom bar hiện khi có item được chọn. SA-only — caller chịu trách nhiệm
+ * Fixed-bottom bar hiện khi có item được chọn. SA-only - caller chịu trách nhiệm
  * không render nếu không phải SUPER_ADMIN.
  *
  * Sau xóa: toast + router.refresh() + onClear() để reset checkbox state.
@@ -72,7 +72,7 @@ export function BulkDeleteBar({ count, ids, endpoint, entityLabel, onClear, hint
         }
         title={`Xóa ${count} ${entityLabel}?`}
         description={hint
-          ? `${hint} Thao tác này soft-delete — có thể restore từ DB nếu cần.`
+          ? `${hint} Thao tác này soft-delete - có thể restore từ DB nếu cần.`
           : `Thao tác này soft-delete ${count} ${entityLabel} đã chọn. Có thể restore từ DB nếu cần.`}
         confirmLabel="Xóa"
         onConfirm={handleDelete}

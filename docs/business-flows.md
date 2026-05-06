@@ -5,7 +5,7 @@
 
 ## Table of Contents
 
-1. [Lead Lifecycle — 3 Kho](#1-lead-lifecycle--3-kho)
+1. [Lead Lifecycle - 3 Kho](#1-lead-lifecycle--3-kho)
 2. [Payment Hybrid Verification](#2-payment-hybrid-verification)
 3. [Auto-Recall (dept pool → floating)](#3-auto-recall)
 4. [AI Lead Distribution](#4-ai-lead-distribution)
@@ -16,7 +16,7 @@
 
 ---
 
-## 1. Lead Lifecycle — 3 Kho
+## 1. Lead Lifecycle - 3 Kho
 
 ### State Diagram
 
@@ -38,7 +38,7 @@ stateDiagram-v2
 
 ### Kho Model (derived state)
 
-Kho KHÔNG phải cột riêng — derived từ 3 field:
+Kho KHÔNG phải cột riêng - derived từ 3 field:
 
 | Kho | status | departmentId | assignedUserId | Ai thấy |
 |-----|--------|--------------|----------------|---------|
@@ -106,7 +106,7 @@ sequenceDiagram
 
 3 nguồn verify: **sale tạo → bank TX match**, **CSV import sao kê → payment match**, **manager thủ công**, với **cron 2h** retry fuzzy.
 
-> **Update 2026-04-22:** Bank ngừng push webhook API. Kế toán tải CSV sao kê định kỳ, SA upload qua `/payments → tab "Import sao kê CSV"` (`POST /bank-transactions/import`). Logic auto-match `tryMatchBankTransaction()` GIỮ NGUYÊN — chỉ thay nguồn ingest. Webhook cũ vẫn giữ (backward-compat).
+> **Update 2026-04-22:** Bank ngừng push webhook API. Kế toán tải CSV sao kê định kỳ, SA upload qua `/payments → tab "Import sao kê CSV"` (`POST /bank-transactions/import`). Logic auto-match `tryMatchBankTransaction()` GIỮ NGUYÊN - chỉ thay nguồn ingest. Webhook cũ vẫn giữ (backward-compat).
 
 ### Flow A: Sale tạo trước, CSV import đến sau
 
@@ -213,7 +213,7 @@ sequenceDiagram
 ```
 
 **Lead vs Customer Label Cardinality (BREAKING 2026-05-06):**
-- Lead: single label via FK `leads.label_id` (nullable). Auto-recall **skip-if-exists** — không đè nhãn business.
+- Lead: single label via FK `leads.label_id` (nullable). Auto-recall **skip-if-exists** - không đè nhãn business.
 - Customer: multi-label via junction `customer_labels`. Auto-recall append `autoLabelId` (idempotent với `skipDuplicates`).
 
 **Config per entity type:**
@@ -282,7 +282,7 @@ sequenceDiagram
 |------|--------|-----------|
 | DEPARTMENT | departmentId → Y | User hiện giữ + manager dept X + SUPER_ADMIN |
 | FLOATING | status → FLOATING, user=null | Bất kỳ |
-| UNASSIGN | user=null, status→POOL (giữ dept) | — |
+| UNASSIGN | user=null, status→POOL (giữ dept) | - |
 
 ```mermaid
 sequenceDiagram
@@ -430,14 +430,14 @@ sequenceDiagram
 
 | From \ To | POOL | ZOOM | ASSIGNED | IN_PROGRESS | CONVERTED | LOST | FLOATING |
 |-----------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| (new) | ✅ | ✅* | — | — | — | — | — |
-| POOL | — | — | ✅ | — | — | — | ✅ |
-| ZOOM | — | — | ✅ | — | — | — | ✅ |
-| ASSIGNED | — | — | — | ✅ | ✅** | ✅ | ✅ |
-| IN_PROGRESS | — | — | — | — | ✅ | ✅ | ✅ |
-| CONVERTED | — | — | — | — | — | — | — (terminal) |
-| LOST | — | — | — | — | — | — | ✅ |
-| FLOATING | — | — | ✅ | — | — | — | — |
+| (new) | ✅ | ✅* | - | - | - | - | - |
+| POOL | - | - | ✅ | - | - | - | ✅ |
+| ZOOM | - | - | ✅ | - | - | - | ✅ |
+| ASSIGNED | - | - | - | ✅ | ✅** | ✅ | ✅ |
+| IN_PROGRESS | - | - | - | - | ✅ | ✅ | ✅ |
+| CONVERTED | - | - | - | - | - | - | - (terminal) |
+| LOST | - | - | - | - | - | - | ✅ |
+| FLOATING | - | - | ✅ | - | - | - | - |
 
 \* ZOOM khi source.skipPool=true và nguồn là Zoom-related
 \** Cho phép convert direct từ ASSIGNED nếu payment đầy đủ luôn
@@ -446,20 +446,20 @@ sequenceDiagram
 
 | From \ To | ACTIVE | INACTIVE | FLOATING |
 |-----------|:---:|:---:|:---:|
-| (new) | ✅ | — | — |
-| ACTIVE | — | ✅ | ✅ |
-| INACTIVE | ✅ (reactivate) | — | ✅ |
-| FLOATING | ✅ (claim) | — | — |
+| (new) | ✅ | - | - |
+| ACTIVE | - | ✅ | ✅ |
+| INACTIVE | ✅ (reactivate) | - | ✅ |
+| FLOATING | ✅ (claim) | - | - |
 
 ### OrderStatus
 
 | From \ To | PENDING | CONFIRMED | COMPLETED | CANCELLED | REFUNDED |
 |-----------|:---:|:---:|:---:|:---:|:---:|
-| (new) | ✅ | — | — | — | — |
-| PENDING | — | ✅ | — | ✅ | — |
-| CONFIRMED | — | — | ✅ | ✅ | — |
-| COMPLETED | — | — | — | — | ✅ |
-| CANCELLED | ✅ | — | — | — | — |
+| (new) | ✅ | - | - | - | - |
+| PENDING | - | ✅ | - | ✅ | - |
+| CONFIRMED | - | - | ✅ | ✅ | - |
+| COMPLETED | - | - | - | - | ✅ |
+| CANCELLED | ✅ | - | - | - | - |
 
 ### PaymentStatus
 
@@ -485,14 +485,14 @@ VERIFIED/REJECTED = terminal.
 | Task due soon | assignee | TASK_REMINDER |
 | Task overdue 1h / 24h | assignee / manager | TASK_OVERDUE / _MANAGER |
 | AI distribution run | users được assign | LEAD_ASSIGNED |
-| Auto-recall trigger | (không notify — silent, có label) | — |
+| Auto-recall trigger | (không notify - silent, có label) | - |
 
 ### Idempotency Points
 
-- `call_logs.externalId` — ingest đi ingest lại không duplicate
-- `bank_transactions.externalId` — webhook replay an toàn
-- `task.remindedAt` — reminder chỉ gửi 1 lần
-- `task.escalation1At/2At` — escalation 1 lần mỗi mốc
+- `call_logs.externalId` - ingest đi ingest lại không duplicate
+- `bank_transactions.externalId` - webhook replay an toàn
+- `task.remindedAt` - reminder chỉ gửi 1 lần
+- `task.escalation1At/2At` - escalation 1 lần mỗi mốc
 
 ### Audit Trails
 
@@ -505,7 +505,7 @@ Mọi transfer/claim/assign/recall → INSERT `assignment_history`. Dùng cho:
 
 ## Related Docs
 
-- `data-model.md` — Schema chi tiết
-- `api-reference.md` — Endpoint tương ứng mỗi flow
-- `system-architecture.md` — Cron schedule + module dependencies
-- `project-overview-pdr.md` — Business context & rules tổng quát
+- `data-model.md` - Schema chi tiết
+- `api-reference.md` - Endpoint tương ứng mỗi flow
+- `system-architecture.md` - Cron schedule + module dependencies
+- `project-overview-pdr.md` - Business context & rules tổng quát

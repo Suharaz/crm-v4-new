@@ -8,9 +8,9 @@ interface KpiCardProps {
   subtitle: string;
   accentColor: string;
   bgColor: string;
-  /** Previous period value — if provided, show trend arrow + % change */
+  /** Previous period value - if provided, show trend arrow + % change */
   previousValue?: number | null;
-  /** Current raw number — needed for trend calculation */
+  /** Current raw number - needed for trend calculation */
   currentValue?: number | null;
 }
 

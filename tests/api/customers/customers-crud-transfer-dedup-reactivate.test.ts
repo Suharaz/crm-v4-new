@@ -34,7 +34,7 @@ describe('Customers CRUD, Transfer & Dedup', () => {
 
   // ── POST /customers ──────────────────────────────────────────────────────
 
-  describe('POST /customers — tạo khách hàng', () => {
+  describe('POST /customers - tạo khách hàng', () => {
     it('MANAGER tạo khách hàng mới → 201', async () => {
       const phone = uniquePhone();
       const { status, body } = await manager.postJson<any>('/customers', {
@@ -88,7 +88,7 @@ describe('Customers CRUD, Transfer & Dedup', () => {
 
   // ── Phone dedup ──────────────────────────────────────────────────────────
 
-  describe('Phone dedup — tạo 2 khách cùng SĐT → conflict', () => {
+  describe('Phone dedup - tạo 2 khách cùng SĐT → conflict', () => {
     it('tạo khách hàng thứ 2 với cùng SĐT → 409 hoặc 400', async () => {
       const phone = uniquePhone();
 
@@ -110,7 +110,7 @@ describe('Customers CRUD, Transfer & Dedup', () => {
 
   // ── GET /customers ───────────────────────────────────────────────────────
 
-  describe('GET /customers — danh sách khách hàng', () => {
+  describe('GET /customers - danh sách khách hàng', () => {
     it('SUPER_ADMIN xem danh sách → 200', async () => {
       const { status, body } = await admin.getJson<any>('/customers');
       expect(status).toBe(200);
@@ -130,7 +130,7 @@ describe('Customers CRUD, Transfer & Dedup', () => {
 
   // ── GET /customers/:id ───────────────────────────────────────────────────
 
-  describe('GET /customers/:id — chi tiết khách hàng', () => {
+  describe('GET /customers/:id - chi tiết khách hàng', () => {
     it('MANAGER xem chi tiết → 200', async () => {
       if (!createdCustomerId) return;
       const { status, body } = await manager.getJson<any>(`/customers/${createdCustomerId}`);
@@ -146,7 +146,7 @@ describe('Customers CRUD, Transfer & Dedup', () => {
 
   // ── PATCH /customers/:id ─────────────────────────────────────────────────
 
-  describe('PATCH /customers/:id — cập nhật thông tin', () => {
+  describe('PATCH /customers/:id - cập nhật thông tin', () => {
     it('MANAGER cập nhật tên khách hàng → 200', async () => {
       if (!createdCustomerId) return;
       const { status, body } = await manager.patchJson<any>(`/customers/${createdCustomerId}`, {
@@ -159,7 +159,7 @@ describe('Customers CRUD, Transfer & Dedup', () => {
 
   // ── POST /customers/:id/claim ────────────────────────────────────────────
 
-  describe('POST /customers/:id/claim — nhận khách từ pool', () => {
+  describe('POST /customers/:id/claim - nhận khách từ pool', () => {
     it('USER claim khách hàng từ pool → 200', async () => {
       // Tạo khách không có owner (status FLOATING)
       const { body: createBody } = await manager.postJson<any>('/customers', {
@@ -180,7 +180,7 @@ describe('Customers CRUD, Transfer & Dedup', () => {
 
   // ── POST /customers/:id/transfer ─────────────────────────────────────────
 
-  describe('POST /customers/:id/transfer — chuyển khách hàng', () => {
+  describe('POST /customers/:id/transfer - chuyển khách hàng', () => {
     it('MANAGER transfer khách sang FLOATING → 200', async () => {
       if (!createdCustomerId) return;
       const { status, body } = await manager.postJson<any>(`/customers/${createdCustomerId}/transfer`, {
@@ -237,7 +237,7 @@ describe('Customers CRUD, Transfer & Dedup', () => {
 
   // ── POST /customers/:id/reactivate ───────────────────────────────────────
 
-  describe('POST /customers/:id/reactivate — kích hoạt lại INACTIVE → ACTIVE', () => {
+  describe('POST /customers/:id/reactivate - kích hoạt lại INACTIVE → ACTIVE', () => {
     it('MANAGER reactivate khách INACTIVE → 200, status ACTIVE', async () => {
       // Tạo và set INACTIVE
       const { body: createBody } = await manager.postJson<any>('/customers', {
@@ -268,7 +268,7 @@ describe('Customers CRUD, Transfer & Dedup', () => {
 
   // ── GET /customers/search?phone ──────────────────────────────────────────
 
-  describe('GET /customers/search?phone — tìm theo SĐT', () => {
+  describe('GET /customers/search?phone - tìm theo SĐT', () => {
     it('tìm theo SĐT tồn tại → trả về kết quả', async () => {
       const phone = uniquePhone();
       await manager.postJson<any>('/customers', { name: 'Search Test', phone });
@@ -281,7 +281,7 @@ describe('Customers CRUD, Transfer & Dedup', () => {
 
   // ── DELETE /customers/:id ────────────────────────────────────────────────
 
-  describe('DELETE /customers/:id — soft delete', () => {
+  describe('DELETE /customers/:id - soft delete', () => {
     it('SUPER_ADMIN xóa khách hàng → 200', async () => {
       const { body: createBody } = await manager.postJson<any>('/customers', {
         name: 'To Delete Customer',

@@ -51,7 +51,7 @@ describe('Lead Pools & Assignment Operations', () => {
 
   // ── GET /leads/pool/new ──────────────────────────────────────────────────
 
-  describe('GET /leads/pool/new — Kho Mới', () => {
+  describe('GET /leads/pool/new - Kho Mới', () => {
     it('SUPER_ADMIN xem kho mới → 200', async () => {
       const { status, body } = await admin.getJson<any>('/leads/pool/new');
       expect(status).toBe(200);
@@ -71,7 +71,7 @@ describe('Lead Pools & Assignment Operations', () => {
 
   // ── GET /leads/pool/floating ─────────────────────────────────────────────
 
-  describe('GET /leads/pool/floating — Kho Thả Nổi', () => {
+  describe('GET /leads/pool/floating - Kho Thả Nổi', () => {
     it('SUPER_ADMIN xem kho thả nổi → 200', async () => {
       const { status } = await admin.getJson<any>('/leads/pool/floating');
       expect(status).toBe(200);
@@ -90,7 +90,7 @@ describe('Lead Pools & Assignment Operations', () => {
 
   // ── GET /leads/pool/department/:deptId ───────────────────────────────────
 
-  describe('GET /leads/pool/department/:deptId — Kho Phòng Ban', () => {
+  describe('GET /leads/pool/department/:deptId - Kho Phòng Ban', () => {
     it('MANAGER xem kho phòng ban → 200', async () => {
       if (!salesDeptId) return;
       const { status } = await manager.getJson<any>(`/leads/pool/department/${salesDeptId}`);
@@ -106,7 +106,7 @@ describe('Lead Pools & Assignment Operations', () => {
 
   // ── POST /leads/:id/assign ───────────────────────────────────────────────
 
-  describe('POST /leads/:id/assign — Manager assign lead cho user', () => {
+  describe('POST /leads/:id/assign - Manager assign lead cho user', () => {
     it('MANAGER assign lead POOL cho user → 200, status ASSIGNED', async () => {
       const leadId = await createPoolLead();
       if (!assignedUserId) return;
@@ -142,7 +142,7 @@ describe('Lead Pools & Assignment Operations', () => {
 
   // ── POST /leads/:id/claim ─────────────────────────────────────────────────
 
-  describe('POST /leads/:id/claim — User claim lead từ pool (atomic)', () => {
+  describe('POST /leads/:id/claim - User claim lead từ pool (atomic)', () => {
     it('USER claim lead từ kho → 200, lead được gán cho user', async () => {
       const leadId = await createPoolLead();
 
@@ -173,7 +173,7 @@ describe('Lead Pools & Assignment Operations', () => {
 
   // ── POST /leads/:id/transfer ──────────────────────────────────────────────
 
-  describe('POST /leads/:id/transfer — Transfer lead', () => {
+  describe('POST /leads/:id/transfer - Transfer lead', () => {
     it('owner transfer lead sang FLOATING → 200', async () => {
       const leadId = await createPoolLead();
       if (!assignedUserId) return;

@@ -11,7 +11,7 @@ For a NestJS API + Next.js frontend CRM built on Turborepo:
 - **TanStack Query** only if you need client-side caching/refetch logic; otherwise use native fetch in Server Components
 - **TanStack Table** for large data lists (optimized virtualization for thousands of rows)
 - **React Hook Form** + Zod for complex, dynamic CRM forms
-- **Minimal global state** — use props drilling + Server Components + Context for auth/user
+- **Minimal global state** - use props drilling + Server Components + Context for auth/user
 - **Proxy (formerly Middleware)** for authentication check + JWT validation
 - **Suspense + loading.js** for progressive rendering of dashboard sections
 
@@ -65,10 +65,10 @@ crm-v3/
 ```
 
 ### Key Principles:
-- **No `pages/` directory** — migrate to App Router (v13+)
-- **Route groups** `(name)` — organize without URL segments
-- **Colocation** — place components near where used (not in `/components` necessarily)
-- **Server Components by default** — add `'use client'` only where needed
+- **No `pages/` directory** - migrate to App Router (v13+)
+- **Route groups** `(name)` - organize without URL segments
+- **Colocation** - place components near where used (not in `/components` necessarily)
+- **Server Components by default** - add `'use client'` only where needed
 - **`loading.tsx`** wraps page in Suspense automatically
 
 ---
@@ -78,10 +78,10 @@ crm-v3/
 ### When to Use Server Components (DEFAULT)
 
 **Use Server Components for:**
-1. **Data fetching from DB/APIs** — direct Prisma queries or fetch to NestJS backend
-2. **Secret data** — API keys, tokens, sensitive logic
-3. **Large dependencies** — libraries that don't need to ship to browser
-4. **Database access** — using Prisma directly
+1. **Data fetching from DB/APIs** - direct Prisma queries or fetch to NestJS backend
+2. **Secret data** - API keys, tokens, sensitive logic
+3. **Large dependencies** - libraries that don't need to ship to browser
+4. **Database access** - using Prisma directly
 
 **Example: List View (Server Component)**
 ```tsx
@@ -109,10 +109,10 @@ export default async function LeadsPage({
 ### When to Use Client Components
 
 **Use Client Components ONLY for:**
-1. **Interactivity** — `useState`, `onChange`, `onClick`
-2. **Hooks** — `useEffect`, custom hooks
-3. **Browser APIs** — `localStorage`, `window`, `geolocation`
-4. **Event handlers** — form submission, clicks
+1. **Interactivity** - `useState`, `onChange`, `onClick`
+2. **Hooks** - `useEffect`, custom hooks
+3. **Browser APIs** - `localStorage`, `window`, `geolocation`
+4. **Event handlers** - form submission, clicks
 
 **Example: Interactive Table (Client Component)**
 ```tsx
@@ -215,9 +215,9 @@ export default async function LeadsPage({ searchParams }) {
 ```
 
 **Key Decisions:**
-- `cache: 'no-store'` — CRM data changes frequently, disable HTTP cache
-- `cache()` function — deduplicate identical fetches in same request
-- No React Query needed — Suspense handles loading states
+- `cache: 'no-store'` - CRM data changes frequently, disable HTTP cache
+- `cache()` function - deduplicate identical fetches in same request
+- No React Query needed - Suspense handles loading states
 
 ---
 
@@ -588,9 +588,9 @@ export function LeadsTable({ leads }: LeadsTableProps) {
 ```
 
 **Alternatives:**
-- **shadcn/ui DataTable** — Same as TanStack Table but styled
-- **AG Grid** — Enterprise features, paid, overkill for most CRM
-- **Datagrid from MUI** — For Material Design look
+- **shadcn/ui DataTable** - Same as TanStack Table but styled
+- **AG Grid** - Enterprise features, paid, overkill for most CRM
+- **Datagrid from MUI** - For Material Design look
 
 ---
 
@@ -794,21 +794,21 @@ export async function AnalyticsChart() {
 
 ### Why These Libraries?
 
-- **Next.js 16** — Latest App Router, improved performance
-- **React 19** — Better Server Component support, useActionState
-- **React Hook Form** — Minimal bundle, excellent for CRM forms
-- **Zod** — Type-safe validation (used by Next.js team)
-- **TanStack Table** — Only if needed; lean table library
-- **Recharts** — Simple, React-first charting
-- **Jose** — JWT handling (lightweight)
-- **Prisma** — Type-safe ORM (shared with NestJS if desired)
+- **Next.js 16** - Latest App Router, improved performance
+- **React 19** - Better Server Component support, useActionState
+- **React Hook Form** - Minimal bundle, excellent for CRM forms
+- **Zod** - Type-safe validation (used by Next.js team)
+- **TanStack Table** - Only if needed; lean table library
+- **Recharts** - Simple, React-first charting
+- **Jose** - JWT handling (lightweight)
+- **Prisma** - Type-safe ORM (shared with NestJS if desired)
 
 ### Skip These (Not Needed for CRM):
-- Redux, Redux Toolkit — Too much boilerplate
-- SWR — Server Actions are simpler
-- Apollo Client — Only needed if using GraphQL
-- Next.js API Routes — Use NestJS backend instead
-- Next-Auth.js — Use manual JWT + cookies instead (simpler)
+- Redux, Redux Toolkit - Too much boilerplate
+- SWR - Server Actions are simpler
+- Apollo Client - Only needed if using GraphQL
+- Next.js API Routes - Use NestJS backend instead
+- Next-Auth.js - Use manual JWT + cookies instead (simpler)
 
 ---
 
@@ -959,14 +959,14 @@ export function CreateLeadModal() {
 
 ## 13. Unresolved Questions & Gaps
 
-1. **Real-time updates** — Requirements say no real-time needed, but if added later, need to switch to WebSocket solution (Socket.io, Centrifugo)
-2. **PDF export** — Not mentioned; would recommend puppeteer or similar
-3. **Bulk operations** — How to handle bulk edit/delete? May need specialized UI pattern
-4. **Advanced search** — Full-text search or ElasticSearch integration? Currently assuming simple SQL filters
-5. **File uploads** — Not mentioned; if needed, use S3 + Next.js Route Handlers
-6. **Email/SMS integrations** — Should be in NestJS backend, not frontend
-7. **Analytics data retention** — How long to keep historical data? Affects caching strategy
-8. **Multi-tenancy** — Is this single-org or multi-org? Affects auth + data isolation
+1. **Real-time updates** - Requirements say no real-time needed, but if added later, need to switch to WebSocket solution (Socket.io, Centrifugo)
+2. **PDF export** - Not mentioned; would recommend puppeteer or similar
+3. **Bulk operations** - How to handle bulk edit/delete? May need specialized UI pattern
+4. **Advanced search** - Full-text search or ElasticSearch integration? Currently assuming simple SQL filters
+5. **File uploads** - Not mentioned; if needed, use S3 + Next.js Route Handlers
+6. **Email/SMS integrations** - Should be in NestJS backend, not frontend
+7. **Analytics data retention** - How long to keep historical data? Affects caching strategy
+8. **Multi-tenancy** - Is this single-org or multi-org? Affects auth + data isolation
 
 ---
 

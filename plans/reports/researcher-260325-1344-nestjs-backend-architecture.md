@@ -1988,5 +1988,5 @@ This report covers production-ready NestJS patterns for CRM systems. Key takeawa
 - **Testing**: Unit tests (mocked repos), integration tests (with Prisma mocks)
 - **Deployment**: Docker setup, health checks, structured logging with Pino
 
-All patterns emphasize pragmatism over over-engineering—suitable for 50-200 user teams with potential scale to larger deployments.
+All patterns emphasize pragmatism over over-engineering-suitable for 50-200 user teams with potential scale to larger deployments.
 

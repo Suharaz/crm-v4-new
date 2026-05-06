@@ -16,7 +16,7 @@ const METHODS = ['', 'POST', 'PUT', 'PATCH', 'DELETE'];
 const CRON_STATUSES = ['', 'RUNNING', 'SUCCESS', 'FAILED'];
 
 /**
- * Filter bar — writes to URL search params; the parent page reads URL on every
+ * Filter bar - writes to URL search params; the parent page reads URL on every
  * change and refetches. URL-based state means filters are shareable.
  */
 export function TraceFilters({ tab }: Props) {

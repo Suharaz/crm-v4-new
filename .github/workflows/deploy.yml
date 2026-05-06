@@ -19,7 +19,7 @@ jobs:
             cd /www/wwwroot/crm.taki.vn
             # Pre-pull deploy.sh BEFORE invoking it. Without this, bash
             # streams the on-disk deploy.sh into memory before the script's
-            # own `git pull` step runs — so changes to deploy.sh itself
+            # own `git pull` step runs - so changes to deploy.sh itself
             # only take effect on the deploy AFTER the one that pushes them.
             git config --global --add safe.directory /www/wwwroot/crm.taki.vn
             git fetch origin master

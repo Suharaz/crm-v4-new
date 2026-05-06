@@ -1,4 +1,4 @@
-# Phase 05 — Frontend UI Components
+# Phase 05 - Frontend UI Components
 
 ## Context Links
 
@@ -14,24 +14,24 @@
 ## Related Code Files
 
 **Modify (Lead UI):**
-- `apps/web/src/components/leads/lead-actions.tsx` — replace multi-select picker với `<Select>`
-- `apps/web/src/components/leads/lead-table.tsx` — render 1 badge thay vì map
+- `apps/web/src/components/leads/lead-actions.tsx` - replace multi-select picker với `<Select>`
+- `apps/web/src/components/leads/lead-table.tsx` - render 1 badge thay vì map
 - `apps/web/src/components/leads/lead-list-with-view-toggle.tsx`
 - `apps/web/src/components/leads/lead-inline-expand-detail.tsx`
 - `apps/web/src/components/leads/lead-pool-table-with-bulk-assign.tsx`
-- `apps/web/src/components/leads/lead-list-advanced-filter-bar.tsx` — filter vẫn multi (lọc "thuộc các nhãn"), không đổi
-- `apps/web/src/components/leads/lead-kanban-view-by-label.tsx` — group by `lead.labelId`, mỗi lead đúng 1 cột
-- `apps/web/src/components/shared/entity-quick-preview-dialog.tsx` — Lead branch render `label` thay `labels[]`
-- `apps/web/src/app/(dashboard)/leads/[id]/page.tsx` — detail page
+- `apps/web/src/components/leads/lead-list-advanced-filter-bar.tsx` - filter vẫn multi (lọc "thuộc các nhãn"), không đổi
+- `apps/web/src/components/leads/lead-kanban-view-by-label.tsx` - group by `lead.labelId`, mỗi lead đúng 1 cột
+- `apps/web/src/components/shared/entity-quick-preview-dialog.tsx` - Lead branch render `label` thay `labels[]`
+- `apps/web/src/app/(dashboard)/leads/[id]/page.tsx` - detail page
 
 **Modify (CSV Import UI):**
-- `apps/web/src/components/import/import-template-dialog.tsx` — note "Nếu nhiều nhãn, chỉ nhãn đầu được áp dụng"
+- `apps/web/src/components/import/import-template-dialog.tsx` - note "Nếu nhiều nhãn, chỉ nhãn đầu được áp dụng"
 
-**Modify (Settings — không đổi logic, chỉ kiểm tra):**
-- `apps/web/src/components/settings/label-settings.tsx` — verify usage stats hiển thị đúng cho cả lead + customer
+**Modify (Settings - không đổi logic, chỉ kiểm tra):**
+- `apps/web/src/components/settings/label-settings.tsx` - verify usage stats hiển thị đúng cho cả lead + customer
 
 **Don't touch (Customer):**
-- `apps/web/src/components/customers/*` — multi-label giữ nguyên
+- `apps/web/src/components/customers/*` - multi-label giữ nguyên
 - `apps/web/src/app/(dashboard)/customers/[id]/page.tsx`
 
 ## Architecture
@@ -52,7 +52,7 @@ Customer Detail UI (UNCHANGED):
 
 ## Implementation Steps
 
-### 1. `lead-actions.tsx` — Single Select picker
+### 1. `lead-actions.tsx` - Single Select picker
 
 ```tsx
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
@@ -69,7 +69,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
     <SelectValue placeholder="Chưa có nhãn" />
   </SelectTrigger>
   <SelectContent>
-    <SelectItem value="">— Bỏ nhãn —</SelectItem>
+    <SelectItem value="">- Bỏ nhãn -</SelectItem>
     {availableLabels.map(l => (
       <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
     ))}
@@ -77,7 +77,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 </Select>
 ```
 
-### 2. Table cell — 1 badge
+### 2. Table cell - 1 badge
 
 ```tsx
 // BEFORE: lead.labels.map(l => <Badge>{l.name}</Badge>)
@@ -85,7 +85,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 {lead.label ? (
   <Badge style={{ backgroundColor: lead.label.color }}>{lead.label.name}</Badge>
 ) : (
-  <span className="text-muted-foreground text-sm">—</span>
+  <span className="text-muted-foreground text-sm">-</span>
 )}
 ```
 
@@ -104,15 +104,15 @@ Thêm helper text dưới preview:
 
 ## Todo List
 
-- [ ] `lead-actions.tsx` — Select single picker
-- [ ] `lead-table.tsx` — 1 badge cell
+- [ ] `lead-actions.tsx` - Select single picker
+- [ ] `lead-table.tsx` - 1 badge cell
 - [ ] `lead-list-with-view-toggle.tsx`
 - [ ] `lead-inline-expand-detail.tsx`
 - [ ] `lead-pool-table-with-bulk-assign.tsx`
-- [ ] `lead-kanban-view-by-label.tsx` — group logic
+- [ ] `lead-kanban-view-by-label.tsx` - group logic
 - [ ] `entity-quick-preview-dialog.tsx` Lead branch
 - [ ] `[id]/page.tsx` Lead detail
-- [ ] `import-template-dialog.tsx` — helper text
+- [ ] `import-template-dialog.tsx` - helper text
 - [ ] `pnpm --filter @crm/web build` pass
 - [ ] Manual test: list, detail, kanban, filter, import
 
@@ -120,7 +120,7 @@ Thêm helper text dưới preview:
 
 - Mở `/leads/123` → chọn nhãn từ dropdown → reload thấy 1 badge
 - Đổi nhãn → badge thay đổi (không thấy 2 badge)
-- Bỏ nhãn (chọn "— Bỏ nhãn —") → không còn badge
+- Bỏ nhãn (chọn "- Bỏ nhãn -") → không còn badge
 - Kanban: 1 lead chỉ ở 1 cột
 - Customer page: vẫn gắn nhiều nhãn được, không regression
 
@@ -131,7 +131,7 @@ Thêm helper text dưới preview:
 
 ## Security Considerations
 
-- Click "Bỏ nhãn" yêu cầu cùng permission như "Đổi nhãn" — guard ở backend (Phase 03)
+- Click "Bỏ nhãn" yêu cầu cùng permission như "Đổi nhãn" - guard ở backend (Phase 03)
 
 ## Next Steps
 

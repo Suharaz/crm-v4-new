@@ -1,4 +1,4 @@
-# Phase 06 — Test + Docs
+# Phase 06 - Test + Docs
 
 **Priority:** Medium
 **Status:** ⬜ Pending
@@ -18,23 +18,23 @@
 - **Docs:** Update `changelog.md`, `docs/code-standards.md` (nếu có pattern mới đáng note).
 
 ### Non-functional
-- Test không dùng mocks cho DB layer (theo memory feedback) — dùng real test DB.
+- Test không dùng mocks cho DB layer (theo memory feedback) - dùng real test DB.
 - Tests fast (<10s tổng).
 
 ## Related Code Files
 
 ### Read for context
 - Test pattern hiện có: `apps/api/test/**/*.spec.ts` hoặc `**/*.e2e-spec.ts`
-- `vitest.config.ts` / `jest.config.ts` — runner setup
+- `vitest.config.ts` / `jest.config.ts` - runner setup
 - `docs/code-standards.md`, `docs/changelog.md` (hoặc `docs/project-changelog.md`)
 
 ### Create
-- `apps/api/src/modules/customers/customer-phones.service.spec.ts` — unit
-- `apps/api/test/customer-phones.e2e-spec.ts` — integration
+- `apps/api/src/modules/customers/customer-phones.service.spec.ts` - unit
+- `apps/api/test/customer-phones.e2e-spec.ts` - integration
 
 ### Modify
 - `docs/changelog.md` (hoặc `project-changelog.md`)
-- `docs/code-standards.md` — thêm pattern "phone matching cross-table" (nếu phù hợp)
+- `docs/code-standards.md` - thêm pattern "phone matching cross-table" (nếu phù hợp)
 
 ## Implementation Steps
 
@@ -107,7 +107,7 @@ Mọi test phải pass. Coverage ≥80% cho service mới.
 ## [Unreleased]
 
 ### Added
-- Customer can now have multiple alternate phone numbers (số phụ) — bảng `customer_phones`.
+- Customer can now have multiple alternate phone numbers (số phụ) - bảng `customer_phones`.
 - API `GET/POST/PATCH/DELETE /customers/:id/phones` (MANAGER+ for mutations).
 - Search and dedup now match alternate phones across all customers.
 - UI section "Số điện thoại khác" on customer detail page.
@@ -138,8 +138,8 @@ git push origin master
 - [ ] Viết unit test `CustomerPhonesService` (≥10 test cases)
 - [ ] Viết integration test 4 API endpoints (≥8 test cases)
 - [ ] Viết edge case test cross-table dedup (≥3 test cases)
-- [ ] Run `pnpm test` — all green
-- [ ] Run `pnpm test:e2e` — all green
+- [ ] Run `pnpm test` - all green
+- [ ] Run `pnpm test:e2e` - all green
 - [ ] Coverage ≥80% cho service mới
 - [ ] Update `docs/project-changelog.md` (hoặc tương đương)
 - [ ] Update `docs/code-standards.md` nếu phù hợp

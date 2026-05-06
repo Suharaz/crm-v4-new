@@ -84,7 +84,7 @@ export function TabCustomers({ data, loading, isAdmin }: TabCustomersProps) {
         </ChartCard>
 
         {/* Lead Aging */}
-        <ChartCard title="Lead chưa tương tác — cảnh báo bỏ quên">
+        <ChartCard title="Lead chưa tương tác - cảnh báo bỏ quên">
           {data.aging.length === 0 ? (
             <p className="py-12 text-center text-sm text-slate-400">Không có lead đang xử lý</p>
           ) : (
@@ -112,7 +112,7 @@ export function TabCustomers({ data, loading, isAdmin }: TabCustomersProps) {
       {isAdmin && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {data.convTrend.length > 0 && (
-            <ChartCard title="Xu hướng chuyển đổi — Leads mới vs Convert">
+            <ChartCard title="Xu hướng chuyển đổi - Leads mới vs Convert">
               <ResponsiveContainer width="100%" height={240}>
                 <AreaChart data={data.convTrend}>
                   <defs>
@@ -138,14 +138,14 @@ export function TabCustomers({ data, loading, isAdmin }: TabCustomersProps) {
           )}
 
           {data.sourceData.length > 0 && (
-            <ChartCard title="Chất lượng nguồn lead — Tỷ lệ chuyển đổi">
+            <ChartCard title="Chất lượng nguồn lead - Tỷ lệ chuyển đổi">
               <div className="space-y-3">
                 {data.sourceData.map(s => (
                   <div key={s.source} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-slate-700">{s.source}</span>
                       <span className="text-xs text-slate-500">
-                        {s.converted}/{s.total} —{' '}
+                        {s.converted}/{s.total} -{' '}
                         <span className="font-bold" style={{
                           color: s.rate >= 30 ? COLORS.success : s.rate >= 10 ? COLORS.warning : COLORS.danger,
                         }}>{s.rate}%</span>

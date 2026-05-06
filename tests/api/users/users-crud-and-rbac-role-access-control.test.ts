@@ -22,7 +22,7 @@ describe('Users CRUD & RBAC', () => {
 
   // ── GET /users ───────────────────────────────────────────────────────────
 
-  describe('GET /users — danh sách người dùng', () => {
+  describe('GET /users - danh sách người dùng', () => {
     it('SUPER_ADMIN → 200 + danh sách users', async () => {
       const { status, body } = await admin.getJson<any>('/users');
       expect(status).toBe(200);
@@ -49,7 +49,7 @@ describe('Users CRUD & RBAC', () => {
 
   // ── POST /users ──────────────────────────────────────────────────────────
 
-  describe('POST /users — tạo user mới', () => {
+  describe('POST /users - tạo user mới', () => {
     it('SUPER_ADMIN tạo user mới → 201 + user data', async () => {
       const payload = {
         email: `testuser-${Date.now()}@crm.local`,
@@ -99,7 +99,7 @@ describe('Users CRUD & RBAC', () => {
 
   // ── PATCH /users/:id ─────────────────────────────────────────────────────
 
-  describe('PATCH /users/:id — cập nhật user (admin)', () => {
+  describe('PATCH /users/:id - cập nhật user (admin)', () => {
     it('SUPER_ADMIN cập nhật user → 200', async () => {
       if (!createdUserId) return;
       const { status, body } = await admin.patchJson<any>(`/users/${createdUserId}`, {
@@ -128,7 +128,7 @@ describe('Users CRUD & RBAC', () => {
 
   // ── PATCH /users/profile ─────────────────────────────────────────────────
 
-  describe('PATCH /users/profile — cập nhật profile của chính mình', () => {
+  describe('PATCH /users/profile - cập nhật profile của chính mình', () => {
     it('USER cập nhật profile của chính mình → 200', async () => {
       const { status, body } = await user.patchJson<any>('/users/profile', {
         name: 'Lê Văn Sale (Updated)',
@@ -155,7 +155,7 @@ describe('Users CRUD & RBAC', () => {
 
   // ── DELETE /users/:id (deactivate) ───────────────────────────────────────
 
-  describe('DELETE /users/:id — deactivate user', () => {
+  describe('DELETE /users/:id - deactivate user', () => {
     it('MANAGER deactivate user → 403', async () => {
       if (!createdUserId) return;
       const { status } = await manager.deleteJson<any>(`/users/${createdUserId}`);
@@ -186,7 +186,7 @@ describe('Users CRUD & RBAC', () => {
 
   // ── GET /users/:id ───────────────────────────────────────────────────────
 
-  describe('GET /users/:id — xem chi tiết user', () => {
+  describe('GET /users/:id - xem chi tiết user', () => {
     it('SUPER_ADMIN xem bất kỳ user → 200', async () => {
       const { body: listBody } = await admin.getJson<any>('/users');
       const firstUser = listBody.data?.[0] ?? listBody.data?.items?.[0];

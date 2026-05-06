@@ -19,7 +19,7 @@ RUN pnpm --filter @crm/types build
 RUN pnpm --filter @crm/utils build
 RUN pnpm --filter @crm/web build
 
-# Production — Next.js standalone
+# Production - Next.js standalone
 FROM node:20-alpine AS production
 WORKDIR /app
 COPY --from=build /app/apps/web/.next/standalone ./

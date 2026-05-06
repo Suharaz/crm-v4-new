@@ -40,7 +40,7 @@ interface Props {
   /** Số lần SĐT này xuất hiện trong DB. Chỉ render badge khi >= 2. */
   count: number;
   phone: string;
-  /** ID lead hiện tại — dùng để skip nó trong danh sách "các lead khác". */
+  /** ID lead hiện tại - dùng để skip nó trong danh sách "các lead khác". */
   currentLeadId: string;
 }
 
@@ -77,7 +77,7 @@ export function LeadDuplicateBadge({ count, phone, currentLeadId }: Props) {
       <button
         type="button"
         onClick={handleOpen}
-        title={`Trùng SĐT — đã xuất hiện ${count} lần`}
+        title={`Trùng SĐT - đã xuất hiện ${count} lần`}
         className="inline-flex items-center justify-center rounded-full bg-amber-100 p-0.5 text-amber-700 hover:bg-amber-200 transition-colors"
       >
         <Users2 className="h-3.5 w-3.5" />
@@ -87,7 +87,7 @@ export function LeadDuplicateBadge({ count, phone, currentLeadId }: Props) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Lead trùng SĐT — {phone}</DialogTitle>
+            <DialogTitle>Lead trùng SĐT - {phone}</DialogTitle>
           </DialogHeader>
 
           {loading && (
@@ -127,10 +127,10 @@ export function LeadDuplicateBadge({ count, phone, currentLeadId }: Props) {
                         {otherLeads.map(l => (
                           <tr key={l.id} className="border-t border-slate-100">
                             <td className="px-3 py-2 font-medium text-slate-800">{l.name}</td>
-                            <td className="px-3 py-2 text-slate-600">{l.product?.name || '—'}</td>
+                            <td className="px-3 py-2 text-slate-600">{l.product?.name || '-'}</td>
                             <td className="px-3 py-2"><StatusBadge status={l.status} /></td>
-                            <td className="px-3 py-2 text-slate-600">{l.assignedUser?.name || '—'}</td>
-                            <td className="px-3 py-2 text-slate-600">{l.department?.name || '—'}</td>
+                            <td className="px-3 py-2 text-slate-600">{l.assignedUser?.name || '-'}</td>
+                            <td className="px-3 py-2 text-slate-600">{l.department?.name || '-'}</td>
                             <td className="px-3 py-2 text-slate-400 whitespace-nowrap">
                               {formatDateTime(l.createdAt)}
                             </td>
@@ -168,10 +168,10 @@ export function LeadDuplicateBadge({ count, phone, currentLeadId }: Props) {
                               {h.fromUser?.name || h.fromDepartment?.name || 'Kho mới'}
                             </td>
                             <td className="px-3 py-2 text-slate-600">
-                              {h.toUser?.name || h.toDepartment?.name || '—'}
+                              {h.toUser?.name || h.toDepartment?.name || '-'}
                             </td>
                             <td className="px-3 py-2 text-slate-600">
-                              {h.assignedByUser?.name || '—'}
+                              {h.assignedByUser?.name || '-'}
                             </td>
                           </tr>
                         ))}

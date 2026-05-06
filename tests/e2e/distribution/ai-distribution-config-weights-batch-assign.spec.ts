@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAsAdmin, loginAsManager, loginAsUser } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Phân phối AI — Cấu hình trọng số, Xem điểm, Batch assign', () => {
+test.describe('Phân phối AI - Cấu hình trọng số, Xem điểm, Batch assign', () => {
   test.describe('Phân quyền truy cập', () => {
     test('SUPER_ADMIN truy cập trang Phân phối AI', async ({ page }) => {
       await loginAsAdmin(page);
@@ -143,7 +143,7 @@ test.describe('Phân phối AI — Cấu hình trọng số, Xem điểm, Batch 
       await expect(page).not.toHaveURL(/\/login/);
     });
 
-    test('Batch distribute — phân phối hàng loạt', async ({ page }) => {
+    test('Batch distribute - phân phối hàng loạt', async ({ page }) => {
       await loginAsAdmin(page);
       await page.goto('/settings/distribution');
       await page.waitForLoadState('networkidle');

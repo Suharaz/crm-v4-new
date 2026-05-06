@@ -118,9 +118,9 @@ AppModule
 ├── NotificationsModule (exported, injected by many)
 ├── TasksModule ← NotificationsModule
 ├── AnalyticsModule
-├── McpAgentModule (MCP server + REST /ai-agent/ — read-only, API key auth)
-│   ├── McpAgentController (POST /mcp — Streamable HTTP transport)
-│   ├── AiAgentRestController (GET /ai-agent/* — REST fallback)
+├── McpAgentModule (MCP server + REST /ai-agent/ - read-only, API key auth)
+│   ├── McpAgentController (POST /mcp - Streamable HTTP transport)
+│   ├── AiAgentRestController (GET /ai-agent/* - REST fallback)
 │   ├── McpAgentQueryService (shared Prisma queries)
 │   └── Tools: schema, leads, customers, orders, products, stats, users
 └── HealthModule

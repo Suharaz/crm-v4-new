@@ -10,7 +10,7 @@
 
 1. Checkbox "Tạo công việc từ ghi chú này" hiển thị ở **TẤT CẢ** chỗ có nút ghi chú (hiện chỉ 1/3 chỗ có)
 2. Trong dialog ghi chú, user set được **deadline** cho task (bắt buộc nếu tick tạo task)
-3. **Mặc định 3 mốc nhắc** (1 ngày / 1 giờ / 30 phút trước deadline) — auto lọc mốc quá khứ
+3. **Mặc định 3 mốc nhắc** (1 ngày / 1 giờ / 30 phút trước deadline) - auto lọc mốc quá khứ
 4. User có thể **custom:** sửa thời gian từng mốc, xoá mốc, thêm mốc mới (max 5 mốc)
 5. Notification hiện ra ở **chuông bell** (đã có sẵn UI), click → điều hướng đến lead/customer
 
@@ -34,9 +34,9 @@
 
 | Phase | File | Effort | Dependency | Status |
 |---|---|---|---|---|
-| 01 | [phase-01-database-schema.md](./phase-01-database-schema.md) | 2h | — | ✅ Done |
+| 01 | [phase-01-database-schema.md](./phase-01-database-schema.md) | 2h | - | ✅ Done |
 | 02 | [phase-02-backend-service.md](./phase-02-backend-service.md) | 3h | P1 | ✅ Done |
-| 03 | [phase-03-reminder-list-component.md](./phase-03-reminder-list-component.md) | 3h | — (parallel P1/P2) | ✅ Done |
+| 03 | [phase-03-reminder-list-component.md](./phase-03-reminder-list-component.md) | 3h | - (parallel P1/P2) | ✅ Done |
 | 04 | [phase-04-shared-note-dialog.md](./phase-04-shared-note-dialog.md) | 3h | P3 | ✅ Done |
 | 05 | [phase-05-integration-and-e2e.md](./phase-05-integration-and-e2e.md) | 2h | P2+P4 | ✅ Done |
 
@@ -61,23 +61,23 @@ Có thể **parallel:** P1-P2 (backend) và P3 (FE reminder-list) chạy đồng
 ## 📂 Files sẽ thay đổi
 
 **Backend:**
-- ➕ `packages/database/prisma/schema.prisma` — thêm model `TaskReminder`, drop `remindAt/remindedAt`
+- ➕ `packages/database/prisma/schema.prisma` - thêm model `TaskReminder`, drop `remindAt/remindedAt`
 - ➕ `packages/database/prisma/migrations/*_task_reminders/migration.sql`
-- 📝 `apps/api/src/modules/tasks/tasks.service.ts` — CRUD reminders + cron refactor
+- 📝 `apps/api/src/modules/tasks/tasks.service.ts` - CRUD reminders + cron refactor
 - 📝 `apps/api/src/modules/tasks/tasks.controller.ts` (nếu expose endpoint riêng)
 - 📝 `apps/api/src/modules/tasks/dto/create-task.dto.ts`
 
 **Shared types:**
-- 📝 `packages/types/src/tasks.ts` — thêm `TaskReminderDto`
+- 📝 `packages/types/src/tasks.ts` - thêm `TaskReminderDto`
 
 **Frontend:**
-- ➕ `apps/web/src/components/shared/reminder-list.tsx` — component quản lý list mốc nhắc
-- ➕ `apps/web/src/components/shared/note-dialog.tsx` — dialog gộp 3 chỗ
-- 📝 `apps/web/src/components/leads/lead-actions.tsx` — replace inline dialog
-- 📝 `apps/web/src/components/leads/lead-inline-expand-detail.tsx` — replace bar note
-- 📝 `apps/web/src/components/shared/entity-quick-preview-dialog.tsx` — replace inline note
-- 📝 `apps/web/src/components/layout/notification-bell.tsx` — thêm icon + click navigation
-- 📝 `apps/web/src/lib/notification-navigation.ts` (NEW) — map referenceType → URL
+- ➕ `apps/web/src/components/shared/reminder-list.tsx` - component quản lý list mốc nhắc
+- ➕ `apps/web/src/components/shared/note-dialog.tsx` - dialog gộp 3 chỗ
+- 📝 `apps/web/src/components/leads/lead-actions.tsx` - replace inline dialog
+- 📝 `apps/web/src/components/leads/lead-inline-expand-detail.tsx` - replace bar note
+- 📝 `apps/web/src/components/shared/entity-quick-preview-dialog.tsx` - replace inline note
+- 📝 `apps/web/src/components/layout/notification-bell.tsx` - thêm icon + click navigation
+- 📝 `apps/web/src/lib/notification-navigation.ts` (NEW) - map referenceType → URL
 
 **Tests:**
 - ➕ `apps/api/src/modules/tasks/tasks.service.spec.ts`

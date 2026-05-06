@@ -59,10 +59,10 @@ export function AuditLogTable({ rows, nextCursor, loading, onLoadMore }: Props) 
                   {row.user ? (
                     <div>
                       <div className="font-medium">{row.user.name}</div>
-                      <div className="text-xs text-slate-500">{row.user.departmentName ?? '—'}</div>
+                      <div className="text-xs text-slate-500">{row.user.departmentName ?? '-'}</div>
                     </div>
                   ) : (
-                    <span className="text-slate-400">—</span>
+                    <span className="text-slate-400">-</span>
                   )}
                 </td>
                 <td className="px-3 py-2 font-mono text-xs">{row.action}</td>
@@ -72,12 +72,12 @@ export function AuditLogTable({ rows, nextCursor, loading, onLoadMore }: Props) 
                       {row.method}
                     </span>
                   )}
-                  <span className="text-xs text-slate-600 font-mono">{row.path ?? '—'}</span>
+                  <span className="text-xs text-slate-600 font-mono">{row.path ?? '-'}</span>
                 </td>
                 <td className="px-3 py-2">
-                  <Badge className={statusColor(row.statusCode)}>{row.statusCode ?? '—'}</Badge>
+                  <Badge className={statusColor(row.statusCode)}>{row.statusCode ?? '-'}</Badge>
                 </td>
-                <td className="px-3 py-2 hidden md:table-cell text-xs font-mono text-slate-500">{row.ipAddress ?? '—'}</td>
+                <td className="px-3 py-2 hidden md:table-cell text-xs font-mono text-slate-500">{row.ipAddress ?? '-'}</td>
                 <td className="px-3 py-2 text-right">
                   <Button variant="ghost" size="sm" onClick={() => setSelected(row)}>Xem</Button>
                 </td>
@@ -103,14 +103,14 @@ export function AuditLogTable({ rows, nextCursor, loading, onLoadMore }: Props) 
           {selected && (
             <div className="text-sm space-y-2 max-h-[70vh] overflow-y-auto">
               <DetailRow label="Thời gian" value={formatDateTime(selected.createdAt)} />
-              <DetailRow label="User" value={selected.user ? `${selected.user.name} (${selected.user.email})` : '—'} />
-              <DetailRow label="Phòng ban" value={selected.user?.departmentName ?? '—'} />
+              <DetailRow label="User" value={selected.user ? `${selected.user.name} (${selected.user.email})` : '-'} />
+              <DetailRow label="Phòng ban" value={selected.user?.departmentName ?? '-'} />
               <DetailRow label="Action" value={selected.action} mono />
-              <DetailRow label="Method / Path" value={`${selected.method ?? '—'} ${selected.path ?? ''}`} mono />
-              <DetailRow label="Status" value={String(selected.statusCode ?? '—')} />
-              <DetailRow label="Entity" value={selected.entityType ? `${selected.entityType} #${selected.entityId ?? '—'}` : '—'} />
-              <DetailRow label="IP" value={selected.ipAddress ?? '—'} mono />
-              <DetailRow label="User agent" value={selected.userAgent ?? '—'} mono />
+              <DetailRow label="Method / Path" value={`${selected.method ?? '-'} ${selected.path ?? ''}`} mono />
+              <DetailRow label="Status" value={String(selected.statusCode ?? '-')} />
+              <DetailRow label="Entity" value={selected.entityType ? `${selected.entityType} #${selected.entityId ?? '-'}` : '-'} />
+              <DetailRow label="IP" value={selected.ipAddress ?? '-'} mono />
+              <DetailRow label="User agent" value={selected.userAgent ?? '-'} mono />
               <div>
                 <div className="text-slate-500 text-xs mt-2">Metadata:</div>
                 <pre className="mt-1 p-2 bg-slate-900 text-slate-100 rounded text-xs overflow-x-auto whitespace-pre-wrap break-words">

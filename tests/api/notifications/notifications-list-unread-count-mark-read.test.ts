@@ -21,7 +21,7 @@ describe('Notifications', () => {
 
   // ── GET /notifications ───────────────────────────────────────────────────
 
-  describe('GET /notifications — danh sách thông báo cá nhân', () => {
+  describe('GET /notifications - danh sách thông báo cá nhân', () => {
     it('USER lấy danh sách notifications của mình → 200', async () => {
       const { status, body } = await user.getJson<any>('/notifications');
       expect(status).toBe(200);
@@ -66,7 +66,7 @@ describe('Notifications', () => {
 
   // ── GET /notifications/unread-count ──────────────────────────────────────
 
-  describe('GET /notifications/unread-count — số thông báo chưa đọc', () => {
+  describe('GET /notifications/unread-count - số thông báo chưa đọc', () => {
     it('USER lấy unread count → 200 + { count: number }', async () => {
       const { status, body } = await user.getJson<any>('/notifications/unread-count');
       expect(status).toBe(200);
@@ -90,7 +90,7 @@ describe('Notifications', () => {
 
   // ── POST /notifications/:id/read ─────────────────────────────────────────
 
-  describe('POST /notifications/:id/read — đánh dấu đã đọc', () => {
+  describe('POST /notifications/:id/read - đánh dấu đã đọc', () => {
     it('không có notification nào → ID không tồn tại → 404', async () => {
       const { status } = await user.postJson<any>('/notifications/999999999/read', {});
       expect([404, 400]).toContain(status);
@@ -111,7 +111,7 @@ describe('Notifications', () => {
 
   // ── POST /notifications/read-all ─────────────────────────────────────────
 
-  describe('POST /notifications/read-all — đánh dấu tất cả đã đọc', () => {
+  describe('POST /notifications/read-all - đánh dấu tất cả đã đọc', () => {
     it('USER mark all read → 200 + message', async () => {
       const { status, body } = await user.postJson<any>('/notifications/read-all', {});
       expect(status).toBe(200);

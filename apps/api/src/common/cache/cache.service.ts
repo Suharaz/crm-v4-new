@@ -65,7 +65,7 @@ export class CacheService {
   /**
    * Delete all keys matching a prefix.
    * Note: ioredis keyPrefix auto-prepends to KEYS command, so we pass
-   * only the app-level prefix. Returned keys include full Redis path —
+   * only the app-level prefix. Returned keys include full Redis path -
    * strip keyPrefix before calling cache.del() to avoid double-prefixing.
    */
   async delByPrefix(prefix: string): Promise<void> {
@@ -75,13 +75,13 @@ export class CacheService {
         this.logger.warn('Cache store does not support keys() for prefix deletion');
         return;
       }
-      // ioredis auto-prepends keyPrefix to KEYS command — pass only app prefix
+      // ioredis auto-prepends keyPrefix to KEYS command - pass only app prefix
       const keys: string[] = await store.keys(`${prefix}*`);
       if (keys.length > 0) {
         // Returned keys include full keyPrefix; strip it for cache.del()
         const stripped = keys.map(k => k.startsWith(CACHE_PREFIX) ? k.slice(CACHE_PREFIX.length) : k);
         await Promise.all(stripped.map(k => this.cache.del(k)));
-        this.logger.debug(`DEL prefix ${prefix} — ${keys.length} keys`);
+        this.logger.debug(`DEL prefix ${prefix} - ${keys.length} keys`);
       }
     } catch (err) {
       this.logger.warn(`Cache DEL prefix error for ${prefix}: ${err}`);

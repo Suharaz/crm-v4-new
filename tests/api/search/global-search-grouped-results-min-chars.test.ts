@@ -22,7 +22,7 @@ describe('Global Search', () => {
 
   // ── GET /search?q= ───────────────────────────────────────────────────────
 
-  describe('GET /search?q= — tìm kiếm toàn cục', () => {
+  describe('GET /search?q= - tìm kiếm toàn cục', () => {
     it('query hợp lệ (≥2 ký tự) → 200 + grouped results', async () => {
       const { status, body } = await admin.getJson<any>('/search?q=test');
       expect(status).toBe(200);

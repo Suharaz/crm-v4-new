@@ -12,7 +12,7 @@ import { CronRunModule } from '../cron-run/cron-run.module';
   providers: [
     AuditLogService,
     AuditLogRetentionService,
-    // Global interceptor — auto-logs every mutation across all controllers.
+    // Global interceptor - auto-logs every mutation across all controllers.
     { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
   ],
   exports: [AuditLogService],

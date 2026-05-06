@@ -14,7 +14,7 @@ type ViewMode = 'table' | 'kanban';
 interface Props {
   leads: LeadRecord[];
   allLabels?: LabelEntity[];
-  /** SA-only bulk delete toggle — caller passes result of role check. */
+  /** SA-only bulk delete toggle - caller passes result of role check. */
   enableBulkDelete?: boolean;
 }
 
@@ -56,7 +56,7 @@ export function LeadListWithViewToggle({ leads, allLabels, enableBulkDelete = fa
         </div>
       </div>
 
-      {/* View content — child components use stricter local Lead interfaces; cast is safe as shapes are compatible */}
+      {/* View content - child components use stricter local Lead interfaces; cast is safe as shapes are compatible */}
       {view === 'table' ? (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <LeadTable leads={leads as any} enableBulkDelete={enableBulkDelete} />

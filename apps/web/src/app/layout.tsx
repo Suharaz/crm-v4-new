@@ -12,7 +12,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: 'VeloCRM',
-  description: 'Hệ thống quản lý khách hàng nội bộ — Tốc độ & Hiệu suất',
+  description: 'Hệ thống quản lý khách hàng nội bộ - Tốc độ & Hiệu suất',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

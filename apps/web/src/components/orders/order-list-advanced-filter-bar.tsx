@@ -23,7 +23,7 @@ interface FilterBarProps {
 
 const STORAGE_KEY = 'crm_order_filters';
 
-/** Advanced filter bar for orders list — URL-based state (shareable). */
+/** Advanced filter bar for orders list - URL-based state (shareable). */
 export function OrderListAdvancedFilterBar({ products, users, orderFormats, productGroups }: FilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();

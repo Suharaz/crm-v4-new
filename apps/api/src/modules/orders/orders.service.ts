@@ -195,7 +195,7 @@ export class OrdersService {
         data: {
           entityType: 'LEAD', entityId: BigInt(data.leadId), userId,
           type: 'NOTE',
-          content: `Tạo đơn hàng #${order.id} — ${order.product?.name || ''} — ${totalAmount.toLocaleString('vi-VN')}₫`,
+          content: `Tạo đơn hàng #${order.id} - ${order.product?.name || ''} - ${totalAmount.toLocaleString('vi-VN')}₫`,
           metadata: { orderId: order.id.toString(), type: 'ORDER_CREATED' },
         },
       });
@@ -223,7 +223,7 @@ export class OrdersService {
     return this.prisma.order.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
-  /** Bulk soft-delete — SA override mọi status. `skipped` = đã soft-delete trước đó. */
+  /** Bulk soft-delete - SA override mọi status. `skipped` = đã soft-delete trước đó. */
   async bulkSoftDelete(ids: bigint[]): Promise<{ deleted: number; skipped: number }> {
     if (ids.length === 0) return { deleted: 0, skipped: 0 };
     const result = await this.prisma.order.updateMany({

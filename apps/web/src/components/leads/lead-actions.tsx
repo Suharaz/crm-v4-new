@@ -18,7 +18,7 @@ interface LeadActionsProps {
   labels: LabelEntity[];
 }
 
-/** Action bar for lead detail page — assign, claim, transfer, convert, status, labels, notes. */
+/** Action bar for lead detail page - assign, claim, transfer, convert, status, labels, notes. */
 export function LeadActions({ lead, users, departments, labels }: LeadActionsProps) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'SUPER_ADMIN';
@@ -176,7 +176,7 @@ export function LeadActions({ lead, users, departments, labels }: LeadActionsPro
           <Select value={selectedLabelId} onValueChange={setSelectedLabelId}>
             <SelectTrigger><SelectValue placeholder="Chưa có nhãn" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="__NONE__">— Bỏ nhãn —</SelectItem>
+              <SelectItem value="__NONE__">- Bỏ nhãn -</SelectItem>
               {labels.map(l => (
                 <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
               ))}

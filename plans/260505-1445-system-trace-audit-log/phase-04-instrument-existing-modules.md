@@ -1,4 +1,4 @@
-# Phase 04 — Instrument Existing Cron Jobs + Recall Activity Log
+# Phase 04 - Instrument Existing Cron Jobs + Recall Activity Log
 
 **Priority:** P1 | **Status:** Pending | **Est:** 2h | **Depends:** Phase 02 + 03
 
@@ -8,7 +8,7 @@ Wire `CronRunService.track()` vào 3 cron jobs hiện có. Đồng thời fix bu
 ## Requirements
 - 3 cron jobs hiện có đều ghi cron_runs row
 - Recall events tạo entry trong `activities` (per-entity timeline) + `audit_logs` (system action)
-- Không thay đổi logic business của cron — chỉ thêm tracking
+- Không thay đổi logic business của cron - chỉ thêm tracking
 - Backward compatible: cron vẫn chạy nếu tracking lỗi
 
 ## 3 Cron Jobs Cần Instrument
@@ -45,7 +45,7 @@ async runAutoRecall() {
       return total;
     });
   } catch (err) {
-    // already logged in cron_runs as FAILED — just keep Logger for stdout
+    // already logged in cron_runs as FAILED - just keep Logger for stdout
     this.logger.error('Lỗi auto-recall', err instanceof Error ? err.stack : err);
   }
 }
@@ -56,7 +56,7 @@ Trong `_recallLeads`, `_recallCustomers`, `_recallLeadsByLabel`:
 - Sau khi `updateMany` xong → loop qua `leadIds`/`customerIds` và gọi `activitiesService.logActivity()` với:
   - `entityType: 'LEAD' | 'CUSTOMER'`
   - `entityId: each id`
-  - `userId: SYSTEM_USER_ID` (hoặc nullable — cần quyết định)
+  - `userId: SYSTEM_USER_ID` (hoặc nullable - cần quyết định)
   - `type: 'SYSTEM'`
   - `content`: `"Tự động thu hồi về kho thả nổi (label: Nóng, sau 7 ngày)"` hoặc tương tự
   - `metadata`: `{ trigger: 'AUTO_RECALL_LABEL', labelId, recallMinutes, previousAssignedUserId, previousDepartmentId }`
@@ -76,7 +76,7 @@ Trong 3 hàm private `_recallLeads/_recallCustomers/_recallLeadsByLabel`:
 - `apps/api/src/modules/recall-config/recall-config.service.ts` (đầy đủ file)
 - `apps/api/src/modules/notifications/notifications.service.ts` (line 50-100)
 - `apps/api/src/modules/tasks/tasks.service.ts` (line 220-280)
-- `apps/api/src/modules/activities/activities.service.ts:166-185` — `logActivity` method
+- `apps/api/src/modules/activities/activities.service.ts:166-185` - `logActivity` method
 
 ### Modify
 - `apps/api/src/modules/recall-config/recall-config.service.ts`:
@@ -97,11 +97,11 @@ Trong 3 hàm private `_recallLeads/_recallCustomers/_recallLeadsByLabel`:
   - Import `CronRunModule`
 
 ### Create
-- (none — chỉ modify)
+- (none - chỉ modify)
 
 ## Implementation Steps
 
-### Step 1 — Recall config (lớn nhất)
+### Step 1 - Recall config (lớn nhất)
 1. Đọc `recall-config.service.ts` đầy đủ
 2. Inject 2 services mới qua constructor
 3. Tạo helper private:
@@ -127,8 +127,8 @@ private async _logRecallActivities(
 ```
 
 ⚠️ **Decision needed:** `Activity.userId` là `BigInt` (NOT NULL trong schema hiện tại). System action không có user → cần 1 trong 2:
-- **(a)** Dùng user `SYSTEM` (id=1 chẳng hạn) — tạo trong seed
-- **(b)** Đổi schema `userId BigInt?` (nullable) — migration nhỏ
+- **(a)** Dùng user `SYSTEM` (id=1 chẳng hạn) - tạo trong seed
+- **(b)** Đổi schema `userId BigInt?` (nullable) - migration nhỏ
 
 → Đề xuất **(a)** để không động schema cũ. Tạo system user `system@internal` role SUPER_ADMIN, status INACTIVE để không login được.
 
@@ -136,25 +136,25 @@ private async _logRecallActivities(
    - Đổi select để lấy `assignedUserId`
    - Sau `updateMany` → call `_logRecallActivities('LEAD', leads, ...)`
 5. Tương tự `_recallCustomers` (cần thêm `assignedDepartmentId` vào select)
-6. Tương tự `_recallLeadsByLabel` — log thêm `labelId` + `recallMinutes` vào metadata
+6. Tương tự `_recallLeadsByLabel` - log thêm `labelId` + `recallMinutes` vào metadata
 7. Wrap `runAutoRecall()` với `cronRunService.track()`:
    - `ctx.affected = totalRecalled`
    - `ctx.metadata = { byEntity: { LEAD: x, CUSTOMER: y, LABEL: z } }`
 
-### Step 2 — Notifications cron
+### Step 2 - Notifications cron
 1. Đọc cron logic
 2. Inject `CronRunService`
 3. Wrap với `track('notification-cleanup', ...)` (đặt tên jobName phù hợp với logic thực tế)
 
-### Step 3 — Tasks cron
+### Step 3 - Tasks cron
 1. Tương tự bước 2 với jobName `task-reminder`
 
-### Step 4 — Seed system user
+### Step 4 - Seed system user
 - File: `packages/database/prisma/seed.ts` (hoặc seed riêng)
 - Insert user `system@internal` với password random hash, status INACTIVE
 - Export constant `SYSTEM_USER_ID` qua `@crm/database` để dùng chung
 
-### Step 5 — Manual test
+### Step 5 - Manual test
 ```bash
 # Restart API → đợi 5 phút
 # Hoặc trigger manually qua endpoint debug

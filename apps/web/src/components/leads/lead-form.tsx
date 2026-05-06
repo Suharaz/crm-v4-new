@@ -125,7 +125,7 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
           {!canEditPhone && <p className="text-xs text-slate-400 mt-0.5">Chỉ quản lý mới được sửa SĐT</p>}
           {phoneDuplicate && (
             <div className="mt-1 rounded-md bg-sky-50 border border-sky-200 px-3 py-2 text-xs text-sky-700">
-              Khách hàng đã có: <span className="font-semibold">{phoneDuplicate.name}</span> — dữ liệu đã tự điền
+              Khách hàng đã có: <span className="font-semibold">{phoneDuplicate.name}</span> - dữ liệu đã tự điền
               {phoneDuplicate.diffs && phoneDuplicate.diffs.length > 0 && (
                 <div className="mt-1 text-red-600 font-medium">
                   ⚠ Thông tin khác biệt: {phoneDuplicate.diffs.join(', ')}

@@ -90,29 +90,29 @@ Search leads WHERE phone = normalized AND deleted_at IS NULL
 ### API Endpoints
 
 **Activities:**
-- `GET /leads/:id/activities` — lead timeline, cursor paginated
-- `GET /customers/:id/activities` — customer timeline, cursor paginated
-- `POST /leads/:id/activities` — create note on lead
-- `POST /customers/:id/activities` — create note on customer
-- `POST /activities/:id/attachments` — upload file attachment
+- `GET /leads/:id/activities` - lead timeline, cursor paginated
+- `GET /customers/:id/activities` - customer timeline, cursor paginated
+- `POST /leads/:id/activities` - create note on lead
+- `POST /customers/:id/activities` - create note on customer
+- `POST /activities/:id/attachments` - upload file attachment
 
 **Call Logs:**
-- `POST /call-logs/ingest` — ingest call (API key auth, not JWT)
-- `GET /call-logs` — list all, filter by match_status/date/phone
-- `GET /call-logs/unmatched` — unmatched queue (manager+)
-- `POST /call-logs/:id/match` — manually match to entity (manager+)
-- `GET /leads/:id/calls` — calls for specific lead
-- `GET /customers/:id/calls` — calls for specific customer
+- `POST /call-logs/ingest` - ingest call (API key auth, not JWT)
+- `GET /call-logs` - list all, filter by match_status/date/phone
+- `GET /call-logs/unmatched` - unmatched queue (manager+)
+- `POST /call-logs/:id/match` - manually match to entity (manager+)
+- `GET /leads/:id/calls` - calls for specific lead
+- `GET /customers/:id/calls` - calls for specific customer
 
 **File Upload:**
-- `POST /upload` — upload file to local filesystem, returns relative path
+- `POST /upload` - upload file to local filesystem, returns relative path
 
 **Documents (file attachments for leads/customers):**
-- `GET /leads/:id/documents` — list documents for lead
-- `GET /customers/:id/documents` — list documents for customer
-- `POST /leads/:id/documents` — upload document for lead (any auth user with access)
-- `POST /customers/:id/documents` — upload document for customer
-- `DELETE /documents/:id` — soft delete document (uploader or manager+)
+- `GET /leads/:id/documents` - list documents for lead
+- `GET /customers/:id/documents` - list documents for customer
+- `POST /leads/:id/documents` - upload document for lead (any auth user with access)
+- `POST /customers/:id/documents` - upload document for customer
+- `DELETE /documents/:id` - soft delete document (uploader or manager+)
 - Accepted types: .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .webp. Max 10MB.
 - Storage path: `uploads/documents/{entityType}/{YYYY-MM}/{uuid}.{ext}`
 - SECURITY: Document access inherits entity access check (same as activities)
@@ -120,16 +120,16 @@ Search leads WHERE phone = normalized AND deleted_at IS NULL
 ## Related Code Files
 
 ### Create
-- `apps/api/src/modules/activities/` — all activity files
-- `apps/api/src/modules/call-logs/` — all call-log files
-- `apps/api/src/modules/file-upload/` — local filesystem upload service
-- `apps/api/src/common/guards/api-key.guard.ts` — API key auth guard
+- `apps/api/src/modules/activities/` - all activity files
+- `apps/api/src/modules/call-logs/` - all call-log files
+- `apps/api/src/modules/file-upload/` - local filesystem upload service
+- `apps/api/src/common/guards/api-key.guard.ts` - API key auth guard
 
 ### Modify
-- `apps/api/src/app.module.ts` — register modules
-- `apps/api/src/modules/leads/leads.service.ts` — inject ActivityService for auto-logging
-- `apps/api/src/modules/customers/` — inject ActivityService
-- `packages/types/src/` — Activity, CallLog interfaces
+- `apps/api/src/app.module.ts` - register modules
+- `apps/api/src/modules/leads/leads.service.ts` - inject ActivityService for auto-logging
+- `apps/api/src/modules/customers/` - inject ActivityService
+- `packages/types/src/` - Activity, CallLog interfaces
 
 ## Implementation Steps
 
@@ -142,16 +142,16 @@ Search leads WHERE phone = normalized AND deleted_at IS NULL
      - For CSV imports: `uploads/imports/{YYYY-MM}/{uuid}.csv`
      - For attachments: `uploads/attachments/{YYYY-MM}/{uuid}.{ext}`
    - Serve files via NestJS ServeStaticModule or custom controller with auth check
-   - Pre-signed URLs NOT needed — use authenticated download endpoint instead:
+   - Pre-signed URLs NOT needed - use authenticated download endpoint instead:
      GET /files/:id → check auth → stream file from disk
    - No MinIO dependency, no S3 SDK needed
 
 2. **Implement Activities module**
    - `activities.repository.ts`: polymorphic query by entity_type + entity_id
    - `activities.service.ts`:
-     - `createNote(entityType, entityId, userId, content)` — manual note
-     - `logActivity(entityType, entityId, userId, type, content, metadata)` — system auto-log
-     - `getTimeline(entityType, entityId, cursor, limit)` — paginated timeline
+     - `createNote(entityType, entityId, userId, content)` - manual note
+     - `logActivity(entityType, entityId, userId, type, content, metadata)` - system auto-log
+     - `getTimeline(entityType, entityId, cursor, limit)` - paginated timeline
    - `activities.controller.ts`: REST endpoints nested under leads/customers
    - Attachment upload: link file to activity via activity_attachments table
    - **Export ActivityService** for injection by other modules (leads, payments, etc.)
@@ -168,7 +168,7 @@ Search leads WHERE phone = normalized AND deleted_at IS NULL
      - Lookup in api_keys table: WHERE keyHash = hash AND isActive = true AND (expiresAt IS NULL OR expiresAt > now())
      - Update lastUsedAt on successful validation
      - Return 401 if not found or expired
-     - DO NOT use env var for API keys — use DB-stored hashed keys for proper rotation/revocation
+     - DO NOT use env var for API keys - use DB-stored hashed keys for proper rotation/revocation
    - Apply to call-logs ingest endpoint only
 
 4. **Implement CallLogs module**
@@ -249,7 +249,7 @@ Search leads WHERE phone = normalized AND deleted_at IS NULL
 - UUID filenames prevent path traversal
 - File serve endpoint checks user has access to parent entity
 - Rate limit on ingestion endpoint: 100 req/min
-- Activity timeline access inherits entity RBAC — no direct activity table exposure
+- Activity timeline access inherits entity RBAC - no direct activity table exposure
 - File uploads use UUID filenames, never user-supplied paths
 - Call log content HTML-sanitized to prevent XSS in timeline display
 - API keys stored hashed in DB (not env vars) for proper rotation/revocation

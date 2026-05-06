@@ -22,7 +22,7 @@ The codebase is **well-structured** for a monorepo CRM system. The cursor-based 
 
 ## Critical Issues
 
-### CRIT-01 — Hardcoded fallback JWT secrets
+### CRIT-01 - Hardcoded fallback JWT secrets
 **Files:** `apps/api/src/modules/auth/auth.service.ts:44,48`, `apps/api/src/modules/auth/strategies/jwt-access-token.strategy.ts:19`
 
 Both `JWT_SECRET` and `JWT_REFRESH_SECRET` fall back to literal strings `'default-jwt-secret'` / `'default-refresh-secret'` when env vars are missing.
@@ -36,14 +36,14 @@ secretOrKey: configService.get<string>('JWT_SECRET', 'default-jwt-secret'),
 
 **Impact:** If the env file is missing in staging/production, tokens signed with the default secret can be forged by anyone who reads the source code.
 
-**Fix:** Remove the fallback — throw on startup if the secret is missing:
+**Fix:** Remove the fallback - throw on startup if the secret is missing:
 ```ts
 const secret = configService.getOrThrow<string>('JWT_SECRET');
 ```
 
 ---
 
-### CRIT-02 — Refresh token stored in `localStorage` and non-HttpOnly cookie
+### CRIT-02 - Refresh token stored in `localStorage` and non-HttpOnly cookie
 **File:** `apps/web/src/lib/auth-token-storage.ts`
 
 Refresh tokens (7-day lifetime) are written to `localStorage` AND to a `SameSite=Lax` (not `HttpOnly`) cookie. This exposes them to XSS attacks.
@@ -59,7 +59,7 @@ document.cookie = `${REFRESH_TOKEN_KEY}=${token}; path=/; max-age=604800; SameSi
 
 ---
 
-### CRIT-03 — Analytics controller has NO auth guard
+### CRIT-03 - Analytics controller has NO auth guard
 **File:** `apps/api/src/modules/analytics/analytics-rest-api.controller.ts`
 
 ```ts
@@ -70,7 +70,7 @@ export class AnalyticsController {   // no @UseGuards here
   ...
 ```
 
-The global `JwtAuthGuard` (registered in `app.module.ts` as `APP_GUARD`) will cover this, **but** `RolesGuard` is also applied per-controller elsewhere and is the enforcement point for role checks. The analytics endpoints have no role restriction at all — any authenticated user (including `USER` role) can read KPI/revenue data.
+The global `JwtAuthGuard` (registered in `app.module.ts` as `APP_GUARD`) will cover this, **but** `RolesGuard` is also applied per-controller elsewhere and is the enforcement point for role checks. The analytics endpoints have no role restriction at all - any authenticated user (including `USER` role) can read KPI/revenue data.
 
 More critically: if the global guard is removed or bypassed via `@Public()` on the controller by mistake, revenue and conversion data is fully exposed.
 
@@ -78,7 +78,7 @@ More critically: if the global guard is removed or bypassed via `@Public()` on t
 
 ---
 
-### CRIT-04 — `findUnmatched` call logs endpoint — unbounded query
+### CRIT-04 - `findUnmatched` call logs endpoint - unbounded query
 **File:** `apps/api/src/modules/call-logs/call-logs.service.ts:70-76`
 
 ```ts
@@ -98,7 +98,7 @@ async findUnmatched(): Promise<any> {
 
 ## High Priority
 
-### HIGH-01 — Import service: N+1 DB queries on every CSV row
+### HIGH-01 - Import service: N+1 DB queries on every CSV row
 **File:** `apps/api/src/modules/import/import.service.ts:16-57`
 
 For each row the service performs: `findFirst` (duplicate check) + `create`. For a 1000-row CSV this is 2000 sequential Prisma calls, all synchronous in a single `async` loop, blocking the Node.js event loop for the duration.
@@ -121,7 +121,7 @@ const existingPhones = new Set(existing.map(e => e.phone));
 
 ---
 
-### HIGH-02 — Export service: unbounded `findMany` on leads/customers/orders
+### HIGH-02 - Export service: unbounded `findMany` on leads/customers/orders
 **File:** `apps/api/src/modules/export/export.service.ts:13,40,62`
 
 All three export methods call `findMany` without `take`:
@@ -136,7 +136,7 @@ const leads = await prisma.lead.findMany({ where, orderBy: { createdAt: 'desc' }
 
 ---
 
-### HIGH-03 — Analytics: `getRanking` and `getSources` load all leads into memory
+### HIGH-03 - Analytics: `getRanking` and `getSources` load all leads into memory
 **File:** `apps/api/src/modules/analytics/analytics-kpi-and-charts.service.ts:46-70, 73-93`
 
 ```ts
@@ -161,7 +161,7 @@ const ranking = await prisma.lead.groupBy({
 
 ---
 
-### HIGH-04 — IDOR: Activities endpoint leaks cross-user data
+### HIGH-04 - IDOR: Activities endpoint leaks cross-user data
 **File:** `apps/api/src/modules/activities/activities.service.ts` + `activities.controller.ts`
 
 The `GET /activities?entityType=LEAD&entityId=123` endpoint has no ownership check. Any authenticated user can read activities for any `entityId`:
@@ -180,7 +180,7 @@ async findAll(query: ActivityQueryDto): Promise<any> {
 
 ---
 
-### HIGH-05 — IDOR: Payment creation has no ownership check
+### HIGH-05 - IDOR: Payment creation has no ownership check
 **File:** `apps/api/src/modules/payments/payments.controller.ts:23-25`
 
 ```ts
@@ -195,13 +195,13 @@ Any authenticated `USER` can create a payment for any order by knowing the `orde
 
 ---
 
-### HIGH-06 — Lead `convert` operation is NOT fully atomic
+### HIGH-06 - Lead `convert` operation is NOT fully atomic
 **File:** `apps/api/src/modules/leads/leads.service.ts:164-203`
 
 When creating a new customer during conversion, the `customer.create` call happens OUTSIDE the `$transaction` block:
 
 ```ts
-// Lines 183-187 — outside any transaction:
+// Lines 183-187 - outside any transaction:
 const newCustomer = await prisma.customer.create({
   data: { phone: lead.phone, name: lead.name, email: lead.email ?? null },
 });
@@ -220,7 +220,7 @@ await prisma.$transaction(async (tx) => {
 
 ---
 
-### HIGH-07 — File upload: MIME type check relies only on `file.mimetype` (client-provided)
+### HIGH-07 - File upload: MIME type check relies only on `file.mimetype` (client-provided)
 **File:** `apps/api/src/modules/file-upload/file-upload.controller.ts:41-44`
 
 Multer's `fileFilter` checks `file.mimetype` which comes from the client's `Content-Type` header, not actual file magic bytes. An attacker can upload a malicious `.html` or `.js` file with `mimetype: image/jpeg`.
@@ -235,7 +235,7 @@ Note: this requires `storage: memoryStorage()` instead of `diskStorage`.
 
 ---
 
-### HIGH-08 — `batchDistribute` — N+1 transactions per lead
+### HIGH-08 - `batchDistribute` - N+1 transactions per lead
 **File:** `apps/api/src/modules/distribution/distribution-lead-assignment.service.ts:48-66`
 
 ```ts
@@ -252,7 +252,7 @@ On 1000 pool leads this is 3000 database operations in series.
 
 ## Medium Priority
 
-### MED-01 — `generic-cursor-data-table.tsx`: timer stored in `useState`, causes re-renders and leak risk
+### MED-01 - `generic-cursor-data-table.tsx`: timer stored in `useState`, causes re-renders and leak risk
 **File:** `apps/web/src/components/shared/generic-cursor-data-table.tsx:47,52-55`
 
 ```ts
@@ -276,7 +276,7 @@ Add a cleanup in `useEffect` returning `() => { if (debounceRef.current) clearTi
 
 ---
 
-### MED-02 — React Query: missing `gcTime` config; `staleTime` only 30s for static reference data
+### MED-02 - React Query: missing `gcTime` config; `staleTime` only 30s for static reference data
 **File:** `apps/web/src/providers/react-query-client-provider.tsx`
 
 ```ts
@@ -285,15 +285,15 @@ defaultOptions: {
 },
 ```
 
-- `gcTime` (formerly `cacheTime`) is not set — defaults to 5 minutes, which is fine, but should be explicit.
+- `gcTime` (formerly `cacheTime`) is not set - defaults to 5 minutes, which is fine, but should be explicit.
 - For reference data (lead sources, labels, payment types, employee levels) queried in `settings-simple-crud-table.tsx` and sidebar, `staleTime: 30_000` causes unnecessary refetches. These change rarely and could use `staleTime: Infinity` on their specific queries.
-- No `refetchOnWindowFocus: false` globally — on returning to window, all 5 analytics queries on the dashboard will refetch simultaneously.
+- No `refetchOnWindowFocus: false` globally - on returning to window, all 5 analytics queries on the dashboard will refetch simultaneously.
 
 **Fix:** Add `refetchOnWindowFocus: false` globally and set higher `staleTime` per-query for reference data.
 
 ---
 
-### MED-03 — `recharts` imported without dynamic import (large bundle)
+### MED-03 - `recharts` imported without dynamic import (large bundle)
 **Files:**
 - `apps/web/src/components/dashboard/revenue-trend-line-chart.tsx:3`
 - `apps/web/src/components/dashboard/lead-conversion-funnel-bar-chart.tsx`
@@ -311,7 +311,7 @@ const RevenueTrendLineChart = dynamic(
 
 ---
 
-### MED-04 — `e: any` type assertions on form input events
+### MED-04 - `e: any` type assertions on form input events
 **Files:** `lead-create-form.tsx:48,52,56`, `order-create-form.tsx:49,58`, `settings/users/page.tsx` (multiple), `login/page.tsx:43,50`
 
 ```ts
@@ -324,7 +324,7 @@ These suppress TypeScript's type checking on React event handlers. The correct t
 
 ---
 
-### MED-05 — `LeadActivityTimeline` maps `a.note` but API returns `content` field
+### MED-05 - `LeadActivityTimeline` maps `a.note` but API returns `content` field
 **File:** `apps/web/src/components/leads/lead-activity-timeline.tsx:46`
 
 The component renders `a.note` but the `Activity` model and API response use `content`, not `note`. This means activity text is never displayed.
@@ -337,7 +337,7 @@ The component renders `a.note` but the `Activity` model and API response use `co
 
 ---
 
-### MED-06 — `ThirdPartyApiController` URL prefix double-nesting
+### MED-06 - `ThirdPartyApiController` URL prefix double-nesting
 **File:** `apps/api/src/modules/third-party-api/third-party-api.controller.ts:7`
 
 ```ts
@@ -350,7 +350,7 @@ The app already sets `globalPrefix = 'api/v1'` in `main.ts`. This controller wil
 
 ---
 
-### MED-07 — `CustomerDetailInfoPanel` renders `address` field that doesn't exist in schema
+### MED-07 - `CustomerDetailInfoPanel` renders `address` field that doesn't exist in schema
 **File:** `apps/web/src/components/customers/customer-detail-info-panel.tsx:11,33`
 
 ```ts
@@ -360,11 +360,11 @@ interface Customer {
 }
 ```
 
-The Customer model has no `address` field. This will silently render `—` always.
+The Customer model has no `address` field. This will silently render `-` always.
 
 ---
 
-### MED-08 — `OrderCreateForm` sends incomplete payload
+### MED-08 - `OrderCreateForm` sends incomplete payload
 **File:** `apps/web/src/components/orders/order-create-form.tsx:23-28`
 
 ```ts
@@ -375,13 +375,13 @@ await apiClient.post('/orders', {
 });
 ```
 
-`CreateOrderDto` in the backend requires `productId` and `amount` (validated in DTO). This form will always fail validation. The form is essentially broken — it collects only `customerId` and `note`, missing required `productId` and `amount` fields.
+`CreateOrderDto` in the backend requires `productId` and `amount` (validated in DTO). This form will always fail validation. The form is essentially broken - it collects only `customerId` and `note`, missing required `productId` and `amount` fields.
 
 **Fix:** Complete the form with product selection and amount inputs.
 
 ---
 
-### MED-09 — `UsersSettingsPage` uses hardcoded `ADMIN` role that doesn't exist
+### MED-09 - `UsersSettingsPage` uses hardcoded `ADMIN` role that doesn't exist
 **File:** `apps/web/src/app/(dashboard)/settings/users/page.tsx:27-31`
 
 ```ts
@@ -398,7 +398,7 @@ The `UserRole` enum is `SUPER_ADMIN | MANAGER | USER`. Creating a user with `rol
 
 ---
 
-### MED-10 — Middleware only checks cookie presence, not token validity
+### MED-10 - Middleware only checks cookie presence, not token validity
 **File:** `apps/web/src/middleware.ts:4-11`
 
 ```ts
@@ -408,11 +408,11 @@ if (!token && !isLoginPage) {
 }
 ```
 
-The middleware redirects to login only if the cookie is absent, not if the JWT is expired or malformed. An expired token passes through and the API call returns 401, which is handled by the client-side refresh logic — but this can cause flash of authenticated UI before redirect.
+The middleware redirects to login only if the cookie is absent, not if the JWT is expired or malformed. An expired token passes through and the API call returns 401, which is handled by the client-side refresh logic - but this can cause flash of authenticated UI before redirect.
 
 ---
 
-### MED-11 — `claimCustomer` uses `$queryRaw` with positional parameters — potential implicit type casting issues
+### MED-11 - `claimCustomer` uses `$queryRaw` with positional parameters - potential implicit type casting issues
 **File:** `apps/api/src/modules/customers/customers.service.ts:120-127`
 
 ```ts
@@ -429,7 +429,7 @@ The raw SQL is **parameterized** (template literal with `${...}` is safe in Pris
 
 ---
 
-### MED-12 — `Distribution batchDistribute` fetches all POOL leads without department filter
+### MED-12 - `Distribution batchDistribute` fetches all POOL leads without department filter
 **File:** `apps/api/src/modules/distribution/distribution-lead-assignment.service.ts:49-53`
 
 ```ts
@@ -445,7 +445,7 @@ All POOL leads across all departments are distributed to a single department. Th
 
 ## Low Priority
 
-### LOW-01 — `'use client'` audit — most are justified; a few could be Server Components
+### LOW-01 - `'use client'` audit - most are justified; a few could be Server Components
 
 All `'use client'` usage was reviewed. The following are correct (use hooks, event handlers, browser APIs):
 - All dashboard chart components ✓
@@ -454,14 +454,14 @@ All `'use client'` usage was reviewed. The following are correct (use hooks, eve
 - Layout components using `usePathname` ✓
 
 These COULD be Server Components (they only render static content):
-- `apps/web/src/app/(dashboard)/settings/layout.tsx` — just renders `{children}`, no client hooks needed
-- `apps/web/src/app/(dashboard)/settings/page.tsx` — static redirect page
+- `apps/web/src/app/(dashboard)/settings/layout.tsx` - just renders `{children}`, no client hooks needed
+- `apps/web/src/app/(dashboard)/settings/page.tsx` - static redirect page
 
-**Impact:** Minor — Next.js handles these well.
+**Impact:** Minor - Next.js handles these well.
 
 ---
 
-### LOW-02 — `AppSidebarNav` links to `/products` and `/call-logs` that may not exist as pages
+### LOW-02 - `AppSidebarNav` links to `/products` and `/call-logs` that may not exist as pages
 **File:** `apps/web/src/components/layout/app-sidebar-nav.tsx:22,25`
 
 ```ts
@@ -473,7 +473,7 @@ These pages are not present in the Glob output for `apps/web/src/app`. Navigatio
 
 ---
 
-### LOW-03 — `OrderDetailWithPaymentsPanel` has status labels inconsistent with API enum
+### LOW-03 - `OrderDetailWithPaymentsPanel` has status labels inconsistent with API enum
 **File:** `apps/web/src/components/orders/order-detail-with-payments-panel.tsx:22-24`
 
 ```ts
@@ -487,30 +487,30 @@ API `OrderStatus` enum is `PENDING | CONFIRMED | COMPLETED | CANCELLED | REFUNDE
 
 ---
 
-### LOW-04 — `User` model has `name` field but frontend expects `fullName`
+### LOW-04 - `User` model has `name` field but frontend expects `fullName`
 **Files:** `auth-context-provider.tsx:11`, `settings/users/page.tsx:22`, `user-avatar-menu-dropdown.tsx:20`
 
 Backend `User` model field is `name`. Frontend `User` interface uses `fullName`. This likely causes the user's name to be `undefined` in the topbar dropdown and user list.
 
 ---
 
-### LOW-05 — `getRevenue` analytics loads all verified payments without date-range fallback
+### LOW-05 - `getRevenue` analytics loads all verified payments without date-range fallback
 **File:** `apps/api/src/modules/analytics/analytics-kpi-and-charts.service.ts:96-110`
 
 If no date range is passed (empty `query`), `createdAt` filter is `undefined` and ALL verified payments since inception are fetched into memory.
 
 ---
 
-### LOW-06 — Redundant `deletedAt: null` filter alongside soft-delete Prisma extension
+### LOW-06 - Redundant `deletedAt: null` filter alongside soft-delete Prisma extension
 **Files:** Many service files (`leads.service.ts`, `customers.service.ts`, etc.)
 
 The soft-delete extension in `packages/database/src/prisma-soft-delete-extension.ts` automatically adds `deletedAt: null` to all `findMany`/`findFirst` queries for models in `SOFT_DELETE_MODELS`. Adding it manually (e.g., `where: { id, deletedAt: null }`) is redundant and causes the extension to detect the explicit filter and skip auto-filtering (see line 81: `if (where && 'deletedAt' in where) return where`). This means the extension logic is effectively bypassed everywhere it's manually set.
 
-This is actually **correct behavior** (explicit wins), but the redundancy is confusing and can lead to bugs if someone removes the explicit filter assuming the extension handles it — which it would, but the code implies otherwise.
+This is actually **correct behavior** (explicit wins), but the redundancy is confusing and can lead to bugs if someone removes the explicit filter assuming the extension handles it - which it would, but the code implies otherwise.
 
 ---
 
-### LOW-07 — Missing rate-limiting on auth endpoints
+### LOW-07 - Missing rate-limiting on auth endpoints
 **File:** `apps/api/src/app.module.ts`
 
 The `ThrottlerGuard` applies globally (100 req/60s). However, brute-force attacks on `/auth/login` need a much tighter limit (e.g., 5/min per IP). The global throttle only provides weak protection.
@@ -519,7 +519,7 @@ The `ThrottlerGuard` applies globally (100 req/60s). However, brute-force attack
 
 ---
 
-### LOW-08 — `UserAvatarMenuDropdown` will crash if `user.fullName` is empty string
+### LOW-08 - `UserAvatarMenuDropdown` will crash if `user.fullName` is empty string
 **File:** `apps/web/src/components/layout/user-avatar-menu-dropdown.tsx:20-25`
 
 ```ts
@@ -546,7 +546,7 @@ An empty `fullName` or all-spaces name causes `n[0]` to be `undefined`, resultin
 
 ## Recommended Actions (prioritized)
 
-1. **[CRIT-01]** Remove hardcoded JWT secret fallbacks — use `getOrThrow`
+1. **[CRIT-01]** Remove hardcoded JWT secret fallbacks - use `getOrThrow`
 2. **[CRIT-02]** Move refresh token to `HttpOnly` server-set cookie
 3. **[HIGH-06]** Move `customer.create` inside the `$transaction` in `convert()`
 4. **[HIGH-04/05]** Add ownership/access checks to activities and payment creation
@@ -561,7 +561,7 @@ An empty `fullName` or all-spaces name causes `n[0]` to be `undefined`, resultin
 
 ## Positive Observations
 
-- **Single PrismaClient singleton** via `globalForPrisma` pattern — no connection leaks
+- **Single PrismaClient singleton** via `globalForPrisma` pattern - no connection leaks
 - **Consistent cursor pagination** with `take: limit + 1` pattern across all list endpoints
 - **Atomic operations** use `$transaction` appropriately (assign, convert, transfer, distribution)
 - **Soft-delete extension** cleanly centralizes deletion filtering
@@ -578,7 +578,7 @@ An empty `fullName` or all-spaces name causes `n[0]` to be `undefined`, resultin
 
 ## Unresolved Questions
 
-1. Is there a migration plan for moving refresh tokens from `localStorage` to HttpOnly cookies? The backend currently returns tokens in the JSON response body — this would require a coordinated frontend/backend change.
-2. The `AiDistributionConfig` / `batchDistribute` functionality — is this production-used? The scoring service (`distribution-weighted-scoring.service.ts`) was not reviewed and may have additional issues.
+1. Is there a migration plan for moving refresh tokens from `localStorage` to HttpOnly cookies? The backend currently returns tokens in the JSON response body - this would require a coordinated frontend/backend change.
+2. The `AiDistributionConfig` / `batchDistribute` functionality - is this production-used? The scoring service (`distribution-weighted-scoring.service.ts`) was not reviewed and may have additional issues.
 3. Are the `/products` and `/call-logs` Next.js pages intentionally absent (planned future work) or accidentally omitted?
-4. The `User.name` vs `user.fullName` mismatch — which side is wrong? The backend uses `name` consistently, the frontend consistently expects `fullName`. Was there a rename that was applied only to the frontend?
+4. The `User.name` vs `user.fullName` mismatch - which side is wrong? The backend uses `name` consistently, the frontend consistently expects `fullName`. Was there a rename that was applied only to the frontend?

@@ -30,7 +30,7 @@ const CACHE_KEY_GROUPS = 'crm_order_product_groups';
 const CACHE_KEY_INSTALLMENTS = 'crm_order_installments';
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
 
-/** Invalidate order dialog caches — call after adding/editing products, payment types, bank accounts */
+/** Invalidate order dialog caches - call after adding/editing products, payment types, bank accounts */
 export function invalidateOrderCaches() {
   try {
     localStorage.removeItem(CACHE_KEY_PRODUCTS);
@@ -250,7 +250,7 @@ export function CreateOrderDialog({ customerId, leadId, products: propProducts, 
                 <SelectTrigger><SelectValue placeholder="Chọn sản phẩm" /></SelectTrigger>
                 <SelectContent>
                   {products.map(p => (
-                    <SelectItem key={p.id} value={p.id}>{p.name} — {formatVND(Number(p.price))}</SelectItem>
+                    <SelectItem key={p.id} value={p.id}>{p.name} - {formatVND(Number(p.price))}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

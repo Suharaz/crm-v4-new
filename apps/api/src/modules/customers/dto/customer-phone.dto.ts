@@ -1,6 +1,6 @@
 import { IsOptional, IsString, MaxLength } from 'class-validator';
 
-/** Body POST /customers/:id/phones — thêm số phụ. */
+/** Body POST /customers/:id/phones - thêm số phụ. */
 export class AddCustomerPhoneDto {
   @IsString()
   phone!: string; // sẽ normalize trong service
@@ -12,7 +12,7 @@ export class AddCustomerPhoneDto {
   note?: string;
 }
 
-/** Body PATCH /customers/:id/phones/:phoneId — update partial. */
+/** Body PATCH /customers/:id/phones/:phoneId - update partial. */
 export class UpdateCustomerPhoneDto {
   @IsOptional() @IsString()
   phone?: string;

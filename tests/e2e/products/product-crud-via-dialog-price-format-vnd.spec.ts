@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAsAdmin, loginAsManager, loginAsUser } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Sản phẩm — CRUD qua Dialog, Format giá VND', () => {
+test.describe('Sản phẩm - CRUD qua Dialog, Format giá VND', () => {
   test('Xem danh sách sản phẩm (tất cả role)', async ({ page }) => {
     await loginAsUser(page);
     await page.goto('/products');

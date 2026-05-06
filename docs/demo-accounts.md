@@ -1,7 +1,7 @@
 # Tài khoản Demo
 
 > ⚠️ **DEV ONLY.** Password `changeme` CHỈ áp dụng khi chạy `pnpm db:seed` ở môi trường dev (NODE_ENV khác `production`).
-> Trong production, seed script **bắt buộc** env `SEED_PASSWORD` (min 8 chars) — nếu thiếu sẽ throw error để tránh leak credentials. Xem `.env.production.example` và `packages/database/prisma/seed.ts`.
+> Trong production, seed script **bắt buộc** env `SEED_PASSWORD` (min 8 chars) - nếu thiếu sẽ throw error để tránh leak credentials. Xem `.env.production.example` và `packages/database/prisma/seed.ts`.
 
 ## Đăng nhập (dev)
 
@@ -9,9 +9,9 @@ URL: http://localhost:3011
 
 | Role | Email | Password (dev) | Quyền chính |
 |------|-------|----------------|-------------|
-| **SUPER_ADMIN** | `admin@crm.local` | `changeme` | Toàn quyền — quản lý user, settings, xóa data |
-| **MANAGER** | `manager.sales@crm.local` | `changeme` | Quản lý phòng Sales — tạo lead, assign, verify payment |
-| **USER (Sale)** | `sale1@crm.local` | `changeme` | Nhân viên bán hàng — claim lead, tạo order, task cá nhân |
+| **SUPER_ADMIN** | `admin@crm.local` | `changeme` | Toàn quyền - quản lý user, settings, xóa data |
+| **MANAGER** | `manager.sales@crm.local` | `changeme` | Quản lý phòng Sales - tạo lead, assign, verify payment |
+| **USER (Sale)** | `sale1@crm.local` | `changeme` | Nhân viên bán hàng - claim lead, tạo order, task cá nhân |
 
 ## Tài khoản khác (seed)
 
@@ -22,7 +22,7 @@ URL: http://localhost:3011
 | `support1@crm.local` | USER | Support |
 
 **Password tất cả (dev):** `changeme`
-**Password production:** giá trị của `SEED_PASSWORD` env var khi chạy seed — **đổi ngay sau lần login đầu**.
+**Password production:** giá trị của `SEED_PASSWORD` env var khi chạy seed - **đổi ngay sau lần login đầu**.
 
 ## Services
 

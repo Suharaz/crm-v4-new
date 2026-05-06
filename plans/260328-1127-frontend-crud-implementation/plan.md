@@ -1,7 +1,7 @@
 # Frontend CRUD Implementation Plan
 
 ## Problem
-Backend API has 140+ endpoints with full CRUD. Frontend is purely read-only — no create/edit/delete forms exist. Super admin logs in and can only view data, zero interaction.
+Backend API has 140+ endpoints with full CRUD. Frontend is purely read-only - no create/edit/delete forms exist. Super admin logs in and can only view data, zero interaction.
 
 ## Solution
 Add CRUD UI for all major entities using existing patterns: shadcn/ui + React Hook Form + Zod + api-client.ts.

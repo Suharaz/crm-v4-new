@@ -18,7 +18,7 @@ interface PoolActionButtonsProps {
   users?: { id: string; name: string }[];
 }
 
-/** Inline action buttons for lead pool tables — Claim and/or Assign. */
+/** Inline action buttons for lead pool tables - Claim and/or Assign. */
 export function LeadPoolActionButtons({ leadId, leadName, mode, users = [] }: PoolActionButtonsProps) {
   const { user } = useAuth();
   const router = useRouter();

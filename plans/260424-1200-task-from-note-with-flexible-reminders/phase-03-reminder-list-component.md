@@ -1,4 +1,4 @@
-# Phase 03 — Reminder List Component (FE)
+# Phase 03 - Reminder List Component (FE)
 
 **Priority:** P1 | **Status:** ✅ Completed | **Effort:** 3h | **Parallel:** với P1/P2
 
@@ -7,7 +7,7 @@ Component dùng chung `<ReminderList />` quản lý danh sách mốc nhắc: aut
 
 ## Requirements
 - Input: `dueDate` (controlled prop)
-- Input: `reminders` (controlled prop — array `{ remindAt, label? }[]`)
+- Input: `reminders` (controlled prop - array `{ remindAt, label? }[]`)
 - Output: `onChange(reminders)` mỗi khi user sửa
 - Auto-compute 3 default (1d/1h/30min) khi `dueDate` thay đổi VÀ `reminders` rỗng
 - Filter mốc past khi auto-compute
@@ -175,7 +175,7 @@ if (invalidReminders.length) {
 - Timezone Asia/Saigon: input hiển thị local time, ISO output đúng UTC
 
 ## Risks
-- `datetime-local` không hỗ trợ Safari iOS tốt — test trên mobile
+- `datetime-local` không hỗ trợ Safari iOS tốt - test trên mobile
 - Timezone bug: user chọn "14:00" nghĩ là 14h Saigon, hệ thống hiểu 14h UTC
 
 ## Security

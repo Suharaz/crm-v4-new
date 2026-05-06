@@ -32,7 +32,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Đơn hàng #{order.id}</h1>
-          <p className="text-slate-500">{order.customer?.name} — {order.customer?.phone}</p>
+          <p className="text-slate-500">{order.customer?.name} - {order.customer?.phone}</p>
         </div>
         <StatusBadge status={order.status} />
       </div>
@@ -45,7 +45,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <div className="rounded-xl border border-slate-200 bg-white p-5">
           <h3 className="mb-3 font-semibold text-slate-900">Chi tiết</h3>
           <dl className="space-y-2 text-sm">
-            <div className="flex justify-between"><dt className="text-slate-500">Sản phẩm</dt><dd className="text-slate-700">{order.product?.name || '—'}</dd></div>
+            <div className="flex justify-between"><dt className="text-slate-500">Sản phẩm</dt><dd className="text-slate-700">{order.product?.name || '-'}</dd></div>
             <div className="flex justify-between"><dt className="text-slate-500">Giá</dt><dd className="text-slate-700">{formatVND(Number(order.amount))}</dd></div>
             <div className="flex justify-between"><dt className="text-slate-500">VAT ({order.vatRate}%)</dt><dd className="text-slate-700">{formatVND(Number(order.vatAmount))}</dd></div>
             <div className="flex justify-between border-t border-slate-100 pt-2"><dt className="font-medium text-slate-700">Tổng</dt><dd className="font-bold text-slate-900">{formatVND(Number(order.totalAmount))}</dd></div>

@@ -9,22 +9,22 @@ Install missing shadcn/ui components and create reusable form patterns needed by
 ## Requirements
 
 ### shadcn/ui Components to Add
-- **Dialog** — modal forms for settings CRUD
-- **Select** — dropdowns for department, status, role, etc.
-- **Textarea** — notes, descriptions
-- **Toast/Sonner** — success/error notifications after CRUD ops
-- **DropdownMenu** — action menus on table rows
-- **AlertDialog** — delete confirmations
-- **Badge** — improved status/label display
-- **Tabs** — settings page sections
-- **Separator** — form sections
-- **Form** — shadcn form wrapper (RHF integration)
+- **Dialog** - modal forms for settings CRUD
+- **Select** - dropdowns for department, status, role, etc.
+- **Textarea** - notes, descriptions
+- **Toast/Sonner** - success/error notifications after CRUD ops
+- **DropdownMenu** - action menus on table rows
+- **AlertDialog** - delete confirmations
+- **Badge** - improved status/label display
+- **Tabs** - settings page sections
+- **Separator** - form sections
+- **Form** - shadcn form wrapper (RHF integration)
 
 ### Shared Form Infrastructure
-1. **hooks/use-form-action.ts** — custom hook wrapping RHF + api calls + toast + router.refresh
-2. **components/shared/form-dialog.tsx** — reusable dialog with form, loading state, error display
-3. **components/shared/confirm-dialog.tsx** — reusable delete/action confirmation
-4. **components/shared/form-field-wrapper.tsx** — label + error message wrapper
+1. **hooks/use-form-action.ts** - custom hook wrapping RHF + api calls + toast + router.refresh
+2. **components/shared/form-dialog.tsx** - reusable dialog with form, loading state, error display
+3. **components/shared/confirm-dialog.tsx** - reusable delete/action confirmation
+4. **components/shared/form-field-wrapper.tsx** - label + error message wrapper
 
 ### API Client Enhancement
 - Add error handling that extracts validation errors from NestJS response format

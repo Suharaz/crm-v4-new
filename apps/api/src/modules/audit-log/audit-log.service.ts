@@ -23,7 +23,7 @@ export class AuditLogService {
   constructor(private readonly prisma: PrismaClient) {}
 
   /**
-   * Persist one audit row. Caller controls "fire and forget" — service simply
+   * Persist one audit row. Caller controls "fire and forget" - service simply
    * logs DB errors instead of throwing so the calling interceptor can ignore
    * the promise without unhandled-rejection noise.
    */
@@ -153,7 +153,7 @@ export class AuditLogService {
     };
   }
 
-  /** Distinct action names — feeds the filter dropdown. Cap to avoid huge payloads. */
+  /** Distinct action names - feeds the filter dropdown. Cap to avoid huge payloads. */
   async listDistinctActions(): Promise<string[]> {
     const rows = await this.prisma.auditLog.findMany({
       select: { action: true },

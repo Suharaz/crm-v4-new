@@ -4,7 +4,7 @@ import { isValidVNPhone, normalizePhone } from '@crm/utils';
 import { AddCustomerPhoneDto, UpdateCustomerPhoneDto } from './dto/customer-phone.dto';
 
 /**
- * Helper service — single source of truth cho mọi logic liên quan tới
+ * Helper service - single source of truth cho mọi logic liên quan tới
  * dedup/search SĐT cross-table (số chính `customers.phone` + số phụ
  * `customer_phones.phone`).
  *
@@ -15,7 +15,7 @@ export class CustomerPhonesService {
   constructor(private readonly prisma: PrismaClient) {}
 
   /**
-   * Tìm Customer match SĐT — match số chính TRƯỚC, sau đó tới số phụ.
+   * Tìm Customer match SĐT - match số chính TRƯỚC, sau đó tới số phụ.
    * @returns Customer bare (không include relation) hoặc null nếu không tìm thấy.
    */
   async findCustomerByAnyPhone(phone: string) {
@@ -36,9 +36,9 @@ export class CustomerPhonesService {
   }
 
   /**
-   * Throw `ConflictException` nếu SĐT (sau normalize) đã tồn tại trên customer khác —
+   * Throw `ConflictException` nếu SĐT (sau normalize) đã tồn tại trên customer khác -
    * tính cả số chính lẫn số phụ.
-   * @param excludeCustomerId — bỏ qua customer này khi check (dùng khi update chính KH đó).
+   * @param excludeCustomerId - bỏ qua customer này khi check (dùng khi update chính KH đó).
    */
   async assertPhoneNotExists(phone: string, excludeCustomerId?: bigint): Promise<void> {
     const normalized = normalizePhone(phone);

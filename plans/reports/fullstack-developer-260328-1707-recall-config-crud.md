@@ -13,7 +13,7 @@
 
 ### Tasks Completed
 - [x] RecallConfigService with list/getById/create/update/remove
-- [x] runAutoRecall() with @Cron('0 */2 * * *') — every 2 hours
+- [x] runAutoRecall() with @Cron('0 */2 * * *') - every 2 hours
 - [x] Lead recall: status=POOL, departmentId!=null, assignedUserId=null, updatedAt < cutoff → FLOATING + labels
 - [x] Customer recall: status=ACTIVE, assignedDepartmentId!=null, assignedUserId=null, updatedAt < cutoff → FLOATING + labels
 - [x] createMany with skipDuplicates for label attachment
@@ -26,7 +26,7 @@
 - Unit tests: not run (no existing test suite for this module)
 
 ### Issues Encountered
-- None. app.module.ts already had AssignmentTemplatesModule present (added by prior session) — integrated cleanly.
+- None. app.module.ts already had AssignmentTemplatesModule present (added by prior session) - integrated cleanly.
 
 ### Next Steps
 - Task #3 (Backend: Recall Config CRUD) can be marked completed

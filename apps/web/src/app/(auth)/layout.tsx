@@ -1,8 +1,8 @@
-/** Auth layout: split-screen — branded panel + form panel. */
+/** Auth layout: split-screen - branded panel + form panel. */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
-      {/* Left panel — branded visual (hidden on mobile) */}
+      {/* Left panel - branded visual (hidden on mobile) */}
       <div className="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-sky-600 via-sky-500 to-cyan-500 lg:flex lg:flex-col lg:items-center lg:justify-center lg:px-12">
         {/* Decorative circles */}
         <div className="absolute -left-20 -top-20 h-80 w-80 rounded-full bg-white/10" />
@@ -48,7 +48,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
       </div>
 
-      {/* Right panel — form */}
+      {/* Right panel - form */}
       <div className="flex w-full items-center justify-center bg-slate-50 px-4 py-8 lg:w-1/2">
         <div className="w-full max-w-md">{children}</div>
       </div>

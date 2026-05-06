@@ -10,7 +10,7 @@
 For a CRM system at this scale (50-200 users, ~10K leads/month), PostgreSQL offers several critical design decisions that impact performance, maintainability, and scalability. Key recommendations:
 
 - **UUID primary keys** acceptable but **BIGINT with IDENTITY** preferable for performance at this scale
-- **JSONB + GIN indexes** for flexible fields — use strategically, not for every field
+- **JSONB + GIN indexes** for flexible fields - use strategically, not for every field
 - **Polymorphic pattern via entity_type/entity_id** is viable; consider separate tables for high-query-volume entities
 - **Soft deletes via timestamp** (deleted_at) for CRM data retention; use partial indexes
 - **Prisma ORM** handles most patterns well; use raw queries selectively for analytics
@@ -33,7 +33,7 @@ CRM scale (millions of records eventually, ~50-200 active users) benefits from s
 - Can generate client-side
 
 **Cons:**
-- 16 bytes vs 8 bytes (BIGINT) — increases index size and memory pressure
+- 16 bytes vs 8 bytes (BIGINT) - increases index size and memory pressure
 - Random distribution causes **index fragmentation** and **slower page lookups**
 - Poor cache locality; UUID index lookups ~10% slower than BIGINT
 - Slower than sequential IDs in writes due to random B-tree insertion points
@@ -43,8 +43,8 @@ CRM scale (millions of records eventually, ~50-200 active users) benefits from s
 **Decision:** Use `BIGINT` with `GENERATED ALWAYS AS IDENTITY`
 
 **Pros:**
-- 8 bytes — smaller indexes, better memory usage
-- Sequential insertion — optimal B-tree performance, minimal fragmentation
+- 8 bytes - smaller indexes, better memory usage
+- Sequential insertion - optimal B-tree performance, minimal fragmentation
 - Better cache locality, ~10-15% faster range queries
 - At 10K leads/month, reaches max BIGINT (9.2e18) in ~27 billion years
 - Default in most ORMs; no special handling
@@ -159,7 +159,7 @@ const vipCustomers = await prisma.$queryRaw`
 ## 3. POLYMORPHIC ASSOCIATIONS: ACTIVITY TIMELINE
 
 ### The Challenge
-Activity timeline needs to track: Lead created, Customer updated, Order placed, Payment received, Call logged — different entity types.
+Activity timeline needs to track: Lead created, Customer updated, Order placed, Payment received, Call logged - different entity types.
 
 ### Option A: Single Table Polymorphism (RECOMMENDED)
 
@@ -194,7 +194,7 @@ model User {
 
 **Pros:**
 - Single table, simple queries
-- Flexible — add new entity types without schema changes
+- Flexible - add new entity types without schema changes
 - JSONB metadata handles variant fields
 
 **Cons:**
@@ -250,7 +250,7 @@ model CustomerActivity {
 **Use Option A (Single Table Polymorphism)** for your CRM:
 - Activity timeline is mostly read-only (high writes, but mostly inserts)
 - You need cross-entity activity feed (dashboard, audit trail)
-- Future entity types unknown — JSONB flexibility important
+- Future entity types unknown - JSONB flexibility important
 
 Add this index for most common queries:
 ```sql
@@ -309,7 +309,7 @@ CHECK (status IN ('NEW', 'CONTACTED', 'QUALIFIED', 'UNQUALIFIED', 'CONVERTED'));
 ```
 
 **Pros:**
-- Flexible — add values without locks
+- Flexible - add values without locks
 - Prisma native support
 - Easier migrations
 
@@ -775,7 +775,7 @@ For 100K leads with 10+ indexes:
 
 ### Cursor-Based Pagination (RECOMMENDED)
 
-For lists with 1000s of records, offset-based pagination is O(n) — cursor-based is O(1).
+For lists with 1000s of records, offset-based pagination is O(n) - cursor-based is O(1).
 
 ```typescript
 // Cursor-based: efficient
@@ -794,7 +794,7 @@ const nextCursor = leads.length > 0 ? leads[leads.length - 1].id : null;
 **vs Offset-Based (avoid for large datasets):**
 ```typescript
 // Offset-based: slow for high page numbers
-// O(n) — PostgreSQL must scan and skip all previous rows
+// O(n) - PostgreSQL must scan and skip all previous rows
 const leads = await prisma.lead.findMany({
   where: { deletedAt: null },
   skip: (page - 1) * pageSize, // SLOW if page is large
@@ -1162,7 +1162,7 @@ RLS enforces row-level access at database, not application. **Only use if:**
 - Compliance requirement (GDPR, healthcare)
 - Application-level auth is untrusted
 
-**For a single-tenant CRM:** RLS is **not necessary** — skip it.
+**For a single-tenant CRM:** RLS is **not necessary** - skip it.
 
 ### If Multi-Tenant (Future)
 
@@ -1189,7 +1189,7 @@ await prisma.$executeRaw`
 
 ### Recommendation
 - **For single-tenant:** skip RLS. Enforce in application layer.
-- **For multi-tenant future:** add RLS at that time (not now — YAGNI)
+- **For multi-tenant future:** add RLS at that time (not now - YAGNI)
 
 ---
 
@@ -1224,7 +1224,7 @@ const lead = await prisma.$queryRaw`
 
 ### Application-Level Encryption
 
-Better for Prisma — encrypt before insert:
+Better for Prisma - encrypt before insert:
 
 ```typescript
 import crypto from 'crypto';

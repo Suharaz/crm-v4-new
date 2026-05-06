@@ -5,7 +5,7 @@ import { CsvExportButton } from '@/components/shared/csv-export-button';
 import { OrderListWithInlineExpand } from '@/components/orders/order-list-with-inline-expand';
 import { OrderListAdvancedFilterBar } from '@/components/orders/order-list-advanced-filter-bar';
 
-/** Orders list page with advanced filters — inline expand detail, role-filtered on backend. */
+/** Orders list page with advanced filters - inline expand detail, role-filtered on backend. */
 export default async function OrdersPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const params = await searchParams;
   const qp = new URLSearchParams(params);

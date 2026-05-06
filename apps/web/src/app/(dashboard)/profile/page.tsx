@@ -61,7 +61,7 @@ export default function ProfilePage() {
     try {
       await api.patch('/users/profile', { password });
       toast.success('Đổi mật khẩu thành công. Vui lòng đăng nhập lại.');
-      // Password change revokes tokens — redirect to login
+      // Password change revokes tokens - redirect to login
       setTimeout(() => { window.location.href = '/login'; }, 1500);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Lỗi đổi mật khẩu');

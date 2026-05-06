@@ -105,7 +105,7 @@ export function PaginationControls({ total, page, limit, totalPages }: Props) {
         </div>
       </div>
 
-      {/* Right: page numbers — always shown even if only 1 page */}
+      {/* Right: page numbers - always shown even if only 1 page */}
       <div className="flex items-center gap-1">
         <Button variant="ghost" size="icon" className="h-8 w-8" disabled={currentPage <= 1} onClick={() => navigate(1)}>
           <ChevronsLeft className="h-4 w-4" />

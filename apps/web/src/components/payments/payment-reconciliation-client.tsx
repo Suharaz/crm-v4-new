@@ -98,7 +98,7 @@ function ImportExcelDialog({ open, onClose }: { open: boolean; onClose: () => vo
               ) : (
                 <>
                   <p className="text-sm text-slate-500">Nhấn để chọn file Excel</p>
-                  <p className="text-xs text-slate-400 mt-1">Hỗ trợ .xlsx, .xls — tối đa 10MB</p>
+                  <p className="text-xs text-slate-400 mt-1">Hỗ trợ .xlsx, .xls - tối đa 10MB</p>
                 </>
               )}
               <input
@@ -182,7 +182,7 @@ function ImportExcelDialog({ open, onClose }: { open: boolean; onClose: () => vo
                     {result.errors.map((e, i) => (
                       <tr key={i} className="border-t border-red-100">
                         <td className="px-3 py-1.5 text-slate-600">{e.row}</td>
-                        <td className="px-3 py-1.5 text-slate-600">{e.phone || '—'}</td>
+                        <td className="px-3 py-1.5 text-slate-600">{e.phone || '-'}</td>
                         <td className="px-3 py-1.5 text-red-600">{e.reason}</td>
                       </tr>
                     ))}
@@ -461,7 +461,7 @@ export function PaymentReconciliationClient({
 
         {/* ── Tab: Chờ xử lý ── */}
         <TabsContent value="reconcile">
-          {/* Action bar — left: contextual actions, right: import Excel (manager+) */}
+          {/* Action bar - left: contextual actions, right: import Excel (manager+) */}
           <div className="flex items-center justify-between gap-3 my-3 min-h-[40px]">
             <div className="flex items-center gap-3">
               {processing ? (
@@ -501,7 +501,7 @@ export function PaymentReconciliationClient({
             <div>
               <h3 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-amber-400" />
-                Sale nhập — chờ duyệt ({filteredPending.length}/{pending.length})
+                Sale nhập - chờ duyệt ({filteredPending.length}/{pending.length})
               </h3>
 
               {/* Filter bar */}
@@ -533,7 +533,7 @@ export function PaymentReconciliationClient({
                       type="date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)}
                       className="h-8 text-xs px-2"
                     />
-                    <span className="text-slate-400 text-xs shrink-0">–</span>
+                    <span className="text-slate-400 text-xs shrink-0">-</span>
                     <Input
                       type="date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)}
                       className="h-8 text-xs px-2"
@@ -609,7 +609,7 @@ export function PaymentReconciliationClient({
             <div>
               <h3 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-sky-400" />
-                Ngân hàng — chưa match ({unmatched.length})
+                Ngân hàng - chưa match ({unmatched.length})
               </h3>
               {unmatched.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">Tất cả đã match</div>
@@ -653,7 +653,7 @@ export function PaymentReconciliationClient({
                   className="h-8 text-xs px-2 w-36"
                   placeholder="Từ ngày"
                 />
-                <span className="text-slate-400 text-xs shrink-0">–</span>
+                <span className="text-slate-400 text-xs shrink-0">-</span>
                 <Input
                   type="date"
                   value={exportTo}
@@ -713,12 +713,12 @@ export function PaymentReconciliationClient({
                             </span>
                           </td>
                           <td className="px-4 py-3 text-right font-semibold text-slate-900">{formatVND(Number(p.amount))}</td>
-                          <td className="px-4 py-3 text-slate-600">{p.paymentType?.name || '—'}</td>
-                          <td className="px-4 py-3 text-slate-700">{p.order?.customer?.name || '—'}</td>
-                          <td className="px-4 py-3 text-slate-600">{p.order?.product?.name || '—'}</td>
-                          <td className="px-4 py-3 text-slate-600">{p.order?.creator?.name || '—'}</td>
+                          <td className="px-4 py-3 text-slate-600">{p.paymentType?.name || '-'}</td>
+                          <td className="px-4 py-3 text-slate-700">{p.order?.customer?.name || '-'}</td>
+                          <td className="px-4 py-3 text-slate-600">{p.order?.product?.name || '-'}</td>
+                          <td className="px-4 py-3 text-slate-600">{p.order?.creator?.name || '-'}</td>
                           <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
-                            {p.transferDate ? formatDate(p.transferDate) : '—'}
+                            {p.transferDate ? formatDate(p.transferDate) : '-'}
                           </td>
                           <td className="px-4 py-3">
                             <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${p.verifiedSource === 'AUTO' ? 'bg-sky-100 text-sky-700' : 'bg-purple-100 text-purple-700'}`}>
@@ -726,7 +726,7 @@ export function PaymentReconciliationClient({
                             </span>
                           </td>
                           <td className="px-4 py-3 text-xs text-slate-400 whitespace-nowrap">
-                            {p.verifiedAt ? formatDate(p.verifiedAt) : '—'}
+                            {p.verifiedAt ? formatDate(p.verifiedAt) : '-'}
                             {p.verifier?.name && ` · ${p.verifier.name}`}
                           </td>
                         </tr>

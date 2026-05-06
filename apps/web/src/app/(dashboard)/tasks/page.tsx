@@ -2,7 +2,7 @@ import { serverFetch } from '@/lib/auth';
 import { TaskListClient } from '@/components/tasks/tasks-management-list-with-create-dialog';
 import type { TaskRecord } from '@/types/entities';
 
-/** Tasks management page — shows user's tasks with create/complete/cancel actions. */
+/** Tasks management page - shows user's tasks with create/complete/cancel actions. */
 export default async function TasksPage() {
   let data: TaskRecord[] = [];
   try {

@@ -196,7 +196,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                     <div className="flex items-center justify-between px-3 py-2">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-slate-700 text-sm">#{o.id}</span>
-                        <span className="text-slate-500 text-sm">{o.product?.name || '—'}</span>
+                        <span className="text-slate-500 text-sm">{o.product?.name || '-'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-slate-900 text-sm">{formatVND(Number(o.totalAmount))}</span>
@@ -207,7 +207,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                       <div className="border-t border-slate-100 px-3 py-1.5 space-y-1">
                         {o.payments!.map((p) => (
                           <div key={p.id} className="flex items-center justify-between text-xs text-slate-500">
-                            <span>{p.paymentType?.name || 'CK'} {p.transferContent ? `— ${p.transferContent}` : ''}</span>
+                            <span>{p.paymentType?.name || 'CK'} {p.transferContent ? `- ${p.transferContent}` : ''}</span>
                             <div className="flex items-center gap-1.5">
                               <span className="font-medium text-slate-700">{formatVND(Number(p.amount))}</span>
                               <StatusBadge status={p.status} />
@@ -236,7 +236,7 @@ function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: strin
     <div className="flex items-center gap-2">
       {icon}
       <span className="text-slate-500">{label}</span>
-      <span className="ml-auto text-slate-700">{value || '—'}</span>
+      <span className="ml-auto text-slate-700">{value || '-'}</span>
     </div>
   );
 }

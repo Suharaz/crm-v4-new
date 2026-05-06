@@ -1,4 +1,4 @@
-# Phase 02 — Backend Services
+# Phase 02 - Backend Services
 
 ## Context Links
 
@@ -14,12 +14,12 @@
 ## Key Insights
 
 - 4 module ảnh hưởng: `labels`, `leads`, `import`, `recall-config`.
-- Recall conflict rule: **skip-if-exists** — `if (lead.labelId !== null) return;` cho mỗi lead trước khi gắn auto label.
+- Recall conflict rule: **skip-if-exists** - `if (lead.labelId !== null) return;` cho mỗi lead trước khi gắn auto label.
 - CSV import: lấy nhãn đầu, log warning vào job `failedRows` hoặc summary message.
 
 ## Requirements
 
-- `attachToLead(leadId, labelId | null)` — set/replace/null
+- `attachToLead(leadId, labelId | null)` - set/replace/null
 - Không còn `detachFromLead(leadId, labelId)` riêng (bỏ hoặc alias = set null)
 - `recall-config.service` chỉ gắn auto label nếu `lead.label_id IS NULL`
 - `import.processor` lấy phần tử [0] của mảng labels parse được, append warning
@@ -27,19 +27,19 @@
 ## Related Code Files
 
 **Modify:**
-- `apps/api/src/modules/labels/labels.service.ts:133-140` — replace attach/detach Lead
-- `apps/api/src/modules/leads/leads.service.ts` — 5 chỗ:
-  - `:340` — sau create lead
-  - `:559`, `:610` — transfer/recall flows (`tx.leadLabel.updateMany`)
-  - `:766` — bulk recall
-- `apps/api/src/modules/import/import.processor.ts:281-303` — parse + take [0]
+- `apps/api/src/modules/labels/labels.service.ts:133-140` - replace attach/detach Lead
+- `apps/api/src/modules/leads/leads.service.ts` - 5 chỗ:
+  - `:340` - sau create lead
+  - `:559`, `:610` - transfer/recall flows (`tx.leadLabel.updateMany`)
+  - `:766` - bulk recall
+- `apps/api/src/modules/import/import.processor.ts:281-303` - parse + take [0]
 - `apps/api/src/modules/recall-config/recall-config.service.ts`:
-  - `:46`, `:53`, `:63` — DTO type `autoLabelIds: bigint[]` → `autoLabelId: bigint | null`
-  - `:188`, `:217-222` — skip-if-exists logic for leads
-  - `:239`, `:267-271` — customer flow chuyển từ array sang single (consistent UX)
+  - `:46`, `:53`, `:63` - DTO type `autoLabelIds: bigint[]` → `autoLabelId: bigint | null`
+  - `:188`, `:217-222` - skip-if-exists logic for leads
+  - `:239`, `:267-271` - customer flow chuyển từ array sang single (consistent UX)
 
 **Read for context:**
-- `apps/api/src/modules/leads/leads.service.ts` (full) — hiểu transaction patterns
+- `apps/api/src/modules/leads/leads.service.ts` (full) - hiểu transaction patterns
 - `apps/api/src/modules/recall-config/recall-config.service.ts` (full)
 
 ## Architecture
@@ -79,7 +79,7 @@ async setLeadLabel(leadId: bigint, labelId: bigint | null) {
 
 Tìm tất cả `leadLabel.createMany`, `leadLabel.updateMany` → thay bằng `lead.update({ labelId })` hoặc bulk `lead.updateMany({ where, data: { labelId } })`.
 
-**Đặc biệt** `:340` (post-create attach) — nếu DTO tạo lead có `labelId`, set ngay trong `lead.create()` thay vì attach sau.
+**Đặc biệt** `:340` (post-create attach) - nếu DTO tạo lead có `labelId`, set ngay trong `lead.create()` thay vì attach sau.
 
 ### 3. `import.processor.ts:281-303`
 
@@ -137,11 +137,11 @@ if (config.autoLabelId) {
 
 ## Todo List
 
-- [ ] Refactor `labels.service.ts` — `setLeadLabel(leadId, labelId | null)`
-- [ ] Cập nhật `leads.service.ts` — 5 call sites
-- [ ] Cập nhật `import.processor.ts` — parse + take [0] + warning
-- [ ] Cập nhật `recall-config.service.ts` — DTO singular, skip-if-exists, customer wrap
-- [ ] `pnpm --filter @crm/api build` — không TS error
+- [ ] Refactor `labels.service.ts` - `setLeadLabel(leadId, labelId | null)`
+- [ ] Cập nhật `leads.service.ts` - 5 call sites
+- [ ] Cập nhật `import.processor.ts` - parse + take [0] + warning
+- [ ] Cập nhật `recall-config.service.ts` - DTO singular, skip-if-exists, customer wrap
+- [ ] `pnpm --filter @crm/api build` - không TS error
 - [ ] Code review pass nội bộ (đọc lại diff)
 
 ## Success Criteria

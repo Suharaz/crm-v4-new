@@ -1,4 +1,4 @@
-# Phase 01 — Schema & Migration
+# Phase 01 - Schema & Migration
 
 ## Context Links
 
@@ -38,14 +38,14 @@ Customer 1──N CustomerLabel N──1 Label  (giữ nguyên)
 ## Related Code Files
 
 **Modify:**
-- `packages/database/prisma/schema.prisma` — Lead model, drop LeadLabel, RecallConfig field
-- `packages/database/prisma/pre-push-migrations.sql` — append idempotent block
+- `packages/database/prisma/schema.prisma` - Lead model, drop LeadLabel, RecallConfig field
+- `packages/database/prisma/pre-push-migrations.sql` - append idempotent block
 
 **Create:**
 - `packages/database/prisma/migrations/<timestamp>_lead_single_label/migration.sql` (nếu dùng prisma migrate dev cho local)
 
 **Read for context:**
-- `packages/database/prisma/migrations/20260505111000_label_recall_minutes/migration.sql` — naming pattern
+- `packages/database/prisma/migrations/20260505111000_label_recall_minutes/migration.sql` - naming pattern
 - `packages/database/prisma/migrations/20260504070357_add_customer_phones/migration.sql`
 
 ## Implementation Steps
@@ -169,7 +169,7 @@ SELECT COUNT(*) FROM lead_labels_backup_20260506;  -- backup tồn tại
 
 ## Security Considerations
 
-- FK ON DELETE SET NULL — xoá Label không xoá Lead
+- FK ON DELETE SET NULL - xoá Label không xoá Lead
 - Không lộ thông tin nhạy cảm qua backup table (label name không phải PII)
 
 ## Next Steps

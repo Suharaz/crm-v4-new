@@ -18,7 +18,7 @@ const SECRET_KEY_PATTERN = /(_key|_secret|_password|_token)$/;
 export class SystemSettingsService {
   constructor(private readonly prisma: PrismaClient) {}
 
-  /** Get a setting value by key. Returns null if not found. Returns RAW value — internal use only. */
+  /** Get a setting value by key. Returns null if not found. Returns RAW value - internal use only. */
   async get(key: string): Promise<string | null> {
     const row = await this.prisma.systemSetting.findUnique({ where: { key } });
     return row?.value ?? null;

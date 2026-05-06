@@ -41,10 +41,10 @@ export class FileUploadService {
       throw new BadRequestException('Loại file không được hỗ trợ');
     }
 
-    // Validate magic bytes — prevent MIME spoofing (e.g., .php uploaded as image/jpeg)
+    // Validate magic bytes - prevent MIME spoofing (e.g., .php uploaded as image/jpeg)
     const { fileTypeFromBuffer } = await import('file-type');
     const detected = await fileTypeFromBuffer(buffer);
-    // CSV/plain text files have no magic bytes — skip for text types
+    // CSV/plain text files have no magic bytes - skip for text types
     if (detected && !ALLOWED_MIME_TYPES.includes(detected.mime)) {
       throw new BadRequestException(`File thực tế là ${detected.mime}, không được hỗ trợ`);
     }
@@ -76,13 +76,13 @@ export class FileUploadService {
    * Throws ForbiddenException if path escapes upload directory.
    */
   getSecurePath(relativePath: string): string {
-    // Lớp 3: Whitelist — chỉ cho phép pattern subDir/YYYY-MM/uuid.ext
+    // Lớp 3: Whitelist - chỉ cho phép pattern subDir/YYYY-MM/uuid.ext
     const SAFE_PATH_PATTERN = /^[\w-]+\/\d{4}-\d{2}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.\w+$/;
     if (!SAFE_PATH_PATTERN.test(relativePath)) {
       throw new ForbiddenException('Đường dẫn file không hợp lệ');
     }
 
-    // Lớp 2: Path normalization — chống ../../ traversal
+    // Lớp 2: Path normalization - chống ../../ traversal
     const resolvedUploadDir = path.resolve(this.uploadDir);
     const resolvedFilePath = path.resolve(this.uploadDir, relativePath);
 

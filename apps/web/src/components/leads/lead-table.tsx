@@ -26,7 +26,7 @@ interface Lead {
 
 /** Relative time label + danger color based on how long ago */
 function RelativeTime({ date }: { date?: string }) {
-  if (!date) return <span className="text-slate-400">—</span>;
+  if (!date) return <span className="text-slate-400">-</span>;
   const diff = Date.now() - new Date(date).getTime();
   const mins = Math.floor(diff / 60000);
   const hours = Math.floor(mins / 60);
@@ -171,12 +171,12 @@ function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan, enableB
             )}
           </div>
         </td>
-        <td className="hidden md:table-cell px-4 py-3 text-slate-600">{lead.product?.name || '—'}</td>
+        <td className="hidden md:table-cell px-4 py-3 text-slate-600">{lead.product?.name || '-'}</td>
         <td className="hidden md:table-cell px-4 py-3">
           {lead.label ? (
             <span className="rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white" style={{ backgroundColor: lead.label.color }}>{lead.label.name}</span>
           ) : (
-            <span className="text-[10px] text-slate-400">—</span>
+            <span className="text-[10px] text-slate-400">-</span>
           )}
         </td>
         <td className="hidden lg:table-cell px-4 py-3"><RelativeTime date={lead.lastInteractionAt} /></td>

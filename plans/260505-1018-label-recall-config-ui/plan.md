@@ -8,7 +8,7 @@ Commit `7995f53 feat(recall): add label-based auto-recall for leads` đã ship b
 
 ## Mục tiêu
 
-Tích hợp trường "Số ngày auto-recall" vào dialog tạo/sửa nhãn (Phương án A — đã chốt với user). Cho phép SUPER_ADMIN cấu hình trực tiếp khi quản lý nhãn.
+Tích hợp trường "Số ngày auto-recall" vào dialog tạo/sửa nhãn (Phương án A - đã chốt với user). Cho phép SUPER_ADMIN cấu hình trực tiếp khi quản lý nhãn.
 
 ## Quyết định kiến trúc
 
@@ -16,7 +16,7 @@ Tích hợp trường "Số ngày auto-recall" vào dialog tạo/sửa nhãn (Ph
 |---|---|---|
 | 1 | Trường recall **optional** (để trống = không recall) | KISS, không phải nhãn nào cũng cần |
 | 2 | Tách component `label-settings.tsx` riêng (không dùng `SettingsCrudList` generic) | Generic không hỗ trợ 2 endpoint + side-effect |
-| 3 | **Không cần migration cascade** — DELETE `/labels/:id` là **soft delete** (`isActive: false`) | Refinement sau khi đọc service. Backend không hard delete |
+| 3 | **Không cần migration cascade** - DELETE `/labels/:id` là **soft delete** (`isActive: false`) | Refinement sau khi đọc service. Backend không hard delete |
 | 4 | Frontend gọi 2 endpoint song song, merge by `labelId` | KISS hơn modify backend `GET /labels` (tránh đụng cache `LOOKUP_LABELS`) |
 | 5 | Cron `_recallLeadsByLabel` cần thêm filter `label.isActive = true` | Edge case: nếu không, label đã deactivate vẫn trigger recall |
 | 6 | Quyền: chỉ **SUPER_ADMIN** mới sửa được trường recall (manager vẫn sửa được name/color/category) | Backend endpoint `/recall-configs/labels` đã `@Roles(SUPER_ADMIN)` |
@@ -33,13 +33,13 @@ Tích hợp trường "Số ngày auto-recall" vào dialog tạo/sửa nhãn (Ph
 ## Files thay đổi
 
 **Backend:**
-- `apps/api/src/modules/recall-config/recall-config.service.ts` — sửa cron filter
+- `apps/api/src/modules/recall-config/recall-config.service.ts` - sửa cron filter
 
 **Frontend:**
-- `apps/web/src/types/entities.ts` — extend `LabelEntity` với `category?, isActive?, recallConfig?`
-- `apps/web/src/app/(dashboard)/settings/page.tsx` — fetch thêm `/recall-configs/labels`
-- `apps/web/src/components/settings/settings-page-client.tsx` — pass `labelRecallConfigs` xuống
-- `apps/web/src/components/settings/label-settings.tsx` — **rewrite** không dùng generic
+- `apps/web/src/types/entities.ts` - extend `LabelEntity` với `category?, isActive?, recallConfig?`
+- `apps/web/src/app/(dashboard)/settings/page.tsx` - fetch thêm `/recall-configs/labels`
+- `apps/web/src/components/settings/settings-page-client.tsx` - pass `labelRecallConfigs` xuống
+- `apps/web/src/components/settings/label-settings.tsx` - **rewrite** không dùng generic
 
 **Không đổi:** schema Prisma, controllers backend, generic `SettingsCrudList`.
 

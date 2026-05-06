@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAsUser, loginAsManager } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Công việc — Quick Add, Hoàn thành, Hủy, Sửa, Xóa', () => {
+test.describe('Công việc - Quick Add, Hoàn thành, Hủy, Sửa, Xóa', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsUser(page);
     await page.goto('/tasks');
@@ -162,7 +162,7 @@ test.describe('Công việc — Quick Add, Hoàn thành, Hủy, Sửa, Xóa', ()
     }
   });
 
-  test('Filter tab — chỉ hiện task theo trạng thái', async ({ page }) => {
+  test('Filter tab - chỉ hiện task theo trạng thái', async ({ page }) => {
     // Tab "Hoàn thành"
     const completedTab = page.getByRole('tab', { name: 'Hoàn thành' }).or(
       page.getByRole('button', { name: 'Hoàn thành' }),

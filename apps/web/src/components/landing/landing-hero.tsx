@@ -24,7 +24,7 @@ export function LandingHero() {
 
           <p className="mt-6 text-lg leading-relaxed text-slate-500">
             VeloCRM giúp đội sales quản lý lead pipeline, theo dõi conversion,
-            phân phối AI-based và xác minh thanh toán tự động — tất cả trong một hệ thống duy nhất.
+            phân phối AI-based và xác minh thanh toán tự động - tất cả trong một hệ thống duy nhất.
           </p>
 
           {/* CTA buttons */}
@@ -103,7 +103,7 @@ export function LandingHero() {
             </div>
           </div>
 
-          {/* Floating badge — top right */}
+          {/* Floating badge - top right */}
           <div className="absolute -right-4 -top-4 animate-pulse rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-[0_4px_20px_-2px_rgba(14,165,233,0.15)]" style={{ animationDuration: '4s' }}>
             <div className="flex items-center gap-2">
               <Shield size={16} className="text-emerald-500" />
@@ -111,7 +111,7 @@ export function LandingHero() {
             </div>
           </div>
 
-          {/* Floating badge — bottom left */}
+          {/* Floating badge - bottom left */}
           <div className="absolute -bottom-2 -left-4 animate-pulse rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-[0_4px_20px_-2px_rgba(14,165,233,0.15)]" style={{ animationDuration: '5s' }}>
             <div className="flex items-center gap-2">
               <Zap size={16} className="text-sky-500" />

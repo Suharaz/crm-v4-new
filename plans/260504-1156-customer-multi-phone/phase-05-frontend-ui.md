@@ -1,4 +1,4 @@
-# Phase 05 — Frontend UI
+# Phase 05 - Frontend UI
 
 **Priority:** High
 **Status:** ⬜ Pending
@@ -42,19 +42,19 @@ CustomerDetailPage
 ## Related Code Files
 
 ### Read for context
-- `apps/web/src/app/(dashboard)/customers/[id]/page.tsx` (hoặc tương đương) — customer detail page hiện tại
+- `apps/web/src/app/(dashboard)/customers/[id]/page.tsx` (hoặc tương đương) - customer detail page hiện tại
 - Component pattern: shadcn `Dialog`, `Form`, `Input`, `Button`
-- `lib/api-client.ts` — cách gọi API + handle BigInt string
+- `lib/api-client.ts` - cách gọi API + handle BigInt string
 - Cách check role hiện có trong codebase (hook `useCurrentUser`?)
 
 ### Create
-- `apps/web/src/components/customer/customer-phones-section.tsx` — main section
-- `apps/web/src/components/customer/add-phone-dialog.tsx` — modal add/edit
-- `apps/web/src/components/customer/phone-list-item.tsx` — 1 số phụ
-- `apps/web/src/lib/api/customer-phones.ts` — API client functions
+- `apps/web/src/components/customer/customer-phones-section.tsx` - main section
+- `apps/web/src/components/customer/add-phone-dialog.tsx` - modal add/edit
+- `apps/web/src/components/customer/phone-list-item.tsx` - 1 số phụ
+- `apps/web/src/lib/api/customer-phones.ts` - API client functions
 
 ### Modify
-- Customer detail page — render `<CustomerPhonesSection customerId={id} />`
+- Customer detail page - render `<CustomerPhonesSection customerId={id} />`
 
 ## Implementation Steps
 
@@ -131,9 +131,9 @@ const schema = z.object({
 ```
 
 Form fields:
-- `phone` — Input, required, validate VN format
-- `label` — Input, max 50 chars, placeholder "VD: Vợ, Thư ký, Công ty"
-- `note` — Textarea, max 255 chars, placeholder "Ghi chú thêm..."
+- `phone` - Input, required, validate VN format
+- `label` - Input, max 50 chars, placeholder "VD: Vợ, Thư ký, Công ty"
+- `note` - Textarea, max 255 chars, placeholder "Ghi chú thêm..."
 
 Submit:
 - `onSuccess` toast "Đã thêm số phụ"
@@ -208,4 +208,4 @@ Tìm vị trí phù hợp (sau section info, trước orders), thêm:
 
 ## Next Steps
 
-- Phase 06 — viết test + cập nhật docs.
+- Phase 06 - viết test + cập nhật docs.

@@ -201,9 +201,9 @@ ${tagList}`;
 
     // Build context
     const context = [
-      `Khách hàng: ${customer.name} (${customer.phone}) — ${customer.status}`,
+      `Khách hàng: ${customer.name} (${customer.phone}) - ${customer.status}`,
       `Leads (${leads.length}): ${leads.map(l => `${l.name} [${l.status}] SP:${l.product?.name || '?'}`).join(' | ') || 'Chưa có'}`,
-      `Đơn hàng (${orders.length}): ${orders.map(o => `${o.product?.name}: ${o.status} ${o.totalAmount} — ${o.payments.length} thanh toán`).join(' | ') || 'Chưa có'}`,
+      `Đơn hàng (${orders.length}): ${orders.map(o => `${o.product?.name}: ${o.status} ${o.totalAmount} - ${o.payments.length} thanh toán`).join(' | ') || 'Chưa có'}`,
       `Ghi chú (${activities.length}): ${activities.map(a => `[${a.type}] ${a.content || ''}`).join(' | ') || 'Chưa có'}`,
       `Phân tích cuộc gọi (${callLogs.length}): ${callLogs.map(c => c.analysis).join(' | ') || 'Chưa có'}`,
     ].join('\n');
@@ -213,7 +213,7 @@ ${tagList}`;
     const raw = await this.callAI(prompt);
     if (!raw) return null;
 
-    // Parse JSON — always extract short + detail + rating
+    // Parse JSON - always extract short + detail + rating
     let short = '';
     let detail = '';
     let rating: number | null = null;

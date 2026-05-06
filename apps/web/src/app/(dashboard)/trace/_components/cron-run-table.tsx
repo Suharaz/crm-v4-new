@@ -53,7 +53,7 @@ export function CronRunTable({ rows, nextCursor, loading, onLoadMore }: Props) {
                 </td>
                 <td className="px-3 py-2 text-right">{row.affected.toLocaleString('vi-VN')}</td>
                 <td className="px-3 py-2 hidden md:table-cell text-xs text-rose-600 max-w-xs truncate">
-                  {row.errorMsg ? row.errorMsg.split('\n')[0] : '—'}
+                  {row.errorMsg ? row.errorMsg.split('\n')[0] : '-'}
                 </td>
                 <td className="px-3 py-2 text-right">
                   <Button variant="ghost" size="sm" onClick={() => setSelected(row)}>Xem</Button>
@@ -81,7 +81,7 @@ export function CronRunTable({ rows, nextCursor, loading, onLoadMore }: Props) {
             <div className="text-sm space-y-2 max-h-[70vh] overflow-y-auto">
               <Row label="Job" value={selected.jobName} mono />
               <Row label="Bắt đầu" value={formatDateTime(selected.startedAt)} />
-              <Row label="Kết thúc" value={selected.finishedAt ? formatDateTime(selected.finishedAt) : '—'} />
+              <Row label="Kết thúc" value={selected.finishedAt ? formatDateTime(selected.finishedAt) : '-'} />
               <Row label="Thời lượng" value={formatDuration(selected.durationMs)} />
               <Row label="Status" value={selected.status} />
               <Row label="Affected" value={selected.affected.toLocaleString('vi-VN')} />

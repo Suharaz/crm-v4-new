@@ -1,16 +1,16 @@
-# Full Project Audit — CRM V4 Gap Analysis
+# Full Project Audit - CRM V4 Gap Analysis
 
 **Date:** 2026-03-28
 **Scan scope:** Backend (28 modules), Frontend (25 pages, 70+ components), Packages (3), Infra
-**All 18 phases marked COMPLETE — actual completeness below**
+**All 18 phases marked COMPLETE - actual completeness below**
 
 ---
 
 ## SEVERITY LEGEND
-- **CRITICAL** — Blocks production deploy or causes runtime errors
-- **HIGH** — Major feature/quality gap, must fix before production
-- **MEDIUM** — Noticeable UX/DX issue, fix soon
-- **LOW** — Nice to have, can defer
+- **CRITICAL** - Blocks production deploy or causes runtime errors
+- **HIGH** - Major feature/quality gap, must fix before production
+- **MEDIUM** - Noticeable UX/DX issue, fix soon
+- **LOW** - Nice to have, can defer
 
 ---
 
@@ -31,7 +31,7 @@
 ### 1.3 No Form Validation (Frontend)
 - Zod is in dependencies but zero schemas implemented
 - All forms accept any input without client-side validation
-- Phone, email, required fields — no validation before submit
+- Phone, email, required fields - no validation before submit
 - **Effort:** 3-4h
 
 ---
@@ -44,7 +44,7 @@
 - **Effort:** 1h
 
 ### 2.2 Silent API Error Handling (Frontend)
-- Pages use `} catch { }` — empty catch blocks
+- Pages use `} catch { }` - empty catch blocks
 - Users see empty data instead of error messages
 - **Effort:** 1-2h
 
@@ -55,13 +55,13 @@
 - **Effort:** 15min
 
 ### 2.4 Manager Department Permission TODO
-- `customers.service.ts:233` — `// TODO: check managed depts`
+- `customers.service.ts:233` - `// TODO: check managed depts`
 - Managers have blanket transfer permission without dept scoping
 - Same issue likely in leads.service.ts
 - **Effort:** 1h
 
 ### 2.5 PrismaClient Anti-pattern in Activities Controller
-- `activities.controller.ts:57-77` — creates standalone PrismaClient via `require()`
+- `activities.controller.ts:57-77` - creates standalone PrismaClient via `require()`
 - Bypasses DI, creates extra connections, untestable
 - **Effort:** 30min
 
@@ -71,12 +71,12 @@
 
 ### 3.1 Incomplete @crm/types Package
 - Only 3 generic types (BigIntString, ApiResponse, ApiErrorResponse)
-- No shared DTOs — API has 9 DTOs scattered, web has zero
+- No shared DTOs - API has 9 DTOs scattered, web has zero
 - Web never imports from @crm/types or @crm/utils
-- **Effort:** 4-6h (but can defer — works without it)
+- **Effort:** 4-6h (but can defer - works without it)
 
 ### 3.2 No Prisma Migrations Directory
-- Using `db push` only — no migration history tracking
+- Using `db push` only - no migration history tracking
 - Risky for production schema evolution
 - **Effort:** 1h to init
 
@@ -87,7 +87,7 @@
 - **Effort:** 15min
 
 ### 3.4 Tables Not Mobile Responsive
-- Leads, customers, orders, users tables — desktop layout only
+- Leads, customers, orders, users tables - desktop layout only
 - `overflow-x-auto` but still cramped on mobile
 - Spec says "Mobile card view" per design-guidelines.md
 - **Effort:** 4-6h
@@ -99,8 +99,8 @@
 - **Effort:** 2h
 
 ### 3.6 Cron Jobs Missing Try-Catch
-- `tasks.service.ts` processReminders() — no error handling
-- `recall-config.service.ts` runAutoRecall() — similar
+- `tasks.service.ts` processReminders() - no error handling
+- `recall-config.service.ts` runAutoRecall() - similar
 - Silent failures if notification creation errors
 - **Effort:** 30min
 
@@ -119,16 +119,16 @@
 ## 4. LOW ISSUES (5)
 
 ### 4.1 API Key Auth Not Implemented
-- `call-logs.controller.ts` — "API key auth - simplified to Public for now"
+- `call-logs.controller.ts` - "API key auth - simplified to Public for now"
 - Third-party endpoints should use API key validation
 - **Effort:** 1h
 
 ### 4.2 Bank Transaction No Amount Validation
-- `bank-transactions.service.ts` — no check amount > 0
+- `bank-transactions.service.ts` - no check amount > 0
 - **Effort:** 15min
 
 ### 4.3 Call Log Manual Match No Duplicate Protection
-- `call-logs.service.ts:134` — manualMatch() doesn't check already matched
+- `call-logs.service.ts:134` - manualMatch() doesn't check already matched
 - **Effort:** 15min
 
 ### 4.4 Missing .env.example Per App
@@ -161,18 +161,18 @@
 
 ## RECOMMENDED FIX ORDER
 
-1. **@Roles decorators** (2-4h) — security critical
-2. **API port fix** (15min) — quick win
-3. **Manager dept permission** (1h) — business logic gap
-4. **PrismaClient anti-pattern** (30min) — code quality
-5. **Error boundaries + API error handling** (2h) — UX critical
-6. **Form validation with Zod** (3-4h) — data quality
-7. **Cron error handling** (30min) — reliability
-8. **Redis config + env fixes** (30min) — infra
-9. **Mobile responsive tables** (4-6h) — UX
-10. **Loading skeletons** (2h) — UX polish
-11. **Test suite** (8-12h) — quality gate
-12. **Docs/roadmap update** (30min) — housekeeping
+1. **@Roles decorators** (2-4h) - security critical
+2. **API port fix** (15min) - quick win
+3. **Manager dept permission** (1h) - business logic gap
+4. **PrismaClient anti-pattern** (30min) - code quality
+5. **Error boundaries + API error handling** (2h) - UX critical
+6. **Form validation with Zod** (3-4h) - data quality
+7. **Cron error handling** (30min) - reliability
+8. **Redis config + env fixes** (30min) - infra
+9. **Mobile responsive tables** (4-6h) - UX
+10. **Loading skeletons** (2h) - UX polish
+11. **Test suite** (8-12h) - quality gate
+12. **Docs/roadmap update** (30min) - housekeeping
 
 **Total estimated effort: ~25-35h to production-ready**
 

@@ -1,4 +1,4 @@
-# Security Audit Report — VeloCRM Full Codebase Scan
+# Security Audit Report - VeloCRM Full Codebase Scan
 
 **Date:** 2026-04-16
 **Scope:** Full codebase (NestJS API + Next.js frontend + Infrastructure)
@@ -36,7 +36,7 @@
 
 ### 4. Open Redirect in login page
 - **File:** `apps/web/src/app/(auth)/login/page.tsx:46`
-- **Fix:** Added `sanitizeRedirect()` — blocks protocol-relative, absolute, and non-`/` URLs
+- **Fix:** Added `sanitizeRedirect()` - blocks protocol-relative, absolute, and non-`/` URLs
 
 ### 5. Docker: Ports exposed to all interfaces
 - **File:** `docker-compose.yml:7,44`
@@ -75,8 +75,8 @@
 ## MEDIUM Issues
 
 ### Fixed:
-- **JWT middleware structural validation** — Added 3-part structure check + required claims (sub, exp)
-- **Docker DB credentials** — Now env-var driven with `${POSTGRES_USER:-crm}` pattern
+- **JWT middleware structural validation** - Added 3-part structure check + required claims (sub, exp)
+- **Docker DB credentials** - Now env-var driven with `${POSTGRES_USER:-crm}` pattern
 
 ### Remaining (acceptable risk for internal CRM):
 
@@ -105,8 +105,8 @@
 | Agent Claim | Actual Status | Reason |
 |-------------|---------------|--------|
 | API keys not role-restricted | Already `@Roles(SUPER_ADMIN)` | Agent missed class-level decorator |
-| XSS via react-markdown (HIGH) | LOW — safe by default | No `rehype-raw` plugin = no raw HTML rendering |
-| JWT middleware CRITICAL | LOW — routing only | Real auth happens on NestJS backend; middleware is convenience redirect |
+| XSS via react-markdown (HIGH) | LOW - safe by default | No `rehype-raw` plugin = no raw HTML rendering |
+| JWT middleware CRITICAL | LOW - routing only | Real auth happens on NestJS backend; middleware is convenience redirect |
 
 ---
 
@@ -127,11 +127,11 @@
 
 ## Recommendations for Future
 
-1. **Password complexity** — Add `@Matches()` regex for uppercase+number+special when going to production
-2. **JWT secret validation** — Assert `JWT_SECRET.length >= 32` at startup
-3. **Audit logging** — Log auth events (login, failed login, token refresh) with IP/UA for SIEM
-4. **CSP header** — Add Content-Security-Policy when frontend is stable (requires tuning for inline styles)
-5. **Session management dashboard** — Allow users to see/revoke active sessions
+1. **Password complexity** - Add `@Matches()` regex for uppercase+number+special when going to production
+2. **JWT secret validation** - Assert `JWT_SECRET.length >= 32` at startup
+3. **Audit logging** - Log auth events (login, failed login, token refresh) with IP/UA for SIEM
+4. **CSP header** - Add Content-Security-Policy when frontend is stable (requires tuning for inline styles)
+5. **Session management dashboard** - Allow users to see/revoke active sessions
 
 ---
 

@@ -44,7 +44,7 @@ describe('CSV Import & Export', () => {
 
   // ── POST /imports/leads ──────────────────────────────────────────────────
 
-  describe('POST /imports/leads — upload CSV tạo import job', () => {
+  describe('POST /imports/leads - upload CSV tạo import job', () => {
     it('MANAGER upload CSV leads → 201 + import job created', async () => {
       const form = buildCsvFormData('leads.csv', makeLeadsCsvBuffer());
       const res = await manager.post('/imports/leads', { body: form, isFormData: true });
@@ -86,9 +86,9 @@ describe('CSV Import & Export', () => {
     });
   });
 
-  // ── GET /imports — danh sách import jobs ─────────────────────────────────
+  // ── GET /imports - danh sách import jobs ─────────────────────────────────
 
-  describe('GET /imports — danh sách import jobs', () => {
+  describe('GET /imports - danh sách import jobs', () => {
     it('MANAGER lấy danh sách import jobs của mình → 200', async () => {
       const { status, body } = await manager.getJson<any>('/imports');
       expect(status).toBe(200);
@@ -108,7 +108,7 @@ describe('CSV Import & Export', () => {
 
   // ── GET /imports/:id/status ───────────────────────────────────────────────
 
-  describe('GET /imports/:id/status — kiểm tra trạng thái import job', () => {
+  describe('GET /imports/:id/status - kiểm tra trạng thái import job', () => {
     it('MANAGER xem status import job → 200 + status field', async () => {
       if (!importJobId) return;
       const { status, body } = await manager.getJson<any>(`/imports/${importJobId}/status`);
@@ -125,7 +125,7 @@ describe('CSV Import & Export', () => {
 
   // ── GET /exports/leads ───────────────────────────────────────────────────
 
-  describe('GET /exports/leads — download CSV leads', () => {
+  describe('GET /exports/leads - download CSV leads', () => {
     it('MANAGER download leads CSV → 200 + Content-Type text/csv', async () => {
       const res = await manager.get('/exports/leads');
       expect(res.status).toBe(200);
@@ -158,7 +158,7 @@ describe('CSV Import & Export', () => {
 
   // ── GET /exports/customers ───────────────────────────────────────────────
 
-  describe('GET /exports/customers — download CSV customers', () => {
+  describe('GET /exports/customers - download CSV customers', () => {
     it('MANAGER download customers CSV → 200 + Content-Type text/csv', async () => {
       const res = await manager.get('/exports/customers');
       expect(res.status).toBe(200);
@@ -180,7 +180,7 @@ describe('CSV Import & Export', () => {
 
   // ── GET /exports/orders ──────────────────────────────────────────────────
 
-  describe('GET /exports/orders — download CSV orders', () => {
+  describe('GET /exports/orders - download CSV orders', () => {
     it('MANAGER download orders CSV → 200', async () => {
       const res = await manager.get('/exports/orders');
       expect(res.status).toBe(200);
@@ -212,7 +212,7 @@ describe('CSV Import & Export', () => {
 
   // ── POST /imports/customers ───────────────────────────────────────────────
 
-  describe('POST /imports/customers — upload CSV customers', () => {
+  describe('POST /imports/customers - upload CSV customers', () => {
     it('MANAGER upload customers CSV → 201', async () => {
       const csv = ['name,phone', 'Import Customer 1,0912111001', 'Import Customer 2,0912111002'].join('\n');
       const form = new FormData();

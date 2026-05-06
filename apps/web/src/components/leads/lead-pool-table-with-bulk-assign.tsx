@@ -64,7 +64,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
     api.get<{ data: typeof templates }>('/assignment-templates').then(res => setTemplates(res.data || [])).catch(() => {});
   }, [isManager]);
 
-  // Auto-refresh polling (30s) — only for poolMode 'new'
+  // Auto-refresh polling (30s) - only for poolMode 'new'
   const fetchLeads = useCallback(async () => {
     if (poolMode !== 'new') return;
     try {
@@ -296,11 +296,11 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                     </div>
                   </td>
                   <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
-                  <td className="hidden md:table-cell px-4 py-3 text-slate-600">{lead.product?.name || '—'}</td>
+                  <td className="hidden md:table-cell px-4 py-3 text-slate-600">{lead.product?.name || '-'}</td>
                   <td className="hidden lg:table-cell px-4 py-3 text-slate-600 max-w-[220px]">
                     {lead.latestNote?.content ? (
                       <span className="line-clamp-2 text-xs" title={lead.latestNote.content}>{lead.latestNote.content}</span>
-                    ) : '—'}
+                    ) : '-'}
                   </td>
                   {isNewPool && (
                     <>
@@ -310,7 +310,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                             <span className="font-medium text-slate-800">{lead.assignedUser?.name}</span>
                             <span className="ml-1 text-xs text-slate-400">({relativeTime(lead.assignedAt!)})</span>
                           </div>
-                        ) : '—'}
+                        ) : '-'}
                       </td>
                       <td className="hidden lg:table-cell px-4 py-3 text-center">
                         {isDistributed ? (
@@ -321,7 +321,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                           }`}>
                             {lead.activityCount ?? 0}
                           </span>
-                        ) : '—'}
+                        ) : '-'}
                       </td>
                     </>
                   )}

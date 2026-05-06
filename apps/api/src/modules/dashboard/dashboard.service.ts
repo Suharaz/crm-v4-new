@@ -60,7 +60,7 @@ export class DashboardService {
     });
   }
 
-  /** Lead status breakdown for funnel chart — single groupBy instead of 7 COUNTs */
+  /** Lead status breakdown for funnel chart - single groupBy instead of 7 COUNTs */
   async getLeadFunnel(userId: bigint, role: string) {
     const key = this.cacheKey('funnel', userId, role);
     return this.cacheService.getOrSet(key, CACHE_TTL.DASHBOARD, async () => {
@@ -173,7 +173,7 @@ export class DashboardService {
     });
   }
 
-  /** Manager+: lead aging — how many leads haven't been interacted with */
+  /** Manager+: lead aging - how many leads haven't been interacted with */
   async getLeadAging(userId: bigint, role: string) {
     const key = this.cacheKey('aging', userId, role);
     return this.cacheService.getOrSet(key, CACHE_TTL.DASHBOARD, async () => {
@@ -250,7 +250,7 @@ export class DashboardService {
 
   /**
    * Manager+: revenue + leads per team within a department (or all).
-   * Same Cartesian-product fix as getDeptPerformance — uses correlated subqueries.
+   * Same Cartesian-product fix as getDeptPerformance - uses correlated subqueries.
    */
   async getTeamPerformance(dateFrom: Date, dateTo: Date) {
     const key = this.cacheKey('team', dateFrom, dateTo);
@@ -288,7 +288,7 @@ export class DashboardService {
   }
 
   /**
-   * Manager+: employee scorecard — all metrics needed for score calculation.
+   * Manager+: employee scorecard - all metrics needed for score calculation.
    *
    * Counting rules (agreed with PM):
    * - leads_assigned: COUNT of assignment_history records where to_user_id = NV in period.

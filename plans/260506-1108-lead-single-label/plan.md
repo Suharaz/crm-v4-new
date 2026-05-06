@@ -7,16 +7,16 @@ Customer giữ nguyên N-N qua `customer_labels`. Nhất quán hóa `recall_conf
 
 ## Approach
 
-**Option A — FK trực tiếp.** Xoá hẳn `LeadLabel` model + bảng `lead_labels`. Thêm `labelId BigInt?` (nullable) lên Lead.
-**Migration data**: set tất cả lead về `label_id = NULL` (không cố giữ nhãn cũ — user gắn lại).
+**Option A - FK trực tiếp.** Xoá hẳn `LeadLabel` model + bảng `lead_labels`. Thêm `labelId BigInt?` (nullable) lên Lead.
+**Migration data**: set tất cả lead về `label_id = NULL` (không cố giữ nhãn cũ - user gắn lại).
 
 ## Decisions (đã chốt)
 
 | Mục | Quyết định |
 |---|---|
-| Schema | Option A — FK trực tiếp |
+| Schema | Option A - FK trực tiếp |
 | Migration data | All NULL (không migrate nhãn cũ) |
-| Recall conflict | **Skip** — cron không gắn `auto_label` nếu lead đã có `label_id` ≠ NULL |
+| Recall conflict | **Skip** - cron không gắn `auto_label` nếu lead đã có `label_id` ≠ NULL |
 | CSV import multi-label | Lấy nhãn đầu, log warning |
 | UI single-select | `<Select>` dropdown |
 | `recall_configs.auto_label_ids[]` | → `auto_label_id BIGINT?` (singular) |
@@ -63,7 +63,7 @@ The cron `_recallLeadsByLabel` now queries `lead.labelId + labelAssignedAt < cut
 
 | Risk | Mitigation |
 |---|---|
-| Production có nhiều lead 2+ nhãn | All NULL — skip vấn đề (user re-label) |
+| Production có nhiều lead 2+ nhãn | All NULL - skip vấn đề (user re-label) |
 | Frontend cũ vẫn gửi `labelIds: string[]` | Controller accept cả 2 dạng (compat 1 sprint) hoặc bump version |
 | Cron recall fire trong lúc deploy | Migration chạy giờ thấp tải; cron skip-if-exists tự an toàn |
 | Lead.kanban-by-label đếm sai sau migrate | Refresh client cache, message banner thông báo "Label reset" |

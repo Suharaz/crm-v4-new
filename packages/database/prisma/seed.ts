@@ -43,7 +43,7 @@ async function main() {
   await prisma.bankTransaction.deleteMany();
   await prisma.payment.deleteMany();
   await prisma.order.deleteMany();
-  // Lead label is a FK on leads.label_id — cleared automatically with prisma.lead.deleteMany()
+  // Lead label is a FK on leads.label_id - cleared automatically with prisma.lead.deleteMany()
   await prisma.customerLabel.deleteMany();
   await prisma.customerPhone.deleteMany();
   await prisma.lead.deleteMany();

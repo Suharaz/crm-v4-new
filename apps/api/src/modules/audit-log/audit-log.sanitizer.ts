@@ -41,7 +41,7 @@ function isSensitiveKey(key: string): boolean {
 }
 
 function truncateString(value: string): string {
-  // Use byte length, not char length — multi-byte chars (Vietnamese) inflate quickly.
+  // Use byte length, not char length - multi-byte chars (Vietnamese) inflate quickly.
   const bytes = Buffer.byteLength(value, 'utf8');
   if (bytes <= MAX_FIELD_BYTES) return value;
   // Slice by char count is approximate but safe; we add the hint suffix.

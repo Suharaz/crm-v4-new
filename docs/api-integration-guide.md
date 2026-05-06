@@ -1,4 +1,4 @@
-# API Integration Guide — CRM V4
+# API Integration Guide - CRM V4
 
 Tài liệu hướng dẫn tích hợp CRM V4 với hệ thống bên thứ 3 (website, tổng đài, ngân hàng).
 
@@ -11,7 +11,7 @@ x-api-key: crm_xxxxxxxxxxxxxxxxxxxx
 ```
 
 Tạo API key tại: **Cài đặt → API Keys** (chỉ Super Admin).
-Key chỉ hiện **1 lần** khi tạo — lưu lại ngay.
+Key chỉ hiện **1 lần** khi tạo - lưu lại ngay.
 
 ---
 
@@ -64,7 +64,7 @@ curl -X POST http://your-domain.com/api/v1/external/leads \
 
 ### Lưu ý
 - Lead tạo qua API **luôn vào Kho Mới** (status=POOL)
-- **Không dedup** — luôn tạo lead mới (khác CSV import)
+- **Không dedup** - luôn tạo lead mới (khác CSV import)
 - Customer tự động tạo nếu SĐT chưa tồn tại
 - Nguồn (source) tự động tạo nếu chưa có trong hệ thống
 

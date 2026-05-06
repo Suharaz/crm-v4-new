@@ -58,7 +58,7 @@ export class ImportProcessor extends WorkerHost {
     let originalHeaders: string[] = [];
 
     try {
-      // Load the owner (createdBy) of this import job — needed to attribute Activity NOTE rows
+      // Load the owner (createdBy) of this import job - needed to attribute Activity NOTE rows
       // created when a CSV row contains a `note`/`Ghi chú` column. Loaded once, not per row.
       const jobRecord = await this.prisma.importJob.findUnique({
         where: { id: jobId },
@@ -79,7 +79,7 @@ export class ImportProcessor extends WorkerHost {
 
       // Auto-detect encoding (UTF-8 / UTF-16 / Windows-1258) and delimiter (',' / ';' / '\t' / '|')
       // so users can upload Excel-saved CSVs without manual re-encoding.
-      // File size is capped at 10MB upstream — safe to read fully into memory.
+      // File size is capped at 10MB upstream - safe to read fully into memory.
       const buf = await fs.promises.readFile(absolutePath);
       const { text, delimiter } = decodeBufferAuto(buf);
       const parser = Readable.from(text).pipe(
@@ -93,7 +93,7 @@ export class ImportProcessor extends WorkerHost {
         // Capture headers from first row so error file preserves original columns
         if (originalHeaders.length === 0) {
           originalHeaders = Object.keys(row);
-          // Both leads and customers require a phone column — if NONE of the canonical
+          // Both leads and customers require a phone column - if NONE of the canonical
           // names are present, the CSV header is unreadable (most often because Excel
           // saved as ANSI on a Vietnamese locale and substituted diacritics with '?').
           // Fail the whole job with a clear message instead of producing N row-level errors.
@@ -203,7 +203,7 @@ export class ImportProcessor extends WorkerHost {
     if (!isValidVNPhone(phone)) throw new Error(`SĐT không hợp lệ: ${phone}`);
 
     // Find or create customer (with in-memory cache).
-    // Match cả số chính lẫn số phụ — nếu phone trùng số phụ KH cũ → reuse, không tạo KH mới.
+    // Match cả số chính lẫn số phụ - nếu phone trùng số phụ KH cũ → reuse, không tạo KH mới.
     let customer = phoneCache.get(phone) || null;
     if (!customer) {
       const dbCustomer = await this.customerPhonesService.findCustomerByAnyPhone(phone);
@@ -218,12 +218,12 @@ export class ImportProcessor extends WorkerHost {
       phoneCache.set(phone, customer);
     }
 
-    // Find source by name (preloaded Map — O(1) instead of DB query)
+    // Find source by name (preloaded Map - O(1) instead of DB query)
     const sourceName = row.source || row['Nguồn'] || null;
     const source = sourceName ? sourceMap.get(sourceName.toLowerCase()) || null : null;
     const sourceId = source?.id || null;
 
-    // Find product by name (preloaded — substring match to preserve original behavior)
+    // Find product by name (preloaded - substring match to preserve original behavior)
     const productName = row.product || row['Sản phẩm'] || null;
     let product: { id: bigint; name: string } | null = null;
     if (productName) {
@@ -277,7 +277,7 @@ export class ImportProcessor extends WorkerHost {
       },
     });
 
-    // Lead has a single label — take first resolvable from CSV; fall back to first customer label.
+    // Lead has a single label - take first resolvable from CSV; fall back to first customer label.
     // CSV multi-label: keep first, warn about ignored.
     const csvLabelNames = labelsRaw.trim()
       ? labelsRaw.split(',').map(l => l.trim()).filter(Boolean)
@@ -290,12 +290,12 @@ export class ImportProcessor extends WorkerHost {
         resolvedLabelNames.push(labelName);
         if (resolvedLabelId === null) resolvedLabelId = found.id;
       } else {
-        warnings.push(`Nhãn "${labelName}" không tồn tại trong hệ thống — bỏ qua`);
+        warnings.push(`Nhãn "${labelName}" không tồn tại trong hệ thống - bỏ qua`);
       }
     }
     if (resolvedLabelNames.length > 1) {
       warnings.push(
-        `Lead chỉ nhận 1 nhãn — áp dụng "${resolvedLabelNames[0]}", bỏ qua: ${resolvedLabelNames.slice(1).join(', ')}`,
+        `Lead chỉ nhận 1 nhãn - áp dụng "${resolvedLabelNames[0]}", bỏ qua: ${resolvedLabelNames.slice(1).join(', ')}`,
       );
     }
     // Fallback: inherit first label from existing customer (multi-label) when CSV had none
@@ -327,7 +327,7 @@ export class ImportProcessor extends WorkerHost {
           },
         });
       } else {
-        warnings.push('Không xác định được người upload — note bị bỏ qua');
+        warnings.push('Không xác định được người upload - note bị bỏ qua');
       }
     }
 
@@ -354,7 +354,7 @@ export class ImportProcessor extends WorkerHost {
       throw new Error(`Trùng khách hàng: SĐT ${phone}`);
     }
 
-    // Optional fields — support both English and Vietnamese column names
+    // Optional fields - support both English and Vietnamese column names
     const email = row.email || row['Email'] || null;
     const companyName = row.companyName || row['Công ty'] || null;
     const facebookUrl = row.facebookUrl || row['Facebook'] || null;
@@ -388,7 +388,7 @@ export class ImportProcessor extends WorkerHost {
         if (found) {
           matchedLabels.push(found);
         } else {
-          warnings.push(`Nhãn "${labelName}" không tồn tại trong hệ thống — bỏ qua`);
+          warnings.push(`Nhãn "${labelName}" không tồn tại trong hệ thống - bỏ qua`);
         }
       }
       if (matchedLabels.length > 0) {
@@ -412,7 +412,7 @@ export class ImportProcessor extends WorkerHost {
           },
         });
       } else {
-        warnings.push('Không xác định được người upload — note bị bỏ qua');
+        warnings.push('Không xác định được người upload - note bị bỏ qua');
       }
     }
 

@@ -48,9 +48,9 @@ apps/web/src/app/(dashboard)/
 │   ├── page.tsx                    # Lead list (Server Component → fetch data)
 │   ├── pool/
 │   │   ├── new/
-│   │   │   └── page.tsx            # Kho Mới — manager+ only (POOL, dept=null)
+│   │   │   └── page.tsx            # Kho Mới - manager+ only (POOL, dept=null)
 │   │   └── department/
-│   │       └── page.tsx            # Kho Phòng Ban — NV dept thấy (POOL, dept=X)
+│   │       └── page.tsx            # Kho Phòng Ban - NV dept thấy (POOL, dept=X)
 │   ├── kanban/
 │   │   └── page.tsx                # Kanban pipeline
 │   ├── [id]/
@@ -58,7 +58,7 @@ apps/web/src/app/(dashboard)/
 │   └── new/
 │       └── page.tsx                # Create lead form
 ├── floating/
-│   └── page.tsx                    # Kho Thả Nổi — ALL users (leads + customers FLOATING)
+│   └── page.tsx                    # Kho Thả Nổi - ALL users (leads + customers FLOATING)
 ├── customers/
 │   ├── page.tsx                    # Customer SEARCH page (search by phone, includes INACTIVE)
 │   └── [id]/
@@ -105,11 +105,11 @@ Page (Server Component)
 
 ### Create
 - All files listed in Architecture section above
-- `apps/web/src/lib/lead-api.ts` — lead-specific API functions
-- `apps/web/src/lib/customer-api.ts` — customer-specific API functions
+- `apps/web/src/lib/lead-api.ts` - lead-specific API functions
+- `apps/web/src/lib/customer-api.ts` - customer-specific API functions
 
 ### Modify
-- `apps/web/src/components/layout/app-sidebar.tsx` — ensure lead/customer nav active states
+- `apps/web/src/components/layout/app-sidebar.tsx` - ensure lead/customer nav active states
 
 ## Implementation Steps
 
@@ -203,7 +203,7 @@ Page (Server Component)
    - Optimistic: immediately show as claimed, rollback on error
    - Race condition UX: if claim fails (already claimed), show toast + refresh
 
-10. ~~Build customer list page~~ — replaced by search in Step 8
+10. ~~Build customer list page~~ - replaced by search in Step 8
 
 11. **Build customer create/edit form**
     - Customer edit form: React Hook Form + Zod, phone field disabled for non-manager

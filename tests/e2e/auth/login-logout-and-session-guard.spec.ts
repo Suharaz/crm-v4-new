@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAs, loginAsAdmin, loginAsManager, loginAsUser, logout } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Xác thực — Login / Logout / Session guard', () => {
+test.describe('Xác thực - Login / Logout / Session guard', () => {
   test('SUPER_ADMIN đăng nhập thành công → redirect về dashboard', async ({ page }) => {
     await page.goto('/login');
     await screenshotStep(page, 'trang-login', 'admin-login');
@@ -22,7 +22,7 @@ test.describe('Xác thực — Login / Logout / Session guard', () => {
     await loginAsManager(page);
     await screenshotStep(page, 'manager-dashboard', 'manager-login');
 
-    // Sidebar hiện ra — đây là dấu hiệu đăng nhập thành công
+    // Sidebar hiện ra - đây là dấu hiệu đăng nhập thành công
     await expect(page.getByRole('link', { name: 'Leads' })).toBeVisible();
   });
 
@@ -103,7 +103,7 @@ test.describe('Xác thực — Login / Logout / Session guard', () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test('Session còn hạn — refresh trang vẫn giữ đăng nhập', async ({ page }) => {
+  test('Session còn hạn - refresh trang vẫn giữ đăng nhập', async ({ page }) => {
     await loginAsAdmin(page);
 
     // Reload trang

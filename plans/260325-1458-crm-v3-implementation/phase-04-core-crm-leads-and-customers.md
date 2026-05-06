@@ -7,7 +7,7 @@ effort: 16h
 depends_on: [3]
 ---
 
-# Phase 04: Core CRM — Leads & Customers
+# Phase 04: Core CRM - Leads & Customers
 
 ## Context Links
 
@@ -109,63 +109,63 @@ FLOATING (Kho Thả Nổi): dept=null, user=null
 ### API Endpoints
 
 **Customers:**
-- `GET /customers` — list, cursor paginated, search by name/phone (SUPER_ADMIN only)
-- `GET /customers/search?phone=xxx` — search by phone (any auth user, includes INACTIVE). Rate-limited 10/min + audit log
-- `GET /customers/:id` — detail: info + leads history + orders + payments + timeline + documents + labels
-- `POST /customers` — create (phone dedup check)
-- `PATCH /customers/:id` — update
-- `POST /customers/:id/claim` — claim từ dept pool hoặc floating
-- `POST /customers/:id/transfer` — chuyển: `{ targetType: "DEPARTMENT"|"FLOATING"|"INACTIVE", targetDeptId? }`
+- `GET /customers` - list, cursor paginated, search by name/phone (SUPER_ADMIN only)
+- `GET /customers/search?phone=xxx` - search by phone (any auth user, includes INACTIVE). Rate-limited 10/min + audit log
+- `GET /customers/:id` - detail: info + leads history + orders + payments + timeline + documents + labels
+- `POST /customers` - create (phone dedup check)
+- `PATCH /customers/:id` - update
+- `POST /customers/:id/claim` - claim từ dept pool hoặc floating
+- `POST /customers/:id/transfer` - chuyển: `{ targetType: "DEPARTMENT"|"FLOATING"|"INACTIVE", targetDeptId? }`
   - `DEPARTMENT`: chuyển sang dept khác, status=ACTIVE
   - `FLOATING`: kho thả nổi, status=FLOATING, all users thấy
   - `INACTIVE`: chăm sóc xong, ẩn khỏi mọi kho. Vẫn search SĐT + API bên thứ 3 tìm thấy
-- `POST /customers/:id/reactivate` — kích hoạt lại INACTIVE customer (manager+)
-- `DELETE /customers/:id` — soft delete
+- `POST /customers/:id/reactivate` - kích hoạt lại INACTIVE customer (manager+)
+- `DELETE /customers/:id` - soft delete
 
 **Quyền transfer lead/customer:** User đang giữ (assigned_user) + Manager dept + Super Admin. Bất kỳ user nào đang giữ đều được chuyển.
 
 **Leads:**
-- `GET /leads` — list, cursor paginated, filters (status, source, user, dept, date)
-- `GET /leads/pool/new` — Kho Mới: dept=null, status=POOL (manager+ only)
-- `GET /leads/pool/department/:deptId` — Kho Phòng Ban: dept=X, user=null (NV dept X)
-- `GET /leads/pool/floating` — Kho Thả Nổi: status=FLOATING (ALL users)
-- `GET /leads/:id` — detail with customer, activities, labels
-- `POST /leads` — create lead (MANAGER+ ONLY, auto-link/create customer)
-- `PATCH /leads/:id` — update
-- `POST /leads/:id/assign` — assign to user (manager+)
-- `POST /leads/:id/claim` — user tự claim từ kho phòng ban hoặc kho thả nổi
-- `POST /leads/:id/convert` — convert to customer
-- `POST /leads/:id/status` — change status (with validation)
-- `POST /leads/:id/transfer` — chuyển tiếp: `{ targetType: "DEPARTMENT"|"FLOATING"|"UNASSIGN", targetDeptId? }`
-- `DELETE /leads/:id` — soft delete
+- `GET /leads` - list, cursor paginated, filters (status, source, user, dept, date)
+- `GET /leads/pool/new` - Kho Mới: dept=null, status=POOL (manager+ only)
+- `GET /leads/pool/department/:deptId` - Kho Phòng Ban: dept=X, user=null (NV dept X)
+- `GET /leads/pool/floating` - Kho Thả Nổi: status=FLOATING (ALL users)
+- `GET /leads/:id` - detail with customer, activities, labels
+- `POST /leads` - create lead (MANAGER+ ONLY, auto-link/create customer)
+- `PATCH /leads/:id` - update
+- `POST /leads/:id/assign` - assign to user (manager+)
+- `POST /leads/:id/claim` - user tự claim từ kho phòng ban hoặc kho thả nổi
+- `POST /leads/:id/convert` - convert to customer
+- `POST /leads/:id/status` - change status (with validation)
+- `POST /leads/:id/transfer` - chuyển tiếp: `{ targetType: "DEPARTMENT"|"FLOATING"|"UNASSIGN", targetDeptId? }`
+- `DELETE /leads/:id` - soft delete
 
 **Lead Sources:**
-- `GET /lead-sources` — list active
-- `POST /lead-sources` — create (super_admin)
-- `PATCH /lead-sources/:id` — update (super_admin)
-- `DELETE /lead-sources/:id` — deactivate (super_admin)
+- `GET /lead-sources` - list active
+- `POST /lead-sources` - create (super_admin)
+- `PATCH /lead-sources/:id` - update (super_admin)
+- `DELETE /lead-sources/:id` - deactivate (super_admin)
 
 **Labels:**
-- `GET /labels` — list, optional category filter
-- `POST /labels` — create (manager+)
-- `PATCH /labels/:id` — update
-- `POST /leads/:id/labels` — attach labels `{ labelIds: [] }`
-- `DELETE /leads/:id/labels/:labelId` — detach label
-- `POST /customers/:id/labels` — attach labels
-- `DELETE /customers/:id/labels/:labelId` — detach label
+- `GET /labels` - list, optional category filter
+- `POST /labels` - create (manager+)
+- `PATCH /labels/:id` - update
+- `POST /leads/:id/labels` - attach labels `{ labelIds: [] }`
+- `DELETE /leads/:id/labels/:labelId` - detach label
+- `POST /customers/:id/labels` - attach labels
+- `DELETE /customers/:id/labels/:labelId` - detach label
 
 ## Related Code Files
 
 ### Create
-- `apps/api/src/modules/customers/` — all customer files
-- `apps/api/src/modules/leads/` — all lead files
-- `apps/api/src/modules/lead-sources/` — all lead-source files
-- `apps/api/src/modules/labels/` — all label files
-- `packages/utils/src/phone.ts` — phone normalization (if not done in phase 01)
+- `apps/api/src/modules/customers/` - all customer files
+- `apps/api/src/modules/leads/` - all lead files
+- `apps/api/src/modules/lead-sources/` - all lead-source files
+- `apps/api/src/modules/labels/` - all label files
+- `packages/utils/src/phone.ts` - phone normalization (if not done in phase 01)
 
 ### Modify
-- `apps/api/src/app.module.ts` — register new modules
-- `packages/types/src/` — add Lead, Customer, Label DTOs/interfaces
+- `apps/api/src/app.module.ts` - register new modules
+- `packages/types/src/` - add Lead, Customer, Label DTOs/interfaces
 
 ## Implementation Steps
 
@@ -175,10 +175,10 @@ Every repository query MUST scope to the user's access level. Never trust route 
 
 Pattern for all findById/update/delete operations:
 ```typescript
-// ❌ VULNERABLE — any user can access any lead by ID
+// ❌ VULNERABLE - any user can access any lead by ID
 const lead = await prisma.lead.findUnique({ where: { id } })
 
-// ✅ SAFE — scoped to user's access
+// ✅ SAFE - scoped to user's access
 async findByIdScoped(id: BigInt, user: CurrentUser) {
   const lead = await prisma.lead.findFirst({
     where: {
@@ -240,9 +240,9 @@ Apply this pattern to: leads.repository, customers.repository, orders.repository
      }
 
 5. **Implement Leads module**
-   - IMPORTANT: POST /leads requires @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN) — only managers can create leads
+   - IMPORTANT: POST /leads requires @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN) - only managers can create leads
    - Field-level permission: phone number can only be edited by MANAGER+
-     Same check as customers — strip phone from DTO if user is not manager+
+     Same check as customers - strip phone from DTO if user is not manager+
    - `leads.repository.ts`: complex queries with joins (customer, source, labels, assigned user)
    - `leads.service.ts`:
      - **Create**: normalize phone → find/create customer → create lead with status=POOL, department_id=NULL (vào Kho Mới)
@@ -250,7 +250,7 @@ Apply this pattern to: leads.repository, customers.repository, orders.repository
      - **LOST → FLOATING**: Khi lead lost → status=FLOATING, dept=null, user=null (vào Kho Thả Nổi). KHÔNG reopen về POOL nữa.
      - **IN_PROGRESS auto-trigger**: Khi sale thực hiện hành động đầu tiên (tạo note, gọi điện được match, tạo order) → tự chuyển ASSIGNED → IN_PROGRESS. Không cần bấm nút.
      - **Assign**: validate user exists + same department → set assigned_user_id, status=ASSIGNED → log activity + assignment_history
-       (No reason field needed — keep it simple)
+       (No reason field needed - keep it simple)
      - **Convert**: validate lead status is IN_PROGRESS → create/update customer → set lead status=CONVERTED → log activity
      - **Status change**: validate transition is allowed (state machine) → update → log activity
    - **Pool endpoints:**
@@ -273,13 +273,13 @@ Apply this pattern to: leads.repository, customers.repository, orders.repository
      }
 
 6. **Implement label attachment endpoints**
-   - `POST /leads/:id/labels` — bulk attach: `{ labelIds: [1, 2, 3] }`
-   - `DELETE /leads/:id/labels/:labelId` — single detach
+   - `POST /leads/:id/labels` - bulk attach: `{ labelIds: [1, 2, 3] }`
+   - `DELETE /leads/:id/labels/:labelId` - single detach
    - Same for customers
    - Log activity on label change
 
 7. **Auto-create Activity records**
-   - Inject ActivityService (from phase 06 — stub it now with TODO)
+   - Inject ActivityService (from phase 06 - stub it now with TODO)
    - On assign: create ASSIGNMENT activity
    - On status change: create STATUS_CHANGE activity
    - On label change: create LABEL_CHANGE activity

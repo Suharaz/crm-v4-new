@@ -1,8 +1,8 @@
-# Project Overview — Product Development Requirements
+# Project Overview - Product Development Requirements
 
 ## Product Vision
 
-VeloCRM — internal CRM system tối ưu hiệu suất đội sales, quản lý data khách hàng, pipeline lead, đánh giá performance. Hỗ trợ 50-200 users đa phòng ban. Tiếng Việt là ngôn ngữ chính, không có i18n.
+VeloCRM - internal CRM system tối ưu hiệu suất đội sales, quản lý data khách hàng, pipeline lead, đánh giá performance. Hỗ trợ 50-200 users đa phòng ban. Tiếng Việt là ngôn ngữ chính, không có i18n.
 
 ## Business Context
 
@@ -102,9 +102,9 @@ Mọi repository query gắn `buildAccessFilter(user)`:
 - API bên thứ 3 (`/external/leads` với `x-api-key`, auto-create source)
 
 **3 Kho:**
-- **Kho Mới:** `POOL, dept=null` — MANAGER+ thấy, phân phối về dept
-- **Kho Phòng Ban:** `POOL, dept=X, user=null` — NV dept X thấy + claim
-- **Kho Thả Nổi:** `status=FLOATING` — ALL users thấy + claim (chủ đích "cơ hội thứ 2")
+- **Kho Mới:** `POOL, dept=null` - MANAGER+ thấy, phân phối về dept
+- **Kho Phòng Ban:** `POOL, dept=X, user=null` - NV dept X thấy + claim
+- **Kho Thả Nổi:** `status=FLOATING` - ALL users thấy + claim (chủ đích "cơ hội thứ 2")
 
 **Status:** POOL → ZOOM*/ASSIGNED → IN_PROGRESS → CONVERTED/LOST → FLOATING (7 values)
 \* ZOOM: nguồn có `skipPool=true` đi thẳng vào distribution
@@ -142,7 +142,7 @@ Mọi repository query gắn `buildAccessFilter(user)`:
 
 **Partial payment:** 1 order → N payments (CK lần 1/2/3/4/Full). Lead CONVERTED chỉ khi `SUM(verified) >= totalAmount`.
 
-**Refund policy:** Order CANCELLED/REFUNDED **không** revert lead từ CONVERTED — chính sách chủ động để giữ audit trail chính xác.
+**Refund policy:** Order CANCELLED/REFUNDED **không** revert lead từ CONVERTED - chính sách chủ động để giữ audit trail chính xác.
 
 ### 4. Activity Timeline
 
@@ -211,7 +211,7 @@ Cron daily 1 AM. Super admin config per entityType (LEAD/CUSTOMER). Button `/rec
 - **Website/Facebook Lead Ads:** `POST /external/leads` với `x-api-key`
 - **Bank webhook:** `POST /webhooks/bank-transactions` với signature guard
 - **Tổng đài webhook:** `POST /call-logs/ingest` với external ID idempotency
-- **MCP server:** `/mcp` (streamable HTTP) + `/ai-agent/*` REST fallback — read-only tools cho AI agent truy vấn CRM
+- **MCP server:** `/mcp` (streamable HTTP) + `/ai-agent/*` REST fallback - read-only tools cho AI agent truy vấn CRM
 
 ---
 
@@ -267,7 +267,7 @@ Cron daily 1 AM. Super admin config per entityType (LEAD/CUSTOMER). Button `/rec
 ### Observability
 - Pino structured logs (JSON) → aaPanel file rotation
 - Dashboard v2 per-section error boundary + loading skeleton
-- Sentry: (chưa cài — backlog)
+- Sentry: (chưa cài - backlog)
 
 ### Testing
 
@@ -279,7 +279,7 @@ Coverage target > 80% services:
 
 ---
 
-## Business Rules — Edge Cases & Policies
+## Business Rules - Edge Cases & Policies
 
 ### Dedup
 
@@ -313,7 +313,7 @@ Coverage target > 80% services:
 Bảng có `deletedAt` KHÔNG được dùng `@unique` đơn thuần → gây ghost-row blocking.
 
 3 pattern được chấp nhận (chi tiết trong `code-standards.md`):
-- **A:** Partial unique trong `raw-indexes.sql` (`WHERE deleted_at IS NULL`) — preferred
+- **A:** Partial unique trong `raw-indexes.sql` (`WHERE deleted_at IS NULL`) - preferred
 - **B:** Composite `@@unique([field, deletedAt])`
 - **C:** `isActive` flag, không soft delete (cho lookup tables)
 
@@ -346,19 +346,19 @@ Located at: `plans/260325-1458-crm-v3-implementation/plan.md`
 - Design guidelines: `docs/design-guidelines.md`
 - Roadmap: `docs/project-roadmap.md`
 
-**Status (2026-04-17):** 23/23 phases Complete. Đang maintenance mode — security hardening, bugfix, dashboard v2 enhancements.
+**Status (2026-04-17):** 23/23 phases Complete. Đang maintenance mode - security hardening, bugfix, dashboard v2 enhancements.
 
 ---
 
 ## Related Docs
 
-- `codebase-summary.md` — Snapshot scale thực tế
-- `system-architecture.md` — High-level diagram + data flow
-- `data-model.md` — 31 tables chi tiết
-- `api-reference.md` — Endpoint inventory
-- `frontend-guide.md` — Route + component + pattern
-- `business-flows.md` — Sequence diagrams cho flows nghiệp vụ
-- `code-standards.md` — Coding conventions + security checklist
-- `api-integration-guide.md` — 3rd-party API integration
-- `deployment-guide.md` + `aapanel-deployment-guide.md` — Ops
-- `project-changelog.md` — Detailed change history
+- `codebase-summary.md` - Snapshot scale thực tế
+- `system-architecture.md` - High-level diagram + data flow
+- `data-model.md` - 31 tables chi tiết
+- `api-reference.md` - Endpoint inventory
+- `frontend-guide.md` - Route + component + pattern
+- `business-flows.md` - Sequence diagrams cho flows nghiệp vụ
+- `code-standards.md` - Coding conventions + security checklist
+- `api-integration-guide.md` - 3rd-party API integration
+- `deployment-guide.md` + `aapanel-deployment-guide.md` - Ops
+- `project-changelog.md` - Detailed change history

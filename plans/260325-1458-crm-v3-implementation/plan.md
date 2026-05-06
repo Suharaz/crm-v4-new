@@ -56,8 +56,8 @@ created: 2026-03-25
 4. **Audit trail:** Action-level (not field-level). Activity model with type enum
 5. **Export formats:** CSV only (V1). Excel/PDF deferred
 6. **Timezone:** All timestamps UTC. Frontend displays Asia/Ho_Chi_Minh
-7. **Data migration:** Fresh start — no migration from CRM v1/v2
-8. **Payment flow:** Hybrid verification — auto-match webhook + batch cron 2h + manager manual. Hỗ trợ partial payments (CK lần 1/2/3/4/full)
+7. **Data migration:** Fresh start - no migration from CRM v1/v2
+8. **Payment flow:** Hybrid verification - auto-match webhook + batch cron 2h + manager manual. Hỗ trợ partial payments (CK lần 1/2/3/4/full)
 9. **Call logs:** Generic webhook pattern, bên thứ 3 push call data, auto-match by phone
 10. **3 Kho lead:** Kho Mới (dept=null, POOL, manager+ thấy), Kho Phòng Ban (dept=X, NV dept thấy+claim), Kho Thả Nổi (FLOATING, ALL users thấy+claim)
 11. **Dedup:** Chỉ CSV import dedup (SĐT+nguồn+sản phẩm). Manual + API → không dedup
@@ -76,7 +76,7 @@ created: 2026-03-25
 
 ## Unresolved Questions
 
-1. Exact 3rd party call API spec unknown — phase 06 uses generic webhook pattern
+1. Exact 3rd party call API spec unknown - phase 06 uses generic webhook pattern
 
 ## Known Gaps Fixed (2026-03-27)
 

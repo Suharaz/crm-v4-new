@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginAsAdmin, loginAsManager, loginAsUser } from '../../helpers/test-auth-login-helper';
 import { screenshotStep } from '../../helpers/test-screenshot-on-step-helper';
 
-test.describe('Khách hàng — CRUD, Claim, Transfer, Role Visibility', () => {
+test.describe('Khách hàng - CRUD, Claim, Transfer, Role Visibility', () => {
   test.describe('CRUD', () => {
     test('MANAGER xem danh sách khách hàng', async ({ page }) => {
       await loginAsManager(page);

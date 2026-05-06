@@ -32,7 +32,7 @@ describe('Orders & Payments', () => {
 
   // ── POST /orders ─────────────────────────────────────────────────────────
 
-  describe('POST /orders — tạo đơn hàng', () => {
+  describe('POST /orders - tạo đơn hàng', () => {
     it('USER tạo order với customerId và amount → 201', async () => {
       const { status, body } = await user.postJson<any>('/orders', {
         customerId,
@@ -88,7 +88,7 @@ describe('Orders & Payments', () => {
 
   // ── GET /orders ──────────────────────────────────────────────────────────
 
-  describe('GET /orders — danh sách đơn hàng', () => {
+  describe('GET /orders - danh sách đơn hàng', () => {
     it('MANAGER lấy danh sách → 200', async () => {
       const { status, body } = await manager.getJson<any>('/orders');
       expect(status).toBe(200);
@@ -109,7 +109,7 @@ describe('Orders & Payments', () => {
 
   // ── GET /orders/:id ──────────────────────────────────────────────────────
 
-  describe('GET /orders/:id — chi tiết đơn hàng', () => {
+  describe('GET /orders/:id - chi tiết đơn hàng', () => {
     it('MANAGER xem chi tiết → 200', async () => {
       if (!orderId) return;
       const { status, body } = await manager.getJson<any>(`/orders/${orderId}`);
@@ -120,7 +120,7 @@ describe('Orders & Payments', () => {
 
   // ── PATCH /orders/:id/status ─────────────────────────────────────────────
 
-  describe('PATCH /orders/:id/status — cập nhật trạng thái đơn hàng', () => {
+  describe('PATCH /orders/:id/status - cập nhật trạng thái đơn hàng', () => {
     it('MANAGER chuyển PENDING → CONFIRMED → 200', async () => {
       if (!orderId) return;
       const { status, body } = await manager.patchJson<any>(`/orders/${orderId}/status`, {
@@ -148,9 +148,9 @@ describe('Orders & Payments', () => {
     });
   });
 
-  // ── POST /payments — tạo payment ─────────────────────────────────────────
+  // ── POST /payments - tạo payment ─────────────────────────────────────────
 
-  describe('POST /payments — tạo thanh toán', () => {
+  describe('POST /payments - tạo thanh toán', () => {
     it('tạo payment PENDING cho order → 201', async () => {
       if (!orderId) return;
       const { status, body } = await user.postJson<any>('/payments', {
@@ -174,7 +174,7 @@ describe('Orders & Payments', () => {
 
   // ── GET /payments ────────────────────────────────────────────────────────
 
-  describe('GET /payments — danh sách thanh toán', () => {
+  describe('GET /payments - danh sách thanh toán', () => {
     it('MANAGER lấy danh sách → 200', async () => {
       const { status } = await manager.getJson<any>('/payments');
       expect(status).toBe(200);
@@ -193,7 +193,7 @@ describe('Orders & Payments', () => {
 
   // ── POST /payments/:id/verify ────────────────────────────────────────────
 
-  describe('POST /payments/:id/verify — xác nhận thanh toán', () => {
+  describe('POST /payments/:id/verify - xác nhận thanh toán', () => {
     it('USER verify payment → 403 (chỉ MANAGER+)', async () => {
       if (!paymentId) return;
       const { status } = await user.postJson<any>(`/payments/${paymentId}/verify`, {});
@@ -210,7 +210,7 @@ describe('Orders & Payments', () => {
 
   // ── POST /payments/:id/reject ────────────────────────────────────────────
 
-  describe('POST /payments/:id/reject — từ chối thanh toán', () => {
+  describe('POST /payments/:id/reject - từ chối thanh toán', () => {
     it('MANAGER reject payment PENDING → 200, status REJECTED', async () => {
       // Tạo order + payment mới để reject
       const { body: orderBody } = await user.postJson<any>('/orders', {

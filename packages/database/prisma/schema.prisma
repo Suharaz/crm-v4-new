@@ -125,7 +125,7 @@ model User {
   team          Team?          @relation("TeamMembers", fields: [teamId], references: [id])
   employeeLevel EmployeeLevel? @relation(fields: [employeeLevelId], references: [id])
   // leadingTeams: Type-level many (Prisma cần khi bỏ @unique để support partial unique trên leader_id).
-  // Về mặt nghiệp vụ: 1 user chỉ lead 1 team active tại 1 thời điểm — enforced bởi partial unique index
+  // Về mặt nghiệp vụ: 1 user chỉ lead 1 team active tại 1 thời điểm - enforced bởi partial unique index
   // `idx_teams_leader_active` trong raw-indexes.sql (WHERE deleted_at IS NULL).
   leadingTeams  Team[]         @relation("TeamLeader")
   managedDepts  ManagerDepartment[] @relation("ManagedDepartments")
@@ -323,7 +323,7 @@ model Lead {
   departmentId     BigInt?    @map("department_id")
   labelId          BigInt?    @map("label_id")
   // Timestamp of last label-recall reset event (label change OR assign/transfer).
-  // Used by LabelRecallConfig cron — replaces previous lead_labels.recall_start_at.
+  // Used by LabelRecallConfig cron - replaces previous lead_labels.recall_start_at.
   labelAssignedAt  DateTime?  @map("label_assigned_at")
   status           LeadStatus @default(POOL)
   metadata         Json?
@@ -415,9 +415,9 @@ model Order {
   customerPhone   String?     @map("customer_phone")    /// SĐT khách
   address         String?                               /// Địa chỉ
   vatEmail        String?     @map("vat_email")         /// Mail nhận VAT
-  format          String?     /// Legacy — prefer formatId
+  format          String?     /// Legacy - prefer formatId
   formatId        BigInt?     @map("format_id")         /// Hình thức (lookup)
-  groupType       String?     @map("group_type")        /// Legacy — prefer productGroupId
+  groupType       String?     @map("group_type")        /// Legacy - prefer productGroupId
   productGroupId  BigInt?     @map("product_group_id")  /// Nhóm sản phẩm (lookup)
   stt             String?     /// STT (thay thế buổi)
   courseCode      String?     @map("course_code")       /// Mã khoá

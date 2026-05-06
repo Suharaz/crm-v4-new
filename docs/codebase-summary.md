@@ -26,9 +26,9 @@
 ```
 crm-v4/
 ├── apps/
-│   ├── api/                    NestJS 11 — :3010, prefix /api/v1
+│   ├── api/                    NestJS 11 - :3010, prefix /api/v1
 │   │   └── src/modules/        36 module (xem bảng dưới)
-│   └── web/                    Next.js 16 App Router — :3011
+│   └── web/                    Next.js 16 App Router - :3011
 │       └── src/
 │           ├── app/
 │           │   ├── (auth)/     /login
@@ -100,7 +100,7 @@ crm-v4/
 | `import` | `/imports` | BullMQ-based CSV import leads (5 cols + metadata JSONB) / customers (11 cols + labels). Bilingual header EN/VN. Xem `api-reference.md` §28 để biết CSV format |
 | `export` | `/exports` | CSV leads/customers/orders với formula sanitization |
 | `file-upload` | `/files` | Upload + stream file (JWT protected) |
-| `third-party-api` | `/external` | Public (API key) — tạo lead từ website/FB |
+| `third-party-api` | `/external` | Public (API key) - tạo lead từ website/FB |
 
 ### Distribution & Assignment (4)
 | Module | Controller prefix | Vai trò |
@@ -118,7 +118,7 @@ crm-v4/
 | `dashboard` | `/dashboard` | 10 endpoint analytics (stats/funnel/revenue/...) |
 | `api-keys` | `/api-keys` | Super admin tạo & quản lý 3rd-party key |
 | `system-settings` | `/system-settings` | Key-value config |
-| `ai-summary` | (service only) | Gemini wrapper — gọi từ call-logs/customers |
+| `ai-summary` | (service only) | Gemini wrapper - gọi từ call-logs/customers |
 | `mcp-agent` | `/mcp`, `/ai-agent` | MCP server + REST fallback (read-only, API key) |
 
 **Common (non-module):** `main.ts`, `app.module.ts`, `common/` (guards, interceptors, filters, pipes, cron, buildAccessFilter).
@@ -126,19 +126,19 @@ crm-v4/
 ## Frontend Routes (31)
 
 ### Public / Auth
-- `/` — Landing page
-- `/login` — Login (force-dynamic, split server shell + client form)
+- `/` - Landing page
+- `/login` - Login (force-dynamic, split server shell + client form)
 
 ### Dashboard Group (sidebar layout)
 **Analytics:**
-- `/dashboard` — Tổng quan (4 KPI + 2 mini chart)
-- `/dashboard/revenue`, `/dashboard/customers`, `/dashboard/employees` — Sub-pages
+- `/dashboard` - Tổng quan (4 KPI + 2 mini chart)
+- `/dashboard/revenue`, `/dashboard/customers`, `/dashboard/employees` - Sub-pages
 
 **Leads (6):**
 - `/leads`, `/leads/new`, `/leads/[id]`, `/leads/[id]/edit`
-- `/leads/dept` — Kho phòng ban
-- `/leads/pool/new`, `/leads/pool/zoom` — 2 nhóm kho mới
-- `/floating` — Kho thả nổi (lead + customer)
+- `/leads/dept` - Kho phòng ban
+- `/leads/pool/new`, `/leads/pool/zoom` - 2 nhóm kho mới
+- `/floating` - Kho thả nổi (lead + customer)
 
 **Customers (4):** `/customers`, `/customers/new`, `/customers/[id]`, `/customers/[id]/edit`
 
@@ -154,7 +154,7 @@ crm-v4/
 - `/users`, `/users/new`, `/users/[id]/edit`
 - `/profile`
 - `/settings` (8 tab: departments, teams, levels, labels, sources, products, payment-types, api-keys, etc.)
-- `/settings/distribution` — AI distribution per dept
+- `/settings/distribution` - AI distribution per dept
 
 ## Frontend Component Folders (16)
 
@@ -175,17 +175,17 @@ components/
 ├── tasks/              Quick add, list, detail
 ├── settings/           Department/team/label/source forms
 ├── users/              User list, form, role picker
-└── dashboard/          hooks/, tabs/, widgets/ — KPI, charts, scorecard
+└── dashboard/          hooks/, tabs/, widgets/ - KPI, charts, scorecard
 ```
 
-## Database — 31 Tables
+## Database - 31 Tables
 
 Xem `docs/data-model.md` để chi tiết. Nhóm:
 
 - **Auth (3):** users, refresh_tokens, api_keys
 - **Organization (4):** departments, teams, manager_departments, employee_levels
 - **CRM core (5):** customers, leads (single-label FK `label_id`), lead_sources, labels, customer_labels
-- **Commerce (8):** products, product_categories, product_groups, order_formats, orders, payments, payment_types, payment_installments, bank_accounts — (thực tế 9 nếu tính bank_accounts)
+- **Commerce (8):** products, product_categories, product_groups, order_formats, orders, payments, payment_types, payment_installments, bank_accounts - (thực tế 9 nếu tính bank_accounts)
 - **Banking/Verification (1):** bank_transactions
 - **Activity (4):** activities, activity_attachments, documents, call_logs
 - **Assignment (3):** assignment_history, assignment_templates, assignment_template_members
@@ -203,12 +203,12 @@ Xem `docs/data-model.md` để chi tiết. Nhóm:
 
 ## Related Docs
 
-- `project-overview-pdr.md` — Business context, roles, NFR
-- `system-architecture.md` — High-level diagram + data flow
-- `data-model.md` — Chi tiết 31 table + ERD
-- `api-reference.md` — Full endpoint inventory
-- `frontend-guide.md` — Route + component + data-fetching pattern
-- `business-flows.md` — Sequence diagrams nghiệp vụ
-- `code-standards.md` — Conventions + security checklist
-- `api-integration-guide.md` — 3rd-party integration (external API key)
-- `deployment-guide.md`, `aapanel-deployment-guide.md` — Ops
+- `project-overview-pdr.md` - Business context, roles, NFR
+- `system-architecture.md` - High-level diagram + data flow
+- `data-model.md` - Chi tiết 31 table + ERD
+- `api-reference.md` - Full endpoint inventory
+- `frontend-guide.md` - Route + component + data-fetching pattern
+- `business-flows.md` - Sequence diagrams nghiệp vụ
+- `code-standards.md` - Conventions + security checklist
+- `api-integration-guide.md` - 3rd-party integration (external API key)
+- `deployment-guide.md`, `aapanel-deployment-guide.md` - Ops

@@ -5,7 +5,7 @@
 --   2. Backfill: minutes = days * 24 * 60. Existing data assumed to be days.
 --   3. Drop old `days` column, enforce NOT NULL on `recall_minutes`.
 --   4. Replace single-column index on lead_labels(label_id) with composite
---      (label_id, recall_start_at) — the cron now runs every 5 minutes and
+--      (label_id, recall_start_at) - the cron now runs every 5 minutes and
 --      filters on both columns, so the composite index is the better fit.
 
 -- ── label_recall_configs: days → recall_minutes ────────────────────────────

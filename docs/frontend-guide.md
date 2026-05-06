@@ -1,6 +1,6 @@
 # Frontend Guide
 
-> Next.js 16 App Router, pure frontend — không có business logic hay Prisma access.
+> Next.js 16 App Router, pure frontend - không có business logic hay Prisma access.
 > Last verified: 2026-04-17.
 
 ## Stack
@@ -13,7 +13,7 @@
 - **Tables:** TanStack Table 8
 - **Charts:** Recharts 2
 - **Drag & drop:** `@dnd-kit`
-- **Language:** Vietnamese only — KHÔNG có i18n framework
+- **Language:** Vietnamese only - KHÔNG có i18n framework
 - **Date format:** DD/MM/YYYY · Number: 1.000.000 · Currency: VND (no decimals)
 
 ## Architecture Principle
@@ -63,7 +63,7 @@ apps/web/src/
 │   │   ├── profile/               1 page
 │   │   └── settings/              2 page (main + distribution)
 │   ├── api/
-│   │   ├── auth/[...action]/      Login/logout/refresh — set/clear cookie
+│   │   ├── auth/[...action]/      Login/logout/refresh - set/clear cookie
 │   │   └── proxy/[...path]/       BFF proxy toàn bộ request khác
 │   ├── globals.css                Tailwind 4 + custom tokens
 │   ├── layout.tsx                 Root layout (fonts, providers)
@@ -134,7 +134,7 @@ apps/web/src/
 
 | Folder | Nội dung |
 |--------|----------|
-| `ui/` | shadcn/ui primitives — **NO barrel imports** (import từng file: `@/components/ui/button`) |
+| `ui/` | shadcn/ui primitives - **NO barrel imports** (import từng file: `@/components/ui/button`) |
 | `layout/` | Sidebar, header, breadcrumb, nav item với nested dropdown (dashboard sub-pages) |
 | `shared/` | DataTable (TanStack), activity timeline, search bar, pagination |
 | `landing/` | Landing page hero + sections |
@@ -181,7 +181,7 @@ components/dashboard/
 ### Server Components (default)
 
 ```ts
-// Server component — gọi trực tiếp NestJS qua serverFetch
+// Server component - gọi trực tiếp NestJS qua serverFetch
 import { serverFetch } from '@/lib/auth';
 
 export default async function LeadsPage() {
@@ -191,7 +191,7 @@ export default async function LeadsPage() {
 ```
 
 **Rules:**
-- `cache: 'no-store'` (default trong serverFetch) — CRM data luôn fresh
+- `cache: 'no-store'` (default trong serverFetch) - CRM data luôn fresh
 - `React.cache()` cho data chia sẻ giữa layout + page
 - Không gọi serverFetch trong client component
 
@@ -201,7 +201,7 @@ export default async function LeadsPage() {
 'use client';
 import { api } from '@/lib/api-client';
 
-// Client — qua /api/proxy/* → BFF forward
+// Client - qua /api/proxy/* → BFF forward
 const { data } = await api.get<{ data: Lead[] }>('/leads');
 ```
 
@@ -210,7 +210,7 @@ const { data } = await api.get<{ data: Lead[] }>('/leads');
 - `401` tự redirect về `/login?redirect=...` (xem `api-client.ts`)
 - `credentials: 'include'` mặc định
 
-### Form Submit (Server Actions Pattern — với Proxy)
+### Form Submit (Server Actions Pattern - với Proxy)
 
 Dự án không dùng Next.js Server Actions native vì muốn qua NestJS duy nhất. Form handle qua client + `api.post/patch`:
 
@@ -270,7 +270,7 @@ Xem chi tiết: `design-guidelines.md` (995 dòng).
 Pattern: Zod schema → `useForm({ resolver: zodResolver })`.
 
 ```tsx
-// lib/zod-form-validation-schemas.ts — centralized schemas
+// lib/zod-form-validation-schemas.ts - centralized schemas
 export const leadCreateSchema = z.object({
   name: z.string().min(1, 'Nhập tên khách'),
   phone: z.string().regex(/^0[0-9]{9,10}$/, 'SĐT không hợp lệ'),
@@ -315,15 +315,15 @@ Nếu thấy route tĩnh bị cache chunk cũ: check `next.config.js` + nginx `C
 
 ## Common Pitfalls
 
-1. **Đừng import từ `@/components/ui` index** — barrel import break tree-shaking. Import từng file.
-2. **Đừng gọi serverFetch trong client component** — runtime error.
-3. **Đừng gọi NestJS trực tiếp từ client** — cross-origin cookie không work. Qua `/api/proxy`.
-4. **Đừng dùng `<Image>` cho upload preview** — component Next/Image strict, ưu tiên `<img>` cho dynamic URL.
-5. **Đừng dùng Server Action của Next.js native** — dự án chọn NestJS làm nguồn logic duy nhất.
+1. **Đừng import từ `@/components/ui` index** - barrel import break tree-shaking. Import từng file.
+2. **Đừng gọi serverFetch trong client component** - runtime error.
+3. **Đừng gọi NestJS trực tiếp từ client** - cross-origin cookie không work. Qua `/api/proxy`.
+4. **Đừng dùng `<Image>` cho upload preview** - component Next/Image strict, ưu tiên `<img>` cho dynamic URL.
+5. **Đừng dùng Server Action của Next.js native** - dự án chọn NestJS làm nguồn logic duy nhất.
 
 ## Related Docs
 
-- `design-guidelines.md` — 995 dòng visual tokens, layout patterns
-- `api-reference.md` — Endpoint FE gọi
-- `code-standards.md` — Formatting, security checklist
-- `system-architecture.md` — BFF proxy flow
+- `design-guidelines.md` - 995 dòng visual tokens, layout patterns
+- `api-reference.md` - Endpoint FE gọi
+- `code-standards.md` - Formatting, security checklist
+- `system-architecture.md` - BFF proxy flow

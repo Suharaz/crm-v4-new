@@ -117,7 +117,7 @@ export class CustomersService {
         })
       : [];
 
-    // QĐ 3A: silent return — không phân biệt match số chính/phụ.
+    // QĐ 3A: silent return - không phân biệt match số chính/phụ.
     return { data: [...primary, ...fromAlt].slice(0, 10) };
   }
 

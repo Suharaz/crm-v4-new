@@ -70,7 +70,7 @@ function ActivityRow({ activity }: { activity: DeptActivity }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-medium text-slate-700">{activity.user?.name || '—'}</span>
+          <span className="text-xs font-medium text-slate-700">{activity.user?.name || '-'}</span>
           <ActivityTypeBadge type={activity.type} />
           <span className="text-[10px] text-slate-400 ml-auto whitespace-nowrap">
             {formatDateTime(activity.createdAt)}
@@ -104,7 +104,7 @@ function DeptRow({
 
   return (
     <div className="rounded-lg border border-slate-100 overflow-hidden">
-      {/* Bar row — clickable */}
+      {/* Bar row - clickable */}
       <button
         onClick={onToggle}
         className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 transition-colors text-left"

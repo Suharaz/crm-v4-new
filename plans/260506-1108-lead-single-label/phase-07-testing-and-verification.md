@@ -1,4 +1,4 @@
-# Phase 07 — Testing & Verification
+# Phase 07 - Testing & Verification
 
 ## Context Links
 
@@ -29,7 +29,7 @@
 - [ ] Filter multi-select labels → list lọc đúng
 - [ ] CSV import dialog: hiển thị helper text
 
-### Regression (Customer — KHÔNG ĐƯỢC vỡ)
+### Regression (Customer - KHÔNG ĐƯỢC vỡ)
 - [ ] Customer detail: gắn được 2-3 nhãn
 - [ ] Customer table: hiển thị nhiều badge
 - [ ] Customer kanban (nếu có): hiển thị đúng
@@ -43,8 +43,8 @@
 ## Related Code Files
 
 **Read (chạy test):**
-- Existing test files: `apps/api/test/*` — pattern reference
-- `tests/test-results/` — output dir
+- Existing test files: `apps/api/test/*` - pattern reference
+- `tests/test-results/` - output dir
 
 **Optional create (nếu thiếu coverage):**
 - `apps/api/test/leads-label.e2e-spec.ts`

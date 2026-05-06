@@ -1,4 +1,4 @@
-# Phase 05 — Integration + E2E Test + Notification Bell Update
+# Phase 05 - Integration + E2E Test + Notification Bell Update
 
 **Priority:** P1 | **Status:** ✅ Completed | **Effort:** 2h | **Depends on:** P2 + P4
 
@@ -18,7 +18,7 @@ Thay 3 chỗ inline note dialog bằng `<NoteDialog />`. Update NotificationBell
 - Nếu inline bar vẫn cần (ghi chú nhanh không có task) → giữ song song: bar cho note-only, button "Thêm với task" mở NoteDialog
 
 ### 3. `apps/web/src/components/shared/entity-quick-preview-dialog.tsx`
-- Inline note section (dòng 328-340) — tương tự quyết định trên
+- Inline note section (dòng 328-340) - tương tự quyết định trên
 - Hoặc thay hoàn toàn bằng NoteDialog nested
 
 ### 4. `apps/web/src/components/layout/notification-bell.tsx`
@@ -163,12 +163,12 @@ test.describe('Note dialog with task reminders', () => {
 - Manual test: cron gửi đúng notification, bell cập nhật sau poll 30s
 
 ## Risks
-- Replace dialog có thể break test hiện tại (`task-quick-add-complete-cancel-edit-delete.spec.ts`) — review + update test IDs
-- Inline bar ở `entity-quick-preview-dialog.tsx` UX khác với dialog — cần decision: giữ song song hay unify
+- Replace dialog có thể break test hiện tại (`task-quick-add-complete-cancel-edit-delete.spec.ts`) - review + update test IDs
+- Inline bar ở `entity-quick-preview-dialog.tsx` UX khác với dialog - cần decision: giữ song song hay unify
 
 ## Security
 - Navigation URL build từ whitelist `getNotificationUrl` (không accept arbitrary refType → không có open redirect)
-- `referenceId` truyền qua URL param — backend check ownership khi load page detail
+- `referenceId` truyền qua URL param - backend check ownership khi load page detail
 
 ## Follow-up
 - Sau khi deploy, monitor xem có edge case nào không (task tạo rồi nhưng không nhận notif, hoặc double notif)

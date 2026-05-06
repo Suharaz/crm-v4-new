@@ -61,6 +61,13 @@ export class LeadsController {
     return this.leadsService.poolFloating(limit ?? 20, cursor);
   }
 
+  // Lịch sử các lead trùng SĐT — dùng cho icon "trùng" trên UI Kho
+  @Get('duplicates')
+  async duplicates(@Query('phone') phone?: string) {
+    if (!phone) throw new BadRequestException('phone là bắt buộc');
+    return this.leadsService.findDuplicatesByPhone(phone);
+  }
+
   @Get(':id')
   async findById(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
     const data = await this.leadsService.findById(id, user);

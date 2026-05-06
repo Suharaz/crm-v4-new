@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { StatusBadge } from '@/components/shared/status-badge';
 import { EntityQuickPreviewDialog } from '@/components/shared/entity-quick-preview-dialog';
 import { LeadPoolActionButtons } from '@/components/leads/lead-pool-action-buttons';
+import { LeadDuplicateBadge } from '@/components/leads/lead-duplicate-badge';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/providers/auth-provider';
 import { formatDate } from '@/lib/utils';
@@ -26,6 +27,8 @@ interface Lead {
   assignedAt?: string | null;
   latestNote?: { content: string | null; createdAt: string } | null;
   createdAt: string;
+  /** Tổng số lead chưa xóa có cùng SĐT (gồm cả lead này). >=2 → trùng. */
+  duplicateCount?: number;
 }
 
 interface PoolTableProps {
@@ -283,10 +286,17 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <button type="button" onClick={() => setPreviewId(lead.id)}
-                      className="font-medium text-sky-600 hover:underline text-left">
-                      {lead.phone}
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button type="button" onClick={() => setPreviewId(lead.id)}
+                        className="font-medium text-sky-600 hover:underline text-left">
+                        {lead.phone}
+                      </button>
+                      <LeadDuplicateBadge
+                        count={lead.duplicateCount ?? 0}
+                        phone={lead.phone}
+                        currentLeadId={lead.id}
+                      />
+                    </div>
                   </td>
                   <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
                   <td className="hidden md:table-cell px-4 py-3 text-slate-600">{lead.product?.name || '—'}</td>

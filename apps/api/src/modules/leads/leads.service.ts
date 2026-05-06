@@ -93,6 +93,7 @@ export class LeadsService {
       const hasMore = leads.length > limit;
       const data = hasMore ? leads.slice(0, limit) : leads;
       await this.enrichLeads(data);
+      await this.attachDuplicateCount(data);
       return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
     }
 
@@ -110,6 +111,7 @@ export class LeadsService {
 
     const data = leads;
     await this.enrichLeads(data);
+    await this.attachDuplicateCount(data);
     return {
       data,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
@@ -226,6 +228,7 @@ export class LeadsService {
       seen.add(key);
       return true;
     }).map(attachNote);
+    await this.attachDuplicateCount(merged);
     return { data: merged };
   }
 
@@ -239,6 +242,7 @@ export class LeadsService {
     });
     const hasMore = leads.length > (limit ?? 20);
     const data = hasMore ? leads.slice(0, limit ?? 20) : leads;
+    await this.attachDuplicateCount(data);
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }
 
@@ -251,6 +255,7 @@ export class LeadsService {
     });
     const hasMore = leads.length > (limit ?? 20);
     const data = hasMore ? leads.slice(0, limit ?? 20) : leads;
+    await this.attachDuplicateCount(data);
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }
 
@@ -263,6 +268,7 @@ export class LeadsService {
     });
     const hasMore = leads.length > (limit ?? 20);
     const data = hasMore ? leads.slice(0, limit ?? 20) : leads;
+    await this.attachDuplicateCount(data);
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }
 
@@ -416,6 +422,64 @@ export class LeadsService {
         ? new Date(Math.max(...dates.map((d: Date) => new Date(d).getTime())))
         : lead.updatedAt;
     }
+  }
+
+  // ── Duplicate phone detection ────────────────────────────────────────────
+  /** Attach `duplicateCount` (total non-deleted leads sharing same phone) to each lead. */
+  private async attachDuplicateCount(leads: any[]) {
+    if (leads.length === 0) return;
+    const phones = Array.from(new Set(leads.map(l => l.phone).filter(Boolean)));
+    if (phones.length === 0) return;
+    const counts = await this.prisma.lead.groupBy({
+      by: ['phone'],
+      where: { phone: { in: phones }, deletedAt: null },
+      _count: { _all: true },
+    });
+    const map = new Map(counts.map(c => [c.phone, c._count._all]));
+    for (const lead of leads) {
+      lead.duplicateCount = map.get(lead.phone) ?? 1;
+    }
+  }
+
+  /** Lịch sử các lead trùng SĐT + lịch sử phân phối. */
+  async findDuplicatesByPhone(rawPhone: string) {
+    const phone = normalizePhone(rawPhone);
+    if (!phone || !isValidVNPhone(phone)) {
+      throw new BadRequestException('Số điện thoại không hợp lệ');
+    }
+
+    const leads = await this.prisma.lead.findMany({
+      where: { phone, deletedAt: null },
+      select: {
+        id: true, name: true, phone: true, status: true,
+        createdAt: true, updatedAt: true,
+        product: { select: { id: true, name: true } },
+        source: { select: { id: true, name: true } },
+        assignedUser: { select: { id: true, name: true } },
+        department: { select: { id: true, name: true } },
+      },
+      orderBy: { id: 'desc' },
+    });
+
+    if (leads.length === 0) {
+      return { data: { phone, leads: [], history: [] } };
+    }
+
+    const leadIds = leads.map(l => l.id);
+    const history = await this.prisma.assignmentHistory.findMany({
+      where: { entityType: 'LEAD', entityId: { in: leadIds } },
+      select: {
+        id: true, entityId: true, createdAt: true, reason: true,
+        fromUser: { select: { id: true, name: true } },
+        toUser: { select: { id: true, name: true } },
+        fromDepartment: { select: { id: true, name: true } },
+        toDepartment: { select: { id: true, name: true } },
+        assignedByUser: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return { data: { phone, leads, history } };
   }
 
   // ── Assign ──────────────────────────────────────────────────────────────

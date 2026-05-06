@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { LeadInlineExpandDetail } from '@/components/leads/lead-inline-expand-detail';
 import { LeadPoolActionButtons } from '@/components/leads/lead-pool-action-buttons';
+import { LeadDuplicateBadge } from '@/components/leads/lead-duplicate-badge';
 import { BulkDeleteBar } from '@/components/shared/bulk-delete-bar';
 import { useBulkSelection } from '@/hooks/use-bulk-selection';
 import { cn } from '@/lib/utils';
@@ -19,6 +20,8 @@ interface Lead {
   lastInteractionAt?: string;
   metadata?: { aiLevel?: string; aiScore?: number };
   createdAt: string;
+  /** Tổng số lead chưa xóa có cùng SĐT (gồm chính lead này). >=2 → hiện badge trùng. */
+  duplicateCount?: number;
 }
 
 /** Relative time label + danger color based on how long ago */
@@ -154,10 +157,19 @@ function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan, enableB
           )}
         </td>
         <td className="px-4 py-3 text-slate-600">
-          <span>{lead.phone}</span>
-          {lead.orders && lead.orders.length > 0 && (
-            <span className="ml-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">{lead.orders.length} đơn</span>
-          )}
+          <div className="flex items-center gap-1.5">
+            <span>{lead.phone}</span>
+            <span onClick={e => e.stopPropagation()} className="inline-flex">
+              <LeadDuplicateBadge
+                count={lead.duplicateCount ?? 0}
+                phone={lead.phone}
+                currentLeadId={lead.id}
+              />
+            </span>
+            {lead.orders && lead.orders.length > 0 && (
+              <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">{lead.orders.length} đơn</span>
+            )}
+          </div>
         </td>
         <td className="hidden md:table-cell px-4 py-3 text-slate-600">{lead.product?.name || '—'}</td>
         <td className="hidden md:table-cell px-4 py-3">

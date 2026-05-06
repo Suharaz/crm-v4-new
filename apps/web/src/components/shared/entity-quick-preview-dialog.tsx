@@ -50,6 +50,8 @@ interface PreviewEntityData {
   product?: { name: string } | null;
   assignedUser?: { name: string } | null;
   department?: { name: string } | null;
+  // Lead: single label via FK; Customer: multi-label via junction
+  label?: { id: string; name: string; color: string } | null;
   labels?: NestedOrFlatLabel[];
   leadLabels?: NestedOrFlatLabel[];
   customerLabels?: NestedOrFlatLabel[];
@@ -140,21 +142,27 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
   }, [open, entityId, entityType]);
 
   const detailUrl = entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`;
-  const labels: NestedOrFlatLabel[] = data?.labels || data?.leadLabels || data?.customerLabels || [];
+  // Lead: data.label (single). Customer: data.labels / data.customerLabels (junction array).
+  const labels: NestedOrFlatLabel[] =
+    entityType === 'lead'
+      ? (data?.label ? [{ label: data.label }] : [])
+      : (data?.labels || data?.customerLabels || []);
   const currentLabelIds = new Set(labels.map((ll) => String((ll.label || ll).id)));
 
-  // Quick label toggle
+  // Quick label toggle — lead uses PATCH single, customer uses junction add/remove
   async function toggleLabel(labelId: string) {
     if (!entityId) return;
     setLabelSaving(true);
     try {
-      if (currentLabelIds.has(labelId)) {
-        await api.delete(`/${entityType}s/${entityId}/labels/${labelId}`);
+      if (entityType === 'lead') {
+        const next = currentLabelIds.has(labelId) ? null : labelId;
+        await api.patch(`/leads/${entityId}/label`, { labelId: next });
+      } else if (currentLabelIds.has(labelId)) {
+        await api.delete(`/customers/${entityId}/labels/${labelId}`);
       } else {
-        await api.post(`/${entityType}s/${entityId}/labels`, { labelIds: [labelId] });
+        await api.post(`/customers/${entityId}/labels`, { labelIds: [labelId] });
       }
       invalidatePreviewCache(entityType, entityId);
-      // Refresh entity data + server page
       const res = await api.get<{ data: PreviewEntityData }>(entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`);
       setData(res.data);
       router.refresh();

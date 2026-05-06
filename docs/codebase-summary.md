@@ -184,7 +184,7 @@ Xem `docs/data-model.md` để chi tiết. Nhóm:
 
 - **Auth (3):** users, refresh_tokens, api_keys
 - **Organization (4):** departments, teams, manager_departments, employee_levels
-- **CRM core (6):** customers, leads, lead_sources, labels, lead_labels, customer_labels
+- **CRM core (5):** customers, leads (single-label FK `label_id`), lead_sources, labels, customer_labels
 - **Commerce (8):** products, product_categories, product_groups, order_formats, orders, payments, payment_types, payment_installments, bank_accounts — (thực tế 9 nếu tính bank_accounts)
 - **Banking/Verification (1):** bank_transactions
 - **Activity (4):** activities, activity_attachments, documents, call_logs

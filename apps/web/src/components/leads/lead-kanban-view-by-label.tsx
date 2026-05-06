@@ -11,7 +11,7 @@ interface Lead {
   assignedUser?: { name: string } | null;
   customerId?: string | null;
   activityCount?: number;
-  labels?: { label: { id: string; name: string; color: string } }[];
+  label?: { id: string; name: string; color: string } | null;
   createdAt: string;
 }
 
@@ -53,25 +53,20 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
     setConfigLoaded(true);
   }, []);
 
-  // Build label list with lead counts
+  // Build label list with lead counts (single-label model: each lead counts once)
   const labelCounts = new Map<string, number>();
   for (const lead of leads) {
-    if (!lead.labels) continue;
-    for (const ll of lead.labels) {
-      labelCounts.set(ll.label.id, (labelCounts.get(ll.label.id) || 0) + 1);
-    }
+    if (!lead.label) continue;
+    labelCounts.set(lead.label.id, (labelCounts.get(lead.label.id) || 0) + 1);
   }
 
-  // All available labels — merge from allLabels prop + labels found in leads
+  // All available labels — merge from allLabels prop + label seen on leads
   const labelMap = new Map<string, LabelInfo>();
   if (allLabels) {
     for (const l of allLabels) labelMap.set(l.id, l);
   }
   for (const lead of leads) {
-    if (!lead.labels) continue;
-    for (const ll of lead.labels) {
-      if (!labelMap.has(ll.label.id)) labelMap.set(ll.label.id, ll.label);
-    }
+    if (lead.label && !labelMap.has(lead.label.id)) labelMap.set(lead.label.id, lead.label);
   }
   const availableLabels = [...labelMap.values()];
 
@@ -98,15 +93,12 @@ export function LeadKanbanViewByLabel({ leads, allLabels, onLeadClick }: Props) 
   const otherColumn: Lead[] = [];
 
   for (const lead of leads) {
-    if (!lead.labels || lead.labels.length === 0) { otherColumn.push(lead); continue; }
-    let placed = false;
-    for (const ll of lead.labels) {
-      if (selectedIds.has(ll.label.id)) {
-        const col = columns.find(c => c.id === ll.label.id);
-        if (col) { col.leads.push(lead); placed = true; break; }
-      }
+    if (!lead.label) { otherColumn.push(lead); continue; }
+    if (selectedIds.has(lead.label.id)) {
+      const col = columns.find(c => c.id === lead.label!.id);
+      if (col) { col.leads.push(lead); continue; }
     }
-    if (!placed) otherColumn.push(lead);
+    otherColumn.push(lead);
   }
 
   // 4 nhãn + "Khác" = max 5 cột
@@ -266,14 +258,9 @@ function KanbanColumn({ col, onLeadClick }: { col: { id: string; name: string; c
 
               <span>{formatDate(lead.createdAt)}</span>
             </div>
-            {lead.labels && lead.labels.length > 0 && (
+            {lead.label && (
               <div className="mt-1.5 flex flex-wrap gap-1">
-                {lead.labels.slice(0, 2).map(ll => (
-                  <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: ll.label.color }}>{ll.label.name}</span>
-                ))}
-                {lead.labels.length > 2 && (
-                  <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-medium text-slate-500">+{lead.labels.length - 2}</span>
-                )}
+                <span className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: lead.label.color }}>{lead.label.name}</span>
               </div>
             )}
           </div>

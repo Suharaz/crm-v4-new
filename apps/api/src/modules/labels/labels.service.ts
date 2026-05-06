@@ -129,17 +129,16 @@ export class LabelsService {
     }
   }
 
-  // Attach labels to lead
-  async attachToLead(leadId: bigint, labelIds: bigint[]) {
-    const data = labelIds.map((labelId) => ({ leadId, labelId }));
-    await this.prisma.leadLabel.createMany({ data, skipDuplicates: true });
+  // Lead has a single label (FK on leads.label_id). Pass null to clear.
+  // Also resets labelAssignedAt — used by per-label recall cron.
+  async setLeadLabel(leadId: bigint, labelId: bigint | null) {
+    await this.prisma.lead.update({
+      where: { id: leadId },
+      data: { labelId, labelAssignedAt: labelId ? new Date() : null },
+    });
   }
 
-  async detachFromLead(leadId: bigint, labelId: bigint) {
-    await this.prisma.leadLabel.deleteMany({ where: { leadId, labelId } });
-  }
-
-  // Attach labels to customer
+  // Customer keeps multi-label (junction table customer_labels)
   async attachToCustomer(customerId: bigint, labelIds: bigint[]) {
     const data = labelIds.map((labelId) => ({ customerId, labelId }));
     await this.prisma.customerLabel.createMany({ data, skipDuplicates: true });

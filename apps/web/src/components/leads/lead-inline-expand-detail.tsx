@@ -114,16 +114,29 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
       .finally(() => setLoading(false));
   }, [entityType, entityId]);
 
-  const labels = data?.labels || [];
-  const currentLabelIds = new Set(labels.map((ll) => String(('label' in ll ? ll.label : ll).id)));
+  // Lead: single label (data.label / data.labelId). Customer: multi-label junction (data.labels).
+  // dataAny is needed because Customer label shape (NestedLabel[]) differs from Lead (single label).
+  const dataAny = data as unknown as { label?: { id: string } | null; labels?: { label: { id: string } }[] } | null;
+  const currentLabelIds = new Set<string>(
+    entityType === 'lead'
+      ? (dataAny?.label ? [String(dataAny.label.id)] : [])
+      : (dataAny?.labels?.map((ll) => String(ll.label.id)) ?? []),
+  );
 
   async function toggleLabel(labelId: string) {
     setLabelSaving(true);
     try {
-      if (currentLabelIds.has(labelId)) {
-        await api.delete(`/${entityType}s/${entityId}/labels/${labelId}`);
+      if (entityType === 'lead') {
+        // Single label: clicking active label clears, clicking another sets it.
+        const next = currentLabelIds.has(labelId) ? null : labelId;
+        await api.patch(`/leads/${entityId}/label`, { labelId: next });
       } else {
-        await api.post(`/${entityType}s/${entityId}/labels`, { labelIds: [labelId] });
+        // Multi-label: toggle add/remove via existing junction endpoints.
+        if (currentLabelIds.has(labelId)) {
+          await api.delete(`/customers/${entityId}/labels/${labelId}`);
+        } else {
+          await api.post(`/customers/${entityId}/labels`, { labelIds: [labelId] });
+        }
       }
       invalidateCache(entityType, entityId);
       const res = await api.get<{ data: DetailRecord }>(entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`);

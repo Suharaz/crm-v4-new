@@ -43,8 +43,9 @@ async function main() {
   await prisma.bankTransaction.deleteMany();
   await prisma.payment.deleteMany();
   await prisma.order.deleteMany();
-  await prisma.leadLabel.deleteMany();
+  // Lead label is a FK on leads.label_id — cleared automatically with prisma.lead.deleteMany()
   await prisma.customerLabel.deleteMany();
+  await prisma.customerPhone.deleteMany();
   await prisma.lead.deleteMany();
   await prisma.customer.deleteMany();
   await prisma.label.deleteMany();
@@ -278,14 +279,15 @@ async function main() {
   );
   console.log('  ✓ Leads (20)');
 
-  // ── Lead Labels ─────────────────────────────────────────────────────────
+  // ── Lead Labels (single label per lead via FK) ──────────────────────────
+  const now = new Date();
   await Promise.all([
-    prisma.leadLabel.create({ data: { leadId: leads[0].id, labelId: labels[1].id } }), // Hot Lead
-    prisma.leadLabel.create({ data: { leadId: leads[7].id, labelId: labels[5].id } }), // Quan tâm cao
-    prisma.leadLabel.create({ data: { leadId: leads[10].id, labelId: labels[0].id } }), // VIP
-    prisma.leadLabel.create({ data: { leadId: leads[14].id, labelId: labels[8].id } }), // Thu hồi tự động
+    prisma.lead.update({ where: { id: leads[0].id }, data: { labelId: labels[1].id, labelAssignedAt: now } }),  // Hot Lead
+    prisma.lead.update({ where: { id: leads[7].id }, data: { labelId: labels[5].id, labelAssignedAt: now } }),  // Quan tâm cao
+    prisma.lead.update({ where: { id: leads[10].id }, data: { labelId: labels[0].id, labelAssignedAt: now } }), // VIP
+    prisma.lead.update({ where: { id: leads[14].id }, data: { labelId: labels[8].id, labelAssignedAt: now } }), // Thu hồi tự động
   ]);
-  console.log('  ✓ Lead labels');
+  console.log('  ✓ Lead labels (single)');
 
   // ── Customer Labels ─────────────────────────────────────────────────────
   await Promise.all([
@@ -382,12 +384,12 @@ async function main() {
   ]);
   console.log('  ✓ Activities');
 
-  // ── Recall Config ───────────────────────────────────────────────────────
+  // ── Recall Config (single autoLabelId) ──────────────────────────────────
   await prisma.recallConfig.create({
     data: {
       entityType: 'LEAD',
       maxDaysInPool: 7,
-      autoLabelIds: [labels[8].id], // "Thu hồi tự động" label
+      autoLabelId: labels[8].id, // "Thu hồi tự động" label
       createdBy: admin.id,
     },
   });

@@ -321,6 +321,10 @@ model Lead {
   sourceId         BigInt?    @map("source_id")
   assignedUserId   BigInt?    @map("assigned_user_id")
   departmentId     BigInt?    @map("department_id")
+  labelId          BigInt?    @map("label_id")
+  // Timestamp of last label-recall reset event (label change OR assign/transfer).
+  // Used by LabelRecallConfig cron — replaces previous lead_labels.recall_start_at.
+  labelAssignedAt  DateTime?  @map("label_assigned_at")
   status           LeadStatus @default(POOL)
   metadata         Json?
   createdAt        DateTime   @default(now()) @map("created_at")
@@ -332,15 +336,16 @@ model Lead {
   source       LeadSource? @relation(fields: [sourceId], references: [id])
   assignedUser User?      @relation("LeadAssignedUser", fields: [assignedUserId], references: [id])
   department   Department? @relation(fields: [departmentId], references: [id])
+  label        Label?     @relation(fields: [labelId], references: [id])
 
   orders Order[]
-  labels LeadLabel[]
 
   @@index([customerId])
   @@index([sourceId])
   @@index([productId])
   @@index([status, assignedUserId])
   @@index([departmentId])
+  @@index([labelId])
   @@map("leads")
 }
 
@@ -558,27 +563,12 @@ model Label {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  leadLabels     LeadLabel[]
-  customerLabels CustomerLabel[]
-  recallConfig   LabelRecallConfig?
+  leads             Lead[]
+  customerLabels    CustomerLabel[]
+  recallConfig      LabelRecallConfig?
+  recallAutoConfigs RecallConfig[]    @relation("recall_auto")
 
   @@map("labels")
-}
-
-model LeadLabel {
-  leadId        BigInt   @map("lead_id")
-  labelId       BigInt   @map("label_id")
-  createdAt     DateTime @default(now()) @map("created_at")
-  recallStartAt DateTime @default(now()) @map("recall_start_at")
-
-  lead  Lead  @relation(fields: [leadId], references: [id])
-  label Label @relation(fields: [labelId], references: [id])
-
-  @@id([leadId, labelId])
-  // Composite index covers both (labelId) lookups and the cron's
-  // "labelId + recallStartAt < cutoff" scan when recall runs every 5 min.
-  @@index([labelId, recallStartAt])
-  @@map("lead_labels")
 }
 
 model CustomerLabel {
@@ -747,13 +737,14 @@ model RecallConfig {
   id            BigInt   @id @default(autoincrement())
   entityType    String   @map("entity_type")
   maxDaysInPool Int      @map("max_days_in_pool")
-  autoLabelIds  BigInt[] @map("auto_label_ids")
+  autoLabelId   BigInt?  @map("auto_label_id")
   isActive      Boolean  @default(true) @map("is_active")
   createdBy     BigInt   @map("created_by")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  creator User @relation(fields: [createdBy], references: [id])
+  creator   User   @relation(fields: [createdBy], references: [id])
+  autoLabel Label? @relation("recall_auto", fields: [autoLabelId], references: [id])
 
   @@map("recall_configs")
 }

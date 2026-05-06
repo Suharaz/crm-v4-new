@@ -22,7 +22,7 @@ interface Lead {
   department?: { name: string } | null;
   customerId?: string | null;
   orders?: { id: string }[];
-  labels?: { label: { id: string; name: string; color: string } }[];
+  label?: { id: string; name: string; color: string } | null;
   activityCount?: number;
   assignedAt?: string | null;
   latestNote?: { content: string | null; createdAt: string } | null;
@@ -276,12 +276,9 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                         <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Đã mua</span>
                       )}
                     </div>
-                    {lead.labels && lead.labels.length > 0 && (
+                    {lead.label && (
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {lead.labels.slice(0, 3).map(ll => (
-                          <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: ll.label.color }}>{ll.label.name}</span>
-                        ))}
-                        {lead.labels.length > 3 && <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] text-slate-500">+{lead.labels.length - 3}</span>}
+                        <span className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: lead.label.color }}>{lead.label.name}</span>
                       </div>
                     )}
                   </td>

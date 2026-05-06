@@ -194,26 +194,16 @@ export class LeadsController {
     return { data: { message: 'Đã xóa lead' } };
   }
 
-  // Label attach/detach — ownership verified via findById
-  @Post(':id/labels')
-  async attachLabels(
+  // Set / clear single label — ownership verified via findById
+  @Patch(':id/label')
+  async setLabel(
     @Param('id', ParseBigIntPipe) id: bigint,
-    @Body() body: { labelIds: string[] },
+    @Body() body: { labelId: string | null },
     @CurrentUser() user: any,
   ) {
     await this.leadsService.findById(id, user); // ownership check
-    await this.labelsService.attachToLead(id, body.labelIds.map(BigInt));
-    return { data: { message: 'Đã gắn nhãn' } };
-  }
-
-  @Delete(':id/labels/:labelId')
-  async detachLabel(
-    @Param('id', ParseBigIntPipe) id: bigint,
-    @Param('labelId', ParseBigIntPipe) labelId: bigint,
-    @CurrentUser() user: any,
-  ) {
-    await this.leadsService.findById(id, user); // ownership check
-    await this.labelsService.detachFromLead(id, labelId);
-    return { data: { message: 'Đã gỡ nhãn' } };
+    const labelId = body.labelId ? BigInt(body.labelId) : null;
+    await this.labelsService.setLeadLabel(id, labelId);
+    return { data: { message: labelId ? 'Đã gắn nhãn' : 'Đã gỡ nhãn' } };
   }
 }

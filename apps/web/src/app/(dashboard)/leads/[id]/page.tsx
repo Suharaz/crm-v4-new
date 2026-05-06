@@ -111,14 +111,12 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
               )}
             </div>
 
-            {/* Row 4: Labels */}
-            {(lead.labels?.length ?? 0) > 0 && (
+            {/* Row 4: Single Label */}
+            {lead.label && (
               <div className="flex flex-wrap gap-1.5 mt-2.5">
-                {lead.labels!.map((ll) => (
-                  <span key={ll.label.id} className="rounded-full px-2.5 py-0.5 text-xs font-medium text-white" style={{ backgroundColor: ll.label.color }}>
-                    {ll.label.name}
-                  </span>
-                ))}
+                <span className="rounded-full px-2.5 py-0.5 text-xs font-medium text-white" style={{ backgroundColor: lead.label.color }}>
+                  {lead.label.name}
+                </span>
               </div>
             )}
 

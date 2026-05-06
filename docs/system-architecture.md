@@ -143,12 +143,12 @@ AppModule
 
 - **Auth:** User, RefreshToken, ApiKey (3)
 - **Organization:** Department, Team, ManagerDepartment, EmployeeLevel (4)
-- **CRM Core:** Customer, Lead, LeadSource, Label, LeadLabel, CustomerLabel (6)
+- **CRM Core:** Customer, Lead, LeadSource, Label, CustomerLabel (5; Lead has single-label FK `label_id`, no junction)
 - **Commerce:** Product, ProductCategory, Order, Payment, PaymentType, BankTransaction (6)
 - **Activity:** Activity, ActivityAttachment, Document, CallLog, AssignmentHistory (5)
 - **Distribution:** AiDistributionConfig, AssignmentTemplate, AssignmentTemplateMember, RecallConfig (4)
 - **System:** ImportJob, Notification, Task, TaskReminder (4)
-- **Total: 32 tables**
+- **Total: 31 tables** (lead_labels dropped 2026-05-06)
 
 ### Enums (10)
 

@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Lead Single Label — BREAKING (2026-05-06)
+- **BREAKING:** Lead label cardinality đổi từ N-N → 1-N. Mỗi lead chỉ có 1 nhãn duy nhất; Customer giữ nguyên multi-label.
+- **Database:**
+  - DROP bảng `lead_labels` (junction). Backup ephemeral `lead_labels_backup_20260506` (tồn tại trong cửa sổ pre-push → db-push; rollback thực tế dùng `pg_dump`).
+  - ADD cột `leads.label_id BIGINT?` FK → `labels(id) ON DELETE SET NULL`, index `leads_label_id_idx`.
+  - ADD cột `leads.label_assigned_at TIMESTAMP(3)?` thay thế `lead_labels.recall_start_at` cho cron per-label recall.
+  - `recall_configs.auto_label_ids BIGINT[]` → `auto_label_id BIGINT?` (singular).
+- **Backend:**
+  - `LabelsService.attachToLead/detachFromLead` → `setLeadLabel(leadId, labelId | null)` (auto-update `labelAssignedAt`).
+  - `LeadsController` endpoints `POST :id/labels` + `DELETE :id/labels/:labelId` → gộp 1 endpoint `PATCH :id/label` body `{ labelId: string | null }`.
+  - 3 call-sites trong `leads.service.ts` (assign/bulkAssign/transfer): reset `lead.labelAssignedAt` thay vì junction `recallStartAt`.
+  - `RecallConfigService._recallLeads`: skip-if-exists — auto-label chỉ apply nếu `lead.label_id IS NULL` (không đè nhãn business).
+  - `RecallConfigService._recallLeadsByLabel`: query `lead.labelId + labelAssignedAt < cutoff` thay vì junction.
+  - `import.processor`: nếu CSV `labels` có nhiều nhãn, lấy phần tử đầu tiên + log warning trong job summary.
+- **Frontend:**
+  - `LeadRecord.labels?[]` → `labelId?: string | null` + `label?: LabelEntity | null` + `labelAssignedAt?: string | null`.
+  - `LeadActions` dialog: multi-checkbox → single `<Select>` dropdown với option "— Bỏ nhãn —".
+  - `LeadTable`, `LeadPoolTableWithBulkAssign`, `LeadKanbanViewByLabel`: render 1 badge thay vì map.
+  - Kanban group-by: mỗi lead vào đúng 1 cột (column "Khác" cho lead chưa có nhãn).
+  - `LeadInlineExpandDetail`, `EntityQuickPreviewDialog`: dual-mode logic — lead PATCH `/leads/:id/label`, customer giữ junction `POST/DELETE /customers/:id/labels[/:labelId]`.
+  - `ImportTemplateDialog`: thêm helper text về first-label-only behavior.
+- **Migration:** Decision = all NULL (không migrate nhãn cũ). User gắn lại nhãn manually sau deploy.
+- **Rollback:** `pg_dump` trước deploy. Schema rollback bằng cách re-create `lead_labels` từ dump + xoá `leads.label_id` + restore `recall_configs.auto_label_ids[]`.
+
 ### Customer Multi-Phone — Số điện thoại phụ (2026-05-04)
 - **Feature:** Mỗi Customer có thể có nhiều số phụ (1 chính + N phụ) với dedup cross-table và search match toàn diện.
 - **Database:** Bảng mới `customer_phones` (id, customer_id, phone, label, note, created_by, soft delete). 3 index: `customer_id`, `phone`, `(phone, deleted_at)`. FK CASCADE qua app-level. Migration `20260504070357_add_customer_phones`.

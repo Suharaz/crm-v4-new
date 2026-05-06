@@ -65,12 +65,12 @@ export class RecallConfigController {
 
   @Post()
   create(
-    @Body() body: { entityType: string; maxDaysInPool: number; autoLabelIds?: string[] },
+    @Body() body: { entityType: string; maxDaysInPool: number; autoLabelId?: string | null },
     @CurrentUser() user: { id: bigint },
   ) {
-    const autoLabelIds = (body.autoLabelIds ?? []).map((id) => BigInt(id));
+    const autoLabelId = body.autoLabelId ? BigInt(body.autoLabelId) : null;
     return this.service.create(
-      { entityType: body.entityType, maxDaysInPool: body.maxDaysInPool, autoLabelIds },
+      { entityType: body.entityType, maxDaysInPool: body.maxDaysInPool, autoLabelId },
       user.id,
     );
   }
@@ -78,12 +78,13 @@ export class RecallConfigController {
   @Patch(':id')
   update(
     @Param('id', ParseBigIntPipe) id: bigint,
-    @Body() body: { maxDaysInPool?: number; autoLabelIds?: string[]; isActive?: boolean },
+    @Body() body: { maxDaysInPool?: number; autoLabelId?: string | null; isActive?: boolean },
   ) {
-    const autoLabelIds = body.autoLabelIds?.map((lid) => BigInt(lid));
+    const autoLabelId =
+      body.autoLabelId === undefined ? undefined : body.autoLabelId === null ? null : BigInt(body.autoLabelId);
     return this.service.update(id, {
       maxDaysInPool: body.maxDaysInPool,
-      autoLabelIds,
+      autoLabelId,
       isActive: body.isActive,
     });
   }

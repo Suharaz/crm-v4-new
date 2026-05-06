@@ -22,13 +22,14 @@ const LEAD_SELECT = {
   companyName: true, facebookUrl: true, instagramUrl: true, zaloUrl: true, linkedinUrl: true,
   customerId: true, productId: true, sourceId: true,
   assignedUserId: true, departmentId: true,
+  labelId: true, labelAssignedAt: true,
   metadata: true, createdAt: true, updatedAt: true,
   customer: { select: { id: true, name: true, phone: true } },
   product: { select: { id: true, name: true, price: true } },
   source: { select: { id: true, name: true } },
   assignedUser: { select: { id: true, name: true } },
   department: { select: { id: true, name: true } },
-  labels: { include: { label: true } },
+  label: { select: { id: true, name: true, color: true, category: true } },
   orders: {
     where: { deletedAt: null },
     select: {
@@ -65,7 +66,7 @@ export class LeadsService {
       where.assignedUserId = BigInt(query.assignedUserId);
     }
     if (query.departmentId) where.departmentId = BigInt(query.departmentId);
-    if (query.labelId) where.labels = { some: { labelId: BigInt(query.labelId) } };
+    if (query.labelId) where.labelId = BigInt(query.labelId);
     if (query.hasOrder === 'true') where.orders = { some: { status: 'COMPLETED' } };
     if (query.hasOrder === 'false') where.orders = { none: { status: 'COMPLETED' } };
     if (query.dateFrom || query.dateTo) {
@@ -335,11 +336,11 @@ export class LeadsService {
       select: LEAD_SELECT,
     });
 
-    // Merge labels from customer → new lead (if customer already has labels)
+    // Merge label from customer → new lead (single label only; take first)
     if (isDuplicate && customer.labels?.length > 0) {
-      await this.prisma.leadLabel.createMany({
-        data: customer.labels.map((cl: any) => ({ leadId: lead.id, labelId: cl.labelId })),
-        skipDuplicates: true,
+      await this.prisma.lead.update({
+        where: { id: lead.id },
+        data: { labelId: customer.labels[0].labelId, labelAssignedAt: new Date() },
       });
     }
 
@@ -555,10 +556,10 @@ export class LeadsService {
         },
       });
 
-      // Reset recall timer khi assign cho user mới
-      await tx.leadLabel.updateMany({
-        where: { leadId: id },
-        data: { recallStartAt: new Date() },
+      // Reset label-recall timer khi assign cho user mới (only if lead has a label)
+      await tx.lead.updateMany({
+        where: { id, labelId: { not: null } },
+        data: { labelAssignedAt: new Date() },
       });
     });
 
@@ -606,10 +607,10 @@ export class LeadsService {
         })),
       });
 
-      // Reset recall timer khi bulk assign
-      await tx.leadLabel.updateMany({
-        where: { leadId: { in: leads.map(l => l.id) } },
-        data: { recallStartAt: new Date() },
+      // Reset label-recall timer khi bulk assign (only leads with labels)
+      await tx.lead.updateMany({
+        where: { id: { in: leads.map(l => l.id) }, labelId: { not: null } },
+        data: { labelAssignedAt: new Date() },
       });
     });
 
@@ -761,11 +762,11 @@ export class LeadsService {
       },
     });
 
-    // Reset recall timer khi chuyển phòng ban hoặc assign mới
+    // Reset label-recall timer khi chuyển phòng ban (only if lead has a label)
     if (targetType === 'DEPARTMENT') {
-      await this.prisma.leadLabel.updateMany({
-        where: { leadId: id },
-        data: { recallStartAt: new Date() },
+      await this.prisma.lead.updateMany({
+        where: { id, labelId: { not: null } },
+        data: { labelAssignedAt: new Date() },
       });
     }
 

@@ -220,7 +220,7 @@ export function ImportTemplateDialog({ type, onClose }: Props) {
               <ul className="list-disc pl-4 space-y-0.5">
                 <li>File CSV cần có dòng tiêu đề (header) ở dòng đầu tiên. Tên cột có thể dùng tiếng Việt như mẫu trên hoặc tiếng Anh (<code>phone, name, email, source, product, labels, note</code>).</li>
                 <li>Cột <code>Nguồn</code> và <code>Sản phẩm</code> cần được tạo trước trong <b>Cài đặt</b>, nếu không sẽ báo lỗi cả dòng.</li>
-                <li>Cột <code>Nhãn</code> và <code>Ghi chú</code> tùy chọn — không có cũng không sao.</li>
+                <li>Cột <code>Nhãn</code> và <code>Ghi chú</code> tùy chọn — không có cũng không sao. <b>Lead chỉ áp dụng nhãn đầu tiên</b> nếu có nhiều nhãn (cách nhau bằng dấu phẩy); các nhãn còn lại sẽ bị bỏ qua + cảnh báo trong job log.</li>
                 <li>File tối đa 10MB, encoding UTF-8.</li>
               </ul>
             </section>

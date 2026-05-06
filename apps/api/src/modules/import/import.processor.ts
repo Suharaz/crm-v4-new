@@ -277,30 +277,39 @@ export class ImportProcessor extends WorkerHost {
       },
     });
 
-    // Labels: merge customer's existing labels + labels from CSV. Unknown label names → warning, not fatal.
-    const labelIds = new Set<string>(); // bigint → string for dedup in Set
-    if (customer.id) {
-      const custLabels = await this.prisma.customerLabel.findMany({
+    // Lead has a single label — take first resolvable from CSV; fall back to first customer label.
+    // CSV multi-label: keep first, warn about ignored.
+    const csvLabelNames = labelsRaw.trim()
+      ? labelsRaw.split(',').map(l => l.trim()).filter(Boolean)
+      : [];
+    let resolvedLabelId: bigint | null = null;
+    const resolvedLabelNames: string[] = [];
+    for (const labelName of csvLabelNames) {
+      const found = labelMap.get(labelName.toLowerCase());
+      if (found) {
+        resolvedLabelNames.push(labelName);
+        if (resolvedLabelId === null) resolvedLabelId = found.id;
+      } else {
+        warnings.push(`Nhãn "${labelName}" không tồn tại trong hệ thống — bỏ qua`);
+      }
+    }
+    if (resolvedLabelNames.length > 1) {
+      warnings.push(
+        `Lead chỉ nhận 1 nhãn — áp dụng "${resolvedLabelNames[0]}", bỏ qua: ${resolvedLabelNames.slice(1).join(', ')}`,
+      );
+    }
+    // Fallback: inherit first label from existing customer (multi-label) when CSV had none
+    if (resolvedLabelId === null && customer.id) {
+      const firstCustLabel = await this.prisma.customerLabel.findFirst({
         where: { customerId: customer.id },
         select: { labelId: true },
       });
-      custLabels.forEach(cl => labelIds.add(cl.labelId.toString()));
+      if (firstCustLabel) resolvedLabelId = firstCustLabel.labelId;
     }
-    if (labelsRaw.trim()) {
-      const labelNames = labelsRaw.split(',').map(l => l.trim()).filter(Boolean);
-      for (const labelName of labelNames) {
-        const found = labelMap.get(labelName.toLowerCase());
-        if (found) {
-          labelIds.add(found.id.toString());
-        } else {
-          warnings.push(`Nhãn "${labelName}" không tồn tại trong hệ thống — bỏ qua`);
-        }
-      }
-    }
-    if (labelIds.size > 0) {
-      await this.prisma.leadLabel.createMany({
-        data: [...labelIds].map(id => ({ leadId: lead.id, labelId: BigInt(id) })),
-        skipDuplicates: true,
+    if (resolvedLabelId !== null) {
+      await this.prisma.lead.update({
+        where: { id: lead.id },
+        data: { labelId: resolvedLabelId, labelAssignedAt: new Date() },
       });
     }
 

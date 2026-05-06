@@ -96,8 +96,7 @@
 | POST | `/leads/:id/status` | 👤 | Đổi status (vd LOST, CONVERTED thủ công) |
 | POST | `/leads/:id/convert` | 👤 | Convert → Customer (nếu chưa có) |
 | DELETE | `/leads/:id` | 👑 | Soft-delete |
-| POST | `/leads/:id/labels` | 👤 | Gắn label |
-| DELETE | `/leads/:id/labels/:labelId` | 👤 | Gỡ label |
+| PATCH | `/leads/:id/label` | 👤 | Gắn / đổi / gỡ nhãn (single label per lead). Body: `{ labelId: string \| null }` |
 
 ## 7. Customers — `/customers`
 
@@ -358,7 +357,7 @@
 | LinkedIn | `linkedinUrl` | ❌ | |
 | Mô tả ngắn | `shortDescription` | ❌ | |
 | Mô tả | `description` | ❌ | |
-| Nhãn | `labels` | ❌ | Comma-separated (`"VIP,Quan tâm"`). Match case-insensitive với `Label.name`. Label chưa có trong DB → ghi `[Warning]` vào error CSV, row vẫn **success** (không tự tạo label mới) |
+| Nhãn | `labels` | ❌ | Comma-separated (`"VIP,Quan tâm"`). Match case-insensitive với `Label.name`. **Lead = single label**: chỉ áp dụng nhãn đầu tiên resolvable, các nhãn còn lại + nhãn chưa có DB → ghi `[Warning]` vào error CSV, row vẫn **success** |
 
 - **Dedup:** `phone + deletedAt=null`. Trùng → error row `Trùng khách hàng`
 - **Template download:** FE sinh file `mau-import-khach-hang.csv` với BOM UTF-8 + 3 sample rows (full / chỉ bắt buộc / partial)

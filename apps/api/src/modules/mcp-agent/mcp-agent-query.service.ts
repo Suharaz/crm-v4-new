@@ -74,7 +74,7 @@ export class McpAgentQueryService {
         source: { select: { id: true, name: true } },
         assignedUser: { select: { id: true, name: true } },
         department: { select: { id: true, name: true } },
-        labels: { include: { label: { select: { id: true, name: true, color: true } } } },
+        label: { select: { id: true, name: true, color: true } },
         orders: {
           where: { deletedAt: null },
           select: {

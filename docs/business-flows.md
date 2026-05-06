@@ -206,11 +206,15 @@ sequenceDiagram
         Svc->>DB: SELECT entities<br/>WHERE status=POOL AND departmentId IS NOT NULL<br/>AND user IS NULL<br/>AND updatedAt < now - maxDays
         loop each entity
             Svc->>DB: UPDATE status=FLOATING, assignedDept=null
-            Svc->>DB: INSERT lead_labels cho autoLabelIds[]
+            Svc->>DB: UPDATE lead.label_id = config.autoLabelId<br/>(skip-if-exists: only when label_id IS NULL)
             Svc->>DB: INSERT assignment_history (from_dept=X, to=floating, reason='auto-recall')
         end
     end
 ```
+
+**Lead vs Customer Label Cardinality (BREAKING 2026-05-06):**
+- Lead: single label via FK `leads.label_id` (nullable). Auto-recall **skip-if-exists** — không đè nhãn business.
+- Customer: multi-label via junction `customer_labels`. Auto-recall append `autoLabelId` (idempotent với `skipDuplicates`).
 
 **Config per entity type:**
 - LEAD: typical 14 ngày

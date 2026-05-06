@@ -69,7 +69,9 @@ export interface LeadRecord {
   assignedUser?: NamedEntity | null;
   department?: NamedEntity | null;
   customer?: { name: string; phone?: string | null } | null;
-  labels?: NestedLabel[];
+  labelId?: string | null;
+  label?: LabelEntity | null;
+  labelAssignedAt?: string | null;
   orders?: OrderRecord[];
   activityCount?: number;
   lastInteractionAt?: string | null;

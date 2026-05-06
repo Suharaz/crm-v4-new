@@ -33,7 +33,7 @@ export function LeadActions({ lead, users, departments, labels }: LeadActionsPro
   const [transferType, setTransferType] = useState('');
   const [transferDeptId, setTransferDeptId] = useState('');
   const [newStatus, setNewStatus] = useState('');
-  const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
+  const [selectedLabelId, setSelectedLabelId] = useState<string>(lead.labelId ?? '__NONE__');
   const assignAction = useFormAction({ successMessage: 'Đã phân lead' });
   const claimAction = useFormAction({ successMessage: 'Đã nhận lead' });
   const transferAction = useFormAction({ successMessage: 'Đã chuyển lead' });
@@ -166,41 +166,33 @@ export function LeadActions({ lead, users, departments, labels }: LeadActionsPro
 
       {/* Convert */}
      
-      {/* Labels */}
+      {/* Single Label */}
       <Button size="sm" variant="outline" onClick={() => setLabelOpen(true)}>
         <Tag className="h-4 w-4 mr-1" />Nhãn
       </Button>
       <Dialog open={labelOpen} onOpenChange={setLabelOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Gắn nhãn</DialogTitle></DialogHeader>
-          <div className="flex flex-wrap gap-2">
-            {labels.map(l => {
-              const isSelected = selectedLabelIds.includes(l.id);
-              return (
-                <button
-                  key={l.id}
-                  type="button"
-                  onClick={() => setSelectedLabelIds(prev =>
-                    isSelected ? prev.filter(id => id !== l.id) : [...prev, l.id]
-                  )}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${isSelected ? 'ring-2 ring-sky-500 text-white' : 'text-white opacity-60'}`}
-                  style={{ backgroundColor: l.color }}
-                >
-                  {l.name}
-                </button>
-              );
-            })}
-          </div>
+          <DialogHeader><DialogTitle>Gắn nhãn (1 nhãn / lead)</DialogTitle></DialogHeader>
+          <Select value={selectedLabelId} onValueChange={setSelectedLabelId}>
+            <SelectTrigger><SelectValue placeholder="Chưa có nhãn" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__NONE__">— Bỏ nhãn —</SelectItem>
+              {labels.map(l => (
+                <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <DialogFooter>
             <Button variant="outline" onClick={() => setLabelOpen(false)}>Hủy</Button>
             <Button
-              disabled={selectedLabelIds.length === 0 || labelAction.isLoading}
+              disabled={labelAction.isLoading}
               onClick={async () => {
-                const r = await labelAction.execute('post', `/leads/${lead.id}/labels`, { labelIds: selectedLabelIds });
-                if (r) { setLabelOpen(false); setSelectedLabelIds([]); }
+                const labelId = selectedLabelId === '__NONE__' ? null : selectedLabelId;
+                const r = await labelAction.execute('patch', `/leads/${lead.id}/label`, { labelId });
+                if (r) setLabelOpen(false);
               }}
             >
-              {labelAction.isLoading ? 'Đang xử lý...' : 'Gắn nhãn'}
+              {labelAction.isLoading ? 'Đang xử lý...' : 'Lưu'}
             </Button>
           </DialogFooter>
         </DialogContent>

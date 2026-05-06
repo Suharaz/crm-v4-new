@@ -178,13 +178,11 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                           </span>
                         )}
                       </div>
-                      {(l.labels?.length ?? 0) > 0 && (
+                      {l.label && (
                         <div className="flex flex-wrap gap-1">
-                          {l.labels!.map((ll) => (
-                            <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: ll.label.color }}>
-                              {ll.label.name}
-                            </span>
-                          ))}
+                          <span className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: l.label.color }}>
+                            {l.label.name}
+                          </span>
                         </div>
                       )}
                     </div>

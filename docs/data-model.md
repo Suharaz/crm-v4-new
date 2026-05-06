@@ -47,9 +47,9 @@
 │ CRM CORE             │                                              │
 │ ────────             │                                              │
 │ customers ◄──────────┤                                              │
-│ leads ◄──────────────┤       lead_sources (lookup)                  │
-│ lead_labels ─────────┤       labels                                 │
-│ customer_labels ─────┘       ↑                                      │
+│ leads ──────────────►┤       lead_sources (lookup)                  │
+│   (label_id FK)       \      labels ◄────────────                   │
+│ customer_labels ──────►       ↑                                     │
 ├─────────────────────────────┼────────────────────────────────────────┤
 │ COMMERCE                    │                                        │
 │ ────────                    │                                        │
@@ -181,8 +181,14 @@ Core entity. 7 status.
 ### `lead_sources`
 Pattern C (`isActive` flag, không soft delete). `skipPool` = true → lead tạo mới đi thẳng vào AI distribution, skip dept pool.
 
-### `labels`, `lead_labels`, `customer_labels`
-Label master (pattern C — `isActive`). Join table composite PK `(leadId|customerId, labelId)`. DELETE label → soft-deactivate để giữ history.
+### `labels`, `customer_labels`
+Label master (pattern C — `isActive`). DELETE label → soft-deactivate để giữ history.
+
+**Cardinality (BREAKING 2026-05-06):**
+- **Lead** = single label via FK `leads.label_id` (nullable). `leads.label_assigned_at` tracks last reset for per-label recall cron.
+- **Customer** = multi-label via junction `customer_labels (customer_id, label_id)`.
+
+Migration: bảng `lead_labels` đã drop. `recall_configs.auto_label_ids[]` → `auto_label_id BIGINT?`. Recall cron skip-if-exists (không đè nhãn business). CSV import multi-label → giữ nhãn đầu, log warning.
 
 ---
 

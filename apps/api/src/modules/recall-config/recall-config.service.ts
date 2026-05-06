@@ -43,14 +43,14 @@ export class RecallConfigService {
   }
 
   async create(
-    data: { entityType: string; maxDaysInPool: number; autoLabelIds: bigint[] },
+    data: { entityType: string; maxDaysInPool: number; autoLabelId: bigint | null },
     createdBy: bigint,
   ) {
     const config = await this.prisma.recallConfig.create({
       data: {
         entityType: data.entityType,
         maxDaysInPool: data.maxDaysInPool,
-        autoLabelIds: data.autoLabelIds,
+        autoLabelId: data.autoLabelId,
         createdBy,
       },
       include: { creator: { select: { id: true, name: true } } },
@@ -60,7 +60,7 @@ export class RecallConfigService {
 
   async update(
     id: bigint,
-    data: { maxDaysInPool?: number; autoLabelIds?: bigint[]; isActive?: boolean },
+    data: { maxDaysInPool?: number; autoLabelId?: bigint | null; isActive?: boolean },
   ) {
     await this.getById(id);
     const config = await this.prisma.recallConfig.update({
@@ -185,7 +185,7 @@ export class RecallConfigService {
   }
 
   private async _recallLeads(
-    config: { id: bigint; maxDaysInPool: number; autoLabelIds: bigint[] },
+    config: { id: bigint; maxDaysInPool: number; autoLabelId: bigint | null },
     cutoffDate: Date,
   ): Promise<number> {
     const CHUNK_SIZE = 500;
@@ -201,7 +201,8 @@ export class RecallConfigService {
           updatedAt: { lt: cutoffDate },
         },
         // Capture previous state BEFORE updateMany — needed for activity log.
-        select: { id: true, assignedUserId: true, departmentId: true },
+        // labelId included to skip auto-label assignment for already-labeled leads.
+        select: { id: true, assignedUserId: true, departmentId: true, labelId: true },
         take: CHUNK_SIZE,
       });
 
@@ -214,11 +215,15 @@ export class RecallConfigService {
         data: { status: LeadStatus.FLOATING, departmentId: null, assignedUserId: null },
       });
 
-      if (config.autoLabelIds.length > 0) {
-        const labelData = leadIds.flatMap((leadId) =>
-          config.autoLabelIds.map((labelId) => ({ leadId, labelId })),
-        );
-        await this.prisma.leadLabel.createMany({ data: labelData, skipDuplicates: true });
+      // Skip-if-exists: only auto-label leads that have no label set
+      if (config.autoLabelId) {
+        const idsWithoutLabel = leads.filter((l) => l.labelId === null).map((l) => l.id);
+        if (idsWithoutLabel.length > 0) {
+          await this.prisma.lead.updateMany({
+            where: { id: { in: idsWithoutLabel } },
+            data: { labelId: config.autoLabelId, labelAssignedAt: new Date() },
+          });
+        }
       }
 
       await this._logRecallActivities('LEAD', leads, 'Tự động thu hồi về kho thả nổi (quá hạn ngày)', {
@@ -236,7 +241,7 @@ export class RecallConfigService {
   }
 
   private async _recallCustomers(
-    config: { id: bigint; maxDaysInPool: number; autoLabelIds: bigint[] },
+    config: { id: bigint; maxDaysInPool: number; autoLabelId: bigint | null },
     cutoffDate: Date,
   ): Promise<number> {
     const CHUNK_SIZE = 500;
@@ -264,10 +269,12 @@ export class RecallConfigService {
         data: { status: CustomerStatus.FLOATING, assignedDepartmentId: null, assignedUserId: null },
       });
 
-      if (config.autoLabelIds.length > 0) {
-        const labelData = customerIds.flatMap((customerId) =>
-          config.autoLabelIds.map((labelId) => ({ customerId, labelId })),
-        );
+      // Customer keeps multi-label junction; attach single autoLabelId via createMany (idempotent)
+      if (config.autoLabelId) {
+        const labelData = customerIds.map((customerId) => ({
+          customerId,
+          labelId: config.autoLabelId!,
+        }));
         await this.prisma.customerLabel.createMany({ data: labelData, skipDuplicates: true });
       }
 
@@ -305,12 +312,8 @@ export class RecallConfigService {
             assignedUserId: { not: null },
             deletedAt: null,
             status: { notIn: [LeadStatus.CONVERTED, LeadStatus.LOST] },
-            labels: {
-              some: {
-                labelId: config.labelId,
-                recallStartAt: { lt: cutoffDate },
-              },
-            },
+            labelId: config.labelId,
+            labelAssignedAt: { lt: cutoffDate },
           },
           select: { id: true, assignedUserId: true, departmentId: true },
           take: CHUNK_SIZE,

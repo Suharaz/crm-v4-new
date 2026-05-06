@@ -147,7 +147,13 @@ POOL → ASSIGNED → IN_PROGRESS → CONVERTED | LOST → FLOATING
 
 ### Auto-Recall
 - Lead/customer ở dept pool quá X ngày → FLOATING + gắn nhãn mặc định
-- Super admin config ngày + nhãn
+- Super admin config ngày + nhãn (1 nhãn auto)
+- **Skip-if-exists:** cron không đè nhãn business của lead — chỉ gắn auto-label nếu `lead.label_id IS NULL`
+
+### Lead vs Customer Label (BREAKING 2026-05-06)
+- **Lead = 1 nhãn** (`leads.label_id` FK nullable, `leads.label_assigned_at` track recall timer)
+- **Customer = N nhãn** (junction `customer_labels`)
+- CSV import multi-label cho lead → chỉ áp dụng nhãn đầu, log warning
 
 ### Tasks/Todo
 - Quick add bar (smart time parsing), quick time presets, from-note checkbox

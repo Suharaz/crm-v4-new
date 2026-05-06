@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/shared/status-badge';
 import NoteDialog from '@/components/shared/note-dialog';
+import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
 import { cn, formatDate, formatVND } from '@/lib/utils';
 import { ExternalLink, Building, Loader2, MessageSquarePlus, Tags, ArrowRightLeft, CreditCard } from 'lucide-react';
@@ -125,14 +126,16 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
 
   async function toggleLabel(labelId: string) {
     setLabelSaving(true);
+    // Track whether we're clearing or setting — drives toast wording
+    const wasActive = currentLabelIds.has(labelId);
     try {
       if (entityType === 'lead') {
         // Single label: clicking active label clears, clicking another sets it.
-        const next = currentLabelIds.has(labelId) ? null : labelId;
+        const next = wasActive ? null : labelId;
         await api.patch(`/leads/${entityId}/label`, { labelId: next });
       } else {
         // Multi-label: toggle add/remove via existing junction endpoints.
-        if (currentLabelIds.has(labelId)) {
+        if (wasActive) {
           await api.delete(`/customers/${entityId}/labels/${labelId}`);
         } else {
           await api.post(`/customers/${entityId}/labels`, { labelIds: [labelId] });
@@ -141,7 +144,11 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
       invalidateCache(entityType, entityId);
       const res = await api.get<{ data: DetailRecord }>(entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`);
       setData(res.data);
-    } catch { /* */ }
+      toast.success(wasActive ? 'Đã bỏ nhãn' : 'Đã gắn nhãn');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Không thể cập nhật nhãn';
+      toast.error(message);
+    }
     setLabelSaving(false);
   }
 

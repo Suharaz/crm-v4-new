@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/status-badge';
 import NoteDialog from '@/components/shared/note-dialog';
+import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
 import { formatDate } from '@/lib/utils';
 import { ExternalLink, Phone, Mail, User, Building, Tag, Calendar, Package, Loader2, MessageSquarePlus, Tags, CreditCard } from 'lucide-react';
@@ -153,11 +154,13 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
   async function toggleLabel(labelId: string) {
     if (!entityId) return;
     setLabelSaving(true);
+    // Track whether we're clearing or setting — drives toast wording
+    const wasActive = currentLabelIds.has(labelId);
     try {
       if (entityType === 'lead') {
-        const next = currentLabelIds.has(labelId) ? null : labelId;
+        const next = wasActive ? null : labelId;
         await api.patch(`/leads/${entityId}/label`, { labelId: next });
-      } else if (currentLabelIds.has(labelId)) {
+      } else if (wasActive) {
         await api.delete(`/customers/${entityId}/labels/${labelId}`);
       } else {
         await api.post(`/customers/${entityId}/labels`, { labelIds: [labelId] });
@@ -166,7 +169,11 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
       const res = await api.get<{ data: PreviewEntityData }>(entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`);
       setData(res.data);
       router.refresh();
-    } catch { /* */ }
+      toast.success(wasActive ? 'Đã bỏ nhãn' : 'Đã gắn nhãn');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Không thể cập nhật nhãn';
+      toast.error(message);
+    }
     setLabelSaving(false);
   }
 

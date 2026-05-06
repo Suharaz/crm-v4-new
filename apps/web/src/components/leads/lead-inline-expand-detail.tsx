@@ -144,6 +144,8 @@ export function LeadInlineExpandDetail({ entityType, entityId, colSpan }: Props)
       invalidateCache(entityType, entityId);
       const res = await api.get<{ data: DetailRecord }>(entityType === 'lead' ? `/leads/${entityId}` : `/customers/${entityId}`);
       setData(res.data);
+      // Refresh server components so the parent row's label column updates without F5
+      router.refresh();
       toast.success(wasActive ? 'Đã bỏ nhãn' : 'Đã gắn nhãn');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Không thể cập nhật nhãn';

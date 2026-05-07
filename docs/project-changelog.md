@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### CSV Import Preview + Fake Progress Bar (2026-05-07)
+- **UX:** Upload CSV giờ qua state machine 2 bước - dry-run validate trước, user xác nhận rồi mới insert thật. Bỏ spinner mờ ám, thay bằng fake progress bar gradient sky→cyan ramp 0-99% trong 2 phút + ease-out lên 100% khi worker xong.
+- **Database:**
+  - ENUM `ImportStatus` thêm 3 value: `PENDING_REVIEW`, `REVIEWED`, `CANCELLED`.
+  - Default status đổi từ `PROCESSING` → `PENDING_REVIEW`.
+  - `import_jobs` thêm 3 cột nullable: `preview_summary` JSONB, `reviewed_at`, `started_at`.
+- **Backend:**
+  - Tách `ImportValidationService` (4 public methods: `validateLeadRow/insertLead`, `validateCustomerRow/insertCustomer`) khỏi processor → DRY giữa dry-run và insert path.
+  - `ImportProcessor` slim down từ 422 → ~210 dòng, branch theo `dryRun` flag trong job data.
+  - 2 endpoint mới: `POST /imports/:id/start` (REVIEWED → PROCESSING + enqueue real insert), `POST /imports/:id/cancel` (PENDING_REVIEW|REVIEWED → CANCELLED + unlink CSV file).
+  - State guard `updateMany` với where status atomic chống race double-start.
+- **Frontend:**
+  - Component mới: `ImportPreviewDialog` (count valid/error + 5 sample lỗi đầu + nút Tải file lỗi đầy đủ + Import/Huỷ).
+  - Component mới: `ImportProgressBar` (gradient sky-400 → cyan-400, error red).
+  - Hook mới: `useFakeProgress(isRunning, isDone)` - linear 0-99 / 2 phút, ease-out cubic 1.5s lên 100.
+  - `CsvImportPageClient` rewrite: auto-poll PENDING_REVIEW (1s) + PROCESSING (3s), auto-mở dialog khi REVIEWED, useEffect cleanup interval đúng (sửa polling leak cũ).
+- **Tests:**
+  - Unit `tests/unit/services/use-fake-progress-clamping.test.ts`: 8 cases cho linear ramp + ease-out math.
+  - API integration test cập nhật để cover state machine mới + 4 cases /start /cancel (404, 403).
+- **Out of scope:** inline edit dòng lỗi, real progress hybrid, cron xoá file mồ côi (file 10MB cap đủ an toàn).
+
 ### Lead Single Label - BREAKING (2026-05-06)
 - **BREAKING:** Lead label cardinality đổi từ N-N → 1-N. Mỗi lead chỉ có 1 nhãn duy nhất; Customer giữ nguyên multi-label.
 - **Database:**

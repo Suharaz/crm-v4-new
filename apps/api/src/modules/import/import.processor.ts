@@ -1,21 +1,27 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Inject } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { PrismaClient } from '@prisma/client';
-import { normalizePhone, isValidVNPhone } from '@crm/utils';
+import { PrismaClient, ImportStatus, Prisma } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Readable } from 'stream';
 import { parse } from 'csv-parse';
 import { ConfigService } from '@nestjs/config';
 import { decodeBufferAuto } from './csv-detect';
-import { CustomerPhonesService } from '../customers/customer-phones.service';
+import {
+  ImportValidationService,
+  LookupMaps,
+} from './import-validation.service';
 
-interface ImportJobData {
+export interface ImportJobData {
   importJobId: string;
   type: 'leads' | 'customers';
   filePath: string;
+  /** When true, validate only - count + sample errors, no DB writes. */
+  dryRun: boolean;
 }
+
+const SAMPLE_ERROR_LIMIT = 5;
 
 /**
  * Escape a CSV cell per RFC 4180: wrap in quotes if value contains quote/comma/newline,
@@ -38,14 +44,14 @@ export class ImportProcessor extends WorkerHost {
   constructor(
     @Inject(PrismaClient) private readonly prisma: PrismaClient,
     configService: ConfigService,
-    private readonly customerPhonesService: CustomerPhonesService,
+    private readonly validationService: ImportValidationService,
   ) {
     super();
     this.uploadDir = configService.get('UPLOAD_DIR', './uploads');
   }
 
   async process(job: Job<ImportJobData>) {
-    const { importJobId, type, filePath } = job.data;
+    const { importJobId, type, filePath, dryRun } = job.data;
     const jobId = BigInt(importJobId);
     const absolutePath = path.join(this.uploadDir, filePath);
 
@@ -53,33 +59,21 @@ export class ImportProcessor extends WorkerHost {
     let successCount = 0;
     let errorCount = 0;
     const errors: { row: number; originalRow: Record<string, string>; message: string }[] = [];
-    // Warnings: row succeeded but had non-fatal issues (e.g. label không tồn tại). Still counted as success.
     const warnings: { row: number; originalRow: Record<string, string>; messages: string[] }[] = [];
     let originalHeaders: string[] = [];
 
     try {
-      // Load the owner (createdBy) of this import job - needed to attribute Activity NOTE rows
-      // created when a CSV row contains a `note`/`Ghi chú` column. Loaded once, not per row.
       const jobRecord = await this.prisma.importJob.findUnique({
         where: { id: jobId },
         select: { createdBy: true },
       });
       const createdBy = jobRecord?.createdBy ?? null;
 
-      // Preload lookup tables to avoid N+1 queries per row (PERF-H4)
-      const [allSources, allProducts, allLabels] = await Promise.all([
-        this.prisma.leadSource.findMany({ select: { id: true, name: true, skipPool: true } }),
-        this.prisma.product.findMany({ where: { deletedAt: null }, select: { id: true, name: true } }),
-        this.prisma.label.findMany({ where: { isActive: true }, select: { id: true, name: true } }),
-      ]);
-      const sourceMap = new Map(allSources.map(s => [s.name.toLowerCase(), s]));
-      const productMap = new Map(allProducts.map(p => [p.name.toLowerCase(), p]));
-      const labelMap = new Map(allLabels.map(l => [l.name.toLowerCase(), l]));
-      const phoneCache = new Map<string, { id: bigint }>(); // phone → customer
+      const lookups = await this.preloadLookups();
+      const phoneCache = new Map<string, { id: bigint }>();
 
-      // Auto-detect encoding (UTF-8 / UTF-16 / Windows-1258) and delimiter (',' / ';' / '\t' / '|')
-      // so users can upload Excel-saved CSVs without manual re-encoding.
-      // File size is capped at 10MB upstream - safe to read fully into memory.
+      // Auto-detect encoding (UTF-8 / UTF-16 / Windows-1258) and delimiter so users
+      // can upload Excel-saved CSVs without manual re-encoding. 10MB cap upstream.
       const buf = await fs.promises.readFile(absolutePath);
       const { text, delimiter } = decodeBufferAuto(buf);
       const parser = Readable.from(text).pipe(
@@ -90,17 +84,13 @@ export class ImportProcessor extends WorkerHost {
       for await (const row of parser) {
         rowIndex++;
         totalRows++;
-        // Capture headers from first row so error file preserves original columns
+
         if (originalHeaders.length === 0) {
           originalHeaders = Object.keys(row);
-          // Both leads and customers require a phone column - if NONE of the canonical
-          // names are present, the CSV header is unreadable (most often because Excel
-          // saved as ANSI on a Vietnamese locale and substituted diacritics with '?').
-          // Fail the whole job with a clear message instead of producing N row-level errors.
+          // Header sanity check - if Excel saved as ANSI on a VN locale, diacritics
+          // get replaced with '?' and "Số điện thoại" becomes unreadable. Fail fast.
           const hasPhone = 'phone' in row || 'Số điện thoại' in row;
           if (!hasPhone) {
-            // Mark all rows as a single global error and stop early. Most often caused
-            // by Excel saving as ANSI on a Vietnamese locale → diacritics replaced with '?'.
             const guidance =
               `Không nhận diện được cột "Số điện thoại". ` +
               `Header đọc được: [${originalHeaders.join(', ')}]. ` +
@@ -110,14 +100,35 @@ export class ImportProcessor extends WorkerHost {
             break;
           }
         }
-        try {
-          const rowWarnings =
-            type === 'leads'
-              ? await this.processLeadRow(row, rowIndex + 1, sourceMap, productMap, labelMap, phoneCache, createdBy)
-              : await this.processCustomerRow(row, rowIndex + 1, labelMap, createdBy);
+
+        const result =
+          type === 'leads'
+            ? await this.validationService.validateLeadRow(row, rowIndex + 1, lookups, phoneCache)
+            : await this.validationService.validateCustomerRow(row, rowIndex + 1, lookups);
+
+        if (!result.valid) {
+          errorCount++;
+          errors.push({ row: rowIndex + 1, originalRow: row, message: result.error });
+          continue;
+        }
+
+        if (dryRun) {
           successCount++;
-          if (rowWarnings.length > 0) {
-            warnings.push({ row: rowIndex + 1, originalRow: row, messages: rowWarnings });
+          if (result.warnings.length > 0) {
+            warnings.push({ row: rowIndex + 1, originalRow: row, messages: result.warnings });
+          }
+          continue;
+        }
+
+        // Real insert path
+        try {
+          const insertWarnings =
+            type === 'leads'
+              ? await this.validationService.insertLead(result.parsed as any, phoneCache, createdBy)
+              : await this.validationService.insertCustomer(result.parsed as any, createdBy);
+          successCount++;
+          if (insertWarnings.length > 0) {
+            warnings.push({ row: rowIndex + 1, originalRow: row, messages: insertWarnings });
           }
         } catch (e: unknown) {
           errorCount++;
@@ -125,7 +136,6 @@ export class ImportProcessor extends WorkerHost {
           errors.push({ row: rowIndex + 1, originalRow: row, message });
         }
 
-        // Update progress every 100 rows
         if (totalRows % 100 === 0) {
           await this.prisma.importJob.update({
             where: { id: jobId },
@@ -134,288 +144,110 @@ export class ImportProcessor extends WorkerHost {
         }
       }
 
-      // Generate issues report (errors + warnings) preserving original columns.
-      // Column "Loại" distinguishes fatal errors from non-fatal warnings so user can filter in Excel.
-      // User can fix inline and re-upload directly without cross-referencing original file.
-      let errorFileUrl: string | null = null;
-      const hasIssues = errors.length > 0 || warnings.length > 0;
-      if (hasIssues && originalHeaders.length > 0) {
-        const headerRow = [...originalHeaders, 'Dòng', 'Loại', 'Thông điệp'];
-        const errorRows = errors.map((e) => {
-          const cells = originalHeaders.map((h) => escapeCsvCell(e.originalRow[h] ?? ''));
-          cells.push(escapeCsvCell(String(e.row)));
-          cells.push(escapeCsvCell('Lỗi'));
-          cells.push(escapeCsvCell(e.message));
-          return cells.join(',');
+      if (dryRun) {
+        await this.finalizeDryRun(jobId, totalRows, successCount, errorCount, errors);
+      } else {
+        const errorFileUrl = await this.writeIssuesFile(
+          importJobId,
+          originalHeaders,
+          errors,
+          warnings,
+        );
+        await this.prisma.importJob.update({
+          where: { id: jobId },
+          data: {
+            status: ImportStatus.COMPLETED,
+            totalRows,
+            successCount,
+            errorCount,
+            errorFileUrl,
+            completedAt: new Date(),
+          },
         });
-        const warningRows = warnings.map((w) => {
-          const cells = originalHeaders.map((h) => escapeCsvCell(w.originalRow[h] ?? ''));
-          cells.push(escapeCsvCell(String(w.row)));
-          cells.push(escapeCsvCell('Cảnh báo'));
-          // Join multiple warning messages for the same row with " | " so the CSV stays one row per source row
-          cells.push(escapeCsvCell(w.messages.join(' | ')));
-          return cells.join(',');
-        });
-        const dataRows = [...errorRows, ...warningRows];
-        // UTF-8 BOM so Excel renders Vietnamese diacritics correctly
-        const bom = '﻿';
-        const errorCsv = bom + headerRow.map(escapeCsvCell).join(',') + '\n' + dataRows.join('\n');
-        const errorDir = path.join(this.uploadDir, 'imports', 'errors');
-        fs.mkdirSync(errorDir, { recursive: true });
-        const errorFile = `error-${importJobId}.csv`;
-        fs.writeFileSync(path.join(errorDir, errorFile), errorCsv);
-        errorFileUrl = `imports/errors/${errorFile}`;
       }
-
-      // Update final status
-      await this.prisma.importJob.update({
-        where: { id: jobId },
-        data: {
-          status: 'COMPLETED',
-          totalRows, successCount, errorCount,
-          errorFileUrl,
-          completedAt: new Date(),
-        },
-      });
     } catch (e: any) {
       await this.prisma.importJob.update({
         where: { id: jobId },
-        data: { status: 'FAILED', completedAt: new Date() },
+        data: { status: ImportStatus.FAILED, completedAt: new Date() },
       });
       throw e;
     }
   }
 
-  /** Returns array of non-fatal warning messages. Row still counts as success. */
-  private async processLeadRow(
-    row: Record<string, string>,
-    rowNum: number,
-    sourceMap: Map<string, { id: bigint; name: string; skipPool: boolean }>,
-    productMap: Map<string, { id: bigint; name: string }>,
-    labelMap: Map<string, { id: bigint; name: string }>,
-    phoneCache: Map<string, { id: bigint }>,
-    createdBy: bigint | null,
-  ): Promise<string[]> {
-    const warnings: string[] = [];
-    const phone = normalizePhone(row.phone || row['Số điện thoại'] || '');
-    const name = row.name || row['Họ tên'] || phone;
-    if (!phone) throw new Error('Thiếu số điện thoại');
-    if (!isValidVNPhone(phone)) throw new Error(`SĐT không hợp lệ: ${phone}`);
-
-    // Find or create customer (with in-memory cache).
-    // Match cả số chính lẫn số phụ - nếu phone trùng số phụ KH cũ → reuse, không tạo KH mới.
-    let customer = phoneCache.get(phone) || null;
-    if (!customer) {
-      const dbCustomer = await this.customerPhonesService.findCustomerByAnyPhone(phone);
-      if (dbCustomer) {
-        customer = { id: dbCustomer.id };
-      } else {
-        const newCustomer = await this.prisma.customer.create({
-          data: { phone, name, email: row.email || null },
-        });
-        customer = { id: newCustomer.id };
-      }
-      phoneCache.set(phone, customer);
-    }
-
-    // Find source by name (preloaded Map - O(1) instead of DB query)
-    const sourceName = row.source || row['Nguồn'] || null;
-    const source = sourceName ? sourceMap.get(sourceName.toLowerCase()) || null : null;
-    const sourceId = source?.id || null;
-
-    // Find product by name (preloaded - substring match to preserve original behavior)
-    const productName = row.product || row['Sản phẩm'] || null;
-    let product: { id: bigint; name: string } | null = null;
-    if (productName) {
-      const key = productName.toLowerCase();
-      // Try exact match first, then substring match (same as original ILIKE '%name%')
-      product = productMap.get(key) ||
-        [...productMap.values()].find(p => p.name.toLowerCase().includes(key)) || null;
-      if (!product) {
-        throw new Error(`Sản phẩm "${productName}" không tồn tại trong hệ thống`);
-      }
-    }
-    const productId = product?.id || null;
-
-    // Check dedup for CSV import
-    const existingLead = await this.prisma.lead.findFirst({
-      where: { phone, sourceId, productId, deletedAt: null },
-    });
-    if (existingLead) throw new Error(`Trùng lead: SĐT ${phone} + nguồn + sản phẩm`);
-
-    // Check skipPool on source (already preloaded)
-    const status: 'POOL' | 'ZOOM' = source?.skipPool ? 'ZOOM' : 'POOL';
-
-    // Read labels + note first so they are excluded from the metadata bucket below.
-    const labelsRaw = row.labels || row['Nhãn'] || '';
-    const noteRaw = (row.note || row['Ghi chú'] || '').trim();
-
-    // Extra columns → metadata JSONB (any column not in known fields)
-    const knownKeys = new Set([
-      'phone', 'Số điện thoại',
-      'name', 'Họ tên',
-      'email', 'Email',
-      'source', 'Nguồn',
-      'product', 'Sản phẩm',
-      'labels', 'Nhãn',
-      'note', 'Ghi chú',
+  private async preloadLookups(): Promise<LookupMaps> {
+    const [allSources, allProducts, allLabels] = await Promise.all([
+      this.prisma.leadSource.findMany({ select: { id: true, name: true, skipPool: true } }),
+      this.prisma.product.findMany({ where: { deletedAt: null }, select: { id: true, name: true } }),
+      this.prisma.label.findMany({ where: { isActive: true }, select: { id: true, name: true } }),
     ]);
-    const metadata: Record<string, string> = {};
-    for (const [key, val] of Object.entries(row)) {
-      if (!knownKeys.has(key) && val && val.trim()) {
-        metadata[key] = val.trim();
-      }
-    }
-
-    const lead = await this.prisma.lead.create({
-      data: {
-        phone, name, email: row.email || null,
-        status,
-        customerId: customer.id,
-        sourceId, productId,
-        ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
-      },
-    });
-
-    // Lead has a single label - take first resolvable from CSV; fall back to first customer label.
-    // CSV multi-label: keep first, warn about ignored.
-    const csvLabelNames = labelsRaw.trim()
-      ? labelsRaw.split(',').map(l => l.trim()).filter(Boolean)
-      : [];
-    let resolvedLabelId: bigint | null = null;
-    const resolvedLabelNames: string[] = [];
-    for (const labelName of csvLabelNames) {
-      const found = labelMap.get(labelName.toLowerCase());
-      if (found) {
-        resolvedLabelNames.push(labelName);
-        if (resolvedLabelId === null) resolvedLabelId = found.id;
-      } else {
-        warnings.push(`Nhãn "${labelName}" không tồn tại trong hệ thống - bỏ qua`);
-      }
-    }
-    if (resolvedLabelNames.length > 1) {
-      warnings.push(
-        `Lead chỉ nhận 1 nhãn - áp dụng "${resolvedLabelNames[0]}", bỏ qua: ${resolvedLabelNames.slice(1).join(', ')}`,
-      );
-    }
-    // Fallback: inherit first label from existing customer (multi-label) when CSV had none
-    if (resolvedLabelId === null && customer.id) {
-      const firstCustLabel = await this.prisma.customerLabel.findFirst({
-        where: { customerId: customer.id },
-        select: { labelId: true },
-      });
-      if (firstCustLabel) resolvedLabelId = firstCustLabel.labelId;
-    }
-    if (resolvedLabelId !== null) {
-      await this.prisma.lead.update({
-        where: { id: lead.id },
-        data: { labelId: resolvedLabelId, labelAssignedAt: new Date() },
-      });
-    }
-
-    // Note: create an Activity(type=NOTE) so it shows up in the lead timeline.
-    // Requires createdBy (uploader). If the uploader record is gone, silently skip with a warning.
-    if (noteRaw) {
-      if (createdBy) {
-        await this.prisma.activity.create({
-          data: {
-            entityType: 'LEAD',
-            entityId: lead.id,
-            userId: createdBy,
-            type: 'NOTE',
-            content: noteRaw,
-          },
-        });
-      } else {
-        warnings.push('Không xác định được người upload - note bị bỏ qua');
-      }
-    }
-
-    return warnings;
+    return {
+      sourceMap: new Map(allSources.map((s) => [s.name.toLowerCase(), s])),
+      productMap: new Map(allProducts.map((p) => [p.name.toLowerCase(), p])),
+      labelMap: new Map(allLabels.map((l) => [l.name.toLowerCase(), l])),
+    };
   }
 
-  /** Returns array of warning messages (e.g. unmatched labels). Row still counts as success. */
-  private async processCustomerRow(
-    row: Record<string, string>,
-    rowNum: number,
-    labelMap: Map<string, { id: bigint; name: string }>,
-    createdBy: bigint | null,
-  ): Promise<string[]> {
-    const warnings: string[] = [];
-    const phone = normalizePhone(row.phone || row['Số điện thoại'] || '');
-    const name = row.name || row['Họ tên'] || '';
-    if (!phone || !name) throw new Error('Thiếu phone hoặc name');
-    if (!isValidVNPhone(phone)) throw new Error(`SĐT không hợp lệ: ${phone}`);
-
-    // Cross-table dedup: throw nếu phone trùng số chính HOẶC số phụ KH khác.
-    try {
-      await this.customerPhonesService.assertPhoneNotExists(phone);
-    } catch {
-      throw new Error(`Trùng khách hàng: SĐT ${phone}`);
-    }
-
-    // Optional fields - support both English and Vietnamese column names
-    const email = row.email || row['Email'] || null;
-    const companyName = row.companyName || row['Công ty'] || null;
-    const facebookUrl = row.facebookUrl || row['Facebook'] || null;
-    const instagramUrl = row.instagramUrl || row['Instagram'] || null;
-    const zaloUrl = row.zaloUrl || row['Zalo'] || null;
-    const linkedinUrl = row.linkedinUrl || row['LinkedIn'] || null;
-    const shortDescription = row.shortDescription || row['Mô tả ngắn'] || null;
-    const description = row.description || row['Mô tả'] || null;
-    const noteRaw = (row.note || row['Ghi chú'] || '').trim();
-
-    const customer = await this.prisma.customer.create({
+  private async finalizeDryRun(
+    jobId: bigint,
+    totalRows: number,
+    validRows: number,
+    errorRows: number,
+    errors: { row: number; message: string }[],
+  ) {
+    const previewSummary = {
+      totalRows,
+      validRows,
+      errorRows,
+      sampleErrors: errors.slice(0, SAMPLE_ERROR_LIMIT).map((e) => ({
+        row: e.row,
+        message: e.message,
+      })),
+    };
+    await this.prisma.importJob.update({
+      where: { id: jobId },
       data: {
-        phone, name, email,
-        ...(companyName ? { companyName } : {}),
-        ...(facebookUrl ? { facebookUrl } : {}),
-        ...(instagramUrl ? { instagramUrl } : {}),
-        ...(zaloUrl ? { zaloUrl } : {}),
-        ...(linkedinUrl ? { linkedinUrl } : {}),
-        ...(shortDescription ? { shortDescription } : {}),
-        ...(description ? { description } : {}),
+        status: ImportStatus.REVIEWED,
+        totalRows,
+        successCount: validRows,
+        errorCount: errorRows,
+        previewSummary: previewSummary as Prisma.InputJsonValue,
+        reviewedAt: new Date(),
       },
     });
+  }
 
-    // Attach labels (comma-separated names, matched case-insensitive from DB)
-    const labelsRaw = row.labels || row['Nhãn'] || '';
-    if (labelsRaw.trim()) {
-      const labelNames = labelsRaw.split(',').map(l => l.trim()).filter(Boolean);
-      const matchedLabels: { id: bigint }[] = [];
-      for (const labelName of labelNames) {
-        const found = labelMap.get(labelName.toLowerCase());
-        if (found) {
-          matchedLabels.push(found);
-        } else {
-          warnings.push(`Nhãn "${labelName}" không tồn tại trong hệ thống - bỏ qua`);
-        }
-      }
-      if (matchedLabels.length > 0) {
-        await this.prisma.customerLabel.createMany({
-          data: matchedLabels.map(l => ({ customerId: customer.id, labelId: l.id })),
-          skipDuplicates: true,
-        });
-      }
-    }
+  private async writeIssuesFile(
+    importJobId: string,
+    originalHeaders: string[],
+    errors: { row: number; originalRow: Record<string, string>; message: string }[],
+    warnings: { row: number; originalRow: Record<string, string>; messages: string[] }[],
+  ): Promise<string | null> {
+    const hasIssues = errors.length > 0 || warnings.length > 0;
+    if (!hasIssues || originalHeaders.length === 0) return null;
 
-    // Note: create Activity(type=NOTE) attributed to the uploader so it appears on the customer timeline.
-    if (noteRaw) {
-      if (createdBy) {
-        await this.prisma.activity.create({
-          data: {
-            entityType: 'CUSTOMER',
-            entityId: customer.id,
-            userId: createdBy,
-            type: 'NOTE',
-            content: noteRaw,
-          },
-        });
-      } else {
-        warnings.push('Không xác định được người upload - note bị bỏ qua');
-      }
-    }
-
-    return warnings;
+    const headerRow = [...originalHeaders, 'Dòng', 'Loại', 'Thông điệp'];
+    const errorRows = errors.map((e) => {
+      const cells = originalHeaders.map((h) => escapeCsvCell(e.originalRow[h] ?? ''));
+      cells.push(escapeCsvCell(String(e.row)));
+      cells.push(escapeCsvCell('Lỗi'));
+      cells.push(escapeCsvCell(e.message));
+      return cells.join(',');
+    });
+    const warningRows = warnings.map((w) => {
+      const cells = originalHeaders.map((h) => escapeCsvCell(w.originalRow[h] ?? ''));
+      cells.push(escapeCsvCell(String(w.row)));
+      cells.push(escapeCsvCell('Cảnh báo'));
+      cells.push(escapeCsvCell(w.messages.join(' | ')));
+      return cells.join(',');
+    });
+    const dataRows = [...errorRows, ...warningRows];
+    // UTF-8 BOM so Excel renders Vietnamese diacritics correctly
+    const bom = '﻿';
+    const errorCsv = bom + headerRow.map(escapeCsvCell).join(',') + '\n' + dataRows.join('\n');
+    const errorDir = path.join(this.uploadDir, 'imports', 'errors');
+    fs.mkdirSync(errorDir, { recursive: true });
+    const errorFile = `error-${importJobId}.csv`;
+    fs.writeFileSync(path.join(errorDir, errorFile), errorCsv);
+    return `imports/errors/${errorFile}`;
   }
 }

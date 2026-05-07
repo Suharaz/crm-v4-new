@@ -94,9 +94,12 @@ enum TaskPriority {
 }
 
 enum ImportStatus {
+  PENDING_REVIEW
+  REVIEWED
   PROCESSING
   COMPLETED
   FAILED
+  CANCELLED
 }
 
 // ─── USER & ORGANIZATION ────────────────────────────────────────────────────
@@ -871,14 +874,18 @@ model ImportJob {
   type         String       // "leads" | "customers"
   fileName     String       @map("file_name")
   fileUrl      String       @map("file_url")
-  status       ImportStatus @default(PROCESSING)
-  totalRows    Int          @default(0) @map("total_rows")
-  successCount Int          @default(0) @map("success_count")
-  errorCount   Int          @default(0) @map("error_count")
-  errorFileUrl String?      @map("error_file_url")
-  createdBy    BigInt       @map("created_by")
-  createdAt    DateTime     @default(now()) @map("created_at")
-  completedAt  DateTime?    @map("completed_at")
+  status         ImportStatus @default(PENDING_REVIEW)
+  totalRows      Int          @default(0) @map("total_rows")
+  successCount   Int          @default(0) @map("success_count")
+  errorCount     Int          @default(0) @map("error_count")
+  errorFileUrl   String?      @map("error_file_url")
+  /// Dry-run summary { totalRows, validRows, errorRows, sampleErrors[5] }. Populated when status=REVIEWED.
+  previewSummary Json?        @map("preview_summary")
+  reviewedAt     DateTime?    @map("reviewed_at")
+  startedAt      DateTime?    @map("started_at")
+  createdBy      BigInt       @map("created_by")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  completedAt    DateTime?    @map("completed_at")
 
   user User @relation(fields: [createdBy], references: [id])
 

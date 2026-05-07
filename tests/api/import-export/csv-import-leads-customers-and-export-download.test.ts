@@ -114,12 +114,46 @@ describe('CSV Import & Export', () => {
       const { status, body } = await manager.getJson<any>(`/imports/${importJobId}/status`);
       expect(status).toBe(200);
       expect(body.data.status).toBeDefined();
-      expect(['PROCESSING', 'COMPLETED', 'FAILED']).toContain(body.data.status);
+      // After upload, job goes through PENDING_REVIEW → REVIEWED. Real insert
+      // requires explicit POST /:id/start, so PROCESSING/COMPLETED only appear
+      // after that step. CANCELLED/FAILED are also valid terminal states.
+      expect([
+        'PENDING_REVIEW',
+        'REVIEWED',
+        'PROCESSING',
+        'COMPLETED',
+        'FAILED',
+        'CANCELLED',
+      ]).toContain(body.data.status);
     });
 
     it('ID không tồn tại → 404', async () => {
       const { status } = await admin.getJson<any>('/imports/999999999/status');
       expect(status).toBe(404);
+    });
+  });
+
+  // ── POST /imports/:id/start, /:id/cancel - state machine ──────────────────
+
+  describe('POST /imports/:id/start - chuyển REVIEWED -> PROCESSING', () => {
+    it('USER không phải creator → 403', async () => {
+      if (!importJobId) return;
+      const res = await user.post(`/imports/${importJobId}/start`, {});
+      // USER is blocked by class-level Roles guard (MANAGER+) before service
+      // ownership check, so 403 either way.
+      expect(res.status).toBe(403);
+    });
+
+    it('start trên ID không tồn tại → 404', async () => {
+      const res = await admin.post('/imports/999999999/start', {});
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('POST /imports/:id/cancel - chuyển PENDING_REVIEW|REVIEWED -> CANCELLED', () => {
+    it('cancel trên ID không tồn tại → 404', async () => {
+      const res = await admin.post('/imports/999999999/cancel', {});
+      expect(res.status).toBe(404);
     });
   });
 

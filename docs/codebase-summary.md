@@ -97,7 +97,7 @@ crm-v4/
 ### Import/Export/Integration (4)
 | Module | Controller prefix | Vai trò |
 |--------|-------------------|---------|
-| `import` | `/imports` | BullMQ-based CSV import leads (5 cols + metadata JSONB) / customers (11 cols + labels). Bilingual header EN/VN. Xem `api-reference.md` §28 để biết CSV format |
+| `import` | `/imports` | BullMQ-based CSV import leads/customers với state machine PENDING_REVIEW → REVIEWED → PROCESSING → COMPLETED (xem 2026-05-07 changelog). Dry-run validate riêng, user confirm qua POST /:id/start hoặc huỷ qua /:id/cancel. `ImportValidationService` shared logic dryRun + real insert. Xem `api-reference.md` §28 để biết CSV format |
 | `export` | `/exports` | CSV leads/customers/orders với formula sanitization |
 | `file-upload` | `/files` | Upload + stream file (JWT protected) |
 | `third-party-api` | `/external` | Public (API key) - tạo lead từ website/FB |

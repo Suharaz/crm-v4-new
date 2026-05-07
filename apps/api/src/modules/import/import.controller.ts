@@ -52,6 +52,18 @@ export class ImportController {
     return { data };
   }
 
+  @Post(':id/start')
+  async startImport(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
+    const data = await this.service.startImport(id, user);
+    return { data };
+  }
+
+  @Post(':id/cancel')
+  async cancelImport(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
+    const data = await this.service.cancelImport(id, user);
+    return { data };
+  }
+
   /**
    * Download the error CSV for an import job.
    * Guarded by role (manager+) at class level and by ownership check in service.

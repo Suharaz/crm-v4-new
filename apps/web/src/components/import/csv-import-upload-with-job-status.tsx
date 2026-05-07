@@ -78,7 +78,12 @@ function UploadZone({ label, endpoint, onJobCreated }: UploadZoneProps) {
         const err = await res.json().catch(() => ({ message: 'Lỗi upload' }));
         throw new Error(err.message || `HTTP ${res.status}`);
       }
-      const job = await res.json();
+      // API wraps responses as { data }. Without unwrapping, job.id/status
+      // would be undefined - polling updates then fail to match by id, so the
+      // job never transitions to REVIEWED in state and the dialog can't auto-open
+      // (forcing a manual F5).
+      const json = await res.json();
+      const job: ImportJob = json?.data ?? json;
       onJobCreated(job);
       toast.success(`Đã upload ${file.name}, đang kiểm tra dữ liệu...`);
     } catch (err) {

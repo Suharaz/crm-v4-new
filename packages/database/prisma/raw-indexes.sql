@@ -134,3 +134,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_leader_active
 -- ══════════════════════════════════════════════════════════════════════════
 CREATE UNIQUE INDEX IF NOT EXISTS idx_call_logs_external_active
   ON call_logs(external_id) WHERE deleted_at IS NULL;
+
+-- ══════════════════════════════════════════════════════════════════════════
+-- USER_PHONES: 1 SĐT chỉ thuộc 1 user active tại 1 thời điểm (2026-05-08)
+-- Cho phép re-assign số đã soft-delete cho user khác
+-- ══════════════════════════════════════════════════════════════════════════
+CREATE UNIQUE INDEX IF NOT EXISTS idx_user_phones_phone_active
+  ON user_phones(phone) WHERE deleted_at IS NULL;

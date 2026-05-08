@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### User Phone Assignment + Call Match Refactor (2026-05-08)
+- **Feature:** Super admin phân SĐT cho từng nhân viên (sale). Cuộc gọi đến số trong `user_phones` → activity ghi nhận đúng nhân viên kể cả khi phone không match lead/customer nào.
+- **Database:**
+  - Bảng mới `user_phones` (id, phone, user_id, assigned_at, assigned_by, note, soft delete) - 1 user N phones.
+  - Bảng mới `user_phone_history` (audit trail TRANSFERRED/DELETED/REASSIGNED).
+  - Partial unique index `idx_user_phones_phone_active` ON user_phones(phone) WHERE deleted_at IS NULL → 1 phone 1 user active, cho phép re-assign sau soft-delete.
+- **Backend:**
+  - Module mới `apps/api/src/modules/user-phones/` (controller + service + repository + 4 DTO). Tất cả endpoint `/admin/user-phones/*` chỉ super_admin.
+  - Endpoints: `GET / | GET /by-user/:userId | GET /:id/history | POST / | POST /bulk | PATCH /:id/transfer | DELETE /:id`.
+  - Internal API `UserPhonesService.findUserByPhone()` được inject vào `CallLogsService`.
+  - `CallLogsService.ingest()` refactor flow match: `user_phones lookup` → LEAD → CUSTOMER → UNMATCHED. `matched_user_id` ưu tiên user_phones, fallback `lead.assignedUserId`/`customer.assignedUserId`. `match_status = AUTO_MATCHED` khi match được user HOẶC entity, UNMATCHED khi cả 2 đều null.
+  - Backward compat: nếu `user_phones` rỗng, behavior y như cũ (matched_user_id từ entity).
+- **Frontend:**
+  - Page mới `/user-phones` (super_admin only) với toolbar filter (phone search debounce 300ms + user select), table cursor pagination "Tải thêm".
+  - 4 dialogs: tạo SĐT, transfer, lịch sử timeline, bulk import (textarea `phone,email` per line, parse + validation preview, max 500 dòng).
+  - Sidebar item mới "Phân SĐT" (`PhoneOutgoing` icon, super_admin only).
+  - API helpers `apps/web/src/lib/api/user-phones.ts` (7 method).
+  - Types `UserPhoneRecord`, `UserPhoneHistoryRecord`, `BulkUserPhoneResponse` thêm vào entities.ts.
+
 ### CSV Import Preview + Fake Progress Bar (2026-05-07)
 - **UX:** Upload CSV giờ qua state machine 2 bước - dry-run validate trước, user xác nhận rồi mới insert thật. Bỏ spinner mờ ám, thay bằng fake progress bar gradient sky→cyan ramp 0-99% trong 2 phút + ease-out lên 100% khi worker xong.
 - **Database:**

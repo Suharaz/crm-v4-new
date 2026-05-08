@@ -4,6 +4,7 @@ import { normalizePhone } from '@crm/utils';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { AiSummaryService } from '../ai-summary/ai-summary.service';
 import { CustomerPhonesService } from '../customers/customer-phones.service';
+import { UserPhonesService } from '../user-phones/user-phones.service';
 
 const CALL_LOG_SELECT = {
   id: true, externalId: true, phoneNumber: true, callType: true,
@@ -18,6 +19,7 @@ export class CallLogsService {
     private readonly prisma: PrismaClient,
     private readonly aiSummary: AiSummaryService,
     private readonly customerPhonesService: CustomerPhonesService,
+    private readonly userPhonesService: UserPhonesService,
   ) {}
 
   async list(query: PaginationQueryDto & { matchStatus?: string; matchedUserFilter?: bigint; dateFrom?: string; dateTo?: string }) {
@@ -61,13 +63,19 @@ export class CallLogsService {
 
     const phone = normalizePhone(data.phoneNumber);
 
-    // Auto-match: search leads first, then customers
+    // Match flow: user_phones FIRST → LEAD → CUSTOMER → UNMATCHED.
+    // matched_user_id ưu tiên user_phones; fallback lead.assignedUserId / customer.assignedUserId.
     let matchedEntityType: EntityType | null = null;
     let matchedEntityId: bigint | null = null;
     let matchedUserId: bigint | null = null;
-    let matchStatus: 'AUTO_MATCHED' | 'UNMATCHED' = 'UNMATCHED';
 
-    // Try match lead
+    // Step 1: lookup user qua user_phones (số do super admin phân cho sale)
+    const userMatch = await this.userPhonesService.findUserByPhone(phone);
+    if (userMatch) {
+      matchedUserId = userMatch.userId;
+    }
+
+    // Step 2: match LEAD (giữ filter assignedUserId IS NOT NULL)
     const lead = await this.prisma.lead.findFirst({
       where: { phone, deletedAt: null, assignedUserId: { not: null } },
       select: { id: true, assignedUserId: true },
@@ -77,18 +85,20 @@ export class CallLogsService {
     if (lead) {
       matchedEntityType = 'LEAD';
       matchedEntityId = lead.id;
-      matchedUserId = lead.assignedUserId;
-      matchStatus = 'AUTO_MATCHED';
+      if (!matchedUserId) matchedUserId = lead.assignedUserId; // fallback
     } else {
-      // Try match customer - match cả số chính lẫn số phụ.
+      // Step 3: match CUSTOMER - cả số chính lẫn số phụ.
       const customer = await this.customerPhonesService.findCustomerByAnyPhone(phone);
       if (customer) {
         matchedEntityType = 'CUSTOMER';
         matchedEntityId = customer.id;
-        matchedUserId = customer.assignedUserId;
-        matchStatus = 'AUTO_MATCHED';
+        if (!matchedUserId) matchedUserId = customer.assignedUserId; // fallback
       }
     }
+
+    // Step 4: matchStatus = AUTO_MATCHED nếu match được user HOẶC entity, UNMATCHED chỉ khi cả 2 đều null
+    const matchStatus: 'AUTO_MATCHED' | 'UNMATCHED' =
+      matchedUserId || matchedEntityId ? 'AUTO_MATCHED' : 'UNMATCHED';
 
     const callLog = await this.prisma.callLog.create({
       data: {

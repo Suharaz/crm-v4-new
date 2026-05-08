@@ -176,6 +176,12 @@ model User {
   // Audit logs (system trace)
   auditLogs AuditLog[] @relation("AuditLogUser")
 
+  // User phone assignment (1 user N phones, audit trail in history)
+  userPhones         UserPhone[]        @relation("UserPhoneOwner")
+  userPhonesAssigned UserPhone[]        @relation("UserPhoneAssigner")
+  userPhoneHistory   UserPhoneHistory[] @relation("UserPhoneHistoryUser")
+  userPhoneChanges   UserPhoneHistory[] @relation("UserPhoneHistoryChanger")
+
   @@unique([email, deletedAt])
   @@index([departmentId])
   @@index([teamId])
@@ -307,6 +313,48 @@ model CustomerPhone {
   @@index([phone])
   @@index([phone, deletedAt])
   @@map("customer_phones")
+}
+
+/// SĐT phân cho user (sale). 1 user N phones, 1 phone 1 user active tại 1 thời điểm.
+/// Partial unique index `idx_user_phones_phone_active` (WHERE deleted_at IS NULL) trong raw-indexes.sql
+/// cho phép re-assign số đã soft-delete cho user khác.
+model UserPhone {
+  id         BigInt    @id @default(autoincrement())
+  phone      String
+  userId     BigInt    @map("user_id")
+  assignedAt DateTime  @default(now()) @map("assigned_at")
+  assignedBy BigInt    @map("assigned_by")
+  note       String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  user     User @relation("UserPhoneOwner", fields: [userId], references: [id])
+  assigner User @relation("UserPhoneAssigner", fields: [assignedBy], references: [id])
+
+  @@index([userId, deletedAt])
+  @@index([phone, deletedAt])
+  @@map("user_phones")
+}
+
+/// Audit trail cho UserPhone: ghi lại khi transfer/delete/reassign.
+model UserPhoneHistory {
+  id         BigInt   @id @default(autoincrement())
+  phone      String
+  userId     BigInt   @map("user_id")
+  assignedAt DateTime @map("assigned_at")
+  releasedAt DateTime @map("released_at")
+  reason     String   // TRANSFERRED | DELETED | REASSIGNED
+  changedBy  BigInt   @map("changed_by")
+  note       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user    User @relation("UserPhoneHistoryUser", fields: [userId], references: [id])
+  changer User @relation("UserPhoneHistoryChanger", fields: [changedBy], references: [id])
+
+  @@index([phone, releasedAt])
+  @@index([userId, releasedAt])
+  @@map("user_phone_history")
 }
 
 model Lead {

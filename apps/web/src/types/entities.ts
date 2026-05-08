@@ -245,6 +245,54 @@ export interface ActivityRecord {
   _source?: string;
 }
 
+// ─── User Phone Assignment ─────────────────────────────────────────────────
+
+export interface UserPhoneRecord {
+  id: string;
+  phone: string;
+  userId: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    department?: { name: string } | null;
+  } | null;
+  assignedAt: string;
+  assignedBy: string;
+  assigner?: { id: string; name: string } | null;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserPhoneHistoryRecord {
+  id: string;
+  phone: string;
+  userId: string;
+  user?: { id: string; name: string } | null;
+  assignedAt: string;
+  releasedAt: string;
+  reason: 'TRANSFERRED' | 'DELETED' | 'REASSIGNED';
+  changedBy: string;
+  changer?: { id: string; name: string } | null;
+  note: string | null;
+  createdAt: string;
+}
+
+export interface BulkUserPhoneRow {
+  phone: string;
+  userId: string;
+  status: 'CREATED' | 'SKIPPED' | 'FAILED';
+  reason?: string;
+  id?: string;
+}
+
+export interface BulkUserPhoneResponse {
+  created: BulkUserPhoneRow[];
+  skipped: BulkUserPhoneRow[];
+  failed: BulkUserPhoneRow[];
+}
+
 // ─── Settings ──────────────────────────────────────────────────────────────
 
 export interface SettingsItem {

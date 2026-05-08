@@ -65,3 +65,12 @@ export interface TaskReminder {
   remindedAt: string | null;
   createdAt: string;
 }
+
+// ── User Phone Assignment ────────────────────────────────────────────────────
+
+export type {
+  UserPhoneDto,
+  UserPhoneHistoryDto,
+  BulkUserPhoneItemResult,
+  BulkUserPhoneResult,
+} from './user-phone.types';

@@ -1,10 +1,10 @@
-import { serverFetch } from '@/lib/auth';
-import { UserForm } from '@/components/users/user-form';
+import { serverFetch, getCurrentUser } from '@/lib/auth';
 import { BackButton } from '@/components/shared/back-button';
 import { notFound } from 'next/navigation';
-import type { UserRecord, NamedEntity } from '@/types/entities';
+import type { UserRecord, NamedEntity, ApiListResponse } from '@/types/entities';
+import { UserEditTabs } from '@/components/users/user-edit-tabs';
 
-/** Edit user page. */
+/** Edit user page với 2 tab: thông tin chung + SĐT phụ trách (super_admin). */
 export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   let userData: UserRecord | undefined;
@@ -23,11 +23,28 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
 
   const user = userData as UserRecord;
 
+  // Super admin được thấy tab "SĐT phụ trách" + danh sách users để transfer
+  const me = await getCurrentUser();
+  const isSuperAdmin = me?.role === 'SUPER_ADMIN';
+  let allUsers: UserRecord[] = [];
+  if (isSuperAdmin) {
+    try {
+      const res = await serverFetch<ApiListResponse<UserRecord>>('/users?limit=500');
+      allUsers = res.data;
+    } catch { /* empty */ }
+  }
+
   return (
     <div>
       <BackButton />
       <h1 className="text-2xl font-bold text-slate-900 mb-6 mt-2">Sửa nhân viên: {user.name}</h1>
-      <UserForm user={user} departments={departments} levels={levels} />
+      <UserEditTabs
+        user={user}
+        departments={departments}
+        levels={levels}
+        showPhonesTab={isSuperAdmin}
+        allUsers={allUsers}
+      />
     </div>
   );
 }

@@ -1,10 +1,11 @@
 import { z } from 'zod';
 
-// Phone: Vietnamese format - starts with 0, 10-11 digits total
+// Phone: relaxed rule - 8-14 digits, optional leading '+'
+// Supports VN mobile (0xxx), VN service (1900xxxx), and international (+xxx)
 const phoneVN = z
   .string()
   .min(1, 'Vui lòng nhập số điện thoại')
-  .regex(/^0\d{9,10}$/, 'Số điện thoại không hợp lệ (phải bắt đầu bằng 0, gồm 10-11 chữ số)');
+  .regex(/^\+?\d{8,14}$/, 'Số điện thoại không hợp lệ (8-14 chữ số, có thể bắt đầu bằng + hoặc 0)');
 
 const emailOptional = z
   .string()
@@ -60,7 +61,7 @@ export const userCreateSchema = z.object({
   phone: z
     .string()
     .optional()
-    .refine(val => !val || /^0\d{9,10}$/.test(val), 'Số điện thoại không hợp lệ'),
+    .refine(val => !val || /^\+?\d{8,14}$/.test(val), 'Số điện thoại không hợp lệ'),
   role: z.string().min(1, 'Vui lòng chọn vai trò'),
   departmentId: z.string().optional(),
   teamId: z.string().optional(),

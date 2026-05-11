@@ -21,7 +21,8 @@ interface Props {
   phones: CustomerPhoneRecord[];
 }
 
-const VN_PHONE_RE = /^(0|\+84)\d{9,10}$/;
+// Relaxed rule: 8-14 digits, optional leading '+' (VN mobile / service / international)
+const VN_PHONE_RE = /^\+?\d{8,14}$/;
 
 /**
  * Section "Số điện thoại khác" trên trang chi tiết customer.

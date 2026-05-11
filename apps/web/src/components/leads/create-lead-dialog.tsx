@@ -73,8 +73,8 @@ export function CreateLeadDialog({ sources: initialSources, products: initialPro
 
   async function handleSubmit() {
     // Validate phone
-    if (!form.phone || !/^0\d{9,10}$/.test(form.phone)) {
-      setFieldErrors({ phone: 'SĐT không hợp lệ (bắt đầu bằng 0, 10-11 số)' });
+    if (!form.phone || !/^\+?\d{8,14}$/.test(form.phone)) {
+      setFieldErrors({ phone: 'SĐT không hợp lệ (8-14 chữ số, có thể bắt đầu bằng + hoặc 0)' });
       return;
     }
     setFieldErrors({});

@@ -31,12 +31,18 @@ export function normalizePhone(input: string): string {
 }
 
 /**
- * Validate Vietnamese phone number format.
- * Must be 10-11 digits starting with 0.
+ * Validate phone number (relaxed rule, supports VN + international + service lines).
+ * Accept 8-14 digits, with an optional leading '+'.
+ * Examples accepted:
+ *   - "0981234567"     (VN mobile, 10 digits)
+ *   - "0987 12345678"  (after normalize: 11+ digits, still ok)
+ *   - "1900xxxx"       (VN service hotline, 8 digits)
+ *   - "+1234567890"    (international, normalize keeps '+' for non +84)
+ *   - "+84981234567"   (normalize -> "0981234567")
  */
 export function isValidVNPhone(phone: string): boolean {
   const normalized = normalizePhone(phone);
-  return /^0\d{9,10}$/.test(normalized);
+  return /^\+?\d{8,14}$/.test(normalized);
 }
 
 /**

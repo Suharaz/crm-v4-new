@@ -4,6 +4,7 @@ import { LeadsService } from './leads.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { LeadListQueryDto } from './dto/lead-list-query.dto';
 import { PoolListQueryDto } from './dto/pool-list-query.dto';
+import { LabelCountsQueryDto } from './dto/label-counts-query.dto';
 import { Roles } from '../auth/decorators/roles-required.decorator';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
@@ -68,14 +69,13 @@ export class LeadsController {
   // scope: 'my' | 'pool-new' | 'pool-zoom' | 'floating'. Same filter params as list.
   @Get('label-counts')
   async labelCounts(
-    @Query('scope') scope: string,
-    @Query() query: PoolListQueryDto,
+    @Query() query: LabelCountsQueryDto,
     @CurrentUser() user: any,
   ) {
-    const validScopes = ['my', 'pool-new', 'pool-zoom', 'floating'] as const;
-    type Scope = (typeof validScopes)[number];
-    const s: Scope = (validScopes as readonly string[]).includes(scope) ? (scope as Scope) : 'my';
-    const data = await this.leadsService.labelCounts(s, query, user);
+    const scope = query.scope ?? 'my';
+    // Drop scope from query so it doesn't accidentally hit Prisma where
+    const { scope: _scope, ...filterQuery } = query;
+    const data = await this.leadsService.labelCounts(scope, filterQuery, user);
     return { data };
   }
 

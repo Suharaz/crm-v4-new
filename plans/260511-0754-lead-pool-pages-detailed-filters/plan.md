@@ -2,8 +2,8 @@
 
 **Plan ID:** `260511-0754-lead-pool-pages-detailed-filters`
 **Created:** 2026-05-11
-**Status:** Pending approval
-**Total effort:** ~9h
+**Status:** Phase 01 + 02 DONE, Phase 03 SKIPPED (test infra removed from workspace)
+**Total effort:** ~7h actual (Phase 03 skipped)
 
 ---
 
@@ -32,9 +32,9 @@ Trang `/leads` chính đã có đủ filter, không trong scope.
 
 | # | Phase | Effort | Blocks | Status |
 |---|---|---|---|---|
-| 01 | [Backend pool filter support](./phase-01-backend-pool-filter-support.md) | ~4h | 02 | Pending |
-| 02 | [Frontend wire filter bar 4 trang pool](./phase-02-frontend-wire-filter-bar.md) | ~3h | 03 | Pending |
-| 03 | [E2E tests filter trên pool pages](./phase-03-e2e-tests.md) | ~2h | - | Pending |
+| 01 | [Backend pool filter support](./phase-01-backend-pool-filter-support.md) | ~4h | 02 | DONE (commit 727f236) |
+| 02 | [Frontend wire filter bar 4 trang pool](./phase-02-frontend-wire-filter-bar.md) | ~3h | 03 | DONE (commit 6d5da85) |
+| 03 | [E2E tests filter trên pool pages](./phase-03-e2e-tests.md) | ~2h | - | SKIPPED (test infra deleted from workspace, defer until restored) |
 
 ---
 

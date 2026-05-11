@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { serverFetch } from '@/lib/auth';
 import { LeadPoolTableWithBulkAssign } from '@/components/leads/lead-pool-table-with-bulk-assign';
 import { LeadListAdvancedFilterBar } from '@/components/leads/lead-list-advanced-filter-bar';
+import { LeadLabelQuickFilters } from '@/components/leads/lead-label-quick-filters';
 import type { LeadRecord, NamedEntity, LabelEntity } from '@/types/entities';
 
 /** Kho Thả Nổi: FLOATING leads visible to ALL users. */
@@ -40,6 +41,10 @@ export default async function FloatingPoolPage({ searchParams }: { searchParams:
         <h1 className="text-2xl font-bold text-slate-900">Kho Thả Nổi</h1>
         <p className="text-sm text-slate-500">Leads thả nổi - bất kỳ ai cũng có thể nhận, manager phân hàng loạt</p>
       </div>
+
+      <Suspense>
+        <LeadLabelQuickFilters scope="floating" />
+      </Suspense>
 
       <Suspense>
         <LeadListAdvancedFilterBar

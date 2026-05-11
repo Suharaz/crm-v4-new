@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { serverFetch, getCurrentUser } from '@/lib/auth';
 import { LeadPoolTableWithBulkAssign } from '@/components/leads/lead-pool-table-with-bulk-assign';
 import { LeadListAdvancedFilterBar } from '@/components/leads/lead-list-advanced-filter-bar';
+import { LeadLabelQuickFilters } from '@/components/leads/lead-label-quick-filters';
 import { CreateLeadDialog } from '@/components/leads/create-lead-dialog';
 import type { LeadRecord, NamedEntity, LabelEntity } from '@/types/entities';
 
@@ -47,6 +48,10 @@ export default async function PoolNewPage({ searchParams }: { searchParams: Prom
         </div>
         {isManager && <CreateLeadDialog sources={sources} products={products} />}
       </div>
+
+      <Suspense>
+        <LeadLabelQuickFilters scope="pool-new" />
+      </Suspense>
 
       <Suspense>
         <LeadListAdvancedFilterBar

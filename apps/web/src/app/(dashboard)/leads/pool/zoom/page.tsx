@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { serverFetch } from '@/lib/auth';
 import { LeadPoolTableWithBulkAssign } from '@/components/leads/lead-pool-table-with-bulk-assign';
 import { LeadListAdvancedFilterBar } from '@/components/leads/lead-list-advanced-filter-bar';
+import { LeadLabelQuickFilters } from '@/components/leads/lead-label-quick-filters';
 import type { LeadRecord, NamedEntity, LabelEntity } from '@/types/entities';
 
 /** Kho Zoom: leads từ nguồn có skipPool=true, chờ xử lý riêng. */
@@ -40,6 +41,10 @@ export default async function PoolZoomPage({ searchParams }: { searchParams: Pro
         <h1 className="text-2xl font-bold text-slate-900">Kho Zoom</h1>
         <p className="text-sm text-slate-500">Leads từ nguồn bỏ qua kho mới - cần xử lý riêng</p>
       </div>
+
+      <Suspense>
+        <LeadLabelQuickFilters scope="pool-zoom" />
+      </Suspense>
 
       <Suspense>
         <LeadListAdvancedFilterBar

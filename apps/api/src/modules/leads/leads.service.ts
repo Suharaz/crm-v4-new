@@ -299,6 +299,65 @@ export class LeadsService {
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }
 
+  // ── Label quick filter counts (per scope) ───────────────────────────────
+  // Returns counts of leads grouped by labelId for a given scope + same filter
+  // set as list endpoint. Used by the quick filter chips above lead tables.
+  // labelId filter from query is stripped so counts span ALL labels.
+  async labelCounts(
+    scope: 'my' | 'pool-new' | 'pool-zoom' | 'floating',
+    query: PoolListQueryDto = {},
+    user?: CurrentUser,
+  ) {
+    // Build filter where, dropping labelId so we count across all labels
+    const { labelId: _drop, ...rest } = query as PoolListQueryDto & { labelId?: string };
+    const filterWhere = this.buildLeadFilterWhere(rest, user);
+
+    // Apply scope-specific fixed filters (mirror list/pool endpoints)
+    let where: Prisma.LeadWhereInput = filterWhere;
+    if (scope === 'pool-new') {
+      where = { ...filterWhere, status: 'POOL', departmentId: null, assignedUserId: null };
+    } else if (scope === 'pool-zoom') {
+      where = { ...filterWhere, status: 'ZOOM' };
+    } else if (scope === 'floating') {
+      where = { ...filterWhere, status: 'FLOATING' };
+    }
+    // scope='my' uses filterWhere only (buildAccessFilter scopes to user for USER role)
+
+    const [grouped, labels] = await Promise.all([
+      this.prisma.lead.groupBy({
+        by: ['labelId'],
+        where,
+        _count: { _all: true },
+      }),
+      this.prisma.label.findMany({
+        where: { isActive: true },
+        select: { id: true, name: true, color: true },
+        orderBy: { name: 'asc' },
+      }),
+    ]);
+
+    const countByLabelId = new Map<string, number>();
+    let noLabelCount = 0;
+    let total = 0;
+    for (const g of grouped) {
+      const c = g._count._all;
+      total += c;
+      if (g.labelId === null) noLabelCount = c;
+      else countByLabelId.set(String(g.labelId), c);
+    }
+
+    return {
+      total,
+      noLabelCount,
+      counts: labels.map((l) => ({
+        labelId: String(l.id),
+        name: l.name,
+        color: l.color,
+        count: countByLabelId.get(String(l.id)) ?? 0,
+      })),
+    };
+  }
+
   // ── Find by ID ──────────────────────────────────────────────────────────
   async findById(id: bigint, user?: CurrentUser) {
     const where: Prisma.LeadWhereInput = {

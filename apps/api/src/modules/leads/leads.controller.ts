@@ -64,6 +64,21 @@ export class LeadsController {
     return this.leadsService.findDuplicatesByPhone(phone);
   }
 
+  // Quick-filter chip counts (per label) for table header.
+  // scope: 'my' | 'pool-new' | 'pool-zoom' | 'floating'. Same filter params as list.
+  @Get('label-counts')
+  async labelCounts(
+    @Query('scope') scope: string,
+    @Query() query: PoolListQueryDto,
+    @CurrentUser() user: any,
+  ) {
+    const validScopes = ['my', 'pool-new', 'pool-zoom', 'floating'] as const;
+    type Scope = (typeof validScopes)[number];
+    const s: Scope = (validScopes as readonly string[]).includes(scope) ? (scope as Scope) : 'my';
+    const data = await this.leadsService.labelCounts(s, query, user);
+    return { data };
+  }
+
   @Get(':id')
   async findById(@Param('id', ParseBigIntPipe) id: bigint, @CurrentUser() user: any) {
     const data = await this.leadsService.findById(id, user);

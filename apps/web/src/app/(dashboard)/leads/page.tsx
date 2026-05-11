@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { serverFetch, getCurrentUser } from '@/lib/auth';
 import type { LeadRecord, NamedEntity, LabelEntity, ApiListResponse } from '@/types/entities';
 import { LeadListAdvancedFilterBar } from '@/components/leads/lead-list-advanced-filter-bar';
+import { LeadLabelQuickFilters } from '@/components/leads/lead-label-quick-filters';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import { LeadListWithViewToggle } from '@/components/leads/lead-list-with-view-toggle';
 import { CreateLeadDialog } from '@/components/leads/create-lead-dialog';
@@ -55,6 +56,10 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
           {isManager && <CreateLeadDialog sources={sources} products={products} />}
         </div>
       </div>
+
+      <Suspense>
+        <LeadLabelQuickFilters scope="my" />
+      </Suspense>
 
       <Suspense>
         <LeadListAdvancedFilterBar

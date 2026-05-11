@@ -397,6 +397,10 @@ model Lead {
   @@index([status, assignedUserId])
   @@index([departmentId])
   @@index([labelId])
+  // Pool filter combo: status + source + product (covers /pool/new, /pool/zoom, /pool/floating with source/product filter)
+  @@index([status, sourceId, productId])
+  // Dept pool filter combo: dept + status + source (covers /pool/department + source filter)
+  @@index([departmentId, status, sourceId])
   @@map("leads")
 }
 

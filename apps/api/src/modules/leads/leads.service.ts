@@ -3,6 +3,7 @@ import { PrismaClient, Prisma, LeadStatus, UserRole } from '@prisma/client';
 import { normalizePhone, isValidVNPhone } from '@crm/utils';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { LeadListQueryDto } from './dto/lead-list-query.dto';
+import { PoolListQueryDto } from './dto/pool-list-query.dto';
 import { CustomerPhonesService } from '../customers/customer-phones.service';
 import { buildAccessFilter, AccessFilterUser } from '../../common/filters/build-access-filter';
 
@@ -50,18 +51,19 @@ export class LeadsService {
     private readonly customerPhonesService: CustomerPhonesService,
   ) {}
 
-  // ── List with filters + role-based access ────────────────────────────────
-  async list(query: LeadListQueryDto, user?: CurrentUser) {
-    const limit = query.limit ?? 20;
+  // Shared filter builder. Status excluded - callers add it (list() takes from query, pool methods hardcode).
+  private buildLeadFilterWhere(
+    query: Partial<LeadListQueryDto>,
+    user?: CurrentUser,
+  ): Prisma.LeadWhereInput {
     const where: Prisma.LeadWhereInput = {
       deletedAt: null,
       ...(user ? buildAccessFilter(user, 'lead') : {}),
     };
 
-    if (query.status) where.status = query.status;
     if (query.sourceId) where.sourceId = BigInt(query.sourceId);
     if (query.productId) where.productId = BigInt(query.productId);
-    // Only allow assignedUserId filter override for manager+
+    // assignedUserId override only for manager+ (USER role is auto-scoped via buildAccessFilter)
     if (query.assignedUserId && (!user || user.role !== UserRole.USER)) {
       where.assignedUserId = BigInt(query.assignedUserId);
     }
@@ -81,6 +83,15 @@ export class LeadsService {
         { email: { contains: query.search, mode: 'insensitive' } },
       ];
     }
+
+    return where;
+  }
+
+  // ── List with filters + role-based access ────────────────────────────────
+  async list(query: LeadListQueryDto, user?: CurrentUser) {
+    const limit = query.limit ?? 20;
+    const where = this.buildLeadFilterWhere(query, user);
+    if (query.status) where.status = query.status;
 
     // ── Cursor-based (backward compat - kanban, infinite scroll) ────────────
     if (query.cursor) {
@@ -120,9 +131,9 @@ export class LeadsService {
   }
 
   // ── My department pool (for USER role) ──────────────────────────────────
-  async myDeptPool(user: CurrentUser, limit: number, cursor?: string) {
+  async myDeptPool(user: CurrentUser, query: PoolListQueryDto = {}) {
     if (!user.departmentId) return { data: [], meta: {} };
-    return this.poolDepartment(user.departmentId, limit, cursor);
+    return this.poolDepartment(user.departmentId, query, user);
   }
 
   // ── 3 Kho Pool Endpoints ────────────────────────────────────────────────
@@ -130,12 +141,15 @@ export class LeadsService {
     return this.list({ ...query, status: LeadStatus.POOL, departmentId: undefined, assignedUserId: undefined });
   }
 
-  async poolNewFiltered(limit: number, cursor?: string) {
-    // 1. Kho Mới: POOL + dept=null (chưa phân)
+  async poolNewFiltered(query: PoolListQueryDto = {}, user?: CurrentUser) {
+    // Filter base (sourceId/productId/labelId/hasOrder/dateFrom/dateTo/search); status & departmentId & assignedUserId fixed below.
+    const filterWhere = this.buildLeadFilterWhere(query, user);
+
+    // 1. Kho Mới: POOL + dept=null (chưa phân) - fixed scope wins over user input.
     const poolLeads = await this.prisma.lead.findMany({
-      where: { status: 'POOL', departmentId: null, deletedAt: null },
+      where: { ...filterWhere, status: 'POOL', departmentId: null, assignedUserId: null },
       select: LEAD_SELECT, orderBy: { id: 'desc' },
-      take: 200, // cap to prevent overload
+      take: 200,
     });
 
     // 2. Recently distributed leads (phân từ kho mới trong 72h gần đây)
@@ -158,8 +172,9 @@ export class LeadsService {
 
     let enrichedDistributed: any[] = [];
     if (filteredIds.length > 0) {
+      // Apply user filters to distributed branch too. Status here fixed to IN_PROGRESS/ASSIGNED (post-distribution).
       const distributedLeads = await this.prisma.lead.findMany({
-        where: { id: { in: filteredIds }, status: { in: ['IN_PROGRESS', 'ASSIGNED'] }, deletedAt: null },
+        where: { ...filterWhere, id: { in: filteredIds }, status: { in: ['IN_PROGRESS', 'ASSIGNED'] } },
         select: LEAD_SELECT,
       });
 
@@ -233,42 +248,48 @@ export class LeadsService {
     return { data: merged };
   }
 
-  async poolZoom(limit: number, cursor?: string) {
-    // Kho Zoom: ZOOM status, chưa assign
-    const take = (limit ?? 20) + 1;
+  async poolZoom(query: PoolListQueryDto = {}, user?: CurrentUser) {
+    const limit = query.limit ?? 20;
+    const take = limit + 1;
+    const filterWhere = this.buildLeadFilterWhere(query, user);
     const leads = await this.prisma.lead.findMany({
-      where: { status: 'ZOOM', deletedAt: null },
+      where: { ...filterWhere, status: 'ZOOM' },
       select: LEAD_SELECT, orderBy: { id: 'desc' }, take,
-      ...(cursor ? { skip: 1, cursor: { id: BigInt(cursor) } } : {}),
+      ...(query.cursor ? { skip: 1, cursor: { id: BigInt(query.cursor) } } : {}),
     });
-    const hasMore = leads.length > (limit ?? 20);
-    const data = hasMore ? leads.slice(0, limit ?? 20) : leads;
+    const hasMore = leads.length > limit;
+    const data = hasMore ? leads.slice(0, limit) : leads;
     await this.attachDuplicateCount(data);
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }
 
-  async poolDepartment(deptId: bigint, limit: number, cursor?: string) {
-    const take = (limit ?? 20) + 1;
+  async poolDepartment(deptId: bigint, query: PoolListQueryDto = {}, user?: CurrentUser) {
+    const limit = query.limit ?? 20;
+    const take = limit + 1;
+    const filterWhere = this.buildLeadFilterWhere(query, user);
+    // Fixed scope: status POOL + dept=deptId + unassigned. Wins over user input.
     const leads = await this.prisma.lead.findMany({
-      where: { status: 'POOL', departmentId: deptId, assignedUserId: null, deletedAt: null },
+      where: { ...filterWhere, status: 'POOL', departmentId: deptId, assignedUserId: null },
       select: LEAD_SELECT, orderBy: { id: 'desc' }, take,
-      ...(cursor ? { skip: 1, cursor: { id: BigInt(cursor) } } : {}),
+      ...(query.cursor ? { skip: 1, cursor: { id: BigInt(query.cursor) } } : {}),
     });
-    const hasMore = leads.length > (limit ?? 20);
-    const data = hasMore ? leads.slice(0, limit ?? 20) : leads;
+    const hasMore = leads.length > limit;
+    const data = hasMore ? leads.slice(0, limit) : leads;
     await this.attachDuplicateCount(data);
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }
 
-  async poolFloating(limit: number, cursor?: string) {
-    const take = (limit ?? 20) + 1;
+  async poolFloating(query: PoolListQueryDto = {}, user?: CurrentUser) {
+    const limit = query.limit ?? 20;
+    const take = limit + 1;
+    const filterWhere = this.buildLeadFilterWhere(query, user);
     const leads = await this.prisma.lead.findMany({
-      where: { status: 'FLOATING', deletedAt: null },
+      where: { ...filterWhere, status: 'FLOATING' },
       select: LEAD_SELECT, orderBy: { id: 'desc' }, take,
-      ...(cursor ? { skip: 1, cursor: { id: BigInt(cursor) } } : {}),
+      ...(query.cursor ? { skip: 1, cursor: { id: BigInt(query.cursor) } } : {}),
     });
-    const hasMore = leads.length > (limit ?? 20);
-    const data = hasMore ? leads.slice(0, limit ?? 20) : leads;
+    const hasMore = leads.length > limit;
+    const data = hasMore ? leads.slice(0, limit) : leads;
     await this.attachDuplicateCount(data);
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }

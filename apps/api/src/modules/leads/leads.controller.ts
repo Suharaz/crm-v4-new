@@ -3,6 +3,7 @@ import { UserRole, LeadStatus } from '@prisma/client';
 import { LeadsService } from './leads.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { LeadListQueryDto } from './dto/lead-list-query.dto';
+import { PoolListQueryDto } from './dto/pool-list-query.dto';
 import { Roles } from '../auth/decorators/roles-required.decorator';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
@@ -21,44 +22,39 @@ export class LeadsController {
   }
 
   @Get('my-dept-pool')
-  async myDeptPool(
-    @CurrentUser() user: any,
-    @Query('limit') limit?: number,
-    @Query('cursor') cursor?: string,
-  ) {
-    return this.leadsService.myDeptPool(user, limit ?? 20, cursor);
+  async myDeptPool(@CurrentUser() user: any, @Query() query: PoolListQueryDto) {
+    return this.leadsService.myDeptPool(user, query);
   }
 
   // 4 Kho endpoints
   @Get('pool/new')
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
-  async poolNew(@Query('limit') limit?: number, @Query('cursor') cursor?: string) {
-    return this.leadsService.poolNewFiltered(limit ?? 20, cursor);
+  async poolNew(@Query() query: PoolListQueryDto, @CurrentUser() user: any) {
+    return this.leadsService.poolNewFiltered(query, user);
   }
 
   @Get('pool/zoom')
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
-  async poolZoom(@Query('limit') limit?: number, @Query('cursor') cursor?: string) {
-    return this.leadsService.poolZoom(limit ?? 20, cursor);
+  async poolZoom(@Query() query: PoolListQueryDto, @CurrentUser() user: any) {
+    return this.leadsService.poolZoom(query, user);
   }
 
   @Get('pool/department/:deptId')
   async poolDepartment(
     @Param('deptId', ParseBigIntPipe) deptId: bigint,
     @CurrentUser() user: any,
-    @Query('limit') limit?: number,
-    @Query('cursor') cursor?: string,
+    @Query() query: PoolListQueryDto,
   ) {
     // USER can only see own department pool; MANAGER+ can see any
     if (user.role === 'USER' && user.departmentId?.toString() !== deptId.toString()) {
       throw new BadRequestException('Bạn chỉ có thể xem kho phòng ban của mình');
     }
-    return this.leadsService.poolDepartment(deptId, limit ?? 20, cursor);
+    return this.leadsService.poolDepartment(deptId, query, user);
   }
 
   @Get('pool/floating')
-  async poolFloating(@Query('limit') limit?: number, @Query('cursor') cursor?: string) {
-    return this.leadsService.poolFloating(limit ?? 20, cursor);
+  async poolFloating(@Query() query: PoolListQueryDto, @CurrentUser() user: any) {
+    return this.leadsService.poolFloating(query, user);
   }
 
   // Lịch sử các lead trùng SĐT - dùng cho icon "trùng" trên UI Kho

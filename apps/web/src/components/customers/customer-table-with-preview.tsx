@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 interface Customer {
   id: string; name: string; phone: string;
   status: string; shortDescription?: string | null;
-  labels?: { label: { id: string; name: string; color: string } }[];
+  labels?: { label: { id: string; name: string; color: string; textColor: string } }[];
   createdAt: string;
 }
 
@@ -82,8 +82,8 @@ export function CustomerTableWithPreview({
                   {c.labels && c.labels.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
                       {c.labels.slice(0, 3).map(ll => (
-                        <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white"
-                          style={{ backgroundColor: ll.label.color }}>{ll.label.name}</span>
+                        <span key={ll.label.id} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium"
+                          style={{ backgroundColor: ll.label.color, color: ll.label.textColor || '#ffffff' }}>{ll.label.name}</span>
                       ))}
                       {c.labels.length > 3 && (
                         <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] text-slate-500">+{c.labels.length - 3}</span>

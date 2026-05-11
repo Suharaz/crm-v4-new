@@ -13,7 +13,7 @@ const CUSTOMER_SUMMARY_SELECT = {
   createdAt: true, updatedAt: true,
   assignedUser: { select: { id: true, name: true } },
   assignedDepartment: { select: { id: true, name: true } },
-  labels: { include: { label: { select: { id: true, name: true, color: true } } } },
+  labels: { include: { label: { select: { id: true, name: true, color: true, textColor: true } } } },
 };
 
 const CUSTOMER_DETAIL_SELECT = {

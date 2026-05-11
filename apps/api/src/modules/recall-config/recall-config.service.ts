@@ -83,7 +83,7 @@ export class RecallConfigService {
     const configs = await this.prisma.labelRecallConfig.findMany({
       orderBy: { createdAt: 'asc' },
       include: {
-        label: { select: { id: true, name: true, color: true } },
+        label: { select: { id: true, name: true, color: true, textColor: true } },
         creator: { select: { id: true, name: true } },
       },
     });
@@ -94,7 +94,7 @@ export class RecallConfigService {
     const config = await this.prisma.labelRecallConfig.findUnique({
       where: { id },
       include: {
-        label: { select: { id: true, name: true, color: true } },
+        label: { select: { id: true, name: true, color: true, textColor: true } },
         creator: { select: { id: true, name: true } },
       },
     });
@@ -111,7 +111,7 @@ export class RecallConfigService {
     const config = await this.prisma.labelRecallConfig.create({
       data: { labelId: data.labelId, recallMinutes: data.recallMinutes, createdBy },
       include: {
-        label: { select: { id: true, name: true, color: true } },
+        label: { select: { id: true, name: true, color: true, textColor: true } },
         creator: { select: { id: true, name: true } },
       },
     });
@@ -124,7 +124,7 @@ export class RecallConfigService {
       where: { id },
       data,
       include: {
-        label: { select: { id: true, name: true, color: true } },
+        label: { select: { id: true, name: true, color: true, textColor: true } },
         creator: { select: { id: true, name: true } },
       },
     });

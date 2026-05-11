@@ -29,7 +29,7 @@ interface Lead {
   department?: { name: string } | null;
   customerId?: string | null;
   orders?: OrderLite[];
-  label?: { id: string; name: string; color: string } | null;
+  label?: { id: string; name: string; color: string; textColor: string } | null;
   activityCount?: number;
   assignedAt?: string | null;
   latestNote?: { content: string | null; createdAt: string } | null;
@@ -334,7 +334,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                       <td className="px-4 py-3 text-slate-600 border-b border-slate-100">{lead.source?.name || '-'}</td>
                       <td className="px-4 py-3 border-b border-slate-100">
                         {lead.label ? (
-                          <span className="inline-block rounded-full px-2 py-0.5 text-[10px] font-medium text-white" style={{ backgroundColor: lead.label.color }}>{lead.label.name}</span>
+                          <span className="inline-block rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ backgroundColor: lead.label.color, color: lead.label.textColor || '#ffffff' }}>{lead.label.name}</span>
                         ) : (
                           <span className="text-[10px] text-slate-400">-</span>
                         )}

@@ -52,7 +52,7 @@ interface PreviewEntityData {
   assignedUser?: { name: string } | null;
   department?: { name: string } | null;
   // Lead: single label via FK; Customer: multi-label via junction
-  label?: { id: string; name: string; color: string } | null;
+  label?: { id: string; name: string; color: string; textColor: string } | null;
   labels?: NestedOrFlatLabel[];
   leadLabels?: NestedOrFlatLabel[];
   customerLabels?: NestedOrFlatLabel[];
@@ -264,8 +264,8 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                       return (
                         <span
                           key={label.id}
-                          className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-white"
-                          style={{ backgroundColor: label.color || '#6b7280' }}
+                          className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                          style={{ backgroundColor: label.color || '#6b7280', color: label.textColor || '#ffffff' }}
                         >
                           {label.name}
                         </span>
@@ -348,10 +348,10 @@ export function EntityQuickPreviewDialog({ open, onOpenChange, entityType, entit
                       disabled={labelSaving}
                       className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all ${
                         currentLabelIds.has(String(l.id))
-                          ? 'text-white ring-2 ring-offset-1 ring-slate-400'
-                          : 'text-white opacity-50 hover:opacity-80'
+                          ? 'ring-2 ring-offset-1 ring-slate-400'
+                          : 'opacity-50 hover:opacity-80'
                       }`}
-                      style={{ backgroundColor: l.color || '#6b7280' }}
+                      style={{ backgroundColor: l.color || '#6b7280', color: l.textColor || '#ffffff' }}
                     >
                       {l.name}
                     </button>

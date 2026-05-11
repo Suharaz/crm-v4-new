@@ -8,6 +8,7 @@ import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
 interface LabelBody {
   name?: string;
   color?: string;
+  textColor?: string;
   category?: string;
   isActive?: boolean;
   /** Auto-recall window in MINUTES. null = remove config, number = upsert. SUPER_ADMIN only. */

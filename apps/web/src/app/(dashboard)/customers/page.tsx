@@ -36,7 +36,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     meta = result.meta;
     departments = (deptRes.data || []).map((d: NamedEntity) => ({ id: String(d.id), name: d.name }));
     users = (usersRes.data || []).map((u: NamedEntity) => ({ id: String(u.id), name: u.name }));
-    labels = (labelsRes.data || []).map((l: LabelEntity) => ({ id: String(l.id), name: l.name, color: l.color || '#6b7280' }));
+    labels = (labelsRes.data || []).map((l: LabelEntity) => ({ id: String(l.id), name: l.name, color: l.color || '#6b7280', textColor: l.textColor || '#ffffff' }));
   } catch { /* empty */ }
 
   return (

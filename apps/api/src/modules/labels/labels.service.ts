@@ -6,6 +6,7 @@ import { CACHE_KEYS, CACHE_TTL } from '../../common/cache/cache.constants';
 interface LabelInput {
   name?: string;
   color?: string;
+  textColor?: string;
   category?: string;
   isActive?: boolean;
   /**
@@ -49,7 +50,12 @@ export class LabelsService {
 
     const result = await this.prisma.$transaction(async (tx) => {
       const label = await tx.label.create({
-        data: { name: data.name, color: data.color, category: data.category },
+        data: {
+          name: data.name,
+          color: data.color,
+          textColor: data.textColor,
+          category: data.category,
+        },
       });
       if (data.recallMinutes != null) {
         await tx.labelRecallConfig.create({
@@ -73,6 +79,7 @@ export class LabelsService {
         data: {
           name: data.name,
           color: data.color,
+          textColor: data.textColor,
           category: data.category,
           isActive: data.isActive,
         },

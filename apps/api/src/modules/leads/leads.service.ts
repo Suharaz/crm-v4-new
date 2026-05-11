@@ -30,7 +30,7 @@ const LEAD_SELECT = {
   source: { select: { id: true, name: true } },
   assignedUser: { select: { id: true, name: true } },
   department: { select: { id: true, name: true } },
-  label: { select: { id: true, name: true, color: true, category: true } },
+  label: { select: { id: true, name: true, color: true, textColor: true, category: true } },
   orders: {
     where: { deletedAt: null },
     select: {

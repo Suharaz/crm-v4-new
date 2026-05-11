@@ -14,6 +14,7 @@ export interface LabelEntity {
   id: string;
   name: string;
   color: string;
+  textColor: string;
   category?: string | null;
   isActive?: boolean;
 }
@@ -28,7 +29,7 @@ export interface LabelRecallConfigItem {
   // Window stored as raw MINUTES. UI decomposes into value+unit (min/hour/day) for display/edit.
   recallMinutes: number;
   isActive: boolean;
-  label?: { id: string; name: string; color: string };
+  label?: { id: string; name: string; color: string; textColor: string };
 }
 
 // ─── User ──────────────────────────────────────────────────────────────────

@@ -114,7 +114,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             {/* Row 4: Single Label */}
             {lead.label && (
               <div className="flex flex-wrap gap-1.5 mt-2.5">
-                <span className="rounded-full px-2.5 py-0.5 text-xs font-medium text-white" style={{ backgroundColor: lead.label.color }}>
+                <span className="rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: lead.label.color, color: lead.label.textColor || '#ffffff' }}>
                   {lead.label.name}
                 </span>
               </div>

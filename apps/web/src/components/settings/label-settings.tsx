@@ -18,6 +18,7 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { api } from '@/lib/api-client';
 import { settingsNameSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
 import type { LabelEntity, LabelRecallConfigItem } from '@/types/entities';
+import { LabelColorPresets, LabelPreviewChip } from './label-color-presets';
 
 interface LabelSettingsProps {
   data: LabelEntity[];
@@ -31,13 +32,21 @@ type RecallUnit = 'minute' | 'hour' | 'day';
 interface FormState {
   name: string;
   color: string;
+  textColor: string;
   category: string;
   // Empty string in `value` = no recall configured.
   value: string;
   unit: RecallUnit;
 }
 
-const EMPTY_FORM: FormState = { name: '', color: '#6b7280', category: '', value: '', unit: 'day' };
+const EMPTY_FORM: FormState = {
+  name: '',
+  color: '#6b7280',
+  textColor: '#ffffff',
+  category: '',
+  value: '',
+  unit: 'day',
+};
 
 // Cron runs every 5 minutes - anything below 5 min would race or be silently delayed.
 const MIN_MINUTES = 5;
@@ -94,6 +103,7 @@ export function LabelSettings({ data, recallConfigs, canEdit, canEditRecall }: L
     setForm({
       name: label.name,
       color: label.color || '#6b7280',
+      textColor: label.textColor || '#ffffff',
       category: label.category || '',
       value,
       unit,
@@ -134,6 +144,7 @@ export function LabelSettings({ data, recallConfigs, canEdit, canEditRecall }: L
     const body: Record<string, unknown> = {
       name: form.name,
       color: form.color,
+      textColor: form.textColor,
       category: form.category || undefined,
     };
     if (canEditRecall) {
@@ -192,8 +203,12 @@ export function LabelSettings({ data, recallConfigs, canEdit, canEditRecall }: L
             return (
               <div key={item.id} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-slate-50">
                 <div className="flex flex-1 items-center gap-2">
-                  <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-sm text-slate-700">{item.name}</span>
+                  <span
+                    className="inline-block rounded-full px-2 py-0.5 text-[10px] font-medium"
+                    style={{ backgroundColor: item.color, color: item.textColor || '#ffffff' }}
+                  >
+                    {item.name}
+                  </span>
                   {item.category && <span className="text-xs text-slate-400">{item.category}</span>}
                   {config && (
                     <span className="inline-flex items-center gap-1 rounded bg-amber-50 px-1.5 py-0.5 text-xs text-amber-700">
@@ -239,14 +254,32 @@ export function LabelSettings({ data, recallConfigs, canEdit, canEditRecall }: L
                 onChange={(e) => setForm(p => ({ ...p, name: e.target.value }))}
               />
             </Field>
-            <Field label="Màu sắc">
-              <Input
-                type="color"
-                className="h-10 w-20 p-1"
-                value={form.color}
-                onChange={(e) => setForm(p => ({ ...p, color: e.target.value }))}
+            <Field label="Bộ màu gợi ý">
+              <LabelColorPresets
+                selectedBg={form.color}
+                selectedText={form.textColor}
+                onPick={(bg, text) => setForm(p => ({ ...p, color: bg, textColor: text }))}
               />
             </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Màu nền">
+                <Input
+                  type="color"
+                  className="h-10 w-full p-1"
+                  value={form.color}
+                  onChange={(e) => setForm(p => ({ ...p, color: e.target.value }))}
+                />
+              </Field>
+              <Field label="Màu chữ">
+                <Input
+                  type="color"
+                  className="h-10 w-full p-1"
+                  value={form.textColor}
+                  onChange={(e) => setForm(p => ({ ...p, textColor: e.target.value }))}
+                />
+              </Field>
+            </div>
+            <LabelPreviewChip bg={form.color} text={form.textColor} name={form.name} />
             <Field label="Danh mục">
               <Input
                 placeholder="VD: lead, customer"

@@ -136,7 +136,7 @@ export class CustomersService {
           select: {
             id: true, status: true, createdAt: true,
             product: { select: { id: true, name: true } },
-            label: { select: { id: true, name: true, color: true } },
+            label: { select: { id: true, name: true, color: true, textColor: true } },
           },
           take: 50,
         },

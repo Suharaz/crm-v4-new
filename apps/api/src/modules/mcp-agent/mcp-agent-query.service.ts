@@ -40,7 +40,7 @@ export class McpAgentQueryService {
       source: { select: { id: true, name: true } },
       assignedUser: { select: { id: true, name: true } },
       department: { select: { id: true, name: true } },
-      labels: { include: { label: { select: { id: true, name: true, color: true } } } },
+      labels: { include: { label: { select: { id: true, name: true, color: true, textColor: true } } } },
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,7 +74,7 @@ export class McpAgentQueryService {
         source: { select: { id: true, name: true } },
         assignedUser: { select: { id: true, name: true } },
         department: { select: { id: true, name: true } },
-        label: { select: { id: true, name: true, color: true } },
+        label: { select: { id: true, name: true, color: true, textColor: true } },
         orders: {
           where: { deletedAt: null },
           select: {
@@ -127,7 +127,7 @@ export class McpAgentQueryService {
       shortDescription: true, aiRating: true, status: true, createdAt: true, updatedAt: true,
       assignedUser: { select: { id: true, name: true } },
       assignedDepartment: { select: { id: true, name: true } },
-      labels: { include: { label: { select: { id: true, name: true, color: true } } } },
+      labels: { include: { label: { select: { id: true, name: true, color: true, textColor: true } } } },
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

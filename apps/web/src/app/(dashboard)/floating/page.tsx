@@ -32,7 +32,7 @@ export default async function FloatingPoolPage({ searchParams }: { searchParams:
     products = (prodRes.data || []).map((p: NamedEntity) => ({ id: String(p.id), name: p.name }));
     users = (usrRes.data || []).map((u: NamedEntity) => ({ id: String(u.id), name: u.name }));
     departments = (deptRes.data || []).map((d: NamedEntity) => ({ id: String(d.id), name: d.name }));
-    labels = (lblRes.data || []).map((l: LabelEntity) => ({ id: String(l.id), name: l.name, color: l.color }));
+    labels = (lblRes.data || []).map((l: LabelEntity) => ({ id: String(l.id), name: l.name, color: l.color, textColor: l.textColor || '#ffffff' }));
   } catch { /* empty */ }
 
   return (

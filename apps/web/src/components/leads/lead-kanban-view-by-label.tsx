@@ -11,7 +11,7 @@ interface Lead {
   assignedUser?: { name: string } | null;
   customerId?: string | null;
   activityCount?: number;
-  label?: { id: string; name: string; color: string } | null;
+  label?: { id: string; name: string; color: string; textColor: string } | null;
   createdAt: string;
 }
 
@@ -260,7 +260,7 @@ function KanbanColumn({ col, onLeadClick }: { col: { id: string; name: string; c
             </div>
             {lead.label && (
               <div className="mt-1.5 flex flex-wrap gap-1">
-                <span className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: lead.label.color }}>{lead.label.name}</span>
+                <span className="rounded-full px-1.5 py-0.5 text-[9px] font-medium" style={{ backgroundColor: lead.label.color, color: lead.label.textColor || '#ffffff' }}>{lead.label.name}</span>
               </div>
             )}
           </div>

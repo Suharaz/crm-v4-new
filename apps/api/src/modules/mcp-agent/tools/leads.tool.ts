@@ -16,7 +16,7 @@ const LEAD_SUMMARY_SELECT = {
   source: { select: { id: true, name: true } },
   assignedUser: { select: { id: true, name: true } },
   department: { select: { id: true, name: true } },
-  labels: { include: { label: { select: { id: true, name: true, color: true } } } },
+  labels: { include: { label: { select: { id: true, name: true, color: true, textColor: true } } } },
 };
 
 const LEAD_DETAIL_SELECT = {

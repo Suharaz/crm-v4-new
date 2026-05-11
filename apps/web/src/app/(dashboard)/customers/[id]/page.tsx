@@ -125,7 +125,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
               <div className="mt-3 pt-3 border-t border-slate-100">
                 <div className="flex flex-wrap gap-1.5">
                   {customer.labels!.map((cl) => (
-                    <span key={cl.label.id} className="rounded-full px-2.5 py-0.5 text-xs font-medium text-white" style={{ backgroundColor: cl.label.color }}>
+                    <span key={cl.label.id} className="rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: cl.label.color, color: cl.label.textColor || '#ffffff' }}>
                       {cl.label.name}
                     </span>
                   ))}
@@ -180,7 +180,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                       </div>
                       {l.label && (
                         <div className="flex flex-wrap gap-1">
-                          <span className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: l.label.color }}>
+                          <span className="rounded-full px-1.5 py-0.5 text-[9px] font-medium" style={{ backgroundColor: l.label.color, color: l.label.textColor || '#ffffff' }}>
                             {l.label.name}
                           </span>
                         </div>

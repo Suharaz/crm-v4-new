@@ -25,7 +25,7 @@ export function LeadEditButton({ leadId }: Props) {
           setOpen(true);
         }}
         title="Xem & chỉnh sửa nhanh"
-        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:text-sky-600 hover:bg-sky-50 transition-colors"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-sky-50 text-sky-600 ring-1 ring-inset ring-sky-200 hover:bg-sky-100 hover:text-sky-700 hover:ring-sky-300 transition-colors"
       >
         <Pencil className="h-3.5 w-3.5" />
       </button>

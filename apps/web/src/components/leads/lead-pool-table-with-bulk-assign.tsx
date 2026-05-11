@@ -278,14 +278,18 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                   <th className="px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Tiền đặt cọc</th>
                   <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Nguồn khách</th>
                   <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Nhãn KH</th>
-                  <th className="px-3 py-3 text-center font-medium text-slate-500 bg-slate-50 border-b border-slate-200 w-[60px]">Chỉnh sửa</th>
                   {showAssignCols && (
                     <>
                       <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Phân cho</th>
                       <th className="px-4 py-3 text-center font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Tương tác</th>
                     </>
                   )}
-                  <th className="sticky right-0 z-20 px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]">Thao tác</th>
+                  <th className="px-3 py-3 text-center font-medium text-slate-500 bg-slate-50 border-b border-slate-200 w-[60px]">Chỉnh sửa</th>
+                  {/* Pool Mới đã có bulk-assign bar khi check → bỏ cột Thao tác để tránh trùng action.
+                      Pool Zoom/Floating vẫn cần cột này (claim/transfer single row). */}
+                  {!isNewPool && (
+                    <th className="sticky right-0 z-20 px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]">Thao tác</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -338,16 +342,20 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                           <span className="text-[10px] text-slate-400">-</span>
                         )}
                       </td>
-                      <td className="px-3 py-3 text-center border-b border-slate-100">
-                        <LeadEditButton leadId={lead.id} />
-                      </td>
                       {showAssignCols && (
                         <>
                           <td className="px-4 py-3 text-slate-600 border-b border-slate-100">
                             {isDistributed ? (
-                              <div>
-                                <span className="font-medium text-slate-800">{lead.assignedUser?.name}</span>
-                                <span className="ml-1 text-xs text-slate-400">({relativeTime(lead.assignedAt!)})</span>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <div>
+                                  <span className="font-medium text-slate-800">{lead.assignedUser?.name}</span>
+                                  <span className="ml-1 text-xs text-slate-400">({relativeTime(lead.assignedAt!)})</span>
+                                </div>
+                                {/* Thu hồi inline - bù cho việc bỏ cột Thao tác ở Kho Mới */}
+                                <Button size="sm" variant="outline" onClick={() => handleRecallOne(lead.id)}
+                                  className="h-6 px-1.5 text-[11px] text-amber-700 border-amber-300 hover:bg-amber-50">
+                                  <Undo2 className="h-3 w-3 mr-0.5" />Thu hồi
+                                </Button>
                               </div>
                             ) : '-'}
                           </td>
@@ -364,20 +372,26 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                           </td>
                         </>
                       )}
-                      <td className={cn('sticky right-0 z-10 px-4 py-3 text-right border-b border-slate-100 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]', rowBg)}>
-                        {isDistributed ? (
-                          <Button size="sm" variant="outline" onClick={() => handleRecallOne(lead.id)}
-                            className="h-7 px-2 text-xs text-amber-700 border-amber-300 hover:bg-amber-50">
-                            <Undo2 className="h-3.5 w-3.5 mr-1" />Thu hồi
-                          </Button>
-                        ) : (
-                          <LeadPoolActionButtons
-                            leadId={lead.id} leadName={lead.name}
-                            mode={poolMode === 'new' ? 'assign' : 'both'}
-                            users={users}
-                          />
-                        )}
+                      <td className="px-3 py-3 text-center border-b border-slate-100">
+                        <LeadEditButton leadId={lead.id} />
                       </td>
+                      {!isNewPool && (
+                        <td className={cn('sticky right-0 z-10 px-4 py-3 text-right border-b border-slate-100 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]', rowBg)}>
+                          {isDistributed ? (
+                            <Button size="sm" variant="outline" onClick={() => handleRecallOne(lead.id)}
+                              className="h-7 px-2 text-xs text-amber-700 border-amber-300 hover:bg-amber-50">
+                              <Undo2 className="h-3.5 w-3.5 mr-1" />Thu hồi
+                            </Button>
+                          ) : (
+                            // Pool Zoom / Floating: claim + transfer
+                            <LeadPoolActionButtons
+                              leadId={lead.id} leadName={lead.name}
+                              mode="both"
+                              users={users}
+                            />
+                          )}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

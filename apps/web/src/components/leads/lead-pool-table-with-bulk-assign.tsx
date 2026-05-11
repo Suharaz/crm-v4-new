@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EntityQuickPreviewDialog } from '@/components/shared/entity-quick-preview-dialog';
-import { LeadPoolActionButtons } from '@/components/leads/lead-pool-action-buttons';
 import { LeadDuplicateBadge } from '@/components/leads/lead-duplicate-badge';
 import { LeadNameLink } from '@/components/leads/lead-name-link';
 import { LeadEditButton } from '@/components/leads/lead-edit-button';
@@ -285,11 +284,9 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                     </>
                   )}
                   <th className="px-3 py-3 text-center font-medium text-slate-500 bg-slate-50 border-b border-slate-200 w-[60px]">Chỉnh sửa</th>
-                  {/* Pool Mới đã có bulk-assign bar khi check → bỏ cột Thao tác để tránh trùng action.
-                      Pool Zoom/Floating vẫn cần cột này (claim/transfer single row). */}
-                  {!isNewPool && (
-                    <th className="sticky right-0 z-20 px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]">Thao tác</th>
-                  )}
+                  {/* Bỏ cột "Thao tác" cho tất cả pool tables:
+                      - Pool Mới: bulk-assign bar đủ + Thu hồi nhét vào ô "Phân cho"
+                      - Pool Zoom / Floating: dùng nút Chỉnh sửa (popup) hoặc bulk select */}
                 </tr>
               </thead>
               <tbody>
@@ -375,23 +372,6 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                       <td className="px-3 py-3 text-center border-b border-slate-100">
                         <LeadEditButton leadId={lead.id} />
                       </td>
-                      {!isNewPool && (
-                        <td className={cn('sticky right-0 z-10 px-4 py-3 text-right border-b border-slate-100 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]', rowBg)}>
-                          {isDistributed ? (
-                            <Button size="sm" variant="outline" onClick={() => handleRecallOne(lead.id)}
-                              className="h-7 px-2 text-xs text-amber-700 border-amber-300 hover:bg-amber-50">
-                              <Undo2 className="h-3.5 w-3.5 mr-1" />Thu hồi
-                            </Button>
-                          ) : (
-                            // Pool Zoom / Floating: claim + transfer
-                            <LeadPoolActionButtons
-                              leadId={lead.id} leadName={lead.name}
-                              mode="both"
-                              users={users}
-                            />
-                          )}
-                        </td>
-                      )}
                     </tr>
                   );
                 })}

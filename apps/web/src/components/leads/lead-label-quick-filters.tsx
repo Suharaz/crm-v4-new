@@ -38,6 +38,7 @@ export function LeadLabelQuickFilters({ scope }: Props) {
 
   const [data, setData] = useState<LabelCountsResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Active label from URL
   const activeLabelId = searchParams.get('labelId');
@@ -52,11 +53,15 @@ export function LeadLabelQuickFilters({ scope }: Props) {
 
   useEffect(() => {
     setLoading(true);
+    setError(null);
     const qs = queryWithoutLabel ? `&${queryWithoutLabel}` : '';
     api
       .get<{ data: LabelCountsResponse }>(`/leads/label-counts?scope=${scope}${qs}`)
       .then((res) => setData(res.data))
-      .catch(() => setData(null))
+      .catch((err) => {
+        setData(null);
+        setError(err?.message || 'Không tải được nhãn');
+      })
       .finally(() => setLoading(false));
   }, [scope, queryWithoutLabel]);
 
@@ -76,7 +81,14 @@ export function LeadLabelQuickFilters({ scope }: Props) {
     </div>;
   }
 
-  if (!data || data.counts.length === 0) return null;
+  // Visible diagnostic: tells user/dev why chips don't show (instead of silent return null)
+  if (error) {
+    return <div className="mb-3 text-xs text-red-500">Lỗi tải nhãn: {error}</div>;
+  }
+
+  if (!data || data.counts.length === 0) {
+    return <div className="mb-3 text-xs text-slate-400">Chưa có nhãn nào (vào Cài đặt &gt; Nhãn để thêm)</div>;
+  }
 
   const isAllActive = !activeLabelId;
 

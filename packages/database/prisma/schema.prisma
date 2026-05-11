@@ -376,6 +376,9 @@ model Lead {
   // Timestamp of last label-recall reset event (label change OR assign/transfer).
   // Used by LabelRecallConfig cron - replaces previous lead_labels.recall_start_at.
   labelAssignedAt  DateTime?  @map("label_assigned_at")
+  // Timestamp of last assignment event (assign/transfer/claim/distribute).
+  // Auto-maintained by Postgres trigger on assignment_history INSERT (see pre-push-migrations.sql).
+  lastAssignedAt   DateTime?  @map("last_assigned_at")
   status           LeadStatus @default(POOL)
   metadata         Json?
   createdAt        DateTime   @default(now()) @map("created_at")
@@ -401,6 +404,8 @@ model Lead {
   @@index([status, sourceId, productId])
   // Dept pool filter combo: dept + status + source (covers /pool/department + source filter)
   @@index([departmentId, status, sourceId])
+  // Filter "leads assigned in date range" - used on /pool/new + /pool/zoom
+  @@index([lastAssignedAt])
   @@map("leads")
 }
 

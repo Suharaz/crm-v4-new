@@ -52,7 +52,7 @@ export default async function PoolNewPage({ searchParams }: { searchParams: Prom
         <LeadListAdvancedFilterBar
           sources={sources} products={products} users={users}
           departments={departments} labels={labels}
-          hideStatus storageKey="crm_lead_filters_pool_new"
+          hideStatus showAssignedDateFilter storageKey="crm_lead_filters_pool_new"
         />
       </Suspense>
 

@@ -76,6 +76,11 @@ export class LeadsService {
       if (query.dateFrom) (where.createdAt as any).gte = new Date(query.dateFrom);
       if (query.dateTo) (where.createdAt as any).lte = new Date(query.dateTo + 'T23:59:59Z');
     }
+    if (query.assignedFrom || query.assignedTo) {
+      where.lastAssignedAt = {};
+      if (query.assignedFrom) (where.lastAssignedAt as any).gte = new Date(query.assignedFrom);
+      if (query.assignedTo) (where.lastAssignedAt as any).lte = new Date(query.assignedTo);
+    }
     if (query.search) {
       where.OR = [
         { name: { contains: query.search, mode: 'insensitive' } },

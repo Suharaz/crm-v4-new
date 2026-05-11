@@ -45,7 +45,7 @@ export default async function PoolZoomPage({ searchParams }: { searchParams: Pro
         <LeadListAdvancedFilterBar
           sources={sources} products={products} users={users}
           departments={departments} labels={labels}
-          hideStatus storageKey="crm_lead_filters_pool_zoom"
+          hideStatus showAssignedDateFilter storageKey="crm_lead_filters_pool_zoom"
         />
       </Suspense>
 

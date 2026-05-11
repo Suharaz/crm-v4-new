@@ -86,6 +86,53 @@ BEGIN
   END IF;
 END $$;
 
+-- ── 2026-05-11: leads.last_assigned_at + trigger from assignment_history ──
+-- Adds Lead.last_assigned_at maintained automatically by trigger on
+-- assignment_history INSERT (for entity_type='LEAD'). Powers the filter
+-- "leads assigned in time range" on /pool/new + /pool/zoom pages.
+-- Backfill from existing assignment_history (max created_at per lead).
+DO $$
+BEGIN
+  -- Step A: add column if missing (db push will also add it - this just ensures
+  -- it exists before backfill runs).
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'leads' AND column_name = 'last_assigned_at'
+  ) THEN
+    ALTER TABLE "leads" ADD COLUMN "last_assigned_at" TIMESTAMP(3);
+  END IF;
+
+  -- Step B: backfill from assignment_history (latest assignment per lead).
+  -- Idempotent - only fills NULL rows, won't overwrite if already set.
+  UPDATE "leads" l
+    SET "last_assigned_at" = (
+      SELECT MAX(ah."created_at")
+      FROM "assignment_history" ah
+      WHERE ah."entity_type" = 'LEAD' AND ah."entity_id" = l."id"
+    )
+    WHERE l."last_assigned_at" IS NULL;
+END $$;
+
+-- Trigger function + trigger to auto-update leads.last_assigned_at on every
+-- new assignment_history row for LEAD entity. CREATE OR REPLACE is idempotent.
+CREATE OR REPLACE FUNCTION update_lead_last_assigned_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.entity_type = 'LEAD' THEN
+    UPDATE "leads"
+      SET "last_assigned_at" = NEW."created_at"
+      WHERE "id" = NEW."entity_id";
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS "trg_assignment_history_update_lead" ON "assignment_history";
+CREATE TRIGGER "trg_assignment_history_update_lead"
+  AFTER INSERT ON "assignment_history"
+  FOR EACH ROW
+  EXECUTE FUNCTION update_lead_last_assigned_at();
+
 -- ── 2026-05-06: recall_configs.auto_label_ids[] → auto_label_id ───────────
 -- Take first element of array (NULL if empty) for new singular column.
 DO $$

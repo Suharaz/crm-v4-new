@@ -24,12 +24,15 @@ interface FilterBarProps {
   labels: { id: string; name: string; color: string }[];
   hideStatus?: boolean;
   storageKey?: string;
+  // Show "lead assigned in datetime range" filter (datetime-local picker to-the-minute).
+  // Backed by lead.lastAssignedAt column (auto-updated by trigger on assignment_history).
+  showAssignedDateFilter?: boolean;
 }
 
 /** Advanced filter bar for leads list - URL-based state (shareable). */
 const DEFAULT_STORAGE_KEY = 'crm_lead_filters';
 
-export function LeadListAdvancedFilterBar({ sources, products, users, departments, labels, hideStatus = false, storageKey }: FilterBarProps) {
+export function LeadListAdvancedFilterBar({ sources, products, users, departments, labels, hideStatus = false, storageKey, showAssignedDateFilter = false }: FilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -64,11 +67,15 @@ export function LeadListAdvancedFilterBar({ sources, products, users, department
   const currentHasOrder = searchParams.get('hasOrder') || '';
   const currentDateFrom = searchParams.get('dateFrom') || '';
   const currentDateTo = searchParams.get('dateTo') || '';
+  const currentAssignedFrom = searchParams.get('assignedFrom') || '';
+  const currentAssignedTo = searchParams.get('assignedTo') || '';
 
   const activeFilterCount = [
     hideStatus ? '' : currentStatus,
     currentSourceId, currentProductId, currentAssignedUserId,
     currentDepartmentId, currentLabelId, currentHasOrder, currentDateFrom, currentDateTo,
+    showAssignedDateFilter ? currentAssignedFrom : '',
+    showAssignedDateFilter ? currentAssignedTo : '',
   ].filter(Boolean).length;
 
   function updateFilter(key: string, value: string) {
@@ -225,6 +232,30 @@ export function LeadListAdvancedFilterBar({ sources, products, users, department
               className="w-full h-9 rounded-md border border-slate-200 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
           </div>
+
+          {/* Assigned datetime range (to-the-minute) - shown only on pool pages that opt-in */}
+          {showAssignedDateFilter && (
+            <>
+              <div>
+                <label className="text-xs font-medium text-slate-500 mb-1 block">Phân từ (giờ:phút)</label>
+                <input
+                  type="datetime-local"
+                  value={currentAssignedFrom}
+                  onChange={e => updateFilter('assignedFrom', e.target.value)}
+                  className="w-full h-9 rounded-md border border-slate-200 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-500 mb-1 block">Phân đến (giờ:phút)</label>
+                <input
+                  type="datetime-local"
+                  value={currentAssignedTo}
+                  onChange={e => updateFilter('assignedTo', e.target.value)}
+                  className="w-full h-9 rounded-md border border-slate-200 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

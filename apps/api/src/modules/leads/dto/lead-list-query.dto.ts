@@ -42,4 +42,8 @@ export class LeadListQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  // ISO datetime to-the-minute - filters lead.lastAssignedAt range
+  @IsOptional() @IsString() assignedFrom?: string;
+  @IsOptional() @IsString() assignedTo?: string;
 }

@@ -12,4 +12,7 @@ export class PoolListQueryDto extends PaginationQueryDto {
   @IsOptional() @IsString() dateFrom?: string;
   @IsOptional() @IsString() dateTo?: string;
   @IsOptional() @IsString() search?: string;
+  // ISO datetime to-the-minute (e.g. "2026-05-11T08:30") - filters lead.lastAssignedAt range
+  @IsOptional() @IsString() assignedFrom?: string;
+  @IsOptional() @IsString() assignedTo?: string;
 }

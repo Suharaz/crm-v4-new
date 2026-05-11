@@ -58,14 +58,14 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
       </div>
 
       <Suspense>
-        <LeadLabelQuickFilters scope="my" />
-      </Suspense>
-
-      <Suspense>
         <LeadListAdvancedFilterBar
           sources={sources} products={products} users={users}
           departments={departments} labels={labels}
         />
+      </Suspense>
+
+      <Suspense>
+        <LeadLabelQuickFilters scope="my" />
       </Suspense>
 
       <LeadListWithViewToggle leads={data} allLabels={labels} enableBulkDelete={isSuperAdmin} />

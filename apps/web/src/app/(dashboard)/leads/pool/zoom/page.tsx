@@ -43,15 +43,15 @@ export default async function PoolZoomPage({ searchParams }: { searchParams: Pro
       </div>
 
       <Suspense>
-        <LeadLabelQuickFilters scope="pool-zoom" />
-      </Suspense>
-
-      <Suspense>
         <LeadListAdvancedFilterBar
           sources={sources} products={products} users={users}
           departments={departments} labels={labels}
           hideStatus showAssignedDateFilter storageKey="crm_lead_filters_pool_zoom"
         />
+      </Suspense>
+
+      <Suspense>
+        <LeadLabelQuickFilters scope="pool-zoom" />
       </Suspense>
 
       <LeadPoolTableWithBulkAssign leads={data as unknown as Parameters<typeof LeadPoolTableWithBulkAssign>[0]['leads']} users={users} poolMode="department" />

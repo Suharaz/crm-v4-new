@@ -50,15 +50,15 @@ export default async function PoolNewPage({ searchParams }: { searchParams: Prom
       </div>
 
       <Suspense>
-        <LeadLabelQuickFilters scope="pool-new" />
-      </Suspense>
-
-      <Suspense>
         <LeadListAdvancedFilterBar
           sources={sources} products={products} users={users}
           departments={departments} labels={labels}
           hideStatus showAssignedDateFilter storageKey="crm_lead_filters_pool_new"
         />
+      </Suspense>
+
+      <Suspense>
+        <LeadLabelQuickFilters scope="pool-new" />
       </Suspense>
 
       <LeadPoolTableWithBulkAssign leads={data as unknown as Parameters<typeof LeadPoolTableWithBulkAssign>[0]['leads']} users={users} poolMode="new" />

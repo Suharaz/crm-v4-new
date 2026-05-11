@@ -43,15 +43,15 @@ export default async function FloatingPoolPage({ searchParams }: { searchParams:
       </div>
 
       <Suspense>
-        <LeadLabelQuickFilters scope="floating" />
-      </Suspense>
-
-      <Suspense>
         <LeadListAdvancedFilterBar
           sources={sources} products={products} users={users}
           departments={departments} labels={labels}
           hideStatus storageKey="crm_lead_filters_floating"
         />
+      </Suspense>
+
+      <Suspense>
+        <LeadLabelQuickFilters scope="floating" />
       </Suspense>
 
       <LeadPoolTableWithBulkAssign leads={data as unknown as Parameters<typeof LeadPoolTableWithBulkAssign>[0]['leads']} users={users} poolMode="floating" />

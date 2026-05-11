@@ -34,9 +34,10 @@ export class CallLogsController {
     @Query('matchStatus') matchStatus?: string,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
+    @Query('phone') phone?: string,
   ) {
     const matchedUserFilter = user.role === UserRole.USER ? BigInt(user.id) : undefined;
-    return this.service.list({ ...query, matchStatus, matchedUserFilter, dateFrom, dateTo });
+    return this.service.list({ ...query, matchStatus, matchedUserFilter, dateFrom, dateTo, phone });
   }
 
   /** AI summarize calls in date range. */

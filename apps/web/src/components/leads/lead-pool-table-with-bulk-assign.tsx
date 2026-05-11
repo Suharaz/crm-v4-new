@@ -4,15 +4,22 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { StatusBadge } from '@/components/shared/status-badge';
 import { EntityQuickPreviewDialog } from '@/components/shared/entity-quick-preview-dialog';
 import { LeadPoolActionButtons } from '@/components/leads/lead-pool-action-buttons';
 import { LeadDuplicateBadge } from '@/components/leads/lead-duplicate-badge';
+import { LeadNameWithInfo } from '@/components/leads/lead-name-with-info';
+import { PhoneCell } from '@/components/leads/phone-cell';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/providers/auth-provider';
-import { formatDate } from '@/lib/utils';
+import { cn, formatVND } from '@/lib/utils';
 import { Users, Shuffle, Undo2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface OrderLite {
+  id: string;
+  totalAmount: number;
+  payments?: { amount: number; status: string }[];
+}
 
 interface Lead {
   id: string; name: string; phone: string; email?: string | null;
@@ -21,7 +28,7 @@ interface Lead {
   assignedUser?: { id: string; name: string } | null;
   department?: { name: string } | null;
   customerId?: string | null;
-  orders?: { id: string }[];
+  orders?: OrderLite[];
   label?: { id: string; name: string; color: string } | null;
   activityCount?: number;
   assignedAt?: string | null;
@@ -29,6 +36,16 @@ interface Lead {
   createdAt: string;
   /** Tổng số lead chưa xóa có cùng SĐT (gồm cả lead này). >=2 → trùng. */
   duplicateCount?: number;
+}
+
+/** Pick latest order + sum verified payments. */
+function computeOrderSummary(orders: OrderLite[] | undefined) {
+  if (!orders || orders.length === 0) return null;
+  const latest = orders[0];
+  const depositPaid = (latest.payments || [])
+    .filter((p) => p.status === 'VERIFIED')
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+  return { totalAmount: Number(latest.totalAmount), depositPaid };
 }
 
 interface PoolTableProps {
@@ -232,120 +249,138 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-        <table className="w-full text-sm">
-          <thead className="border-b border-slate-200 bg-slate-50">
-            <tr>
-              {isManager && (
-                <th className="w-10 px-3 py-3">
-                  <input type="checkbox" checked={allSelected} onChange={toggleAll}
-                    className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
-                </th>
-              )}
-              <th className="px-4 py-3 text-left font-medium text-slate-500">Họ tên</th>
-              <th className="px-4 py-3 text-left font-medium text-slate-500">SĐT</th>
-              <th className="px-4 py-3 text-left font-medium text-slate-500">Trạng thái</th>
-              <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-slate-500">Sản phẩm</th>
-              <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-slate-500">Ghi chú</th>
-              {isNewPool && (
-                <>
-                  <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-slate-500">Phân cho</th>
-                  <th className="hidden lg:table-cell px-4 py-3 text-center font-medium text-slate-500">Tương tác</th>
-                </>
-              )}
-              <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-slate-500">Ngày tạo</th>
-              <th className="px-4 py-3 text-right font-medium text-slate-500">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leads.map((lead) => {
-              const isDistributed = lead.status !== 'POOL' && !!lead.assignedAt;
-              return (
-                <tr key={lead.id}
-                  className={`border-b border-slate-100 hover:bg-slate-50 last:border-0 ${selected.has(lead.id) ? 'bg-sky-50/50' : ''} ${isDistributed ? 'bg-amber-50/30' : ''}`}>
+      {(() => {
+        // Sticky column offsets
+        const STT_LEFT = isManager ? 'left-[40px]' : 'left-0';
+        const NAME_LEFT = isManager ? 'left-[80px]' : 'left-[40px]';
+        const PHONE_LEFT = isManager ? 'left-[280px]' : 'left-[240px]';
+        // "Phân cho" + "Tương tác" - manager-only + only on Kho Mới (isNewPool)
+        const showAssignCols = isManager && isNewPool;
+
+        return (
+          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <table className="w-full text-sm border-separate border-spacing-0">
+              <thead className="bg-slate-50">
+                <tr>
                   {isManager && (
-                    <td className="w-10 px-3 py-3">
-                      <input type="checkbox" checked={selected.has(lead.id)} onChange={() => toggleOne(lead.id)}
+                    <th className="sticky left-0 z-20 w-10 px-3 py-3 bg-slate-50 border-b border-slate-200">
+                      <input type="checkbox" checked={allSelected} onChange={toggleAll}
                         className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
-                    </td>
+                    </th>
                   )}
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <span className="font-medium text-slate-800">{lead.name}</span>
-                      {lead.orders && lead.orders.length > 0 && (
-                        <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Đã mua</span>
-                      )}
-                    </div>
-                    {lead.label && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        <span className="rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: lead.label.color }}>{lead.label.name}</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1.5">
-                      <button type="button" onClick={() => setPreviewId(lead.id)}
-                        className="font-medium text-sky-600 hover:underline text-left">
-                        {lead.phone}
-                      </button>
-                      <LeadDuplicateBadge
-                        count={lead.duplicateCount ?? 0}
-                        phone={lead.phone}
-                        currentLeadId={lead.id}
-                      />
-                    </div>
-                  </td>
-                  <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
-                  <td className="hidden md:table-cell px-4 py-3 text-slate-600">{lead.product?.name || '-'}</td>
-                  <td className="hidden lg:table-cell px-4 py-3 text-slate-600 max-w-[220px]">
-                    {lead.latestNote?.content ? (
-                      <span className="line-clamp-2 text-xs" title={lead.latestNote.content}>{lead.latestNote.content}</span>
-                    ) : '-'}
-                  </td>
-                  {isNewPool && (
+                  <th className={cn('sticky z-20 w-10 px-3 py-3 text-center font-medium text-slate-500 bg-slate-50 border-b border-slate-200', STT_LEFT)}>#</th>
+                  <th className={cn('sticky z-20 w-[200px] px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200', NAME_LEFT)}>Tên khách hàng</th>
+                  <th className={cn('sticky z-20 w-[200px] px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200 shadow-[2px_0_4px_rgba(0,0,0,0.04)]', PHONE_LEFT)}>Số điện thoại</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Sản phẩm</th>
+                  <th className="px-4 py-3 text-center font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Số</th>
+                  <th className="px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Thành tiền</th>
+                  <th className="px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Tiền đặt cọc</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Nguồn khách</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Nhãn KH</th>
+                  {showAssignCols && (
                     <>
-                      <td className="hidden lg:table-cell px-4 py-3 text-slate-600">
-                        {isDistributed ? (
-                          <div>
-                            <span className="font-medium text-slate-800">{lead.assignedUser?.name}</span>
-                            <span className="ml-1 text-xs text-slate-400">({relativeTime(lead.assignedAt!)})</span>
-                          </div>
-                        ) : '-'}
-                      </td>
-                      <td className="hidden lg:table-cell px-4 py-3 text-center">
-                        {isDistributed ? (
-                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            (lead.activityCount ?? 0) >= 2 ? 'bg-emerald-100 text-emerald-700' :
-                            (lead.activityCount ?? 0) === 1 ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-red-100 text-red-700'
-                          }`}>
-                            {lead.activityCount ?? 0}
-                          </span>
-                        ) : '-'}
-                      </td>
+                      <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Phân cho</th>
+                      <th className="px-4 py-3 text-center font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Tương tác</th>
                     </>
                   )}
-                  <td className="hidden lg:table-cell px-4 py-3 text-slate-400">{formatDate(lead.createdAt)}</td>
-                  <td className="px-4 py-3 text-right">
-                    {isDistributed ? (
-                      <Button size="sm" variant="outline" onClick={() => handleRecallOne(lead.id)}
-                        className="h-7 px-2 text-xs text-amber-700 border-amber-300 hover:bg-amber-50">
-                        <Undo2 className="h-3.5 w-3.5 mr-1" />Thu hồi
-                      </Button>
-                    ) : (
-                      <LeadPoolActionButtons
-                        leadId={lead.id} leadName={lead.name}
-                        mode={poolMode === 'new' ? 'assign' : 'both'}
-                        users={users}
-                      />
-                    )}
-                  </td>
+                  <th className="sticky right-0 z-20 px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]">Thao tác</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {leads.map((lead, idx) => {
+                  const isDistributed = lead.status !== 'POOL' && !!lead.assignedAt;
+                  const summary = computeOrderSummary(lead.orders);
+                  const isSel = selected.has(lead.id);
+                  const rowBg = isSel ? 'bg-sky-50' : isDistributed ? 'bg-amber-50/30' : 'bg-white';
+
+                  return (
+                    <tr key={lead.id} className={cn('hover:bg-slate-50', rowBg)}>
+                      {isManager && (
+                        <td className={cn('sticky left-0 z-10 w-10 px-3 py-3 border-b border-slate-100', rowBg)}>
+                          <input type="checkbox" checked={isSel} onChange={() => toggleOne(lead.id)}
+                            className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
+                        </td>
+                      )}
+                      <td className={cn('sticky z-10 w-10 px-3 py-3 text-center text-xs text-slate-500 border-b border-slate-100', STT_LEFT, rowBg)}>{idx + 1}</td>
+                      <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100', NAME_LEFT, rowBg)}>
+                        <div className="flex items-center gap-1.5">
+                          <LeadNameWithInfo leadId={lead.id} name={lead.name} />
+                          {lead.orders && lead.orders.length > 0 && (
+                            <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 shrink-0">Đã mua</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100 shadow-[2px_0_4px_rgba(0,0,0,0.04)]', PHONE_LEFT, rowBg)}>
+                        <div className="flex items-center gap-2">
+                          <PhoneCell leadId={lead.id} phone={lead.phone} />
+                          <LeadDuplicateBadge
+                            count={lead.duplicateCount ?? 0}
+                            phone={lead.phone}
+                            currentLeadId={lead.id}
+                          />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 border-b border-slate-100">{lead.product?.name || '-'}</td>
+                      <td className="px-4 py-3 text-center text-slate-600 border-b border-slate-100">{summary ? 1 : '-'}</td>
+                      <td className="px-4 py-3 text-right tabular-nums text-slate-700 border-b border-slate-100">
+                        {summary ? formatVND(summary.totalAmount) : <span className="text-slate-300">-</span>}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-slate-700 border-b border-slate-100">
+                        {summary ? formatVND(summary.depositPaid) : <span className="text-slate-300">-</span>}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 border-b border-slate-100">{lead.source?.name || '-'}</td>
+                      <td className="px-4 py-3 border-b border-slate-100">
+                        {lead.label ? (
+                          <span className="inline-block rounded-full px-2 py-0.5 text-[10px] font-medium text-white" style={{ backgroundColor: lead.label.color }}>{lead.label.name}</span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400">-</span>
+                        )}
+                      </td>
+                      {showAssignCols && (
+                        <>
+                          <td className="px-4 py-3 text-slate-600 border-b border-slate-100">
+                            {isDistributed ? (
+                              <div>
+                                <span className="font-medium text-slate-800">{lead.assignedUser?.name}</span>
+                                <span className="ml-1 text-xs text-slate-400">({relativeTime(lead.assignedAt!)})</span>
+                              </div>
+                            ) : '-'}
+                          </td>
+                          <td className="px-4 py-3 text-center border-b border-slate-100">
+                            {isDistributed ? (
+                              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                (lead.activityCount ?? 0) >= 2 ? 'bg-emerald-100 text-emerald-700' :
+                                (lead.activityCount ?? 0) === 1 ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {lead.activityCount ?? 0}
+                              </span>
+                            ) : '-'}
+                          </td>
+                        </>
+                      )}
+                      <td className={cn('sticky right-0 z-10 px-4 py-3 text-right border-b border-slate-100 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]', rowBg)}>
+                        {isDistributed ? (
+                          <Button size="sm" variant="outline" onClick={() => handleRecallOne(lead.id)}
+                            className="h-7 px-2 text-xs text-amber-700 border-amber-300 hover:bg-amber-50">
+                            <Undo2 className="h-3.5 w-3.5 mr-1" />Thu hồi
+                          </Button>
+                        ) : (
+                          <LeadPoolActionButtons
+                            leadId={lead.id} leadName={lead.name}
+                            mode={poolMode === 'new' ? 'assign' : 'both'}
+                            users={users}
+                          />
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        );
+      })()}
 
       {/* Bulk assign dialog */}
       <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>

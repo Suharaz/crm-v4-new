@@ -4,9 +4,17 @@ import { useState } from 'react';
 import { LeadInlineExpandDetail } from '@/components/leads/lead-inline-expand-detail';
 import { LeadPoolActionButtons } from '@/components/leads/lead-pool-action-buttons';
 import { LeadDuplicateBadge } from '@/components/leads/lead-duplicate-badge';
+import { LeadNameWithInfo } from '@/components/leads/lead-name-with-info';
+import { PhoneCell } from '@/components/leads/phone-cell';
 import { BulkDeleteBar } from '@/components/shared/bulk-delete-bar';
 import { useBulkSelection } from '@/hooks/use-bulk-selection';
-import { cn } from '@/lib/utils';
+import { cn, formatVND } from '@/lib/utils';
+
+interface OrderLite {
+  id: string;
+  totalAmount: number;
+  payments?: { amount: number; status: string }[];
+}
 
 interface Lead {
   id: string; name: string; phone: string; email?: string | null;
@@ -14,7 +22,7 @@ interface Lead {
   assignedUser?: { name: string } | null;
   department?: { name: string } | null;
   customerId?: string | null;
-  orders?: { id: string }[];
+  orders?: OrderLite[];
   label?: { id: string; name: string; color: string } | null;
   activityCount?: number;
   lastInteractionAt?: string;
@@ -24,27 +32,14 @@ interface Lead {
   duplicateCount?: number;
 }
 
-/** Relative time label + danger color based on how long ago */
-function RelativeTime({ date }: { date?: string }) {
-  if (!date) return <span className="text-slate-400">-</span>;
-  const diff = Date.now() - new Date(date).getTime();
-  const mins = Math.floor(diff / 60000);
-  const hours = Math.floor(mins / 60);
-  const days = Math.floor(hours / 24);
-
-  let text: string;
-  if (mins < 60) text = `${mins} phút trước`;
-  else if (hours < 24) text = `${hours} giờ trước`;
-  else if (days < 7) text = `${days} ngày trước`;
-  else if (days < 30) text = `${Math.floor(days / 7)} tuần trước`;
-  else text = `${Math.floor(days / 30)} tháng trước`;
-
-  const color = days < 1 ? 'text-emerald-600'
-    : days < 3 ? 'text-slate-500'
-    : days < 7 ? 'text-amber-600'
-    : 'text-red-600 font-semibold';
-
-  return <span className={cn('text-xs', color)}>{text}</span>;
+/** Pick the latest order + sum verified payments for "Tiền đặt cọc" column. */
+function computeOrderSummary(orders: OrderLite[] | undefined) {
+  if (!orders || orders.length === 0) return null;
+  const latest = orders[0]; // backend orderBy id desc
+  const depositPaid = (latest.payments || [])
+    .filter((p) => p.status === 'VERIFIED')
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+  return { totalAmount: Number(latest.totalAmount), depositPaid };
 }
 
 interface LeadTableProps {
@@ -58,7 +53,8 @@ interface LeadTableProps {
 export function LeadTable({ leads, poolMode, users = [], enableBulkDelete = false }: LeadTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const sel = useBulkSelection(leads);
-  const colCount = 5 + (poolMode ? 1 : 0) + (enableBulkDelete ? 1 : 0);
+  // header cells count - used for colspan of expanded row
+  const colCount = 9 + (poolMode ? 1 : 0) + (enableBulkDelete ? 1 : 0);
 
   function toggle(id: string) {
     setExpandedId(prev => prev === id ? null : id);
@@ -68,14 +64,19 @@ export function LeadTable({ leads, poolMode, users = [], enableBulkDelete = fals
     return <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">Không có data</div>;
   }
 
+  // Sticky column offsets (cumulative left position)
+  const STT_LEFT = enableBulkDelete ? 'left-[40px]' : 'left-0';
+  const NAME_LEFT = enableBulkDelete ? 'left-[80px]' : 'left-[40px]';
+  const PHONE_LEFT = enableBulkDelete ? 'left-[280px]' : 'left-[240px]';
+
   return (
     <>
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-        <table className="w-full text-sm">
-          <thead className="border-b border-slate-200 bg-slate-50">
+        <table className="w-full text-sm border-separate border-spacing-0">
+          <thead className="bg-slate-50">
             <tr>
               {enableBulkDelete && (
-                <th className="w-10 px-3 py-3">
+                <th className="sticky left-0 z-20 w-10 px-3 py-3 bg-slate-50 border-b border-slate-200">
                   <input
                     type="checkbox"
                     aria-label="Chọn tất cả"
@@ -86,21 +87,26 @@ export function LeadTable({ leads, poolMode, users = [], enableBulkDelete = fals
                   />
                 </th>
               )}
-              <th className="px-4 py-3 text-left font-medium text-slate-500">Họ tên</th>
-              <th className="px-4 py-3 text-left font-medium text-slate-500">SĐT</th>
-              <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-slate-500">Sản phẩm</th>
-              <th className="hidden md:table-cell px-4 py-3 text-left font-medium text-slate-500">Nhãn</th>
-              <th className="hidden lg:table-cell px-4 py-3 text-left font-medium text-slate-500">Tương tác lần cuối</th>
-              {poolMode && <th className="px-4 py-3 text-right font-medium text-slate-500">Thao tác</th>}
+              <th className={cn('sticky z-20 w-10 px-3 py-3 text-center font-medium text-slate-500 bg-slate-50 border-b border-slate-200', STT_LEFT)}>#</th>
+              <th className={cn('sticky z-20 w-[200px] px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200', NAME_LEFT)}>Tên khách hàng</th>
+              <th className={cn('sticky z-20 w-[200px] px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200 shadow-[2px_0_4px_rgba(0,0,0,0.04)]', PHONE_LEFT)}>Số điện thoại</th>
+              <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Sản phẩm</th>
+              <th className="px-4 py-3 text-center font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Số</th>
+              <th className="px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Thành tiền</th>
+              <th className="px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Tiền đặt cọc</th>
+              <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Nguồn khách</th>
+              <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Nhãn KH</th>
+              {poolMode && <th className="sticky right-0 z-20 px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]">Thao tác</th>}
             </tr>
           </thead>
           <tbody>
-            {leads.map((lead) => {
+            {leads.map((lead, idx) => {
               const isExpanded = expandedId === lead.id;
               return (
                 <LeadRow
                   key={lead.id}
                   lead={lead}
+                  index={idx + 1}
                   isExpanded={isExpanded}
                   onToggle={() => toggle(lead.id)}
                   poolMode={poolMode}
@@ -109,6 +115,9 @@ export function LeadTable({ leads, poolMode, users = [], enableBulkDelete = fals
                   enableBulkDelete={enableBulkDelete}
                   isSelected={sel.isSelected(lead.id)}
                   onSelectToggle={() => sel.toggleOne(lead.id)}
+                  sttLeft={STT_LEFT}
+                  nameLeft={NAME_LEFT}
+                  phoneLeft={PHONE_LEFT}
                 />
               );
             })}
@@ -129,16 +138,21 @@ export function LeadTable({ leads, poolMode, users = [], enableBulkDelete = fals
   );
 }
 
-function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan, enableBulkDelete, isSelected, onSelectToggle }: {
-  lead: Lead; isExpanded: boolean; onToggle: () => void;
+function LeadRow({ lead, index, isExpanded, onToggle, poolMode, users, colSpan, enableBulkDelete, isSelected, onSelectToggle, sttLeft, nameLeft, phoneLeft }: {
+  lead: Lead; index: number; isExpanded: boolean; onToggle: () => void;
   poolMode?: string; users: { id: string; name: string }[]; colSpan: number;
   enableBulkDelete: boolean; isSelected: boolean; onSelectToggle: () => void;
+  sttLeft: string; nameLeft: string; phoneLeft: string;
 }) {
+  const summary = computeOrderSummary(lead.orders);
+  // Background for sticky cells matches row state (selected/expanded/default)
+  const rowBg = isSelected ? 'bg-sky-50' : isExpanded ? 'bg-sky-50/50' : 'bg-white';
+
   return (
     <>
-      <tr className={cn('border-b border-slate-100 hover:bg-slate-50 cursor-pointer', isExpanded && 'bg-sky-50/50', isSelected && 'bg-sky-50')} onClick={onToggle}>
+      <tr className={cn('hover:bg-slate-50 cursor-pointer', rowBg)} onClick={onToggle}>
         {enableBulkDelete && (
-          <td className="w-10 px-3 py-3" onClick={e => e.stopPropagation()}>
+          <td className={cn('sticky left-0 z-10 w-10 px-3 py-3 border-b border-slate-100', rowBg)} onClick={e => e.stopPropagation()}>
             <input
               type="checkbox"
               aria-label={`Chọn ${lead.name}`}
@@ -148,40 +162,45 @@ function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan, enableB
             />
           </td>
         )}
-        <td className="px-4 py-3">
-          <span className="font-medium text-sky-600">{lead.name}</span>
-          {lead.metadata?.aiLevel && (
-            <span className={`ml-1 text-[9px] font-bold px-1 py-0.5 rounded-full text-white ${
-              lead.metadata.aiLevel === 'HOT' ? 'bg-red-500' : lead.metadata.aiLevel === 'WARM' ? 'bg-amber-500' : 'bg-sky-400'
-            }`}>{lead.metadata.aiScore || '?'}</span>
-          )}
-        </td>
-        <td className="px-4 py-3 text-slate-600">
+        <td className={cn('sticky z-10 w-10 px-3 py-3 text-center text-xs text-slate-500 border-b border-slate-100', sttLeft, rowBg)}>{index}</td>
+        <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100', nameLeft, rowBg)} onClick={e => e.stopPropagation()}>
           <div className="flex items-center gap-1.5">
-            <span>{lead.phone}</span>
-            <span onClick={e => e.stopPropagation()} className="inline-flex">
-              <LeadDuplicateBadge
-                count={lead.duplicateCount ?? 0}
-                phone={lead.phone}
-                currentLeadId={lead.id}
-              />
-            </span>
-            {lead.orders && lead.orders.length > 0 && (
-              <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">{lead.orders.length} đơn</span>
+            <LeadNameWithInfo leadId={lead.id} name={lead.name} />
+            {lead.metadata?.aiLevel && (
+              <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full text-white shrink-0 ${
+                lead.metadata.aiLevel === 'HOT' ? 'bg-red-500' : lead.metadata.aiLevel === 'WARM' ? 'bg-amber-500' : 'bg-sky-400'
+              }`}>{lead.metadata.aiScore || '?'}</span>
             )}
           </div>
         </td>
-        <td className="hidden md:table-cell px-4 py-3 text-slate-600">{lead.product?.name || '-'}</td>
-        <td className="hidden md:table-cell px-4 py-3">
+        <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100 shadow-[2px_0_4px_rgba(0,0,0,0.04)]', phoneLeft, rowBg)} onClick={e => e.stopPropagation()}>
+          <div className="flex items-center gap-2">
+            <PhoneCell leadId={lead.id} phone={lead.phone} />
+            <LeadDuplicateBadge
+              count={lead.duplicateCount ?? 0}
+              phone={lead.phone}
+              currentLeadId={lead.id}
+            />
+          </div>
+        </td>
+        <td className="px-4 py-3 text-slate-600 border-b border-slate-100">{lead.product?.name || '-'}</td>
+        <td className="px-4 py-3 text-center text-slate-600 border-b border-slate-100">{summary ? 1 : '-'}</td>
+        <td className="px-4 py-3 text-right tabular-nums text-slate-700 border-b border-slate-100">
+          {summary ? formatVND(summary.totalAmount) : <span className="text-slate-300">-</span>}
+        </td>
+        <td className="px-4 py-3 text-right tabular-nums text-slate-700 border-b border-slate-100">
+          {summary ? formatVND(summary.depositPaid) : <span className="text-slate-300">-</span>}
+        </td>
+        <td className="px-4 py-3 text-slate-600 border-b border-slate-100">{lead.source?.name || '-'}</td>
+        <td className="px-4 py-3 border-b border-slate-100">
           {lead.label ? (
-            <span className="rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white" style={{ backgroundColor: lead.label.color }}>{lead.label.name}</span>
+            <span className="inline-block rounded-full px-2 py-0.5 text-[10px] font-medium text-white" style={{ backgroundColor: lead.label.color }}>{lead.label.name}</span>
           ) : (
             <span className="text-[10px] text-slate-400">-</span>
           )}
         </td>
-        <td className="hidden lg:table-cell px-4 py-3"><RelativeTime date={lead.lastInteractionAt} /></td>
         {poolMode && (
-          <td className="px-4 py-3 text-right" onClick={e => e.stopPropagation()}>
+          <td className={cn('sticky right-0 z-10 px-4 py-3 text-right border-b border-slate-100 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]', rowBg)} onClick={e => e.stopPropagation()}>
             <LeadPoolActionButtons leadId={lead.id} leadName={lead.name} mode={poolMode === 'new' ? 'assign' : 'both'} users={users} />
           </td>
         )}

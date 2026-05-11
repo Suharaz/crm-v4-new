@@ -22,11 +22,13 @@ export class CallLogsService {
     private readonly userPhonesService: UserPhonesService,
   ) {}
 
-  async list(query: PaginationQueryDto & { matchStatus?: string; matchedUserFilter?: bigint; dateFrom?: string; dateTo?: string }) {
+  async list(query: PaginationQueryDto & { matchStatus?: string; matchedUserFilter?: bigint; dateFrom?: string; dateTo?: string; phone?: string }) {
     const limit = query.limit ?? 20;
     const where: Prisma.CallLogWhereInput = { deletedAt: null };
     if (query.matchStatus) where.matchStatus = query.matchStatus as any;
     if (query.matchedUserFilter) where.matchedUserId = query.matchedUserFilter;
+    // Filter by phone (used by Lead table mic icon → call history dialog)
+    if (query.phone) where.phoneNumber = normalizePhone(query.phone);
     // Date range filter
     if (query.dateFrom || query.dateTo) {
       where.callTime = {};

@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { EntityQuickPreviewDialog } from '@/components/shared/entity-quick-preview-dialog';
 import { LeadPoolActionButtons } from '@/components/leads/lead-pool-action-buttons';
 import { LeadDuplicateBadge } from '@/components/leads/lead-duplicate-badge';
-import { LeadNameWithInfo } from '@/components/leads/lead-name-with-info';
+import { LeadNameLink } from '@/components/leads/lead-name-link';
+import { LeadEditButton } from '@/components/leads/lead-edit-button';
 import { PhoneCell } from '@/components/leads/phone-cell';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/providers/auth-provider';
@@ -277,6 +278,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                   <th className="px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Tiền đặt cọc</th>
                   <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Nguồn khách</th>
                   <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Nhãn KH</th>
+                  <th className="px-3 py-3 text-center font-medium text-slate-500 bg-slate-50 border-b border-slate-200 w-[60px]">Chỉnh sửa</th>
                   {showAssignCols && (
                     <>
                       <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Phân cho</th>
@@ -304,7 +306,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                       <td className={cn('sticky z-10 w-10 px-3 py-3 text-center text-xs text-slate-500 border-b border-slate-100', STT_LEFT, rowBg)}>{idx + 1}</td>
                       <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100', NAME_LEFT, rowBg)}>
                         <div className="flex items-center gap-1.5">
-                          <LeadNameWithInfo leadId={lead.id} name={lead.name} />
+                          <LeadNameLink leadId={lead.id} name={lead.name} />
                           {lead.orders && lead.orders.length > 0 && (
                             <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 shrink-0">Đã mua</span>
                           )}
@@ -335,6 +337,9 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                         ) : (
                           <span className="text-[10px] text-slate-400">-</span>
                         )}
+                      </td>
+                      <td className="px-3 py-3 text-center border-b border-slate-100">
+                        <LeadEditButton leadId={lead.id} />
                       </td>
                       {showAssignCols && (
                         <>

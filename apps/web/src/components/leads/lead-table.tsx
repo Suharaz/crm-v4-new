@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { LeadInlineExpandDetail } from '@/components/leads/lead-inline-expand-detail';
 import { LeadPoolActionButtons } from '@/components/leads/lead-pool-action-buttons';
 import { LeadDuplicateBadge } from '@/components/leads/lead-duplicate-badge';
-import { LeadNameWithInfo } from '@/components/leads/lead-name-with-info';
+import { LeadNameLink } from '@/components/leads/lead-name-link';
+import { LeadEditButton } from '@/components/leads/lead-edit-button';
 import { PhoneCell } from '@/components/leads/phone-cell';
 import { BulkDeleteBar } from '@/components/shared/bulk-delete-bar';
 import { useBulkSelection } from '@/hooks/use-bulk-selection';
@@ -54,7 +55,8 @@ export function LeadTable({ leads, poolMode, users = [], enableBulkDelete = fals
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const sel = useBulkSelection(leads);
   // header cells count - used for colspan of expanded row
-  const colCount = 9 + (poolMode ? 1 : 0) + (enableBulkDelete ? 1 : 0);
+  // 9 base + Chỉnh sửa + (poolMode ? Thao tác : 0) + (enableBulkDelete ? Checkbox : 0)
+  const colCount = 10 + (poolMode ? 1 : 0) + (enableBulkDelete ? 1 : 0);
 
   function toggle(id: string) {
     setExpandedId(prev => prev === id ? null : id);
@@ -96,6 +98,7 @@ export function LeadTable({ leads, poolMode, users = [], enableBulkDelete = fals
               <th className="px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Tiền đặt cọc</th>
               <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Nguồn khách</th>
               <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Nhãn KH</th>
+              <th className="px-3 py-3 text-center font-medium text-slate-500 bg-slate-50 border-b border-slate-200 w-[60px]">Chỉnh sửa</th>
               {poolMode && <th className="sticky right-0 z-20 px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]">Thao tác</th>}
             </tr>
           </thead>
@@ -165,7 +168,7 @@ function LeadRow({ lead, index, isExpanded, onToggle, poolMode, users, colSpan, 
         <td className={cn('sticky z-10 w-10 px-3 py-3 text-center text-xs text-slate-500 border-b border-slate-100', sttLeft, rowBg)}>{index}</td>
         <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100', nameLeft, rowBg)} onClick={e => e.stopPropagation()}>
           <div className="flex items-center gap-1.5">
-            <LeadNameWithInfo leadId={lead.id} name={lead.name} />
+            <LeadNameLink leadId={lead.id} name={lead.name} />
             {lead.metadata?.aiLevel && (
               <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full text-white shrink-0 ${
                 lead.metadata.aiLevel === 'HOT' ? 'bg-red-500' : lead.metadata.aiLevel === 'WARM' ? 'bg-amber-500' : 'bg-sky-400'
@@ -198,6 +201,9 @@ function LeadRow({ lead, index, isExpanded, onToggle, poolMode, users, colSpan, 
           ) : (
             <span className="text-[10px] text-slate-400">-</span>
           )}
+        </td>
+        <td className="px-3 py-3 text-center border-b border-slate-100" onClick={e => e.stopPropagation()}>
+          <LeadEditButton leadId={lead.id} />
         </td>
         {poolMode && (
           <td className={cn('sticky right-0 z-10 px-4 py-3 text-right border-b border-slate-100 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]', rowBg)} onClick={e => e.stopPropagation()}>

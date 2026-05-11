@@ -22,17 +22,20 @@ interface FilterBarProps {
   users: { id: string; name: string }[];
   departments: { id: string; name: string }[];
   labels: { id: string; name: string; color: string }[];
+  hideStatus?: boolean;
+  storageKey?: string;
 }
 
 /** Advanced filter bar for leads list - URL-based state (shareable). */
-const STORAGE_KEY = 'crm_lead_filters';
+const DEFAULT_STORAGE_KEY = 'crm_lead_filters';
 
-export function LeadListAdvancedFilterBar({ sources, products, users, departments, labels }: FilterBarProps) {
+export function LeadListAdvancedFilterBar({ sources, products, users, departments, labels, hideStatus = false, storageKey }: FilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [expanded, setExpanded] = useState(false);
   const [restored, setRestored] = useState(false);
+  const STORAGE_KEY = storageKey ?? DEFAULT_STORAGE_KEY;
 
   // Restore filters from localStorage if URL has no params
   useEffect(() => {
@@ -48,7 +51,7 @@ export function LeadListAdvancedFilterBar({ sources, products, users, department
         router.replace(`${pathname}?${saved}`);
       }
     }
-  }, [restored, searchParams, pathname, router]);
+  }, [restored, searchParams, pathname, router, STORAGE_KEY]);
 
   // Read current filters from URL
   const currentSearch = searchParams.get('search') || '';
@@ -62,7 +65,11 @@ export function LeadListAdvancedFilterBar({ sources, products, users, department
   const currentDateFrom = searchParams.get('dateFrom') || '';
   const currentDateTo = searchParams.get('dateTo') || '';
 
-  const activeFilterCount = [currentStatus, currentSourceId, currentProductId, currentAssignedUserId, currentDepartmentId, currentLabelId, currentHasOrder, currentDateFrom, currentDateTo].filter(Boolean).length;
+  const activeFilterCount = [
+    hideStatus ? '' : currentStatus,
+    currentSourceId, currentProductId, currentAssignedUserId,
+    currentDepartmentId, currentLabelId, currentHasOrder, currentDateFrom, currentDateTo,
+  ].filter(Boolean).length;
 
   function updateFilter(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -108,17 +115,19 @@ export function LeadListAdvancedFilterBar({ sources, products, users, department
       {/* Expanded filters */}
       {expanded && (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 pt-2 border-t border-slate-100">
-          {/* Status */}
-          <div>
-            <label className="text-xs font-medium text-slate-500 mb-1 block">Trạng thái</label>
-            <Select value={currentStatus} onValueChange={v => updateFilter('status', v === 'all' ? '' : v)}>
-              <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Tất cả" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                {STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Status (hidden for pool pages with fixed scope) */}
+          {!hideStatus && (
+            <div>
+              <label className="text-xs font-medium text-slate-500 mb-1 block">Trạng thái</label>
+              <Select value={currentStatus} onValueChange={v => updateFilter('status', v === 'all' ? '' : v)}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Tất cả" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  {STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Source */}
           <div>

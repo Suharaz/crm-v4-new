@@ -4,7 +4,6 @@ import { LeadsService } from './leads.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { LeadListQueryDto } from './dto/lead-list-query.dto';
 import { PoolListQueryDto } from './dto/pool-list-query.dto';
-import { LabelCountsQueryDto } from './dto/label-counts-query.dto';
 import { Roles } from '../auth/decorators/roles-required.decorator';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
@@ -65,17 +64,35 @@ export class LeadsController {
     return this.leadsService.findDuplicatesByPhone(phone);
   }
 
-  // Quick-filter chip counts (per label) for table header.
-  // scope: 'my' | 'pool-new' | 'pool-zoom' | 'floating'. Same filter params as list.
-  @Get('label-counts')
-  async labelCounts(
-    @Query() query: LabelCountsQueryDto,
-    @CurrentUser() user: any,
-  ) {
-    const scope = query.scope ?? 'my';
-    // Drop scope from query so it doesn't accidentally hit Prisma where
-    const { scope: _scope, ...filterQuery } = query;
-    const data = await this.leadsService.labelCounts(scope, filterQuery, user);
+  // ── Label quick-filter chip counts ──────────────────────────────────────
+  // 4 endpoints riêng (mirror pattern của /leads + /leads/pool/*) để có
+  // role guard rõ ràng. Scope KHÔNG truyền qua query nữa - server tự biết
+  // từ route. Tránh USER tự ý gọi scope=pool-new (dù access filter đã chặn,
+  // tách route giúp principle of least privilege rõ ràng hơn).
+
+  @Get('label-counts/my')
+  async labelCountsMy(@Query() query: PoolListQueryDto, @CurrentUser() user: any) {
+    const data = await this.leadsService.labelCounts('my', query, user);
+    return { data };
+  }
+
+  @Get('label-counts/pool/new')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async labelCountsPoolNew(@Query() query: PoolListQueryDto, @CurrentUser() user: any) {
+    const data = await this.leadsService.labelCounts('pool-new', query, user);
+    return { data };
+  }
+
+  @Get('label-counts/pool/zoom')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async labelCountsPoolZoom(@Query() query: PoolListQueryDto, @CurrentUser() user: any) {
+    const data = await this.leadsService.labelCounts('pool-zoom', query, user);
+    return { data };
+  }
+
+  @Get('label-counts/floating')
+  async labelCountsFloating(@Query() query: PoolListQueryDto, @CurrentUser() user: any) {
+    const data = await this.leadsService.labelCounts('floating', query, user);
     return { data };
   }
 

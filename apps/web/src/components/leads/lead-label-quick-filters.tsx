@@ -20,6 +20,14 @@ interface LabelCountsResponse {
 
 type Scope = 'my' | 'pool-new' | 'pool-zoom' | 'floating';
 
+// Map scope → backend route (1 endpoint per page family, with role guard server-side)
+const SCOPE_TO_PATH: Record<Scope, string> = {
+  'my': '/leads/label-counts/my',
+  'pool-new': '/leads/label-counts/pool/new',
+  'pool-zoom': '/leads/label-counts/pool/zoom',
+  'floating': '/leads/label-counts/floating',
+};
+
 interface Props {
   scope: Scope;
 }
@@ -54,9 +62,10 @@ export function LeadLabelQuickFilters({ scope }: Props) {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    const qs = queryWithoutLabel ? `&${queryWithoutLabel}` : '';
+    const path = SCOPE_TO_PATH[scope];
+    const qs = queryWithoutLabel ? `?${queryWithoutLabel}` : '';
     api
-      .get<{ data: LabelCountsResponse }>(`/leads/label-counts?scope=${scope}${qs}`)
+      .get<{ data: LabelCountsResponse }>(`${path}${qs}`)
       .then((res) => setData(res.data))
       .catch((err) => {
         setData(null);

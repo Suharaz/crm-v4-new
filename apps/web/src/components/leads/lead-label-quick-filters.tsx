@@ -9,6 +9,7 @@ interface LabelCount {
   labelId: string;
   name: string;
   color: string;
+  textColor: string;
   count: number;
 }
 
@@ -125,14 +126,14 @@ export function LeadLabelQuickFilters({ scope }: Props) {
             key={l.labelId}
             type="button"
             onClick={() => applyFilter(l.labelId)}
-            style={{ backgroundColor: l.color }}
+            style={{ backgroundColor: l.color, color: l.textColor }}
             className={cn(
-              'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-white transition-all',
+              'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition-all',
               isActive ? 'ring-2 ring-offset-1 ring-slate-400' : 'opacity-70 hover:opacity-100'
             )}
           >
             <span>{l.name}</span>
-            <span className="rounded-full bg-white/25 px-1.5 py-0.5 text-[10px] tabular-nums">{l.count}</span>
+            <span className="rounded-full bg-black/15 px-1.5 py-0.5 text-[10px] tabular-nums">{l.count}</span>
           </button>
         );
       })}

@@ -331,7 +331,7 @@ export class LeadsService {
       }),
       this.prisma.label.findMany({
         where: { isActive: true },
-        select: { id: true, name: true, color: true },
+        select: { id: true, name: true, color: true, textColor: true },
         orderBy: { name: 'asc' },
       }),
     ]);
@@ -353,6 +353,7 @@ export class LeadsService {
         labelId: String(l.id),
         name: l.name,
         color: l.color,
+        textColor: l.textColor,
         count: countByLabelId.get(String(l.id)) ?? 0,
       })),
     };

@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Employees Dashboard Redesign - 3 tabs + Bar-in-cell tables (2026-05-12)
+- **Page:** `/dashboard/employees` chuyển từ scorecard grid 2-col sang 3 tab table với bar-in-cell visualization.
+  - Tab "Báo cáo tổng": 10 cột (lead, đơn, sản phẩm, doanh số, tỉ lệ chốt, cuộc gọi). Cột formula "(=5/1)" hiển thị.
+  - Tab "Báo cáo cuộc gọi": 3 cột (Nghe máy/Gọi ra, Tổng TG, TG TB) - custom render multi-value 1 cell.
+  - Tab "Bán hàng": dynamic columns top 7 label từ DB + "Khác" + "KH chưa tiếp cận". Click cell mở side-panel drill-down.
+- **Backend:**
+  - `dashboard.service.ts` extend `getEmployeeScores`: thêm 3 field `ordersCount`, `productsCount`, `untouchedLeads` (lead chưa có activity nào).
+  - 3 endpoint mới (role guard MANAGER/SUPER_ADMIN):
+    - `GET /dashboard/employee-reports/calls` - aggregate cuộc gọi per user (answered/outgoing/totalSeconds/avg).
+    - `GET /dashboard/employee-reports/sales-breakdown` - top 7 label dynamic + per-user pivot count + other/untouched.
+    - `GET /dashboard/employee-reports/sales-breakdown/customers` - paginated drill-down 3 mode (labelId/untouched/other).
+  - Migration `20260512085312_add_call_logs_user_time_index`: partial index `call_logs(matched_user_id, call_time) WHERE matched_user_id IS NOT NULL`.
+  - **KHÔNG seed label** - label fully dynamic, admin tạo qua Settings UI.
+- **Frontend:**
+  - Shared `BarCellTable` component generic - 200 line, dùng cho cả 3 tab. Sticky 2 cột đầu + sticky header + sortable + totals row.
+  - 3 hook lazy fetch: `useEmployeeCallReport`, `useEmployeeSalesBreakdown`, `useCustomerDrillDown` (cursor pagination).
+  - 4 component: `EmployeeSummaryTable`, `EmployeeCallTable`, `EmployeeSalesTable`, `CustomerDrillDownPanel`.
+  - Helper `hex-to-color-key.ts` map hex → Tailwind color palette + `format-value.ts` (number/currency/percent/duration).
+  - URL state `?tab=summary|calls|sales` shareable, refresh giữ tab.
+- **Shared types:** `packages/types/src/dashboard.types.ts` - 8 interface dùng chung API+Web.
+
 ### User Phone Assignment + Call Match Refactor (2026-05-08)
 - **Feature:** Super admin phân SĐT cho từng nhân viên (sale). Cuộc gọi đến số trong `user_phones` → activity ghi nhận đúng nhân viên kể cả khi phone không match lead/customer nào.
 - **Database:**

@@ -61,6 +61,7 @@ Phase 14 (Testing/Deploy) ← runs LAST ─────────┘
 | 21 | Test Execution & Bug Fixes | 4h | Complete | 100% |
 | 22 | Dashboard Redesign - Smart Tabs | 4h | Complete | 100% |
 | 23 | Dashboard v2 - Sub-pages + Employee Scorecard | 4h | Complete | 100% |
+| 24 | Employees Dashboard Redesign - 3-tab Bar Tables | 19h | Complete | 100% |
 
 ## Milestones
 

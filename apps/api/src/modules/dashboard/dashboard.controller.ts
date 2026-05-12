@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { DashboardService } from './dashboard.service';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
@@ -83,5 +83,59 @@ export class DashboardController {
     const { dateFrom, dateTo } = parseDates(from, to);
     const departmentId = deptId ? BigInt(deptId) : undefined;
     return { data: await this.service.getEmployeeScores(dateFrom, dateTo, departmentId) };
+  }
+
+  @Get('employee-reports/calls')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async getEmployeeCallReport(
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('deptId') deptId?: string,
+  ) {
+    const { dateFrom, dateTo } = parseDates(from, to);
+    const departmentId = deptId ? BigInt(deptId) : undefined;
+    return { data: await this.service.getEmployeeCallReport(dateFrom, dateTo, departmentId) };
+  }
+
+  @Get('employee-reports/sales-breakdown')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async getEmployeeSalesBreakdown(
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('deptId') deptId?: string,
+  ) {
+    const { dateFrom, dateTo } = parseDates(from, to);
+    const departmentId = deptId ? BigInt(deptId) : undefined;
+    return { data: await this.service.getEmployeeSalesBreakdown(dateFrom, dateTo, departmentId) };
+  }
+
+  @Get('employee-reports/sales-breakdown/customers')
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async getSalesBreakdownCustomers(
+    @Query('userId') userIdStr: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('labelId') labelIdStr?: string,
+    @Query('untouched') untouchedStr?: string,
+    @Query('other') otherStr?: string,
+    @Query('cursor') cursorStr?: string,
+    @Query('limit') limitStr?: string,
+  ) {
+    if (!userIdStr) {
+      throw new BadRequestException('userId is required');
+    }
+    const { dateFrom, dateTo } = parseDates(from, to);
+    return {
+      data: await this.service.getEmployeeSalesBreakdownCustomers({
+        userId: BigInt(userIdStr),
+        labelId: labelIdStr ? BigInt(labelIdStr) : undefined,
+        untouched: untouchedStr === 'true' || untouchedStr === '1',
+        other: otherStr === 'true' || otherStr === '1',
+        dateFrom,
+        dateTo,
+        cursor: cursorStr ? BigInt(cursorStr) : undefined,
+        limit: limitStr ? parseInt(limitStr, 10) : undefined,
+      }),
+    };
   }
 }

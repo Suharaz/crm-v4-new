@@ -74,3 +74,16 @@ export type {
   BulkUserPhoneItemResult,
   BulkUserPhoneResult,
 } from './user-phone.types';
+
+// ── Dashboard Reports ────────────────────────────────────────────────────────
+
+export type {
+  EmployeeScoreRaw,
+  EmployeeCallReportRow,
+  TopLabel,
+  SalesBreakdownRow,
+  EmployeeSalesBreakdownResponse,
+  DrillDownCustomerLabel,
+  DrillDownCustomerItem,
+  DrillDownCustomersResponse,
+} from './dashboard.types';

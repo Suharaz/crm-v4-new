@@ -16,6 +16,12 @@ export interface EmployeeScoreRaw {
   agingLeads7d: number;
   tasksTotal: number;
   tasksCompleted: number;
+  /** Số đơn user tạo trong kỳ */
+  ordersCount: number;
+  /** Số sản phẩm (count orders có product_id) */
+  productsCount: number;
+  /** Lead assigned chưa có activity nào (note/call/order) */
+  untouchedLeads: number;
 }
 
 export interface EmployeeScorecard extends EmployeeScoreRaw {
@@ -62,13 +68,14 @@ function computeScore(emp: EmployeeScoreRaw, maxRevenue: number): number {
   );
 }
 
-export function useEmployeeScores(range: RangeKey, deptId?: string) {
+export function useEmployeeScores(range: RangeKey, deptId?: string, enabled: boolean = true) {
   const [employees, setEmployees] = useState<EmployeeScorecard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    if (!enabled) return;
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -127,7 +134,7 @@ export function useEmployeeScores(range: RangeKey, deptId?: string) {
 
     fetchData();
     return () => controller.abort();
-  }, [range, deptId]);
+  }, [range, deptId, enabled]);
 
   return { employees, loading, error };
 }

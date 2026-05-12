@@ -9,8 +9,10 @@ import type { Request } from 'express';
  * Expects `x-signature` header containing hex HMAC. Requires NestFactory
  * created with `rawBody: true` so `req.rawBody` is populated.
  *
- * Fails closed if WEBHOOK_SECRET missing (no dev exception). Dev must set
- * WEBHOOK_SECRET in `.env` to test webhook locally.
+ * WEBHOOK_SECRET is optional - khi không config, guard skip signature check
+ * và chỉ dựa vào API key (ApiKeyAuthGuard) để verify caller. Khi tích hợp
+ * bank API thực (VietQR/SePay/MB) require HMAC, set WEBHOOK_SECRET trong
+ * env để bật signature verification mà không cần code change.
  */
 @Injectable()
 export class WebhookSignatureGuard implements CanActivate {
@@ -19,11 +21,10 @@ export class WebhookSignatureGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const secret = this.config.get<string>('WEBHOOK_SECRET');
-    // Fail closed in all environments - no silent skip
+    // Optional: skip HMAC verification khi WEBHOOK_SECRET không set.
+    // API key (ApiKeyAuthGuard) vẫn enforce - đủ cho internal trust model.
     if (!secret) {
-      throw new UnauthorizedException(
-        'WEBHOOK_SECRET chưa được cấu hình - webhook bị từ chối',
-      );
+      return true;
     }
 
     const request = context.switchToHttp().getRequest<Request & { rawBody?: Buffer }>();

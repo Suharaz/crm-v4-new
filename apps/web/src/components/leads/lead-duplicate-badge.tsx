@@ -55,7 +55,9 @@ export function LeadDuplicateBadge({ count, phone, currentLeadId }: Props) {
 
   if (count < 2) return null;
 
-  async function handleOpen() {
+  async function handleOpen(e: React.MouseEvent) {
+    // Chặn bubble lên row để click badge không trigger row-toggle ở bảng leads
+    e.stopPropagation();
     setOpen(true);
     if (data) return;
     setLoading(true);

@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { LeadInlineExpandDetail } from '@/components/leads/lead-inline-expand-detail';
 import { LeadPoolActionButtons } from '@/components/leads/lead-pool-action-buttons';
 import { LeadDuplicateBadge } from '@/components/leads/lead-duplicate-badge';
-import { LeadNameLink } from '@/components/leads/lead-name-link';
 import { LeadEditButton } from '@/components/leads/lead-edit-button';
 import { PhoneCell } from '@/components/leads/phone-cell';
 import { BulkDeleteBar } from '@/components/shared/bulk-delete-bar';
@@ -55,8 +54,8 @@ export function LeadTable({ leads, poolMode, users = [], enableBulkDelete = fals
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const sel = useBulkSelection(leads);
   // header cells count - used for colspan of expanded row
-  // 9 base + Chỉnh sửa + (poolMode ? Thao tác : 0) + (enableBulkDelete ? Checkbox : 0)
-  const colCount = 10 + (poolMode ? 1 : 0) + (enableBulkDelete ? 1 : 0);
+  // 7 base (Tên, SĐT, Sản phẩm, Thành tiền, Tiền đặt cọc, Nguồn, Nhãn) + Chỉnh sửa + (poolMode ? Thao tác : 0) + (enableBulkDelete ? Checkbox : 0)
+  const colCount = 8 + (poolMode ? 1 : 0) + (enableBulkDelete ? 1 : 0);
 
   function toggle(id: string) {
     setExpandedId(prev => prev === id ? null : id);
@@ -66,10 +65,9 @@ export function LeadTable({ leads, poolMode, users = [], enableBulkDelete = fals
     return <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">Không có data</div>;
   }
 
-  // Sticky column offsets (cumulative left position)
-  const STT_LEFT = enableBulkDelete ? 'left-[40px]' : 'left-0';
-  const NAME_LEFT = enableBulkDelete ? 'left-[80px]' : 'left-[40px]';
-  const PHONE_LEFT = enableBulkDelete ? 'left-[280px]' : 'left-[240px]';
+  // Sticky column offsets (cumulative left position) - cột Tên là sticky đầu tiên sau checkbox (nếu có)
+  const NAME_LEFT = enableBulkDelete ? 'left-[40px]' : 'left-0';
+  const PHONE_LEFT = enableBulkDelete ? 'left-[240px]' : 'left-[200px]';
 
   return (
     <>
@@ -89,11 +87,9 @@ export function LeadTable({ leads, poolMode, users = [], enableBulkDelete = fals
                   />
                 </th>
               )}
-              <th className={cn('sticky z-20 w-10 px-3 py-3 text-center font-medium text-slate-500 bg-slate-50 border-b border-slate-200', STT_LEFT)}>#</th>
               <th className={cn('sticky z-20 w-[200px] px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200', NAME_LEFT)}>Tên khách hàng</th>
               <th className={cn('sticky z-20 w-[200px] px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200 shadow-[2px_0_4px_rgba(0,0,0,0.04)]', PHONE_LEFT)}>Số điện thoại</th>
               <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Sản phẩm</th>
-              <th className="px-4 py-3 text-center font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Số</th>
               <th className="px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Thành tiền</th>
               <th className="px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Tiền đặt cọc</th>
               <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Nguồn khách</th>
@@ -103,13 +99,12 @@ export function LeadTable({ leads, poolMode, users = [], enableBulkDelete = fals
             </tr>
           </thead>
           <tbody>
-            {leads.map((lead, idx) => {
+            {leads.map((lead) => {
               const isExpanded = expandedId === lead.id;
               return (
                 <LeadRow
                   key={lead.id}
                   lead={lead}
-                  index={idx + 1}
                   isExpanded={isExpanded}
                   onToggle={() => toggle(lead.id)}
                   poolMode={poolMode}
@@ -118,7 +113,6 @@ export function LeadTable({ leads, poolMode, users = [], enableBulkDelete = fals
                   enableBulkDelete={enableBulkDelete}
                   isSelected={sel.isSelected(lead.id)}
                   onSelectToggle={() => sel.toggleOne(lead.id)}
-                  sttLeft={STT_LEFT}
                   nameLeft={NAME_LEFT}
                   phoneLeft={PHONE_LEFT}
                 />
@@ -141,11 +135,11 @@ export function LeadTable({ leads, poolMode, users = [], enableBulkDelete = fals
   );
 }
 
-function LeadRow({ lead, index, isExpanded, onToggle, poolMode, users, colSpan, enableBulkDelete, isSelected, onSelectToggle, sttLeft, nameLeft, phoneLeft }: {
-  lead: Lead; index: number; isExpanded: boolean; onToggle: () => void;
+function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan, enableBulkDelete, isSelected, onSelectToggle, nameLeft, phoneLeft }: {
+  lead: Lead; isExpanded: boolean; onToggle: () => void;
   poolMode?: string; users: { id: string; name: string }[]; colSpan: number;
   enableBulkDelete: boolean; isSelected: boolean; onSelectToggle: () => void;
-  sttLeft: string; nameLeft: string; phoneLeft: string;
+  nameLeft: string; phoneLeft: string;
 }) {
   const summary = computeOrderSummary(lead.orders);
   // Background for sticky cells matches row state (selected/expanded/default)
@@ -165,10 +159,9 @@ function LeadRow({ lead, index, isExpanded, onToggle, poolMode, users, colSpan, 
             />
           </td>
         )}
-        <td className={cn('sticky z-10 w-10 px-3 py-3 text-center text-xs text-slate-500 border-b border-slate-100', sttLeft, rowBg)}>{index}</td>
-        <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100', nameLeft, rowBg)} onClick={e => e.stopPropagation()}>
+        <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100', nameLeft, rowBg)}>
           <div className="flex items-center gap-1.5">
-            <LeadNameLink leadId={lead.id} name={lead.name} />
+            <span className="font-medium text-slate-900 truncate">{lead.name}</span>
             {lead.metadata?.aiLevel && (
               <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full text-white shrink-0 ${
                 lead.metadata.aiLevel === 'HOT' ? 'bg-red-500' : lead.metadata.aiLevel === 'WARM' ? 'bg-amber-500' : 'bg-sky-400'
@@ -176,7 +169,7 @@ function LeadRow({ lead, index, isExpanded, onToggle, poolMode, users, colSpan, 
             )}
           </div>
         </td>
-        <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100 shadow-[2px_0_4px_rgba(0,0,0,0.04)]', phoneLeft, rowBg)} onClick={e => e.stopPropagation()}>
+        <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100 shadow-[2px_0_4px_rgba(0,0,0,0.04)]', phoneLeft, rowBg)}>
           <div className="flex items-center gap-2">
             <PhoneCell leadId={lead.id} phone={lead.phone} />
             <LeadDuplicateBadge
@@ -187,7 +180,6 @@ function LeadRow({ lead, index, isExpanded, onToggle, poolMode, users, colSpan, 
           </div>
         </td>
         <td className="px-4 py-3 text-slate-600 border-b border-slate-100">{lead.product?.name || '-'}</td>
-        <td className="px-4 py-3 text-center text-slate-600 border-b border-slate-100">{summary ? 1 : '-'}</td>
         <td className="px-4 py-3 text-right tabular-nums text-slate-700 border-b border-slate-100">
           {summary ? formatVND(summary.totalAmount) : <span className="text-slate-300">-</span>}
         </td>

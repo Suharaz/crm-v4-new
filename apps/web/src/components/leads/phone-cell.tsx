@@ -26,7 +26,9 @@ export function PhoneCell({ leadId, phone }: PhoneCellProps) {
   const carrier = detectCarrier(phone);
   const display = formatPhoneDisplay(phone);
 
-  async function copyPhone() {
+  async function copyPhone(e: React.MouseEvent) {
+    // Chặn bubble lên row để click copy không trigger row-toggle ở bảng leads
+    e.stopPropagation();
     if (!phone) return;
     try {
       await navigator.clipboard.writeText(phone);
@@ -52,7 +54,7 @@ export function PhoneCell({ leadId, phone }: PhoneCellProps) {
         <span className="font-medium text-slate-900 tabular-nums">{display}</span>
         <button
           type="button"
-          onClick={() => setTimelineOpen(true)}
+          onClick={(e) => { e.stopPropagation(); setTimelineOpen(true); }}
           title="Lịch tương tác"
           className="inline-flex h-6 w-6 items-center justify-center rounded-md text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
         >
@@ -60,7 +62,7 @@ export function PhoneCell({ leadId, phone }: PhoneCellProps) {
         </button>
         <button
           type="button"
-          onClick={() => setCallsOpen(true)}
+          onClick={(e) => { e.stopPropagation(); setCallsOpen(true); }}
           title="Lịch sử gọi điện"
           className="inline-flex h-6 w-6 items-center justify-center rounded-md text-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
         >

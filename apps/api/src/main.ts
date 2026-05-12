@@ -26,7 +26,10 @@ async function bootstrap() {
     process.exit(1);
   }
 
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+    rawBody: true, // Required by WebhookSignatureGuard to verify HMAC over raw bytes
+  });
 
   app.useLogger(app.get(Logger));
   app.use(helmet({

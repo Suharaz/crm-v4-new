@@ -43,13 +43,36 @@ export class AuditLogInterceptor implements NestInterceptor {
     );
   }
 
+  /** Detect webhook path - audit fires nhưng body bị redact ở captureRequestMetadata */
+  private isWebhookPath(req: Request): boolean {
+    const path = req.path ?? req.url ?? '';
+    return path.startsWith('/api/v1/webhooks') || path.startsWith('/webhooks');
+  }
+
   private shouldSkip(req: Request): boolean {
     if (SKIP_METHODS.has(req.method)) return true;
     const path = req.path ?? req.url ?? '';
+
+    // Webhook không skip - phải audit cho forensic (C-4 fix).
+    // Body sẽ bị redact trong captureRequestMetadata thay vì skip hoàn toàn.
+    if (this.isWebhookPath(req)) return false;
+
     return SKIP_PATH_PREFIXES.some((prefix) => path.startsWith(prefix));
   }
 
   private captureRequestMetadata(req: Request & { user?: { id: bigint } }): Record<string, unknown> {
+    // Webhook body chứa vendor data nhạy cảm (senderAccount, rawData...).
+    // Chỉ log identifiers an toàn để giữ forensic trail mà không leak PII.
+    if (this.isWebhookPath(req)) {
+      const body = req.body as Record<string, unknown> | undefined;
+      return {
+        webhook: true,
+        externalId: body?.externalId,
+        amount: body?.amount,
+        bodyRedacted: true,
+      };
+    }
+
     return {
       body: sanitize(req.body),
       query: sanitize(req.query),

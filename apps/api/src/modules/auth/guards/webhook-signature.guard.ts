@@ -1,11 +1,16 @@
 import { CanActivate, ExecutionContext, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'crypto';
+import type { Request } from 'express';
 
 /**
- * Guard that validates HMAC-SHA256 webhook signatures.
- * Expects `x-signature` header containing HMAC of raw body.
- * Fails closed in production if WEBHOOK_SECRET is not configured.
+ * Guard validates HMAC-SHA256 webhook signatures over RAW body bytes.
+ *
+ * Expects `x-signature` header containing hex HMAC. Requires NestFactory
+ * created with `rawBody: true` so `req.rawBody` is populated.
+ *
+ * Fails closed if WEBHOOK_SECRET missing (no dev exception). Dev must set
+ * WEBHOOK_SECRET in `.env` to test webhook locally.
  */
 @Injectable()
 export class WebhookSignatureGuard implements CanActivate {
@@ -14,23 +19,26 @@ export class WebhookSignatureGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const secret = this.config.get<string>('WEBHOOK_SECRET');
+    // Fail closed in all environments - no silent skip
     if (!secret) {
-      // Fail closed in production - do not silently skip signature verification
-      if (process.env.NODE_ENV === 'production') {
-        throw new UnauthorizedException('WEBHOOK_SECRET chưa được cấu hình - webhook bị từ chối');
-      }
-      this.logger.warn('WEBHOOK_SECRET not configured - skipping signature check (dev only)');
-      return true;
+      throw new UnauthorizedException(
+        'WEBHOOK_SECRET chưa được cấu hình - webhook bị từ chối',
+      );
     }
 
-    const request = context.switchToHttp().getRequest();
-    const signature = request.headers['x-signature'] as string;
+    const request = context.switchToHttp().getRequest<Request & { rawBody?: Buffer }>();
+    const signature = request.headers['x-signature'] as string | undefined;
     if (!signature) {
       throw new UnauthorizedException('Webhook signature bắt buộc (header x-signature)');
     }
 
-    // Compute expected signature from raw body
-    const rawBody = JSON.stringify(request.body);
+    // HMAC over raw bytes - matches what sender signed before body-parser ran
+    const rawBody = request.rawBody;
+    if (!rawBody || rawBody.length === 0) {
+      this.logger.error('rawBody missing - check NestFactory.create({ rawBody: true })');
+      throw new UnauthorizedException('Webhook body không hợp lệ');
+    }
+
     const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
 
     // Timing-safe comparison to prevent timing attacks
@@ -40,7 +48,9 @@ export class WebhookSignatureGuard implements CanActivate {
       if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
         throw new UnauthorizedException('Webhook signature không hợp lệ');
       }
-    } catch {
+    } catch (err) {
+      // Buffer.from with invalid hex throws - treat as invalid signature
+      if (err instanceof UnauthorizedException) throw err;
       throw new UnauthorizedException('Webhook signature không hợp lệ');
     }
 

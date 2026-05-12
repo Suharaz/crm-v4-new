@@ -180,11 +180,36 @@ export class PaymentsService {
 
       if (bankTransactionId) {
         const bankTxId = BigInt(bankTransactionId);
-        updateData.matchedTransaction = { connect: { id: bankTxId } };
-        await tx.bankTransaction.update({
-          where: { id: bankTxId },
-          data: { matchedPaymentId: id, matchStatus: 'MANUALLY_MATCHED' },
+
+        // Atomic claim - chỉ update nếu bankTx CHƯA matched (race-safe).
+        // Pattern updateMany với guard predicate đảm bảo 2 concurrent verify cùng bankTxId
+        // chỉ 1 thành công, cái còn lại claim.count === 0 → throw 409.
+        const claim = await tx.bankTransaction.updateMany({
+          where: {
+            id: bankTxId,
+            matchStatus: 'UNMATCHED',
+          },
+          data: {
+            matchedPaymentId: id,
+            matchStatus: 'MANUALLY_MATCHED',
+          },
         });
+
+        if (claim.count === 0) {
+          throw new ConflictException(
+            'Bank transaction không UNMATCHED - có thể đã được ghép payment khác hoặc không tồn tại',
+          );
+        }
+
+        // Validate amount khớp - throw để $transaction rollback claim
+        const bankTx = await tx.bankTransaction.findUniqueOrThrow({ where: { id: bankTxId } });
+        if (bankTx.amount.toString() !== payment.amount.toString()) {
+          throw new ConflictException(
+            `Số tiền không khớp: bank transaction ${bankTx.amount} vs payment ${payment.amount}`,
+          );
+        }
+
+        updateData.matchedTransaction = { connect: { id: bankTxId } };
       }
 
       await tx.payment.update({ where: { id }, data: updateData });

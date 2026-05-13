@@ -37,4 +37,19 @@ export class DistributionController {
   ) {
     return { data: await this.service.batchDistribute(deptId, user.id) };
   }
+
+  /**
+   * Chia leads từ Kho Zoom (status=ZOOM) cho 1 department.
+   * Cùng thuật toán scoring, nhưng filter mở rộng:
+   *   - status IN [POOL, ZOOM]
+   *   - POOL phải khớp departmentId, ZOOM thì lấy tất cả (vì ZOOM thường chưa có dept).
+   */
+  @Post('distribute-zoom/:deptId')
+  @HttpCode(200)
+  async batchDistributeZoom(
+    @Param('deptId', ParseBigIntPipe) deptId: bigint,
+    @CurrentUser() user: any,
+  ) {
+    return { data: await this.service.batchDistribute(deptId, user.id, { includeZoom: true }) };
+  }
 }

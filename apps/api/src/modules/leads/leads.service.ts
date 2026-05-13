@@ -445,11 +445,22 @@ export class LeadsService {
 
   // ── Update ──────────────────────────────────────────────────────────────
   async update(id: bigint, data: Record<string, unknown>, user: CurrentUser) {
-    await this.findById(id, user);
+    const existing = await this.findById(id, user);
+    const isManagerPlus = ([UserRole.SUPER_ADMIN, UserRole.MANAGER] as UserRole[]).includes(user.role);
 
-    // Phone field-level permission
-    if (data.phone && !([UserRole.SUPER_ADMIN, UserRole.MANAGER] as UserRole[]).includes(user.role)) {
-      throw new ForbiddenException('Chỉ quản lý mới được sửa số điện thoại');
+    // Field-level permission: USER không được sửa identity fields (phone/name/sourceId)
+    // - dữ liệu gốc từ CSV/import, chỉ MANAGER+ fix typo.
+    // Lưu ý: chỉ throw khi USER thực sự đổi giá trị (không phải gửi cùng giá trị cũ trong PATCH).
+    if (!isManagerPlus) {
+      if (data.phone && normalizePhone(data.phone as string) !== existing.phone) {
+        throw new ForbiddenException('Chỉ quản lý mới được sửa số điện thoại');
+      }
+      if (data.name !== undefined && data.name !== existing.name) {
+        throw new ForbiddenException('Chỉ quản lý mới được sửa họ tên');
+      }
+      if (data.sourceId !== undefined && String(data.sourceId) !== String(existing.sourceId ?? '')) {
+        throw new ForbiddenException('Chỉ quản lý mới được đổi nguồn');
+      }
     }
 
     const updateData: Prisma.LeadUpdateInput = {};
@@ -459,6 +470,11 @@ export class LeadsService {
       const phone = normalizePhone(data.phone as string);
       if (!isValidVNPhone(phone)) throw new BadRequestException('Số điện thoại không hợp lệ');
       updateData.phone = phone;
+    }
+    if (data.sourceId !== undefined && isManagerPlus) {
+      updateData.source = data.sourceId
+        ? { connect: { id: BigInt(data.sourceId as string) } }
+        : { disconnect: true };
     }
     if (data.companyName !== undefined) updateData.companyName = data.companyName as string | null;
     if (data.facebookUrl !== undefined) updateData.facebookUrl = data.facebookUrl as string | null;
@@ -1000,5 +1016,109 @@ export class LeadsService {
       }
     }
     throw new ForbiddenException('Không có quyền chuyển lead này');
+  }
+
+  // ── Secondary phones (lead context) ─────────────────────────────────────
+  // Cho phép mọi role có access tới lead (qua findById/buildAccessFilter) được
+  // thêm/sửa/xóa số phụ. Khi lead chưa có customerId, tự động tạo customer
+  // shadow để link - KHÔNG đổi status lead (không trigger convert flow).
+
+  /**
+   * Đảm bảo lead có customerId. Nếu chưa có → tạo customer shadow và link.
+   * Access đã được enforce trước bởi caller (qua `findById(leadId, user)` trong addSecondaryPhone)
+   * → inner tx dùng `findUnique` không filter là an toàn.
+   */
+  private async ensureCustomerForLead(leadId: bigint, user: CurrentUser): Promise<bigint> {
+    const lead = await this.findById(leadId, user);
+    if (lead.customerId) return BigInt(lead.customerId);
+
+    // Race-safe: kiểm tra lại trong transaction (2 request song song không tạo 2 customer).
+    return this.prisma.$transaction(async (tx) => {
+      const fresh = await tx.lead.findUnique({
+        where: { id: leadId },
+        select: {
+          customerId: true, phone: true, name: true, email: true,
+          companyName: true, facebookUrl: true, instagramUrl: true,
+          zaloUrl: true, linkedinUrl: true,
+          assignedUserId: true, departmentId: true,
+        },
+      });
+      if (!fresh) throw new NotFoundException('Không tìm thấy lead');
+      if (fresh.customerId) return fresh.customerId;
+
+      // Match customer hiện hữu theo phone trước khi tạo mới (tránh duplicate)
+      const matched = fresh.phone
+        ? await tx.customer.findFirst({ where: { phone: fresh.phone, deletedAt: null }, select: { id: true } })
+        : null;
+      const customerId = matched
+        ? matched.id
+        : (await tx.customer.create({
+            data: {
+              phone: fresh.phone ?? '',
+              name: fresh.name ?? fresh.phone ?? '',
+              email: fresh.email,
+              companyName: fresh.companyName,
+              facebookUrl: fresh.facebookUrl,
+              instagramUrl: fresh.instagramUrl,
+              zaloUrl: fresh.zaloUrl,
+              linkedinUrl: fresh.linkedinUrl,
+              assignedUserId: fresh.assignedUserId,
+              assignedDepartmentId: fresh.departmentId,
+            },
+            select: { id: true },
+          })).id;
+
+      await tx.lead.update({ where: { id: leadId }, data: { customerId } });
+      return customerId;
+    });
+  }
+
+  /** List số phụ - nếu lead chưa có customerId → mảng rỗng. */
+  async listSecondaryPhones(leadId: bigint, user: CurrentUser) {
+    const lead = await this.findById(leadId, user);
+    if (!lead.customerId) return [];
+    return this.customerPhonesService.listPhones(BigInt(lead.customerId));
+  }
+
+  /** Thêm số phụ. Auto-create customer nếu cần. */
+  async addSecondaryPhone(
+    leadId: bigint,
+    dto: { phone: string; label?: string; note?: string },
+    user: CurrentUser,
+  ) {
+    const customerId = await this.ensureCustomerForLead(leadId, user);
+    return this.customerPhonesService.addPhone(customerId, dto, user.id);
+  }
+
+  /** Update số phụ - verify ownership qua lead. */
+  async updateSecondaryPhone(
+    leadId: bigint,
+    phoneId: bigint,
+    dto: { phone?: string; label?: string; note?: string },
+    user: CurrentUser,
+  ) {
+    const lead = await this.findById(leadId, user);
+    if (!lead.customerId) throw new NotFoundException('Lead chưa có khách hàng');
+    // IDOR guard: phone phải thuộc customer của lead này
+    const phone = await this.prisma.customerPhone.findUnique({
+      where: { id: phoneId }, select: { customerId: true, deletedAt: true },
+    });
+    if (!phone || phone.deletedAt || phone.customerId.toString() !== String(lead.customerId)) {
+      throw new NotFoundException('Không tìm thấy số phụ');
+    }
+    return this.customerPhonesService.updatePhone(phoneId, dto);
+  }
+
+  /** Soft delete số phụ - verify ownership qua lead. */
+  async softDeleteSecondaryPhone(leadId: bigint, phoneId: bigint, user: CurrentUser) {
+    const lead = await this.findById(leadId, user);
+    if (!lead.customerId) throw new NotFoundException('Lead chưa có khách hàng');
+    const phone = await this.prisma.customerPhone.findUnique({
+      where: { id: phoneId }, select: { customerId: true, deletedAt: true },
+    });
+    if (!phone || phone.deletedAt || phone.customerId.toString() !== String(lead.customerId)) {
+      throw new NotFoundException('Không tìm thấy số phụ');
+    }
+    return this.customerPhonesService.softDeletePhone(phoneId);
   }
 }

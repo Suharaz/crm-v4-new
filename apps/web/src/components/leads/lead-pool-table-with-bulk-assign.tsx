@@ -8,11 +8,12 @@ import { EntityQuickPreviewDialog } from '@/components/shared/entity-quick-previ
 import { LeadDuplicateBadge } from '@/components/leads/lead-duplicate-badge';
 import { LeadNameLink } from '@/components/leads/lead-name-link';
 import { LeadEditButton } from '@/components/leads/lead-edit-button';
+import { LeadPoolDistributeDialog } from '@/components/leads/lead-pool-distribute-dialog';
 import { PhoneCell } from '@/components/leads/phone-cell';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/providers/auth-provider';
 import { cn, formatVND } from '@/lib/utils';
-import { Users, Shuffle, Undo2, RefreshCw } from 'lucide-react';
+import { Users, Shuffle, Undo2, RefreshCw, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface OrderLite {
@@ -51,11 +52,19 @@ function computeOrderSummary(orders: OrderLite[] | undefined) {
 interface PoolTableProps {
   leads: Lead[];
   users: { id: string; name: string }[];
-  poolMode: 'new' | 'floating' | 'department';
+  /**
+   * 'new'      - Kho Mới (POOL leads, dept=null hoặc dept hiện tại).
+   * 'zoom'     - Kho Zoom (status=ZOOM, dept thường null - cần dialog chọn dept).
+   * 'floating' - Kho thả nổi (status=FLOATING).
+   * 'department' - Kho phòng ban cụ thể (POOL + departmentId set).
+   */
+  poolMode: 'new' | 'floating' | 'department' | 'zoom';
+  /** Departments cho dialog "AI Chia số / Chia toàn bộ". Optional - chỉ cần khi assignable pool. */
+  departments?: { id: string; name: string }[];
 }
 
 /** Lead pool table with bulk assign, monitoring, and auto-refresh. */
-export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMode }: PoolTableProps) {
+export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMode, departments = [] }: PoolTableProps) {
   const { user } = useAuth();
   const isManager = user?.role === 'MANAGER' || user?.role === 'SUPER_ADMIN';
 
@@ -76,16 +85,24 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
   // Recall state
   const [recalling, setRecalling] = useState(false);
 
+  // AI distribute state (Phase 03)
+  const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
+
   useEffect(() => {
     if (!isManager) return;
     api.get<{ data: typeof templates }>('/assignment-templates').then(res => setTemplates(res.data || [])).catch(() => {});
   }, [isManager]);
 
-  // Auto-refresh polling (30s) - only for poolMode 'new'
+  // Auto-refresh polling (30s) - assignable pools (new + zoom)
   const fetchLeads = useCallback(async () => {
-    if (poolMode !== 'new') return;
+    const endpoint = poolMode === 'new'
+      ? '/leads/pool/new?limit=200'
+      : poolMode === 'zoom'
+      ? '/leads/pool/zoom?limit=200'
+      : null;
+    if (!endpoint) return;
     try {
-      const res = await api.get<{ data: Lead[] }>('/leads/pool/new?limit=200');
+      const res = await api.get<{ data: Lead[] }>(endpoint);
       setLeads(res.data || []);
       setLastRefresh(new Date());
     } catch { /* silent fail on poll */ }
@@ -93,7 +110,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => {
-    if (poolMode !== 'new') return;
+    if (poolMode !== 'new' && poolMode !== 'zoom') return;
     intervalRef.current = setInterval(fetchLeads, 30_000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [poolMode, fetchLeads]);
@@ -200,14 +217,33 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
     return `${Math.floor(hours / 24)}d`;
   }
 
-  if (leads.length === 0) {
-    return <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">Không có data</div>;
-  }
+  const isAssignablePool = poolMode === 'new' || poolMode === 'zoom';
 
-  const isNewPool = poolMode === 'new';
+  // Empty state - vẫn hiện nút AI Distribute để manager dùng (refresh ngay sau khi chia)
+  if (leads.length === 0) {
+    return (
+      <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">
+        Không có data
+      </div>
+    );
+  }
 
   return (
     <div>
+      {/* Top-bar AI distribute (chỉ hiện khi không có ai được select - tránh xung đột UX với bulk toolbar) */}
+      {isManager && isAssignablePool && !someSelected && (
+        <div className="mb-3 flex items-center justify-end gap-2">
+          <Button
+            size="sm"
+            onClick={() => setDistributeDialogOpen(true)}
+            className="bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 text-white"
+          >
+            <Sparkles className="h-4 w-4 mr-1" />
+            {poolMode === 'zoom' ? `Chia toàn bộ Zoom (${leads.length})` : `AI Chia số (${leads.length})`}
+          </Button>
+        </div>
+      )}
+
       {/* Bulk action toolbar */}
       {someSelected && isManager && (
         <div className="mb-3 flex items-center gap-3 rounded-lg bg-sky-50 border border-sky-200 px-4 py-2.5">
@@ -227,8 +263,13 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
             </>
           )}
           {selectedDistributed.length > 0 && (
-            <Button size="sm" variant="outline" onClick={handleBulkRecall} disabled={recalling}
-              className="text-amber-700 border-amber-300 hover:bg-amber-50">
+            <Button
+              size="sm"
+              onClick={handleBulkRecall}
+              disabled={recalling}
+              title="Thu hồi lead về Kho Mới (POOL, không phân ai)"
+              className="bg-amber-500 hover:bg-amber-600 text-white font-medium shadow-md"
+            >
               <Undo2 className="h-4 w-4 mr-1" />
               {recalling ? 'Đang thu hồi...' : `Thu hồi ${selectedDistributed.length}`}
             </Button>
@@ -240,7 +281,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
       )}
 
       {/* Auto-refresh indicator */}
-      {isNewPool && (
+      {isAssignablePool && (
         <div className="mb-2 flex items-center justify-end gap-2 text-xs text-slate-400">
           <RefreshCw className="h-3 w-3" />
           <span>Tự động cập nhật{lastRefresh ? ` · ${lastRefresh.toLocaleTimeString('vi-VN')}` : ''}</span>
@@ -254,8 +295,8 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
         const STT_LEFT = isManager ? 'left-[40px]' : 'left-0';
         const NAME_LEFT = isManager ? 'left-[80px]' : 'left-[40px]';
         const PHONE_LEFT = isManager ? 'left-[280px]' : 'left-[240px]';
-        // "Phân cho" + "Tương tác" - manager-only + only on Kho Mới (isNewPool)
-        const showAssignCols = isManager && isNewPool;
+        // "Phân cho" + "Tương tác" - manager-only + assignable pool (new + zoom)
+        const showAssignCols = isManager && isAssignablePool;
 
         return (
           <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
@@ -444,6 +485,18 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
         entityType="lead"
         entityId={previewId}
       />
+
+      {/* AI distribute dialog (Phase 03) - chỉ render khi assignable pool + có deps */}
+      {isAssignablePool && (
+        <LeadPoolDistributeDialog
+          open={distributeDialogOpen}
+          onOpenChange={setDistributeDialogOpen}
+          poolMode={poolMode === 'zoom' ? 'zoom' : 'new'}
+          leadCount={leads.length}
+          departments={departments}
+          onDistributed={() => { fetchLeads(); setSelected(new Set()); }}
+        />
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { LeadsService } from './leads.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { LeadListQueryDto } from './dto/lead-list-query.dto';
 import { PoolListQueryDto } from './dto/pool-list-query.dto';
+import { AddCustomerPhoneDto, UpdateCustomerPhoneDto } from '../customers/dto/customer-phone.dto';
 import { Roles } from '../auth/decorators/roles-required.decorator';
 import { CurrentUser } from '../auth/decorators/current-user-param.decorator';
 import { ParseBigIntPipe } from '../../common/pipes/parse-bigint.pipe';
@@ -233,5 +234,51 @@ export class LeadsController {
     const labelId = body.labelId ? BigInt(body.labelId) : null;
     await this.labelsService.setLeadLabel(id, labelId);
     return { data: { message: labelId ? 'Đã gắn nhãn' : 'Đã gỡ nhãn' } };
+  }
+
+  // ── Số điện thoại phụ trên hồ sơ lead ───────────────────────────────────
+  // Không @Roles decorator: mọi role auth (USER/MANAGER/SUPER_ADMIN) đều được
+  // thao tác. Ownership scoped qua findById -> buildAccessFilter.
+  // Khác customer-phones endpoint (cũ chỉ MANAGER+): cho phép sale ghi SĐT
+  // người thân ngay khi đang gọi điện mà không cần convert lead.
+
+  @Get(':id/phones')
+  async listSecondaryPhones(
+    @Param('id', ParseBigIntPipe) id: bigint,
+    @CurrentUser() user: any,
+  ) {
+    const data = await this.leadsService.listSecondaryPhones(id, user);
+    return { data };
+  }
+
+  @Post(':id/phones')
+  async addSecondaryPhone(
+    @Param('id', ParseBigIntPipe) id: bigint,
+    @Body() dto: AddCustomerPhoneDto,
+    @CurrentUser() user: any,
+  ) {
+    const data = await this.leadsService.addSecondaryPhone(id, dto, user);
+    return { data };
+  }
+
+  @Patch(':id/phones/:phoneId')
+  async updateSecondaryPhone(
+    @Param('id', ParseBigIntPipe) id: bigint,
+    @Param('phoneId', ParseBigIntPipe) phoneId: bigint,
+    @Body() dto: UpdateCustomerPhoneDto,
+    @CurrentUser() user: any,
+  ) {
+    const data = await this.leadsService.updateSecondaryPhone(id, phoneId, dto, user);
+    return { data };
+  }
+
+  @Delete(':id/phones/:phoneId')
+  async deleteSecondaryPhone(
+    @Param('id', ParseBigIntPipe) id: bigint,
+    @Param('phoneId', ParseBigIntPipe) phoneId: bigint,
+    @CurrentUser() user: any,
+  ) {
+    await this.leadsService.softDeleteSecondaryPhone(id, phoneId, user);
+    return { data: { message: 'Đã xóa số phụ' } };
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { ScoringService } from './scoring.service';
 
 @Injectable()
@@ -53,10 +53,29 @@ export class DistributionService {
     return { leadId, assignedUserId: userId };
   }
 
-  /** Batch distribute leads from department pool - scores once, batch writes. */
-  async batchDistribute(departmentId: bigint, assignedBy: bigint) {
+  /**
+   * Batch distribute leads from department pool - scores once, batch writes.
+   * @param opts.includeZoom - mở rộng filter lên cả ZOOM leads (globally, không cần
+   *   khớp departmentId của lead vì ZOOM lead thường có departmentId=null).
+   */
+  async batchDistribute(
+    departmentId: bigint,
+    assignedBy: bigint,
+    opts: { includeZoom?: boolean } = {},
+  ) {
+    const where: Prisma.LeadWhereInput = opts.includeZoom
+      ? {
+          deletedAt: null,
+          assignedUserId: null,
+          OR: [
+            { status: 'POOL', departmentId },
+            { status: 'ZOOM' },
+          ],
+        }
+      : { status: 'POOL', departmentId, assignedUserId: null, deletedAt: null };
+
     const leads = await this.prisma.lead.findMany({
-      where: { status: 'POOL', departmentId, assignedUserId: null, deletedAt: null },
+      where,
       select: { id: true },
       take: 100,
     });

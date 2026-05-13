@@ -69,7 +69,7 @@ crm-v4/
 ### CRM Core (5)
 | Module | Controller prefix | Vai trò |
 |--------|-------------------|---------|
-| `leads` | `/leads` | Lead CRUD + claim/transfer/recall/convert + 3 kho (new, zoom, dept, floating) |
+| `leads` | `/leads` | Lead CRUD + claim/transfer/recall/convert + 3 kho (new, zoom, dept, floating) + `/leads/:id/phones[/:phoneId]` secondary phone CRUD (any role with lead access, auto-creates shadow customer) |
 | `customers` | `/customers` | Customer CRUD + claim/transfer/reactivate + labels + AI analyze |
 | `lead-sources` | `/lead-sources` | Lookup + skipPool flag |
 | `labels` | `/labels` | Lookup nhãn + color + category |
@@ -105,7 +105,7 @@ crm-v4/
 ### Distribution & Assignment (4)
 | Module | Controller prefix | Vai trò |
 |--------|-------------------|---------|
-| `distribution` | `/distribution` | AI distribution config + scores + run |
+| `distribution` | `/distribution` | AI distribution config + scores + run + `POST /distribution/distribute-zoom/:deptId` (zoom pool batch, manager-only) |
 | `assignment-templates` | `/assignment-templates` | Round-robin template, apply lên POOL/FLOATING |
 | `recall-config` | `/recall-configs` | Auto-recall ngày + nhãn mặc định |
 | `search` | `/search` | Global search (FTS) |
@@ -135,9 +135,9 @@ crm-v4/
 - `/dashboard/revenue`, `/dashboard/customers`, `/dashboard/employees` - Sub-pages
 
 **Leads (6):**
-- `/leads`, `/leads/new`, `/leads/[id]`, `/leads/[id]/edit`
+- `/leads`, `/leads/new`, `/leads/[id]`, `/leads/[id]/edit` (pencil button mở slide-in Sheet drawer với full LeadForm, USER bị field-lock phone/name/sourceId)
 - `/leads/dept` - Kho phòng ban
-- `/leads/pool/new`, `/leads/pool/zoom` - 2 nhóm kho mới
+- `/leads/pool/new`, `/leads/pool/zoom` - 2 nhóm kho mới (zoom dùng `poolMode='zoom'`: hiện cột "Phân cho" + "Tương tác" + auto-refresh + nút AI chia toàn bộ Zoom)
 - `/floating` - Kho thả nổi (lead + customer)
 
 **Customers (4):** `/customers`, `/customers/new`, `/customers/[id]`, `/customers/[id]/edit`
@@ -160,7 +160,7 @@ crm-v4/
 
 ```
 components/
-├── ui/                 shadcn/ui primitives (NO barrel import)
+├── ui/                 shadcn/ui primitives (NO barrel import) - bao gồm `sheet.tsx` (slide-in drawer dùng cho lead edit drawer)
 ├── layout/             Sidebar, header, breadcrumb, nav
 ├── shared/             DataTable, timeline, search bar, etc.
 ├── landing/            Landing page sections

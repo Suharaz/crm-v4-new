@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FormField } from '@/components/shared/form-field';
+import { LeadSecondaryPhonesSection } from '@/components/leads/lead-secondary-phones-section';
 import { useFormAction } from '@/hooks/use-form-action';
 import { leadSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas';
 import { api } from '@/lib/api-client';
@@ -17,17 +18,34 @@ interface LeadFormProps {
   lead?: LeadRecord;
   sources: NamedEntity[];
   products: NamedEntity[];
+  /**
+   * 'page' (default): submit -> router.push('/leads').
+   * 'drawer': submit -> call onSuccess + skip navigation (giữ Sheet context).
+   */
+  mode?: 'page' | 'drawer';
+  /** Gọi sau khi submit thành công (chỉ active khi mode='drawer'). */
+  onSuccess?: () => void;
 }
 
 /** Create/edit form for leads. */
-export function LeadForm({ lead, sources, products }: LeadFormProps) {
+export function LeadForm({ lead, sources, products, mode = 'page', onSuccess }: LeadFormProps) {
   const router = useRouter();
   const { user: currentUser } = useAuth();
   const isEdit = !!lead;
-  const canEditPhone = !isEdit || ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
+  const isManagerPlus = ['SUPER_ADMIN', 'MANAGER'].includes(currentUser?.role || '');
+  // Field-level gates: USER (sale đã claim) chỉ được sửa note/label/payment, KHÔNG được sửa
+  // dữ liệu danh tính gốc (phone, name, sourceId) từ CSV import. MANAGER+ giữ quyền sửa.
+  const canEditPhone = !isEdit || isManagerPlus;
+  const canEditNameSource = !isEdit || isManagerPlus;
   const { execute, isLoading, error } = useFormAction({
     successMessage: isEdit ? 'Đã cập nhật lead' : 'Đã tạo lead',
-    onSuccess: () => router.push('/leads'),
+    onSuccess: () => {
+      if (mode === 'drawer') {
+        onSuccess?.();
+      } else {
+        router.push('/leads');
+      }
+    },
   });
 
   const [form, setForm] = useState({
@@ -136,7 +154,14 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
         </FormField>
 
         <FormField label="Họ tên" error={fieldErrors.name}>
-          <Input value={form.name} onChange={e => update('name', e.target.value)} placeholder="Nguyễn Văn A" />
+          <Input
+            value={form.name}
+            onChange={e => update('name', e.target.value)}
+            placeholder="Nguyễn Văn A"
+            readOnly={!canEditNameSource}
+            className={!canEditNameSource ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : ''}
+          />
+          {!canEditNameSource && <p className="text-xs text-slate-400 mt-0.5">Chỉ quản lý mới được sửa tên</p>}
         </FormField>
 
         <FormField label="Email" error={fieldErrors.email}>
@@ -144,12 +169,15 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
         </FormField>
 
         <FormField label="Nguồn">
-          <Select value={form.sourceId} onValueChange={v => update('sourceId', v)}>
-            <SelectTrigger><SelectValue placeholder="Chọn nguồn" /></SelectTrigger>
+          <Select value={form.sourceId} onValueChange={v => update('sourceId', v)} disabled={!canEditNameSource}>
+            <SelectTrigger className={!canEditNameSource ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : ''}>
+              <SelectValue placeholder="Chọn nguồn" />
+            </SelectTrigger>
             <SelectContent>
               {sources.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
             </SelectContent>
           </Select>
+          {!canEditNameSource && <p className="text-xs text-slate-400 mt-0.5">Chỉ quản lý mới được đổi nguồn</p>}
         </FormField>
 
         <FormField label="Sản phẩm">
@@ -186,6 +214,11 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
         </div>
       </div>
 
+      {/* Secondary phones (only on edit - need lead.id) */}
+      {isEdit && lead?.id && (
+        <LeadSecondaryPhonesSection leadId={lead.id} hasCustomer={!!lead.customerId} />
+      )}
+
       {/* Metadata key-value pairs */}
       <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
         <div className="flex items-center justify-between">
@@ -220,7 +253,9 @@ export function LeadForm({ lead, sources, products }: LeadFormProps) {
         <Button type="submit" disabled={isLoading}>
           {isLoading ? 'Đang lưu...' : (isEdit ? 'Cập nhật' : 'Tạo lead')}
         </Button>
-        <Button type="button" variant="outline" onClick={() => router.back()}>Hủy</Button>
+        {mode === 'page' && (
+          <Button type="button" variant="outline" onClick={() => router.back()}>Hủy</Button>
+        )}
       </div>
     </form>
   );

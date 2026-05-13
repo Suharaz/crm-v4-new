@@ -61,7 +61,12 @@ export default async function PoolNewPage({ searchParams }: { searchParams: Prom
         <LeadLabelQuickFilters scope="pool-new" />
       </Suspense>
 
-      <LeadPoolTableWithBulkAssign leads={data as unknown as Parameters<typeof LeadPoolTableWithBulkAssign>[0]['leads']} users={users} poolMode="new" />
+      <LeadPoolTableWithBulkAssign
+        leads={data as unknown as Parameters<typeof LeadPoolTableWithBulkAssign>[0]['leads']}
+        users={users}
+        poolMode="new"
+        departments={departments}
+      />
     </div>
   );
 }

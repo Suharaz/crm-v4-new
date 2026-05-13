@@ -54,7 +54,12 @@ export default async function PoolZoomPage({ searchParams }: { searchParams: Pro
         <LeadLabelQuickFilters scope="pool-zoom" />
       </Suspense>
 
-      <LeadPoolTableWithBulkAssign leads={data as unknown as Parameters<typeof LeadPoolTableWithBulkAssign>[0]['leads']} users={users} poolMode="department" />
+      <LeadPoolTableWithBulkAssign
+        leads={data as unknown as Parameters<typeof LeadPoolTableWithBulkAssign>[0]['leads']}
+        users={users}
+        poolMode="zoom"
+        departments={departments}
+      />
     </div>
   );
 }

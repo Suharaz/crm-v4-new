@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Leads Edit Drawer + Zoom Distribution + Lead Phones API (2026-05-13)
+- **UI/UX:**
+  - Pencil button trên `/leads` mở slide-in Sheet/Drawer (right side) chứa full `LeadForm` thay cho quick-preview popup cũ.
+  - USER role bị field-lock trên `phone` / `name` / `sourceId`; MANAGER/SUPER_ADMIN edit bình thường.
+  - shadcn UI primitive mới: `apps/web/src/components/ui/sheet.tsx`.
+- **Backend - Lead Phones:**
+  - 4 endpoint mới `GET|POST|PATCH|DELETE /leads/:id/phones[/:phoneId]` cho phép mọi role có access lead manage secondary phones.
+  - Auto-create shadow customer record (race-safe `$transaction` + re-read) nếu `lead.customerId IS NULL`, KHÔNG đổi lead status.
+  - Server-side gate: USER không được đổi `phone` / `name` / `sourceId` (match UI lock).
+- **Pool Zoom UX:**
+  - `/leads/pool/zoom` page chuyển sang `poolMode='zoom'` -> hiện cột "Phân cho" + "Tương tác" + auto-refresh (parity với Kho Mới).
+  - Top-bar button "AI Chia số / Chia toàn bộ Zoom" (manager-only) mở dialog chọn dept rồi call AI distribute.
+  - Endpoint mới `POST /distribution/distribute-zoom/:deptId` -> `batchDistribute(deptId, userId, { includeZoom: true })` với filter `OR: [{ status: 'POOL', departmentId }, { status: 'ZOOM' }]`.
+  - "Thu hồi" button đổi sang amber background cho visibility cao hơn.
+
 ### Employees Dashboard Redesign - 3 tabs + Bar-in-cell tables (2026-05-12)
 - **Page:** `/dashboard/employees` chuyển từ scorecard grid 2-col sang 3 tab table với bar-in-cell visualization.
   - Tab "Báo cáo tổng": 10 cột (lead, đơn, sản phẩm, doanh số, tỉ lệ chốt, cuộc gọi). Cột formula "(=5/1)" hiển thị.

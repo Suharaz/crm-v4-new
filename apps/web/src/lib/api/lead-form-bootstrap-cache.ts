@@ -14,7 +14,9 @@ import type { NamedEntity } from '@/types/entities';
 
 const SOURCES_KEY = 'crm_cache_lead_sources_v1';
 const PRODUCTS_KEY = 'crm_cache_products_v1';
-const TTL_24H = 24 * 60 * 60 * 1000;
+// 4h = balance giữa request reduction và freshness. User Settings page có nút "Làm mới cache"
+// để force-invalidate ngay khi cần. Auto-invalidate cũng chạy sau mỗi CRUD source/product.
+const TTL_4H = 4 * 60 * 60 * 1000;
 
 function normalize(list: { id: string | number; name: string }[]): NamedEntity[] {
   return list.map((x) => ({ id: String(x.id), name: x.name }));
@@ -27,7 +29,7 @@ export function getLeadSources(): Promise<NamedEntity[]> {
       const res = await api.get<{ data: NamedEntity[] }>('/lead-sources');
       return normalize(res.data || []);
     },
-    TTL_24H,
+    TTL_4H,
   );
 }
 
@@ -38,7 +40,7 @@ export function getProducts(): Promise<NamedEntity[]> {
       const res = await api.get<{ data: NamedEntity[] }>('/products');
       return normalize(res.data || []);
     },
-    TTL_24H,
+    TTL_4H,
   );
 }
 

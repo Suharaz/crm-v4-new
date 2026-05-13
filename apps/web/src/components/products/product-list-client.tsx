@@ -17,6 +17,7 @@ import { productSchema, parseZodErrors } from '@/lib/zod-form-validation-schemas
 import { Plus, Pencil, Trash2, Power } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
+import { invalidateLeadFormBootstrap } from '@/lib/api/lead-form-bootstrap-cache';
 import type { ProductRecord, NamedEntity, SettingsItem } from '@/types/entities';
 
 interface ProductListClientProps {
@@ -38,6 +39,8 @@ export function ProductListClient({ products, categories }: ProductListClientPro
 
   const invalidateAndReload = () => {
     try { localStorage.removeItem('crm_order_products'); } catch { /* */ }
+    // Auto-invalidate cache LeadForm để drawer lần tới load lại products fresh
+    invalidateLeadFormBootstrap();
     setTimeout(() => window.location.reload(), 300);
   };
   const { execute, isLoading } = useFormAction({
@@ -56,6 +59,7 @@ export function ProductListClient({ products, categories }: ProductListClientPro
       await api.patch(`/products/${p.id}`, { isActive: !p.isActive });
       toast.success(p.isActive ? 'Đã ẩn sản phẩm' : 'Đã kích hoạt sản phẩm');
       try { localStorage.removeItem('crm_order_products'); } catch { /* */ }
+      invalidateLeadFormBootstrap();
       window.location.reload();
     } catch { toast.error('Lỗi cập nhật'); }
     setToggling(null);

@@ -79,6 +79,47 @@ crm-v4/
 └── pnpm-workspace.yaml
 ```
 
+## Role Permissions (CRITICAL - READ BEFORE ANY AUTH/ACCESS CODE)
+
+**Đây là app nội bộ với 1-2 manager thực sự. MANAGER được thiết kế gần như SUPER_ADMIN, KHÔNG bị scope theo phòng ban. Đừng giả định theo nghĩa tiếng Việt thông thường của từ "manager".**
+
+### Source of truth
+File: `apps/api/src/common/filters/build-access-filter.ts:26`
+```ts
+if (user.role === UserRole.SUPER_ADMIN || user.role === UserRole.MANAGER) {
+  return {};  // không filter - thấy TẤT CẢ data toàn hệ thống
+}
+```
+
+### Permission Matrix
+
+| Domain | SUPER_ADMIN | MANAGER | USER |
+|--------|:---:|:---:|:---:|
+| View leads / customers / orders / tasks | ALL | **ALL (không scope theo dept)** | Chỉ data assigned/created bởi mình |
+| Create / assign / distribute / transfer leads | OK | OK | Chỉ claim từ pool |
+| Verify / reject payments, match bank transactions | OK | OK | Không |
+| CRUD products, labels, lead-sources, call-logs, recall-config | OK | OK | View only |
+| Distribution config + run AI distribute | OK | OK (chạy), config SUPER_ADMIN | Không |
+| Assignment templates | OK | OK | Không |
+| Quản lý user (CRUD, đổi role, deactivate) | OK | Không (chỉ list) | Không |
+| Quản lý department / team | OK | Không | Không |
+| Payment types, installments, order-formats, product-groups | OK | Không | Không |
+| API keys, cron-run, system-settings, audit-log full | OK | Không | Không |
+
+### Quy tắc khi code feature mới (NON-NEGOTIABLE)
+
+1. **Data scoping luôn qua `buildAccessFilter(user, entity)`** - tự xử đúng cho cả 3 role. KHÔNG tự viết filter `where: { departmentId: user.departmentId }` cho MANAGER. SAI.
+2. **Endpoint guard mặc định:**
+   - Thao tác business hằng ngày (CRUD lead/customer/order, verify payment, assign, distribute, view dashboard cross-dept) -> `@Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)` (cho cả USER nếu là self-service).
+   - Cấu hình hệ thống (department, team, user-CRUD, payment-type, api-key, cron-run, order-format, payment-installment) -> `@Roles(UserRole.SUPER_ADMIN)` only.
+3. **UI nguyên tắc:** MANAGER nên thấy gần như mọi admin UI **trừ** menu System Config (Departments, Teams, Users, API Keys, Cron, System Settings). Không hide nút "xem cross-dept" với MANAGER.
+4. **Khi review/test:** nếu thấy filter `departmentId` áp dụng cho MANAGER -> đó là BUG. Báo ngay.
+
+### Anti-pattern thường gặp (FORBIDDEN)
+- `if (user.role === MANAGER) where.departmentId = user.departmentId` - SAI, MANAGER thấy toàn bộ.
+- Tạo endpoint mới `@Roles(MANAGER)` rồi filter thủ công theo dept - dùng `buildAccessFilter` thay vì viết lại logic.
+- Coi MANAGER như "department head" trong copy/UI/error message - sai lệch model thực tế.
+
 ## Code Standards
 
 ### Backend (NestJS)

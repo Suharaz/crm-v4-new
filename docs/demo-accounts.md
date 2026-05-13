@@ -9,9 +9,9 @@ URL: http://localhost:3011
 
 | Role | Email | Password (dev) | Quyền chính |
 |------|-------|----------------|-------------|
-| **SUPER_ADMIN** | `admin@crm.local` | `changeme` | Toàn quyền - quản lý user, settings, xóa data |
-| **MANAGER** | `manager.sales@crm.local` | `changeme` | Quản lý phòng Sales - tạo lead, assign, verify payment |
-| **USER (Sale)** | `sale1@crm.local` | `changeme` | Nhân viên bán hàng - claim lead, tạo order, task cá nhân |
+| **SUPER_ADMIN** | `admin@crm.local` | `changeme` | Toàn quyền - quản lý user, department, system config, xóa data |
+| **MANAGER** | `manager.sales@crm.local` | `changeme` | Gần như SUPER_ADMIN - xem toàn bộ data cross-dept, assign/distribute lead, verify payment, CRUD products/labels. Khác SUPER_ADMIN: KHÔNG quản được user, department, payment-type, api-key, system-settings. Xem chi tiết: `CLAUDE.md` -> "Role Permissions" |
+| **USER (Sale)** | `sale1@crm.local` | `changeme` | Nhân viên bán hàng - chỉ thấy data của mình (assignedUserId/createdBy), claim lead từ pool, tạo order, task cá nhân |
 
 ## Tài khoản khác (seed)
 

@@ -34,7 +34,18 @@ export function LeadSecondaryPhonesSection({ leadId, hasCustomer }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<CustomerPhoneRecord | null>(null);
 
+  // Đánh dấu local sau khi user add lần đầu (auto-create customer); dùng để bypass
+  // skip-fetch khi customerId server-side đã tồn tại nhưng prop ban đầu vẫn `false`.
+  const [bootstrapped, setBootstrapped] = useState(!!hasCustomer);
+
   const refresh = useCallback(async () => {
+    // Skip request khi chắc chắn lead chưa có customer + chưa add phone nào (sẽ trả []).
+    // Sau lần add đầu tiên, backend tạo customer + ta set bootstrapped=true để cho phép refresh.
+    if (!hasCustomer && !bootstrapped) {
+      setPhones([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = await leadSecondaryPhonesApi.list(leadId);
@@ -44,7 +55,10 @@ export function LeadSecondaryPhonesSection({ leadId, hasCustomer }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [leadId]);
+  }, [leadId, hasCustomer, bootstrapped]);
+
+  // Sau khi save phone đầu tiên thành công -> set bootstrapped để future refresh hoạt động.
+  const markBootstrapped = useCallback(() => setBootstrapped(true), []);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -102,7 +116,7 @@ export function LeadSecondaryPhonesSection({ leadId, hasCustomer }: Props) {
         onOpenChange={setDialogOpen}
         leadId={leadId}
         editing={editing}
-        onSaved={refresh}
+        onSaved={() => { markBootstrapped(); refresh(); }}
       />
     </div>
   );

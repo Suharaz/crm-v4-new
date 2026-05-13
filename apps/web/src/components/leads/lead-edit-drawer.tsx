@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/sheet';
 import { LeadForm } from '@/components/leads/lead-form';
 import { api } from '@/lib/api-client';
+import { getLeadSources, getProducts } from '@/lib/api/lead-form-bootstrap-cache';
 import { invalidatePreviewCache } from '@/components/shared/entity-quick-preview-dialog';
 import type { LeadRecord, NamedEntity } from '@/types/entities';
 
@@ -36,18 +37,16 @@ export function LeadEditDrawer({ open, onOpenChange, leadId }: Props) {
     let cancelled = false;
     setLoading(true);
     setError(null);
+    // Lead detail: always fetch (entity-specific). Sources/products: dùng module cache
+    // - request 1 lần per app lifetime, thay vì mỗi lần mở drawer.
     Promise.all([
       api.get<{ data: LeadRecord }>(`/leads/${leadId}`),
-      api.get<{ data: NamedEntity[] }>('/lead-sources').catch(() => ({ data: [] as NamedEntity[] })),
-      api.get<{ data: NamedEntity[] }>('/products').catch(() => ({ data: [] as NamedEntity[] })),
+      getLeadSources().catch(() => [] as NamedEntity[]),
+      getProducts().catch(() => [] as NamedEntity[]),
     ])
-      .then(([leadRes, srcRes, prodRes]) => {
+      .then(([leadRes, sources, products]) => {
         if (cancelled) return;
-        setBoot({
-          lead: leadRes.data,
-          sources: (srcRes.data || []).map((s) => ({ id: String(s.id), name: s.name })),
-          products: (prodRes.data || []).map((p) => ({ id: String(p.id), name: p.name })),
-        });
+        setBoot({ lead: leadRes.data, sources, products });
       })
       .catch((e) => {
         if (cancelled) return;

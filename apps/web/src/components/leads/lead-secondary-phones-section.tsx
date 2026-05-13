@@ -68,7 +68,7 @@ export function LeadSecondaryPhonesSection({ leadId, hasCustomer }: Props) {
             <span className="text-xs font-normal text-slate-500">({phones.length})</span>
           )}
         </h3>
-        <Button size="sm" variant="outline" onClick={openAdd} className="h-9">
+        <Button type="button" size="sm" variant="outline" onClick={openAdd} className="h-9">
           <Plus className="h-4 w-4 mr-1" />Thêm số
         </Button>
       </div>
@@ -150,6 +150,7 @@ function PhoneRow({
       </div>
       <div className="flex items-center gap-1">
         <Button
+          type="button"
           size="icon" variant="ghost" className="h-9 w-9"
           onClick={onEdit} aria-label="Sửa"
         >
@@ -157,7 +158,7 @@ function PhoneRow({
         </Button>
         <ConfirmDialog
           trigger={
-            <Button size="icon" variant="ghost" className="h-9 w-9 text-rose-600" aria-label="Xóa">
+            <Button type="button" size="icon" variant="ghost" className="h-9 w-9 text-rose-600" aria-label="Xóa">
               <Trash2 className="h-4 w-4" />
             </Button>
           }

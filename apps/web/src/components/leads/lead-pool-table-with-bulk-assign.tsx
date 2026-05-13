@@ -411,7 +411,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                         </>
                       )}
                       <td className="px-3 py-3 text-center border-b border-slate-100">
-                        <LeadEditButton leadId={lead.id} />
+                        <LeadEditButton leadId={lead.id} lead={lead as unknown as Parameters<typeof LeadEditButton>[0]['lead']} />
                       </td>
                     </tr>
                   );

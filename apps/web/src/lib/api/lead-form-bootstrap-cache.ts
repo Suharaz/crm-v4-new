@@ -1,48 +1,49 @@
 import { api } from '@/lib/api-client';
+import { getCached, invalidateCached } from '@/lib/storage/local-storage-cache';
 import type { NamedEntity } from '@/types/entities';
 
 /**
- * Module-level cache cho 2 list reference data của LeadForm (sources + products).
- * - Fetch 1 lần per browser session (data đổi rất hiếm, có thể invalidate thủ công khi cần).
- * - Promise được cache để các caller song song chỉ trigger 1 request, không thunder.
- * - TTL: vô hạn trong tab (refresh page sẽ reset). Đủ cho UX edit drawer.
+ * Cache cho 2 list reference data của LeadForm (sources + products).
+ * - Persist localStorage, TTL 24h (data đổi rất hiếm - vài tuần / lần)
+ * - Cross-tab share + tồn tại qua page refresh
+ * - Promise dedup: nhiều caller song song chỉ trigger 1 request
+ *
+ * Khi user CRUD source/product trong Settings -> gọi invalidateLeadFormBootstrap()
+ * để force-refresh data ngay.
  */
 
-let sourcesPromise: Promise<NamedEntity[]> | null = null;
-let productsPromise: Promise<NamedEntity[]> | null = null;
+const SOURCES_KEY = 'crm_cache_lead_sources_v1';
+const PRODUCTS_KEY = 'crm_cache_products_v1';
+const TTL_24H = 24 * 60 * 60 * 1000;
 
 function normalize(list: { id: string | number; name: string }[]): NamedEntity[] {
   return list.map((x) => ({ id: String(x.id), name: x.name }));
 }
 
 export function getLeadSources(): Promise<NamedEntity[]> {
-  if (!sourcesPromise) {
-    sourcesPromise = api
-      .get<{ data: NamedEntity[] }>('/lead-sources')
-      .then((res) => normalize(res.data || []))
-      .catch((e) => {
-        sourcesPromise = null; // reset để lần sau retry được
-        throw e;
-      });
-  }
-  return sourcesPromise;
+  return getCached(
+    SOURCES_KEY,
+    async () => {
+      const res = await api.get<{ data: NamedEntity[] }>('/lead-sources');
+      return normalize(res.data || []);
+    },
+    TTL_24H,
+  );
 }
 
 export function getProducts(): Promise<NamedEntity[]> {
-  if (!productsPromise) {
-    productsPromise = api
-      .get<{ data: NamedEntity[] }>('/products')
-      .then((res) => normalize(res.data || []))
-      .catch((e) => {
-        productsPromise = null;
-        throw e;
-      });
-  }
-  return productsPromise;
+  return getCached(
+    PRODUCTS_KEY,
+    async () => {
+      const res = await api.get<{ data: NamedEntity[] }>('/products');
+      return normalize(res.data || []);
+    },
+    TTL_24H,
+  );
 }
 
 /** Reset cache - gọi sau khi user CRUD source/product trong Settings. */
 export function invalidateLeadFormBootstrap() {
-  sourcesPromise = null;
-  productsPromise = null;
+  invalidateCached(SOURCES_KEY);
+  invalidateCached(PRODUCTS_KEY);
 }

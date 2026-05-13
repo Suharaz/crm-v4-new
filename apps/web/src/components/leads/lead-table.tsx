@@ -195,7 +195,7 @@ function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan, enableB
           )}
         </td>
         <td className="px-3 py-3 text-center border-b border-slate-100" onClick={e => e.stopPropagation()}>
-          <LeadEditButton leadId={lead.id} />
+          <LeadEditButton leadId={lead.id} lead={lead as unknown as Parameters<typeof LeadEditButton>[0]['lead']} />
         </td>
         {poolMode && (
           <td className={cn('sticky right-0 z-10 px-4 py-3 text-right border-b border-slate-100 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]', rowBg)} onClick={e => e.stopPropagation()}>

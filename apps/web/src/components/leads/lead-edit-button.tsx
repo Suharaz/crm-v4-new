@@ -3,17 +3,23 @@
 import { useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { LeadEditDrawer } from '@/components/leads/lead-edit-drawer';
+import type { LeadRecord } from '@/types/entities';
 
 interface Props {
   leadId: string;
+  /**
+   * Optional - data lead lấy từ row table. Khi truyền vào, drawer mở instant
+   * không cần fetch /leads/:id. Khuyến nghị luôn truyền để tối ưu UX.
+   */
+  lead?: Partial<LeadRecord>;
 }
 
 /**
- * Pencil-icon button trên các bảng lead. Mở Sheet/Drawer chứa LeadForm đầy đủ
- * thay vì popup quick-view cũ - cho phép sửa toàn bộ thông tin (kèm SĐT phụ).
- * USER bị readonly cho phone/name/sourceId (gate trong LeadForm).
+ * Pencil-icon button trên các bảng lead. Mở Sheet/Drawer chứa LeadForm dạng accordion.
+ * - Truyền `lead` từ row -> 0 request khi mở.
+ * - User expand section sâu hơn -> mới fetch detail/phones/sources/products theo nhu cầu.
  */
-export function LeadEditButton({ leadId }: Props) {
+export function LeadEditButton({ leadId, lead }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -30,7 +36,7 @@ export function LeadEditButton({ leadId }: Props) {
         <Pencil className="h-3.5 w-3.5" />
       </button>
 
-      <LeadEditDrawer open={open} onOpenChange={setOpen} leadId={leadId} />
+      <LeadEditDrawer open={open} onOpenChange={setOpen} leadId={leadId} leadRow={lead} />
     </>
   );
 }

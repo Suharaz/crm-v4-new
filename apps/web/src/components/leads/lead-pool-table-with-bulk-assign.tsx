@@ -9,6 +9,7 @@ import { LeadDuplicateBadge } from '@/components/leads/lead-duplicate-badge';
 import { LeadNameLink } from '@/components/leads/lead-name-link';
 import { LeadEditButton } from '@/components/leads/lead-edit-button';
 import { LeadPoolDistributeDialog } from '@/components/leads/lead-pool-distribute-dialog';
+import { LeadNotesCell } from '@/components/leads/lead-notes-cell';
 import { PhoneCell } from '@/components/leads/phone-cell';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/providers/auth-provider';
@@ -20,6 +21,12 @@ interface OrderLite {
   id: string;
   totalAmount: number;
   payments?: { amount: number; status: string }[];
+}
+
+interface LeadNoteSummary {
+  id: string;
+  content: string;
+  createdAt: string;
 }
 
 interface Lead {
@@ -37,6 +44,8 @@ interface Lead {
   createdAt: string;
   /** Tổng số lead chưa xóa có cùng SĐT (gồm cả lead này). >=2 → trùng. */
   duplicateCount?: number;
+  /** Top 5 note gần nhất (DESC theo createdAt). Backend trả về - dùng cho cột Note. */
+  recentNotes?: LeadNoteSummary[];
 }
 
 /** Pick latest order + sum verified payments. */
@@ -317,7 +326,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                   <th className="px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Thành tiền</th>
                   <th className="px-4 py-3 text-right font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Tiền đặt cọc</th>
                   <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Nguồn khách</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Nhãn KH</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Note</th>
                   {showAssignCols && (
                     <>
                       <th className="px-4 py-3 text-left font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Phân cho</th>
@@ -356,7 +365,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                       </td>
                       <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100 shadow-[2px_0_4px_rgba(0,0,0,0.04)]', PHONE_LEFT, rowBg)}>
                         <div className="flex items-center gap-2">
-                          <PhoneCell leadId={lead.id} phone={lead.phone} />
+                          <PhoneCell leadId={lead.id} phone={lead.phone} label={lead.label} />
                           <LeadDuplicateBadge
                             count={lead.duplicateCount ?? 0}
                             phone={lead.phone}
@@ -373,12 +382,8 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                         {summary ? formatVND(summary.depositPaid) : <span className="text-slate-300">-</span>}
                       </td>
                       <td className="px-4 py-3 text-slate-600 border-b border-slate-100">{lead.source?.name || '-'}</td>
-                      <td className="px-4 py-3 border-b border-slate-100">
-                        {lead.label ? (
-                          <span className="inline-block rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ backgroundColor: lead.label.color, color: lead.label.textColor || '#ffffff' }}>{lead.label.name}</span>
-                        ) : (
-                          <span className="text-[10px] text-slate-400">-</span>
-                        )}
+                      <td className="px-4 py-3 border-b border-slate-100" onClick={(e) => e.stopPropagation()}>
+                        <LeadNotesCell notes={lead.recentNotes} />
                       </td>
                       {showAssignCols && (
                         <>

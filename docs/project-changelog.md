@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Pool Tables Redesign - Note Column + Label Under Phone (2026-05-14)
+- **Frontend (`apps/web/src/components/leads/lead-pool-table-with-bulk-assign.tsx`):**
+  - Bỏ cột "Nhãn KH" riêng. Label giờ render dưới badge nhà mạng trong `PhoneCell` (parity với `LeadTable`).
+  - Thêm cột "Note" (dùng `LeadNotesCell`): preview note mới nhất + popover top 5 khi click.
+  - Truyền `label={lead.label}` vào `PhoneCell`. Backend đã trả `recentNotes` sẵn (`attachRecentNotes` trong `poolNewFiltered` + `poolZoom` + `poolDepartment` + `poolFloating`).
+- **Áp dụng cho:** `/leads/pool/new`, `/leads/pool/zoom` (và mặc định luôn cho `/leads/pool/floating` + `/leads/dept` vì cùng dùng component).
+
 ### Lead Initial Note + Recent Notes Column + Source Combobox (2026-05-14)
 - **Backend (`apps/api/src/modules/leads/`):**
   - `CreateLeadDto`: thêm field optional `note?: string` (max 2000 chars). Whitespace-only bị skip.

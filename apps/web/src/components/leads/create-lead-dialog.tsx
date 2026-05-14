@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { SourceCombobox } from '@/components/ui/source-combobox';
 import { FormField } from '@/components/shared/form-field';
 import { api } from '@/lib/api-client';
 import { Plus } from 'lucide-react';
@@ -13,31 +15,28 @@ import { toast } from 'sonner';
 import type { NamedEntity } from '@/types/entities';
 
 interface CreateLeadDialogProps {
+  /** @deprecated SourceCombobox tự fetch + cache 24h. Prop giữ lại để không break parent pages. */
   sources?: { id: string; name: string }[];
   products?: { id: string; name: string }[];
 }
 
-/** Popup dialog for quick lead creation. */
-export function CreateLeadDialog({ sources: initialSources, products: initialProducts }: CreateLeadDialogProps) {
+/** Popup dialog for quick lead creation. Sources fetched + cached qua SourceCombobox. */
+export function CreateLeadDialog({ products: initialProducts }: CreateLeadDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Lazy-load sources/products if not provided
-  const [sources, setSources] = useState(initialSources || []);
+  // Lazy-load products if not provided. Sources xử lý qua SourceCombobox (cache 24h).
   const [products, setProducts] = useState(initialProducts || []);
 
   useEffect(() => {
     if (!open) return;
-    if (sources.length === 0) {
-      api.get<{ data: NamedEntity[] }>('/lead-sources').then(r => setSources((r.data || []).map((s) => ({ id: String(s.id), name: s.name })))).catch(() => {});
-    }
     if (products.length === 0) {
       api.get<{ data: NamedEntity[] }>('/products').then(r => setProducts((r.data || []).map((p) => ({ id: String(p.id), name: p.name })))).catch(() => {});
     }
-  }, [open, sources.length, products.length]);
+  }, [open, products.length]);
 
-  const [form, setForm] = useState({ phone: '', name: '', email: '', sourceId: '', productId: '' });
+  const [form, setForm] = useState({ phone: '', name: '', email: '', sourceId: '', productId: '', note: '' });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [phoneDuplicate, setPhoneDuplicate] = useState<{ name: string; phone: string } | null>(null);
 
@@ -66,7 +65,7 @@ export function CreateLeadDialog({ sources: initialSources, products: initialPro
 
   function resetAndClose() {
     setOpen(false);
-    setForm({ phone: '', name: '', email: '', sourceId: '', productId: '' });
+    setForm({ phone: '', name: '', email: '', sourceId: '', productId: '', note: '' });
     setFieldErrors({});
     setPhoneDuplicate(null);
   }
@@ -77,6 +76,12 @@ export function CreateLeadDialog({ sources: initialSources, products: initialPro
       setFieldErrors({ phone: 'SĐT không hợp lệ (8-14 chữ số, có thể bắt đầu bằng + hoặc 0)' });
       return;
     }
+    // Validate note length (defense in depth - HTML maxLength + backend đã chặn 2000)
+    const trimmedNote = form.note.trim();
+    if (trimmedNote.length > 2000) {
+      setFieldErrors({ note: 'Note tối đa 2000 ký tự' });
+      return;
+    }
     setFieldErrors({});
     setSubmitting(true);
     try {
@@ -85,6 +90,8 @@ export function CreateLeadDialog({ sources: initialSources, products: initialPro
       if (form.email) body.email = form.email;
       if (form.sourceId) body.sourceId = form.sourceId;
       if (form.productId) body.productId = form.productId;
+      // Skip note nếu rỗng sau trim - tránh tạo activity rỗng + tiết kiệm payload
+      if (trimmedNote) body.note = trimmedNote;
 
       await api.post('/leads', body);
       toast.success('Đã tạo lead');
@@ -125,12 +132,11 @@ export function CreateLeadDialog({ sources: initialSources, products: initialPro
 
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Nguồn">
-                <Select value={form.sourceId} onValueChange={v => update('sourceId', v)}>
-                  <SelectTrigger><SelectValue placeholder="Chọn" /></SelectTrigger>
-                  <SelectContent>
-                    {sources.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <SourceCombobox
+                  value={form.sourceId}
+                  onChange={(v) => update('sourceId', v)}
+                  placeholder="Chọn"
+                />
               </FormField>
 
               <FormField label="Sản phẩm">
@@ -142,6 +148,20 @@ export function CreateLeadDialog({ sources: initialSources, products: initialPro
                 </Select>
               </FormField>
             </div>
+
+            <FormField label="Ghi chú ban đầu" error={fieldErrors.note}>
+              <Textarea
+                value={form.note}
+                onChange={e => update('note', e.target.value)}
+                placeholder="VD: Khách hẹn gọi lại 3h chiều..."
+                rows={3}
+                maxLength={2000}
+                className="resize-y max-h-40"
+              />
+              <div className={`mt-1 text-xs text-right ${form.note.length > 2000 ? 'text-red-500' : 'text-slate-400'}`}>
+                {form.note.length}/2000
+              </div>
+            </FormField>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={resetAndClose}>Hủy</Button>

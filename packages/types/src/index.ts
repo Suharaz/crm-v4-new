@@ -50,6 +50,15 @@ export interface CronRunResponse {
   durationMs: number | null;
 }
 
+// ── Leads ────────────────────────────────────────────────────────────────────
+
+/** Summary của một note (activity type=NOTE) gắn trên lead - dùng cho cột Note ở bảng /leads. */
+export interface LeadNoteSummary {
+  id: BigIntString;
+  content: string;
+  createdAt: string;
+}
+
 // ── Tasks ────────────────────────────────────────────────────────────────────
 
 export interface TaskReminderDto {

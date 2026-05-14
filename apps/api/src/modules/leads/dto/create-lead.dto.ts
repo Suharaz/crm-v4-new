@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEmail } from 'class-validator';
+import { IsString, IsOptional, IsEmail, MaxLength } from 'class-validator';
 
 export class CreateLeadDto {
   @IsString()
@@ -43,4 +43,10 @@ export class CreateLeadDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  /** Ghi chú ban đầu - tạo activity NOTE cùng transaction với lead. Trim + skip nếu rỗng. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  note?: string;
 }

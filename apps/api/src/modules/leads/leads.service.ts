@@ -111,6 +111,7 @@ export class LeadsService {
       const data = hasMore ? leads.slice(0, limit) : leads;
       await this.enrichLeads(data);
       await this.attachDuplicateCount(data);
+      await this.attachRecentNotes(data);
       return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
     }
 
@@ -129,6 +130,7 @@ export class LeadsService {
     const data = leads;
     await this.enrichLeads(data);
     await this.attachDuplicateCount(data);
+    await this.attachRecentNotes(data);
     return {
       data,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
@@ -250,6 +252,7 @@ export class LeadsService {
       return true;
     }).map(attachNote);
     await this.attachDuplicateCount(merged);
+    await this.attachRecentNotes(merged);
     return { data: merged };
   }
 
@@ -265,6 +268,7 @@ export class LeadsService {
     const hasMore = leads.length > limit;
     const data = hasMore ? leads.slice(0, limit) : leads;
     await this.attachDuplicateCount(data);
+    await this.attachRecentNotes(data);
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }
 
@@ -281,6 +285,7 @@ export class LeadsService {
     const hasMore = leads.length > limit;
     const data = hasMore ? leads.slice(0, limit) : leads;
     await this.attachDuplicateCount(data);
+    await this.attachRecentNotes(data);
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }
 
@@ -296,6 +301,7 @@ export class LeadsService {
     const hasMore = leads.length > limit;
     const data = hasMore ? leads.slice(0, limit) : leads;
     await this.attachDuplicateCount(data);
+    await this.attachRecentNotes(data);
     return { data, meta: { nextCursor: hasMore ? data[data.length - 1].id?.toString() : undefined } };
   }
 
@@ -408,30 +414,52 @@ export class LeadsService {
       skipPool = source?.skipPool ?? false;
     }
 
-    // skipPool → status ZOOM (kho zoom riêng), otherwise POOL (Kho Mới)
-    const lead = await this.prisma.lead.create({
-      data: {
-        phone, name: dto.name || phone, email: dto.email,
-        companyName: dto.companyName, facebookUrl: dto.facebookUrl,
-        instagramUrl: dto.instagramUrl, zaloUrl: dto.zaloUrl, linkedinUrl: dto.linkedinUrl,
-        status: skipPool ? 'ZOOM' : 'POOL',
-        customer: { connect: { id: customer.id } },
-        ...(dto.sourceId ? { source: { connect: { id: BigInt(dto.sourceId) } } } : {}),
-        ...(dto.productId ? { product: { connect: { id: BigInt(dto.productId) } } } : {}),
-      },
-      select: LEAD_SELECT,
+    // Atomic: tạo lead + (optional) merge label + (optional) note activity trong cùng transaction.
+    // Note rỗng / whitespace-only -> skip activity (không tạo noise trong timeline).
+    const trimmedNote = dto.note?.trim();
+    const customerId = customer.id;
+    const customerLabels = customer.labels;
+
+    const leadId = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.lead.create({
+        data: {
+          phone, name: dto.name || phone, email: dto.email,
+          companyName: dto.companyName, facebookUrl: dto.facebookUrl,
+          instagramUrl: dto.instagramUrl, zaloUrl: dto.zaloUrl, linkedinUrl: dto.linkedinUrl,
+          status: skipPool ? 'ZOOM' : 'POOL',
+          customer: { connect: { id: customerId } },
+          ...(dto.sourceId ? { source: { connect: { id: BigInt(dto.sourceId) } } } : {}),
+          ...(dto.productId ? { product: { connect: { id: BigInt(dto.productId) } } } : {}),
+        },
+        select: { id: true },
+      });
+
+      // Merge label from existing customer → new lead (single label only; take first)
+      if (isDuplicate && customerLabels && customerLabels.length > 0) {
+        await tx.lead.update({
+          where: { id: created.id },
+          data: { labelId: customerLabels[0].labelId, labelAssignedAt: new Date() },
+        });
+      }
+
+      // Initial note → 1 activity (atomic với lead). Author = req.user.id, không nhận từ body.
+      if (trimmedNote) {
+        await tx.activity.create({
+          data: {
+            entityType: 'LEAD',
+            entityId: created.id,
+            userId: user.id,
+            type: 'NOTE',
+            content: trimmedNote,
+          },
+        });
+      }
+
+      return created.id;
     });
 
-    // Merge label from customer → new lead (single label only; take first)
-    if (isDuplicate && customer.labels?.length > 0) {
-      await this.prisma.lead.update({
-        where: { id: lead.id },
-        data: { labelId: customer.labels[0].labelId, labelAssignedAt: new Date() },
-      });
-    }
-
-    // Return lead with duplicate warning
-    const result = await this.findById(lead.id);
+    // Return lead with duplicate warning (outside tx - read-only)
+    const result = await this.findById(leadId);
     if (isDuplicate) {
       (result as any)._warning = {
         type: 'DUPLICATE_PHONE',
@@ -524,6 +552,52 @@ export class LeadsService {
       (lead as any).lastInteractionAt = dates.length > 0
         ? new Date(Math.max(...dates.map((d: Date) => new Date(d).getTime())))
         : lead.updatedAt;
+    }
+  }
+
+  // ── Recent notes per lead ────────────────────────────────────────────────
+  /**
+   * Attach `recentNotes` (top 5 by createdAt DESC) to each lead in-place.
+   * Single raw SQL query với ROW_NUMBER() OVER (PARTITION BY ...) tránh N+1.
+   * Notes auto-scoped theo lead.id - không cần access filter vì leads input
+   * đã được scope qua buildAccessFilter ở caller.
+   */
+  private async attachRecentNotes(leads: any[]) {
+    if (leads.length === 0) return;
+    const ids = leads.map((l: any) => l.id as bigint);
+
+    // ROW_NUMBER picks top 5 per lead trong 1 query. Index [entity_type, entity_id, created_at] có sẵn.
+    const rows = await this.prisma.$queryRaw<
+      Array<{ entity_id: bigint; id: bigint; content: string | null; created_at: Date }>
+    >`
+      SELECT entity_id, id, content, created_at
+      FROM (
+        SELECT entity_id, id, content, created_at,
+               ROW_NUMBER() OVER (PARTITION BY entity_id ORDER BY created_at DESC) AS rn
+        FROM activities
+        WHERE entity_type = 'LEAD'
+          AND entity_id IN (${Prisma.join(ids)})
+          AND type = 'NOTE'
+          AND deleted_at IS NULL
+      ) t
+      WHERE rn <= 5
+      ORDER BY entity_id, created_at DESC
+    `;
+
+    // Group by entity_id (string-keyed to avoid BigInt Map quirks)
+    const byLead = new Map<string, Array<{ id: string; content: string; createdAt: string }>>();
+    for (const r of rows) {
+      const key = r.entity_id.toString();
+      if (!byLead.has(key)) byLead.set(key, []);
+      byLead.get(key)!.push({
+        id: r.id.toString(),
+        content: r.content ?? '',
+        createdAt: r.created_at.toISOString(),
+      });
+    }
+
+    for (const lead of leads) {
+      lead.recentNotes = byLead.get(lead.id.toString()) ?? [];
     }
   }
 

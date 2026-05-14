@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Lead Initial Note + Recent Notes Column + Source Combobox (2026-05-14)
+- **Backend (`apps/api/src/modules/leads/`):**
+  - `CreateLeadDto`: thêm field optional `note?: string` (max 2000 chars). Whitespace-only bị skip.
+  - `leads.service.create()` wrap trong `$transaction`: tạo lead + initial NOTE activity atomic.
+  - Helper mới `attachRecentNotes()`: 1 raw SQL với `ROW_NUMBER() OVER (PARTITION BY entity_id)` lấy top-5 note/lead, tránh N+1.
+  - 5 list endpoint (`list`, `poolNewFiltered`, `poolZoom`, `poolDepartment`, `poolFloating`) trả thêm `recentNotes: LeadNoteSummary[]`.
+- **Shared types:** `packages/types/src/index.ts` thêm interface `LeadNoteSummary`.
+- **Frontend (`apps/web/src/`):**
+  - `lead-table.tsx`: bỏ cột "Nhãn KH", thêm cột "Note" click → popover hiện 5 note gần nhất.
+  - `phone-cell.tsx`: nhận thêm prop `label`, render `LabelPill` dưới badge nhà mạng.
+  - Component mới: `label-pill.tsx`, `lead-notes-cell.tsx`.
+  - `create-lead-dialog.tsx`: thêm Textarea "Ghi chú ban đầu" + counter 2000 ký tự, trim+skip empty.
+  - Component mới `ui/source-combobox.tsx`: search + IntersectionObserver lazy 10/page, thay `<Select>` cho source picker.
+  - Component mới `ui/popover.tsx` (shadcn primitive trên `@radix-ui/react-popover`).
+  - Hook mới `use-lead-sources.ts`: TanStack-Query-style + 24h localStorage cache.
+  - Lib mới: `source-cache.ts` (read/write/clear try-catch), `normalize-vietnamese.ts` (NFD diacritic strip cho VN search).
+  - `auth-provider.tsx`: gọi `clearSourceCache()` khi logout.
+- **Dependency:** thêm `@radix-ui/react-popover@^1` vào `apps/web`.
+- **Verified:** `apps/api` tsc clean, `apps/web` next build + tsc clean, ESLint clean, code-reviewer 8.5/10 không issue critical.
+
 ### Leads Edit Drawer + Zoom Distribution + Lead Phones API (2026-05-13)
 - **UI/UX:**
   - Pencil button trên `/leads` mở slide-in Sheet/Drawer (right side) chứa full `LeadForm` thay cho quick-preview popup cũ.

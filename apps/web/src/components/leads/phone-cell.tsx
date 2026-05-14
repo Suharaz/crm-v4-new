@@ -6,10 +6,13 @@ import { Clock, Mic, Copy } from 'lucide-react';
 import { detectCarrier, CARRIER_LABEL, formatPhoneDisplay } from '@crm/utils';
 import { LeadActivityTimelineDialog } from '@/components/shared/lead-activity-timeline-dialog';
 import { CallHistoryDialog } from '@/components/shared/call-history-dialog';
+import { LabelPill } from '@/components/leads/label-pill';
 
 interface PhoneCellProps {
   leadId: string;
   phone: string | null | undefined;
+  /** Nhãn của lead - hiển thị pill nhỏ dưới SĐT nếu có. */
+  label?: { name: string; color: string; textColor?: string | null } | null;
 }
 
 /**
@@ -17,7 +20,7 @@ interface PhoneCellProps {
  * - Main row: formatted phone + 3 actions (timeline / call history / copy).
  * - Sub row: carrier badge (VIETTEL / MOBI / VINA / ...). Hidden if unknown.
  */
-export function PhoneCell({ leadId, phone }: PhoneCellProps) {
+export function PhoneCell({ leadId, phone, label }: PhoneCellProps) {
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [callsOpen, setCallsOpen] = useState(false);
 
@@ -82,6 +85,7 @@ export function PhoneCell({ leadId, phone }: PhoneCellProps) {
           {CARRIER_LABEL[carrier]}
         </span>
       )}
+      {label && <LabelPill label={label} />}
 
       <LeadActivityTimelineDialog
         open={timelineOpen}

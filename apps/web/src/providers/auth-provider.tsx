@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { clearSourceCache } from '@/lib/source-cache';
+import { clearProductCache } from '@/lib/product-cache';
 
 interface User {
   id: string;
@@ -44,6 +45,7 @@ export function AuthProvider({ children, initialUser }: { children: ReactNode; i
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     // Clear localStorage caches lưu giữ data theo user/role - tránh leak qua thiết bị shared.
     clearSourceCache();
+    clearProductCache();
     setUser(null);
     router.push('/login');
   }, [router]);

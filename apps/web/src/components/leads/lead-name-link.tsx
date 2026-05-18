@@ -1,23 +1,29 @@
 'use client';
 
-import Link from 'next/link';
+import { LeadQuickActionsMenu } from '@/components/leads/lead-quick-actions-menu';
 
 interface Props {
   leadId: string;
   name: string;
+  /** Optional SĐT - khi truyền vào, menu sẽ có thêm item Copy SĐT + Lịch sử gọi điện. */
+  phone?: string | null;
 }
 
 /**
- * Lead name as a link to /leads/[id].
- * Quick-preview action lives in a separate column (see lead-edit-button.tsx).
+ * Lead name - click để xổ dropdown thao tác nhanh (LeadQuickActionsMenu).
+ * Trước đây chỉ là Link tới /leads/[id]; gom thêm menu thống nhất với PhoneCell.
+ *
+ * Vẫn cho phép navigate sang chi tiết qua item "Xem chi tiết" trong menu.
  */
-export function LeadNameLink({ leadId, name }: Props) {
+export function LeadNameLink({ leadId, name, phone }: Props) {
   return (
-    <Link
-      href={`/leads/${leadId}`}
-      className="font-medium text-slate-900 hover:text-sky-600 hover:underline truncate"
+    <LeadQuickActionsMenu
+      leadId={leadId}
+      phone={phone}
+      triggerTitle="Thao tác nhanh"
+      triggerClassName="font-medium text-slate-900 hover:text-sky-600 hover:underline truncate text-left focus:outline-none focus:ring-2 focus:ring-sky-500 rounded"
     >
       {name}
-    </Link>
+    </LeadQuickActionsMenu>
   );
 }

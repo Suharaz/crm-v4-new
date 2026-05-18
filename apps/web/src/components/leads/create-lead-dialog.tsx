@@ -5,36 +5,26 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { SourceCombobox } from '@/components/ui/source-combobox';
+import { ProductCombobox } from '@/components/ui/product-combobox';
 import { FormField } from '@/components/shared/form-field';
 import { api } from '@/lib/api-client';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import type { NamedEntity } from '@/types/entities';
 
 interface CreateLeadDialogProps {
   /** @deprecated SourceCombobox tự fetch + cache 24h. Prop giữ lại để không break parent pages. */
   sources?: { id: string; name: string }[];
+  /** @deprecated ProductCombobox tự fetch + cache 24h. Prop giữ lại để không break parent pages. */
   products?: { id: string; name: string }[];
 }
 
-/** Popup dialog for quick lead creation. Sources fetched + cached qua SourceCombobox. */
-export function CreateLeadDialog({ products: initialProducts }: CreateLeadDialogProps) {
+/** Popup dialog for quick lead creation. Sources + products fetched + cached qua *Combobox (24h). */
+export function CreateLeadDialog(_props: CreateLeadDialogProps = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  // Lazy-load products if not provided. Sources xử lý qua SourceCombobox (cache 24h).
-  const [products, setProducts] = useState(initialProducts || []);
-
-  useEffect(() => {
-    if (!open) return;
-    if (products.length === 0) {
-      api.get<{ data: NamedEntity[] }>('/products').then(r => setProducts((r.data || []).map((p) => ({ id: String(p.id), name: p.name })))).catch(() => {});
-    }
-  }, [open, products.length]);
 
   const [form, setForm] = useState({ phone: '', name: '', email: '', sourceId: '', productId: '', note: '' });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -140,12 +130,11 @@ export function CreateLeadDialog({ products: initialProducts }: CreateLeadDialog
               </FormField>
 
               <FormField label="Sản phẩm">
-                <Select value={form.productId} onValueChange={v => update('productId', v)}>
-                  <SelectTrigger><SelectValue placeholder="Chọn" /></SelectTrigger>
-                  <SelectContent>
-                    {products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <ProductCombobox
+                  value={form.productId}
+                  onChange={(v) => update('productId', v)}
+                  placeholder="Chọn"
+                />
               </FormField>
             </div>
 

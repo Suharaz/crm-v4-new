@@ -2,11 +2,10 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Info, Clock, Mic, Copy } from 'lucide-react';
+import { Clock, Mic, Copy } from 'lucide-react';
 import { detectCarrier, CARRIER_LABEL, formatPhoneDisplay } from '@crm/utils';
 import { LeadActivityTimelineDialog } from '@/components/shared/lead-activity-timeline-dialog';
 import { CallHistoryDialog } from '@/components/shared/call-history-dialog';
-import { EntityQuickPreviewDialog } from '@/components/shared/entity-quick-preview-dialog';
 
 interface PhoneCellProps {
   leadId: string;
@@ -16,16 +15,15 @@ interface PhoneCellProps {
 /**
  * Phone cell for lead tables.
  *
- * Layout: [ⓘ chi tiet] [SDT plain text] [📋 copy] [📞 call] [⏱ timeline]
- *                                                                       |
- *                                              [VIETTEL] ← carrier badge|
+ * Layout: [SDT plain text] [⏱ timeline] [📞 call] [📋 copy]
+ *         [VIETTEL] ← carrier badge
  *
  * - SDT chi la text (khong link, khong click).
- * - Icon ⓘ (chấm than đỏ) -> mo EntityQuickPreviewDialog (popup chi tiet lead).
- * - 3 icon ben phai SDT: copy/call/timeline - moi cai stopPropagation tranh trigger row click.
+ * - 3 icon ben phai theo thu tu: lich su tuong tac -> lich su goi -> copy.
+ * - Icon ⓘ chi tiet nam o cot Ten (LeadNameLink), khong nam trong PhoneCell.
+ * - Nut "trung" (LeadDuplicateBadge) render boi caller table (sau PhoneCell).
  */
 export function PhoneCell({ leadId, phone }: PhoneCellProps) {
-  const [previewOpen, setPreviewOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [callsOpen, setCallsOpen] = useState(false);
 
@@ -57,24 +55,16 @@ export function PhoneCell({ leadId, phone }: PhoneCellProps) {
   };
 
   return (
-    <div className="flex flex-col gap-0.5 min-w-[200px]">
+    <div className="flex flex-col gap-0.5 min-w-[180px]">
       <div className="flex items-center gap-1">
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); setPreviewOpen(true); }}
-          title="Xem chi tiết"
-          className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-50 text-red-500 ring-1 ring-red-200 hover:bg-red-100 hover:text-red-600 transition-colors shrink-0"
-        >
-          <Info className="h-3 w-3" />
-        </button>
         <span className="font-medium text-slate-900 tabular-nums">{display}</span>
         <button
           type="button"
-          onClick={copyPhone}
-          title="Copy SĐT"
-          className="inline-flex h-6 w-6 items-center justify-center rounded-md text-amber-500 hover:bg-amber-50 hover:text-amber-700 transition-colors"
+          onClick={(e) => { e.stopPropagation(); setTimelineOpen(true); }}
+          title="Lịch tương tác"
+          className="inline-flex h-6 w-6 items-center justify-center rounded-md text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
         >
-          <Copy className="h-3.5 w-3.5" />
+          <Clock className="h-3.5 w-3.5" />
         </button>
         <button
           type="button"
@@ -86,11 +76,11 @@ export function PhoneCell({ leadId, phone }: PhoneCellProps) {
         </button>
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); setTimelineOpen(true); }}
-          title="Lịch tương tác"
-          className="inline-flex h-6 w-6 items-center justify-center rounded-md text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+          onClick={copyPhone}
+          title="Copy SĐT"
+          className="inline-flex h-6 w-6 items-center justify-center rounded-md text-amber-500 hover:bg-amber-50 hover:text-amber-700 transition-colors"
         >
-          <Clock className="h-3.5 w-3.5" />
+          <Copy className="h-3.5 w-3.5" />
         </button>
       </div>
       {carrier && (
@@ -99,12 +89,6 @@ export function PhoneCell({ leadId, phone }: PhoneCellProps) {
         </span>
       )}
 
-      <EntityQuickPreviewDialog
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-        entityType="lead"
-        entityId={leadId}
-      />
       <LeadActivityTimelineDialog
         open={timelineOpen}
         onOpenChange={setTimelineOpen}

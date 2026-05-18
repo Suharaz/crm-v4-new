@@ -120,7 +120,14 @@ export class LeadsService {
     const [leads, total] = await Promise.all([
       this.prisma.lead.findMany({
         where, select: LEAD_SELECT,
-        orderBy: { id: 'desc' },
+        // Sort: lead vừa được gán gần nhất lên đầu (sale thấy ngay lead mới nhận).
+        // - lastAssignedAt NULL = lead POOL chưa gán → đẩy xuống cuối (NULLS LAST).
+        // - Tie-breaker id desc: bulk assign cùng giây nhiều lead → cần secondary sort cho ổn định pagination.
+        // - Cursor branch ở trên giữ nguyên { id: desc } vì cursor cần PK để stable cho kanban/infinite scroll.
+        orderBy: [
+          { lastAssignedAt: { sort: 'desc', nulls: 'last' } },
+          { id: 'desc' },
+        ],
         take: limit,
         skip: (page - 1) * limit,
       }),

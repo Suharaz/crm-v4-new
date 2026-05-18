@@ -171,9 +171,9 @@ function LeadRow({ lead, isExpanded, onToggle, poolMode, users, colSpan, enableB
             />
           </td>
         )}
-        <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100', nameLeft, rowBg)} onClick={e => e.stopPropagation()}>
+        <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100', nameLeft, rowBg)}>
           <div className="flex items-center gap-1.5">
-            <LeadNameLink leadId={lead.id} name={lead.name} phone={lead.phone} />
+            <LeadNameLink name={lead.name} />
             {lead.metadata?.aiLevel && (
               <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full text-white shrink-0 ${
                 lead.metadata.aiLevel === 'HOT' ? 'bg-red-500' : lead.metadata.aiLevel === 'WARM' ? 'bg-amber-500' : 'bg-sky-400'

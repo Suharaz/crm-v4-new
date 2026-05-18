@@ -358,7 +358,7 @@ export function LeadPoolTableWithBulkAssign({ leads: initialLeads, users, poolMo
                       <td className={cn('sticky z-10 w-10 px-3 py-3 text-center text-xs text-slate-500 border-b border-slate-100', STT_LEFT, rowBg)}>{idx + 1}</td>
                       <td className={cn('sticky z-10 w-[200px] px-4 py-3 border-b border-slate-100', NAME_LEFT, rowBg)}>
                         <div className="flex items-center gap-1.5">
-                          <LeadNameLink leadId={lead.id} name={lead.name} phone={lead.phone} />
+                          <LeadNameLink name={lead.name} />
                           {lead.orders && lead.orders.length > 0 && (
                             <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 shrink-0">Đã mua</span>
                           )}

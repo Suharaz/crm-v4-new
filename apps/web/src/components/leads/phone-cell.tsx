@@ -1,7 +1,12 @@
 'use client';
 
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Info, Clock, Mic, Copy } from 'lucide-react';
 import { detectCarrier, CARRIER_LABEL, formatPhoneDisplay } from '@crm/utils';
-import { LeadQuickActionsMenu } from '@/components/leads/lead-quick-actions-menu';
+import { LeadActivityTimelineDialog } from '@/components/shared/lead-activity-timeline-dialog';
+import { CallHistoryDialog } from '@/components/shared/call-history-dialog';
+import { EntityQuickPreviewDialog } from '@/components/shared/entity-quick-preview-dialog';
 
 interface PhoneCellProps {
   leadId: string;
@@ -10,17 +15,36 @@ interface PhoneCellProps {
 
 /**
  * Phone cell for lead tables.
- * - Main row: formatted phone (click -> dropdown menu thao tác nhanh).
- * - Sub row: carrier badge (VIETTEL / MOBI / VINA / ...). Hidden if unknown.
  *
- * Lưu ý: cột Nhãn đã tách riêng khỏi PhoneCell (theo yêu cầu UX). 3 icon button cũ
- * (Clock/Mic/Copy) gom vào LeadQuickActionsMenu để click SĐT là xổ menu thống nhất.
+ * Layout: [ⓘ chi tiet] [SDT plain text] [📋 copy] [📞 call] [⏱ timeline]
+ *                                                                       |
+ *                                              [VIETTEL] ← carrier badge|
+ *
+ * - SDT chi la text (khong link, khong click).
+ * - Icon ⓘ (chấm than đỏ) -> mo EntityQuickPreviewDialog (popup chi tiet lead).
+ * - 3 icon ben phai SDT: copy/call/timeline - moi cai stopPropagation tranh trigger row click.
  */
 export function PhoneCell({ leadId, phone }: PhoneCellProps) {
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [timelineOpen, setTimelineOpen] = useState(false);
+  const [callsOpen, setCallsOpen] = useState(false);
+
   if (!phone) return <span className="text-slate-400">-</span>;
 
   const carrier = detectCarrier(phone);
   const display = formatPhoneDisplay(phone);
+
+  async function copyPhone(e: React.MouseEvent) {
+    // Chặn bubble lên row để click copy không trigger row-toggle ở bảng leads
+    e.stopPropagation();
+    if (!phone) return;
+    try {
+      await navigator.clipboard.writeText(phone);
+      toast.success('Đã copy SĐT');
+    } catch {
+      toast.error('Không thể copy');
+    }
+  }
 
   // Carrier brand colors (badge background + text)
   const carrierStyle: Record<string, string> = {
@@ -33,20 +57,64 @@ export function PhoneCell({ leadId, phone }: PhoneCellProps) {
   };
 
   return (
-    <div className="flex flex-col gap-0.5 min-w-[160px]">
-      <LeadQuickActionsMenu
-        leadId={leadId}
-        phone={phone}
-        triggerTitle="Thao tác nhanh"
-        triggerClassName="font-medium text-slate-900 tabular-nums text-left hover:text-sky-600 hover:underline focus:outline-none focus:ring-2 focus:ring-sky-500 rounded"
-      >
-        {display}
-      </LeadQuickActionsMenu>
+    <div className="flex flex-col gap-0.5 min-w-[200px]">
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setPreviewOpen(true); }}
+          title="Xem chi tiết"
+          className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-50 text-red-500 ring-1 ring-red-200 hover:bg-red-100 hover:text-red-600 transition-colors shrink-0"
+        >
+          <Info className="h-3 w-3" />
+        </button>
+        <span className="font-medium text-slate-900 tabular-nums">{display}</span>
+        <button
+          type="button"
+          onClick={copyPhone}
+          title="Copy SĐT"
+          className="inline-flex h-6 w-6 items-center justify-center rounded-md text-amber-500 hover:bg-amber-50 hover:text-amber-700 transition-colors"
+        >
+          <Copy className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setCallsOpen(true); }}
+          title="Lịch sử gọi điện"
+          className="inline-flex h-6 w-6 items-center justify-center rounded-md text-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+        >
+          <Mic className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setTimelineOpen(true); }}
+          title="Lịch tương tác"
+          className="inline-flex h-6 w-6 items-center justify-center rounded-md text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+        >
+          <Clock className="h-3.5 w-3.5" />
+        </button>
+      </div>
       {carrier && (
         <span className={`inline-flex w-fit items-center rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase ring-1 ring-inset ${carrierStyle[carrier]}`}>
           {CARRIER_LABEL[carrier]}
         </span>
       )}
+
+      <EntityQuickPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        entityType="lead"
+        entityId={leadId}
+      />
+      <LeadActivityTimelineDialog
+        open={timelineOpen}
+        onOpenChange={setTimelineOpen}
+        leadId={leadId}
+      />
+      <CallHistoryDialog
+        open={callsOpen}
+        onOpenChange={setCallsOpen}
+        phone={phone}
+      />
     </div>
   );
 }
